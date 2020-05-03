@@ -238,71 +238,60 @@ class OrderController extends Controller
 		$order->save();
 	}
 
-    public function ordersCount($orders) {
-        $ordersCount = array(
-            'Tutti' => array(
+    public function getOrdersStats($orders) {
+        $orders_stats = array(
+            'all' => array(
                 'count' => 0,
-                'total' => 0.00,
+                'commission' => 0.00,
                 'sub_commission' => 0.00,
             ),
-            'Attesa' => array(
-                'count' => 0,
-                'total' => 0.00,
-                'sub_commission' => 0.00,
-            ),
-            'Conferma' => array(
-                'count' => 0,
-                'total' => 0.00,
-                'sub_commission' => 0.00,
-            ),
-            'Non risponde' => array(
-                'count' => 0,
-                'total' => 0.00,
-                'sub_commission' => 0.00,
-            ),
-            'Rifiuto' => array(
-                'count' => 0,
-                'total' => 0.00,
-                'sub_commission' => 0.00,
-            ),
+            'by_status' => array(),
             'network_sent' => array(
                 'count' => 0,
-                'total' => 0.00,
+                'commission' => 0.00,
                 'sub_commission' => 0.00,
             ),
         );
+
+        foreach (OrderStatus::all() as $orderStatus) {
+            $orders_stats['by_status'][$orderStatus->id] = array(
+                'count' => 0,
+                'commission' => 0,
+                'sub_commission' => 0,
+            );
+        }
         
         foreach ($orders as $order) {
             $order_info = json_decode($order->info, TRUE);
             $sub_commission = 0.0;
 
             // Status
-            if (!isset($ordersCount[$order->status->description])) {
-                $ordersCount[$order->status->description]['count'] = 1;
-                $ordersCount[$order->status->description]['total'] = 0.00;
-                $ordersCount[$order->status->description]['sub_commission'] = 0.00;
+            if (!isset($orders_stats[$order->status->id])) {
+                $orders_stats['by_status'][$order->status->id]['count'] = 1;
+                $orders_stats['by_status'][$order->status->id]['commission'] = 0.00;
+                $orders_stats['by_status'][$order->status->id]['sub_commission'] = 0.00;
             } else {
-                $ordersCount[$order->status->description]['count'] += 1;
-                $ordersCount[$order->status->description]['total'] += floatval($order->commission);
+                $orders_stats['by_status'][$order->status->id]['count'] += 1;
+                $orders_stats['by_status'][$order->status->id]['commission'] += floatval($order->commission);
 
                 if (isset($order_info['sub_commission'])) {
                     $sub_commission = $order_info['sub_commission'];
                 }
-                $ordersCount[$order->status->description]['sub_commission'] += floatval($sub_commission);
+                $orders_stats['by_status'][$order->status->id]['sub_commission'] += floatval($sub_commission);
             }
             
-            $ordersCount['Tutti']['count'] += 1;
-            $ordersCount['Tutti']['total'] += floatval($order->commission);
-            $ordersCount['Tutti']['sub_commission'] += floatval($sub_commission);
+            $orders_stats['all']['count'] += 1;
+            $orders_stats['all']['commission'] += floatval($order->commission);
+            $orders_stats['all']['sub_commission'] += floatval($sub_commission);
 
             if (isset($order_info['network_sent']) && $order_info['network_sent'] == 1) {
-                $ordersCount['network_sent']['count'] += 1;
-                $ordersCount['network_sent']['total'] += floatval($order->commission);
-                $ordersCount['network_sent']['sub_commission'] += floatval($sub_commission);
+                $orders_stats['network_sent']['count'] += 1;
+                $orders_stats['network_sent']['commission'] += floatval($order->commission);
+                $orders_stats['network_sent']['sub_commission'] += floatval($sub_commission);
             }
         }
         
-        return $ordersCount;
+        return $orders_stats;
     }
 
     public function filter(Request $request, $admin = false) {
@@ -382,12 +371,12 @@ class OrderController extends Controller
         // Return view
         $o = $this;
         $orders = $orders->orderBy('created_at', 'desc');
-        $ordersCount = $o->ordersCount($orders->get());
-        $orders = OrderResource::collection($orders->paginate($page_size));
+        $ordersStats = $o->getOrdersStats($orders->get());
+        //$orders = OrderResource::collection($orders->paginate($page_size));
 
         return [
-            'orders_count' => $ordersCount,
-            'orders' => $orders,
+            'orders_stats' => $ordersStats,
+            'orders' => $orders->get(),
             'period' => 'oggi',
 
             'admin' => $admin,
@@ -457,10 +446,10 @@ class OrderController extends Controller
         // Return view
         $o = $this;
         $orders = $orders->orderBy('created_at', 'desc');
-        $ordersCount = $o->ordersCount($orders->get());
+        $ordersStats = $o->getOrdersStats($orders->get());
 
         return [
-            'orders_count' => $ordersCount,
+            'orders_stats' => $ordersStats,
             'orders' => $orders,
             'period' => 'oggi',
 

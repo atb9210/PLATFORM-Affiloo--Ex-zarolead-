@@ -24,7 +24,7 @@ class CreateFormsTable extends Migration
             $table->decimal('commission', 9, 2)->default(0.0);
             $table->decimal('sub_commission', 9, 2)->default(0.0);
             $table->decimal('total_commission', 9, 2)->default(0.0);
-            $table->int('traffic_source_id')->unsigned();
+            $table->integer('traffic_source_id')->unsigned();
             $table->json('info')->nullable();
             $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);

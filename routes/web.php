@@ -42,7 +42,7 @@ Route::get('/test2', function () {
 })->name('test2');
 
 Route::get('/test_app', function() {
-	return view('test_dashboard');
+	return view('dash');
 });
 
 /* Auth routes */
