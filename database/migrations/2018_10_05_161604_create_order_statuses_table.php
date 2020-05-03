@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use App\OrderStatus;
 
 class CreateOrderStatusesTable extends Migration
 {
@@ -19,32 +20,55 @@ class CreateOrderStatusesTable extends Migration
             $table->timestamps();
         });
 
-        $d = date('Y-m-d H:i:s');
+        foreach(OrderStatus::ENUM as $o) {
+            DB::table('order_statuses')->insert(
+                array(
+                    'id' => $o['id'],
+                    'description' => $o['description'],
+                )
+            );
+        }
+        return;
+
 
         DB::table('order_statuses')->insert(
             array(
-                'description' => 'Attesa',
+                'description' => 'waiting',
                 'created_at' => $d,
                 'updated_at' => $d
             )
         );
         DB::table('order_statuses')->insert(
             array(
-                'description' => 'Conferma',
+                'description' => 'confirmed',
                 'created_at' => $d,
                 'updated_at' => $d
             )
         );
         DB::table('order_statuses')->insert(
             array(
-                'description' => 'Non risponde',
+                'description' => 'not responding',
                 'created_at' => $d,
                 'updated_at' => $d
             )
         );
         DB::table('order_statuses')->insert(
             array(
-                'description' => 'Rifiuto',
+                'description' => 'refused',
+                'created_at' => $d,
+                'updated_at' => $d
+            )
+        );
+        DB::table('order_statuses')->insert(
+            array(
+                'description' => 'not sent',
+                'created_at' => $d,
+                'updated_at' => $d
+            )
+        );
+        DB::table('order_statuses')->insert(
+            array(
+                'description' => 'not sent',
                 'created_at' => $d,
                 'updated_at' => $d
             )

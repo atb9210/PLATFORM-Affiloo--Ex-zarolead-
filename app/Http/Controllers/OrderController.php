@@ -49,9 +49,7 @@ class OrderController extends Controller
             1;
         $order->user_id = $user_id;
 
-        $order->order_status_id = $request->isMethod('put') ?
-            $request->order_status_id :
-            1;
+        $order->order_status_id = OrderStatus::NOT_SENT;
 
         $order->name = $request->input('name');
         $order->phone = $request->input('phone');
@@ -154,14 +152,20 @@ class OrderController extends Controller
                 }
             }
             if (!$error) {
+                // TODO: To remove
                 $this->orderSentToNetwork($order->id);
+
+                $order->order_status_id = OrderStatus::WAITING;
             } else {
                 // TODO: Generalize the algorithm (this only works for worldfilia)
                 if (isset($server_output['check_url'])) {
                     $toReturn['redirect'] = $server_output['check_url'];
 
+                    // TODO: to remove
                     // The order is double type
                     $info['double_type'] = true;
+
+                    $order->order_status_id = OrderStatus::DOUBLE;
 
                     $order->info = json_encode($info);
                     $order->save();

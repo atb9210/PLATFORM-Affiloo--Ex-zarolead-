@@ -22,7 +22,6 @@
               <table id="dataTable" class="table">
                 <thead>
                   <tr>
-                    <th>Sent to network</th>
                     <th>ID</th>
                     <th>Date</th>
                     <th>Product</th>
@@ -38,8 +37,17 @@
                 </thead>
                 <tbody>
                     @foreach ($orders as $order)
+                    <?php
+                        $status_classes = [
+                            App\OrderStatus::WAITING => "badge badge-info-muted",
+                            App\OrderStatus::CONFIRMED => "badge badge-success",
+                            App\OrderStatus::NOT_RESPONDING => "badge badge-info-muted",
+                            App\OrderStatus::REFUSED => "badge badge-danger-muted text-white",
+                            App\OrderStatus::NOT_SENT => "badge badge-danger",
+                            App\OrderStatus::DOUBLE => "badge badge-warning",
+                        ];
+                    ?>
                     <tr>
-                        <td></td>
                         <td>{{ $order->id }}</td>
                         <td>{{ $order->created_at }}</td>
                         <td>{{ $order->product }}</td>
@@ -49,7 +57,7 @@
                         <td>{{ $order->quantity }}</td>
                         <td>{{ $order->network }}</td>
                         <td></td>
-                        <td>{{ $order->status->description }}</td>
+                        <td><span class="{{ $status_classes[$order->status->id] }}">{{ $order->status->description }}</span></td>
                         <td>Info</td>
                     </tr>
                     @endforeach
