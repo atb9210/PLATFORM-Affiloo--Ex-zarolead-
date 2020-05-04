@@ -18,6 +18,9 @@
           <div class="card-body">
             <h6 class="card-title">Orders Table</h6>
             <p class="card-description">These are all the filtered orders.</p>
+            <div class="filters">
+                Filters
+            </div>
             <div class="table-responsive">
               <table id="dataTable" class="table">
                 <thead>
@@ -46,12 +49,21 @@
                             App\OrderStatus::NOT_SENT => "badge badge-danger",
                             App\OrderStatus::DOUBLE => "badge badge-warning",
                         ];
+
+                        $commission = 0.00;
+                        if (!Auth::user()->hasPermission('admin') && Auth::user()->hasPermission('affiliate')) {
+                            if (isset($oder_info['sub_commission'])) {
+                                $commission = $oder_info['sub_commission'];
+                            }
+                        } else {
+                        	$commission = $order->commission;
+                        }
                     ?>
                     <tr>
                         <td>{{ $order->id }}</td>
                         <td>{{ $order->created_at }}</td>
                         <td>{{ $order->product }}</td>
-                        <td>&euro; 10,00</td>
+                        <td>&euro; {{ $commission }}</td>
                         <td>{{ $order->name }}</td>
                         <td>{{ $order->phone }}</td>
                         <td>{{ $order->quantity }}</td>
