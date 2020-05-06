@@ -9,10 +9,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Resources\Order as OrderResource;
 use Illuminate\Support\Facades\Auth;
 
-class ReportController extends Controller
-{
-	public function calculateUsersReport(Request $request, $permission = "")
-	{
+class ReportController extends Controller {
+	public function calculateUsersReport(Request $request, $permission = "") {
 		if(!Auth::check()) {
 			return redirect()->route('login');
 		}
@@ -98,8 +96,7 @@ class ReportController extends Controller
 		return $vars;
 	}
 
-	public function calculateProductsReport(Request $request)
-	{
+	public function calculateProductsReport(Request $request) {
 		if(!Auth::check()) {
 			return redirect()->route('login');
 		}
@@ -127,8 +124,7 @@ class ReportController extends Controller
 		return $vars;
 	}
 
-	public function calculateNetworksReport(Request $request)
-	{
+	public function calculateNetworksReport(Request $request) {
 		if(!Auth::check()) {
 			return redirect()->route('login');
 		}

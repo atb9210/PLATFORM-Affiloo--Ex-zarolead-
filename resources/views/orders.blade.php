@@ -25,7 +25,7 @@
                 </button>
             </div>
             <div class="collapse filters" id="collapseExample">
-                <form method="post" action="{{ route('test') }}">
+                <form method="post" action="{{ route('orders') }}">
                     @csrf
                     <div class="form-group row">
                         <div class="col-md-4">
@@ -47,29 +47,33 @@
                     <div class="form-group row">
                         <div class="col-md-4">
                             Status:
-                            <select name="filter_order_status">
+                            <select name="filter_status">
+                                <option value="0" {{ (0 == $filter_status) ? 'selected' : '' }}>all</option>
                                 @foreach (App\OrderStatus::all() as $status)
-                                <option value="{{ $status->id }}">{{ $status->description }}</option>
+                                <option value="{{ $status->id }}" {{ ($status->id == $filter_status) ? 'selected' : '' }}>{{ $status->description }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-4">
                             Product:
-                            <select class="selct2" name="filter_product">
-                                @foreach (App\OrderStatus::all() as $status)
-                                <option value="{{ $status->id }}">{{ $status->description }}</option>
+                            <select name="filter_product">
+                                <option value="0" {{ (0 == $filter_product) ? 'selected' : '' }}>All</option>
+                                @foreach (App\Product::all() as $product)
+                                <?php
+                                ?>
+                                <option value="{{ $product->id }}" {{ ($product->id == $filter_product) ? 'selected' : '' }}>{{ $product->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group row">
-                        <div class="col-md-4">
+                        <div class="mr-4">
                             <button class="btn btn-primary" type="submit" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
                                 <i class="link-icon" data-feather="check"></i> Filters
                             </button>
                         </div>
-                        <div class="col-md-4">
+                        <div class="mr-4">
                             <a href="{{ route('orders') }}" class="btn btn-danger">
                                 <i class="link-icon" data-feather="x"></i> Reset
                             </a>
@@ -107,12 +111,13 @@
                         ];
 
                         $commission = 0.00;
-                        if (!Auth::user()->hasPermission('admin') && Auth::user()->hasPermission('affiliate')) {
+                        $c = new App\Http\Controllers\OrderController();
+                        if ($c->permissionGuard('admin_view')) {
+                        	$commission = $order->commission;
+                        } else {
                             if (isset($oder_info['sub_commission'])) {
                                 $commission = $oder_info['sub_commission'];
                             }
-                        } else {
-                        	$commission = $order->commission;
                         }
                     ?>
                     <tr>

@@ -6,8 +6,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
-{
+class User extends Authenticatable {
     use Notifiable;
 
     /**
@@ -32,14 +31,12 @@ class User extends Authenticatable
         'info' => 'array'
     ];
 
-    public function hasPermission($permission)
-    {
+    public function hasPermission($permission) {
         return (isset($this->info['permissions'][$permission]) &&
             $this->info['permissions'][$permission] == true);
     }
 
-    public function setPermission($permission, $value)
-    {
+    public function setPermission($permission, $value) {
         $data = array();
         if (isset($this->info) && is_array($this->info)) {
             $data = $this->info;
@@ -56,18 +53,15 @@ class User extends Authenticatable
         $this->save();
     }
 
-    public function orders()
-    {
+    public function orders() {
         return $this->hasMany('App\Order');
     }
 
-    public function forms()
-    {
+    public function forms() {
         return $this->hasMany('App\Form');
     }
 
-    public function invoices()
-    {
+    public function invoices() {
         return $this->hasMany('App\Invoice');
     }
 }

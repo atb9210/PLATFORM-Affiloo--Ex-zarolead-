@@ -7,10 +7,8 @@ use App\User;
 use App\Http\Resources\User as UserResource;
 use Illuminate\Support\Facades\Auth;
 
-class UserController extends Controller
-{
-	public function show(Request $request)
-	{
+class UserController extends Controller {
+	public function show(Request $request) {
 		if(!Auth::check()) {
             return redirect()->route('login');
         }

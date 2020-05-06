@@ -9,15 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\Form as FormResource;
 use App\Http\Controllers\FormBuilderController;
 
-class FormController extends Controller
-{
+class FormController extends Controller {
 	private $permissions = [
         'view' => ['admin', 'mediabuyer', 'affiliate'],
         'edit' => ['admin', 'mediabuyer'],
 	];
 
-	private function permissionGuard($action = 'view')
-	{
+	private function permissionGuard($action = 'view') {
 		$redirect = true;
         foreach ($this->permissions[$action] as $permission) {
         	if (Auth::user()->hasPermission($permission)) {
@@ -28,8 +26,7 @@ class FormController extends Controller
         return (!$redirect);
 	}
 
-    public function calculateFormsReport(Request $request, $admin = false)
-	{
+    public function calculateFormsReport(Request $request, $admin = false) {
 		if(!Auth::check()) {
 			return redirect()->route('login');
 		}
@@ -86,7 +83,7 @@ class FormController extends Controller
             return redirect()->route('login');
         }
 
-        if (!$this->permissionGuard()) {
+        if (!$this->permissionGuard('view')) {
         	return redirect()->route('dashboard');
         }
 
@@ -112,8 +109,7 @@ class FormController extends Controller
         return view('forms')->with($this->calculateFormsReport($request, true));
 	}
 
-	public function delete($id)
-    {
+	public function delete($id) {
         // Delete the order
         $form = Form::findOrFail($id);
 
@@ -129,8 +125,7 @@ class FormController extends Controller
         }
     }
 
-    public function getCode($id)
-    {
+    public function getCode($id) {
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -195,8 +190,7 @@ class FormController extends Controller
         ]);
     }
 
-    public function visited(Request $request)
-    {
+    public function visited(Request $request) {
         $formStats = FormStats::getObject($request->input('form_id'), date('Y-m-d'));
         $formStats->visits += 1;
         $formStats->save();
@@ -210,8 +204,7 @@ class FormController extends Controller
         );
     }
 
-    public function setDailyCost(Request $request)
-    {
+    public function setDailyCost(Request $request) {
         $toReturn = array(
             'result' => false,
             'message' => 'Unexpected error!',

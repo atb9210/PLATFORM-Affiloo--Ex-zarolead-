@@ -6,8 +6,7 @@ use App\TrafficSource as Obj;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class TrafficSourceController extends Controller
-{
+class TrafficSourceController extends Controller {
     private $permissions = [
 		'view' => ['admin'],
         'create' => ['admin'],
@@ -15,8 +14,7 @@ class TrafficSourceController extends Controller
         'delete' => ['admin'],
     ];
 
-    private function permissionGuard($action = 'view')
-    {
+    private function permissionGuard($action = 'view') {
         $result = false;
         foreach ($this->permissions[$action] as $permission) {
             if (Auth::user()->hasPermission($permission)) {
@@ -27,8 +25,7 @@ class TrafficSourceController extends Controller
         return $result;
     }
 
-    public function index()
-    {
+    public function index() {
     	if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -42,8 +39,7 @@ class TrafficSourceController extends Controller
         ]);
     }
 
-	public function createIndex()
-    {
+	public function createIndex() {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -56,8 +52,7 @@ class TrafficSourceController extends Controller
     }
 
 
-	public function store(Request $request)
-	{
+	public function store(Request $request) {
 		if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -102,8 +97,7 @@ class TrafficSourceController extends Controller
 		]);
 	}
 
-    public function edit($id)
-    {
+    public function edit($id) {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -171,8 +165,7 @@ class TrafficSourceController extends Controller
         ]);
     }
 
-	public function delete($id)
-    {
+	public function delete($id) {
         // Delete
         $obj = Obj::findOrFail($id);
 

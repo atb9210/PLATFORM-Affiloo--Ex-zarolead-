@@ -13,6 +13,7 @@ class Order extends Model {
     protected $fillable = [
         'user_id',
         'order_status_id',
+        'product_id',
     ];
     
     public function status() {
@@ -21,5 +22,9 @@ class Order extends Model {
 
     public function user() {
         return $this->belongsTo('App\User', 'user_id');
+    }
+
+    public function product() {
+        return $this->belongsTo('App\Product', 'product_id');
     }
 }

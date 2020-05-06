@@ -5,8 +5,7 @@ namespace App;
 use App\Form;
 use Illuminate\Database\Eloquent\Model;
 
-class FormStats extends Model
-{
+class FormStats extends Model {
     /**
      * The attributes that are mass assignable.
      *
@@ -28,13 +27,11 @@ class FormStats extends Model
         'info' => 'array'
     ];
 
-    public function form()
-    {
+    public function form() {
         return $this->belongsTo('App\Form', 'form_id');
     }
 
-    public static function getObject($form_id, $date)
-    {
+    public static function getObject($form_id, $date) {
     	$formStats = FormStats::where('form_id', '=', $form_id)
     		->where('day', '=', $date);
 

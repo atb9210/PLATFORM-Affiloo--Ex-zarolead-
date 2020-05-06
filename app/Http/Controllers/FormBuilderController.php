@@ -6,14 +6,12 @@ use App\Form;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class FormBuilderController extends Controller
-{
+class FormBuilderController extends Controller {
 	private $permissions = [
 		'admin', 'mediabuyer'
 	];
 
-	private function permissionGuard()
-	{
+	private function permissionGuard() {
 		$redirect = true;
         foreach ($this->permissions as $permission) {
         	if (Auth::user()->hasPermission($permission)) {
@@ -24,8 +22,7 @@ class FormBuilderController extends Controller
         return (!$redirect);
 	}
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
     	if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -85,8 +82,7 @@ class FormBuilderController extends Controller
         ]);
     }
 
-    public function generateHTML($data)
-    {
+    public function generateHTML($data) {
     	$generated = true;
     	$form_html = 'Network non riconosciuto!' . $data['network'];
 

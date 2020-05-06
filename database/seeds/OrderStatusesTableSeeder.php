@@ -2,15 +2,13 @@
 
 use Illuminate\Database\Seeder;
 
-class OrderStatusesTableSeeder extends Seeder
-{
+class OrderStatusesTableSeeder extends Seeder {
     /**
      * Run the database seeds.
      *
      * @return void
      */
-    public function run()
-    {
+    public function run() {
       DB::table('order_statuses')->insert([
         'description' => 'Attesa',
       ]);

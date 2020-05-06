@@ -12,7 +12,7 @@ function loadDatePicker(id, date) {
             todayHighlight: true,
             autoclose: true
         });
-        $('#' + id).datepicker('setDate', today);
+        //$('#' + id).datepicker('setDate', today);
     }
 }
 

@@ -9,8 +9,7 @@ use App\Http\Resources\Invoice as InvoiceResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class InvoiceController extends Controller
-{
+class InvoiceController extends Controller {
     private $permissions = [
         'admin_view' => ['admin', 'accountant'],
         'view' => ['admin', 'mediabuyer', 'affiliate', 'accountant'],
@@ -80,8 +79,7 @@ class InvoiceController extends Controller
     private $TRANSACTION_AMOUNT_COL_NUMBER = 9;
     private $TRANSACTION_CURRENCY_COL_NUMBER = 10;
 
-    private function permissionGuard($action = 'view')
-    {
+    private function permissionGuard($action = 'view') {
         $result = false;
         foreach ($this->permissions[$action] as $permission) {
             if (Auth::user()->hasPermission($permission)) {
@@ -92,8 +90,7 @@ class InvoiceController extends Controller
         return $result;
     }
 
-    private function fetchRawData($rows)
-    {
+    private function fetchRawData($rows) {
     	$rawData = array(
     		'language' => '',
     		'invoice_date' => '',
@@ -160,8 +157,7 @@ class InvoiceController extends Controller
     	return $rawData;
     }
 
-    private function processRawData($rawData)
-    {
+    private function processRawData($rawData) {
         /*
         echo "<pre>" . var_export($rawData, true) . "</pre>";
         exit();
@@ -266,8 +262,7 @@ class InvoiceController extends Controller
     	return $invoice;
     }
 
-    public function uploadIndex()
-    {
+    public function uploadIndex() {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -279,8 +274,7 @@ class InvoiceController extends Controller
     	return view('invoice-upload');
     }
 
-    public function upload(Request $request)
-    {
+    public function upload(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -363,8 +357,7 @@ class InvoiceController extends Controller
         return $invoicesCount;
     }
 
-    public function filter(Request $request, $admin = false)
-    {
+    public function filter(Request $request, $admin = false) {
         $fromDate = $request->input('filter_date_from', '');
         $toDate = $request->input('filter_date_to', '');
 
@@ -471,8 +464,7 @@ class InvoiceController extends Controller
         ];
     }
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -489,8 +481,7 @@ class InvoiceController extends Controller
         return view('invoices')->with($this->filter($request, false));
     }
 
-    public function adminIndex(Request $request)
-    {
+    public function adminIndex(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
@@ -502,8 +493,7 @@ class InvoiceController extends Controller
         return view('invoices')->with($this->filter($request, true));
     }
 
-    public function delete($id)
-    {
+    public function delete($id) {
         // Delete the invoice
         $invoice = Invoice::findOrFail($id);
 
@@ -525,8 +515,7 @@ class InvoiceController extends Controller
         }
     }
 
-    public function download($id)
-    {
+    public function download($id) {
     	$invoice = Invoice::findOrFail($id);
 
     	if ($invoice->user_id != Auth::user()->id &&
@@ -546,8 +535,7 @@ class InvoiceController extends Controller
     	return Storage::download($invoice->getStoragePathname());
     }
 
-    public function downloadMultipleInvoices(Request $request)
-    {
+    public function downloadMultipleInvoices(Request $request) {
     	$id_array = json_decode($request->input('id_array', []));
 
     	if (!is_array($id_array) || count($id_array) == 0) {

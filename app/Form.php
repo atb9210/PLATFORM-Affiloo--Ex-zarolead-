@@ -5,8 +5,7 @@ namespace App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
-class Form extends Model
-{
+class Form extends Model {
     /**
      * The attributes that are mass assignable.
      *
@@ -30,33 +29,27 @@ class Form extends Model
         'info' => 'array'
     ];
 
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public function product()
-    {
+    public function product() {
         return $this->belongsTo('App\Product', 'product_id');
     }
 
-    public function tag()
-    {
+    public function tag() {
         return $this->belongsTo('App\Tag', 'tag_id');
     }
 
-    public function traffic_source()
-    {
+    public function traffic_source() {
         return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
     }
 
-    public function stats()
-    {
+    public function stats() {
         return $this->hasMany('App\FormStats');
     }
 
-    public function getTotalStats($fromDate = '', $toDate = '', $admin = false)
-    {
+    public function getTotalStats($fromDate = '', $toDate = '', $admin = false) {
         $stats = array(
             'visits' => 0,
             'leads' => 0,

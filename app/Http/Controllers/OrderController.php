@@ -11,34 +11,49 @@ use App\FormStats;
 use App\Http\Resources\Order as OrderResource;
 use Illuminate\Support\Facades\Auth;
 
-class OrderController extends Controller
-{
-    public function index()
-    {
-        // Get all orders
-        // TODO: Where's the user?
-        $orders = Order::orderBy('created_at', 'desc');
-        return $orders;
-    }
+class OrderController extends Controller {
+	private $permissions = [
+        'view' => ['admin', 'mediabuyer', 'affiliate'],
+        'delete' => ['admin', 'mediabuyer', 'affiliate'],
+        'admin_view' => ['admin'],
+        'admin_delete' => ['admin'],
+	];
 
-    public function show($id)
-    {
+    public function permissionGuard($action = 'view') {
+		$redirect = true;
+        foreach ($this->permissions[$action] as $permission) {
+        	if (Auth::user()->hasPermission($permission)) {
+        		$redirect = false;
+        		break;
+        	}
+        }
+        return (!$redirect);
+	}
+
+    public function show($id) {
         if(!Auth::check()) {
             return redirect()->route('login');
+        }
+
+        if (!$this->permissionGuard('view')) {
+        	return redirect()->route('dashboard');
+        }
+
+        if ($this->permissionGuard('admin_view')) {
+            return redirect()->route('admin/orders');
         }
 
         // Get the order
         $order = Order::findOrFail($id);
 
-        if ($order->user_id != Auth::user()->id && !Auth::user()->hasPermission('admin')) {
+        if ($order->user_id != Auth::user()->id && !$this->permissionGuard('admin_view')) {
             return redirect()->route('orders');
         }
 
         return view('order')->with('order', $order);
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         // Create/update order
         $order = $request->isMethod('put') ?
             Order::findOrFail($request->order_id) :
@@ -210,12 +225,15 @@ class OrderController extends Controller
         );
     }
 
-    public function delete($id)
-    {
+    public function delete($id) {
         // Delete the order
         $order = Order::findOrFail($id);
 
-        if ($order->user_id != Auth::user()->id && !Auth::user()->hasPermission('admin')) {
+        if (!$this->permissionGuard('delete')) {
+        	return redirect()->route('dashboard');
+        }
+
+        if ($order->user_id != Auth::user()->id && !Auth::user()->hasPermission('admin_delete')) {
             return array(
                 "result" => false
             );
@@ -227,14 +245,12 @@ class OrderController extends Controller
         }
     }
 
-    public function storeAndReturnView(Request $request)
-    {
+    public function storeAndReturnView(Request $request) {
         $o = $this->store($request);
         return view('order')->with('order', $o);
     }
 	
-	public function orderSentToNetwork($id)
-	{
+	public function orderSentToNetwork($id) {
 		$order = Order::findOrFail($id);
 		$info = json_decode($order->info);
 		$info->network_sent = 1;
@@ -323,19 +339,14 @@ class OrderController extends Controller
             $to = $toDate . ' 23:59:59';
         }
 
-        // Network sent and double type filter
-        $filterNetworkSent = $request->input('filter_network_sent', 'all');
-        $filterDoubleType = $request->input('filter_double_type', 'all');
+        // Status filters
+        $filterStatus = $request->input('filter_status', '0');
 
-        // Product name filters
-        $filterProductName = false;
-        $productName = '';
-        if ($request->input('filter_product_name', '') != '') {
-            $filterProductName = true;
-            $productName = $request->input('filter_product_name');
-        }
 
-        $admin = $admin && Auth::user()->hasPermission('admin');
+        // Product filter
+        $filterProduct = $request->input('filter_product', '0');
+
+        $admin = $admin && $this->permissionGuard('admin_view');
 
         $orders = Order::whereBetween('created_at', [$from, $to]);
 
@@ -343,30 +354,15 @@ class OrderController extends Controller
             $orders = $orders->where('user_id', Auth::user()->id);
         }
 
-        if ($filterNetworkSent !== 'all') {
-            if ($filterNetworkSent == 1) {
-                $orders = $orders->where('info->network_sent', $filterNetworkSent);
-            } elseif ($filterNetworkSent == 0) {
-                $orders = $orders->where(function ($q) {
-                    $q->whereNull('info->network_sent')->orWhere('info->network_sent', 0);
-                });
-            }
+        if ($filterStatus != '0') {
+            $orders = $orders->where('order_status_id', $filterStatus);
         }
 
-        if ($filterDoubleType !== 'all') {
-            if ($filterDoubleType) {
-                $orders = $orders->where('info->double_type', true);
-            } else {
-                $orders = $orders->where(function ($q) {
-                    $q->whereNull('info->double_type')->orWhere('info->double_type', false);
-                });
-            }
+        if ($filterProduct != '0') {
+            $orders = $orders->where('product_id', $filterProduct);
         }
 
-        if ($filterProductName) {
-            $orders = $orders->where('product', 'LIKE', '%' . $productName . '%');
-        }
-
+        // TODO: to remove?
         $page_size = 20;
         if (is_numeric($request->input('page_size', 0)) && $request->input('page_size', 0) > 0) {
             $page_size = $request->input('page_size');
@@ -388,83 +384,9 @@ class OrderController extends Controller
             'filter_date_from' => $fromDate,
             'filter_date_to' => $toDate,
 
-            'filter_network_sent' => $filterNetworkSent,
-            'filter_double_type' => $filterDoubleType,
+            'filter_status' => $filterStatus,
 
-            'filter_product_name' => $productName,
-
-            'page_size' => $page_size,
-        ];
-    }
-
-    public function filterNotPaginated(Request $request, $admin = false) {
-        if(!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        $orders = Order::query();
-
-        // Date filters
-        $filterDate = false;
-        $fromDate = date('Y-m-d');
-        $from = $fromDate . ' 00:00:00';
-        $toDate = date('Y-m-d');
-        $to = $toDate . ' 23:59:59';
-        if ($request->input('filter_date_from', '') != '') {
-            $filterDate = true;
-            $fromDate = $request->input('filter_date_from');
-            $from = $fromDate . ' 00:00:00';
-            $toDate = date('Y-m-d');
-            $to = $toDate . ' 23:59:59';
-        }
-        if ($request->input('filter_date_to', '') != '') {
-            $toDate = $request->input('filter_date_to');
-            $to = $toDate . ' 23:59:59';
-        }
-
-        // Product name filters
-        $filterProductName = false;
-        $productName = '';
-        if ($request->input('filter_product_name', '') != '') {
-            $filterProductName = true;
-            $productName = $request->input('filter_product_name');
-        }
-
-        $admin = $admin && Auth::user()->hasPermission('admin');
-
-        $orders = Order::whereBetween('created_at', [$from, $to]);
-
-        if (!$admin) {
-            $orders = $orders->where('user_id', Auth::user()->id);
-        }
-
-        if ($filterProductName) {
-            $orders = $orders->where('product', 'LIKE', '%' . $productName . '%');
-        }
-
-        $page_size = 20;
-        if (is_numeric($request->input('page_size', 0)) && $request->input('page_size', 0) > 0) {
-            $page_size = $request->input('page_size');
-        }
-
-        // Return view
-        $o = $this;
-        $orders = $orders->orderBy('created_at', 'desc');
-        $ordersStats = $o->getOrdersStats($orders->get());
-
-        return [
-            'orders_stats' => $ordersStats,
-            'orders' => $orders,
-            'period' => 'oggi',
-
-            'admin' => $admin,
-
-            'filter_date_from' => $fromDate,
-            'filter_date_to' => $toDate,
-
-            'filter_product_name' => $productName,
-
-            'page_size' => $page_size,
+            'filter_product' => $filterProduct,
         ];
     }
 
@@ -473,30 +395,48 @@ class OrderController extends Controller
             return redirect()->route('login');
         }
 
+        if (!$this->permissionGuard('view')) {
+        	return redirect()->route('dashboard');
+        }
+
+        if ($this->permissionGuard('admin_view')) {
+            return redirect()->route('admin/orders');
+        }
+
         return view('orders')->with($this->filter($request, false));
     }
 
-    public function ordersFilter(Request $request)
-    {
+    public function ordersFilter(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
         }
+
+        if (!$this->permissionGuard('view')) {
+        	return redirect()->route('dashboard');
+        }
+
         return view('orders')->with($this->filter($request));
     }
 
-    public function adminOrdersIndex(Request $request)
-    {
+    public function adminOrdersIndex(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
+        }
+
+        if (!$this->permissionGuard('admin_view')) {
+        	return redirect()->route('orders');
         }
 
         return view('orders')->with($this->filter($request, true));
     }
 
-    public function adminOrdersFilter(Request $request)
-    {
+    public function adminOrdersFilter(Request $request) {
         if(!Auth::check()) {
             return redirect()->route('login');
+        }
+
+        if (!$this->permissionGuard('admin_view')) {
+        	return redirect()->route('orders');
         }
 
         return view('orders')->with($this->filter($request, true));

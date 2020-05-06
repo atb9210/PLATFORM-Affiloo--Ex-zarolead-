@@ -4,15 +4,13 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTrafficSourcesTable extends Migration
-{
+class CreateTrafficSourcesTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('traffic_sources', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
@@ -26,8 +24,7 @@ class CreateTrafficSourcesTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::dropIfExists('traffic_sources');
     }
 }

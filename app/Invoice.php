@@ -4,8 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Invoice extends Model
-{
+class Invoice extends Model {
     /**
      * The attributes that are mass assignable.
      *
@@ -29,21 +28,18 @@ class Invoice extends Model
         'info' => 'array'
     ];
 
-    public function user()
-	{
+    public function user() {
 		return $this->belongsTo('App\User', 'user_id');
 	}
 
-    public function setAutoInvoice($value = true)
-    {
+    public function setAutoInvoice($value = true) {
         $info = $this->info;
         $info['auto_invoice'] = $value;
         $this->info = $info;
         $this->save();
     }
 
-    public function getStoragePath()
-    {
+    public function getStoragePath() {
         $pathname = 'public/invoices/';
         $formatted_date = \Carbon\Carbon::parse($this->invoice_date)->format('Y-m-d');
         $tmp = explode('-', $formatted_date);
@@ -51,13 +47,11 @@ class Invoice extends Model
         return $pathname;
     }
 
-    public function getFilename()
-    {
+    public function getFilename() {
         return $this->transaction_id . '.pdf';
     }
 
-    public function getStoragePathname()
-    {
+    public function getStoragePathname() {
         return $this->getStoragePath() . '/' . $this->getFilename();
     }
 }
