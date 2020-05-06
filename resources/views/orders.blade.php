@@ -9,7 +9,7 @@
 <nav class="page-breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+        <li class="breadcrumb-item active" aria-current="page">Users</li>
     </ol>
 </nav>
 
@@ -63,13 +63,17 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <button class="btn btn-primary" type="submit" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
-                            <i class="link-icon" data-feather="check"></i> Filters
-                        </button>
-                        <a href="{{ route('orders') }}" class="btn btn-danger">
-                            <i class="link-icon" data-feather="x"></i> Reset
-                        </a>
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <button class="btn btn-primary" type="submit" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
+                                <i class="link-icon" data-feather="check"></i> Filters
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('orders') }}" class="btn btn-danger">
+                                <i class="link-icon" data-feather="x"></i> Reset
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>

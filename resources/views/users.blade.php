@@ -1,111 +1,150 @@
-@extends('layouts.app')
+@extends('layouts/new')
+
+@section('plugins_css')
+<link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+@endsection
 
 @section('content')
-<div class="flex-center position-ref">
-    @if (Route::has('login'))
-        <div class="top-right links">
-            @auth
-                <a href="{{ url('/home') }}">Home</a>
-            @else
-                <a href="{{ route('login') }}">Login</a>
-                <a href="{{ route('register') }}">Register</a>
-            @endauth
-        </div>
-    @endif
+<nav class="page-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+    </ol>
+</nav>
 
-    <div class="content">
-        <nav aria-label="breadcrumb" class="nav-breadcrumb">
-        <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Utenti</li>
-        </ol>
-        </nav>
-        <h1 class="page-title">Utenti</h1>
-        <?php
-        	$formRouteName = 'admin/users';
-        ?>
-        <div class="product-filters">
-            <form method="post" action="{{ route($formRouteName) }}">
-                @csrf
-                <input type="hidden" name="page_size" value="{{ $page_size }}">
-                <input type="text" name="filter_email_id" placeholder="Email/ID" value="{{ $filter_email_id }}">
-                <input type="submit" class="btn btn-primary" value="Cerca utente">
-            </form>
-        </div>
-        <div style="text-align: center;">
-        	Risultati totali: {{ $rows_count['Tutti']['count'] }} ({{ $page_size }} per pagina)
-        </div>
-        <div style="text-align: right; padding: 0px 15px;">
-        	<form method="post" action="{{ route($formRouteName) }}">
-                @csrf
-                <input type="hidden" name="filter_email_id" value="{{ $filter_email_id }}">
-                Righe da mostrare:
-                <select name="page_size" value="{{ $page_size }}">
-                	<option value="{{ $page_size }}" selected disabled hidden>{{ $page_size }}</option>
-                	<option value="10">10</option>
-                	<option value="20">20</option>
-                	<option value="50">50</option>
-                	<option value="100">100</option>
-                	<option value="250">250</option>
-                	<option value="500">500</option>
-                </select>
-                <input type="submit" class="btn btn-primary" value="Aggiorna">
-            </form>
-        </div>
-        <table class="table">
-            <thead>
-                <tr>
-					<th scope="col">ID</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Permissions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($users as $user)
-		            <?php
-		            	setlocale(LC_MONETARY, 'it_IT');
-		                $fmt = new NumberFormatter('it_IT', NumberFormatter::CURRENCY);
-						$user['commissions'] = $fmt->formatCurrency($user['commissions'], "EUR");
-		            ?>
+<div class="row">
+    <div class="col-md-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">Orders Table</h6>
+            <p class="card-description"></p>
+            <div class="mb-3">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
+                    <i class="link-icon" data-feather="filter"></i> Filters
+                </button>
+            </div>
+            <div class="collapse filters" id="collapseExample">
+                <form method="post" action="{{ route('test') }}">
+                    @csrf
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            From:
+                            <div class="input-group date datepicker" id="filter_date_from_picker">
+                                <input type="text" class="form-control" name="filter_date_from" value="{{ $filter_date_from }}">
+                                <span class="input-group-addon bg-transparent"><i data-feather="calendar" class=" text-primary"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            To:
+                            <div class="input-group date datepicker" id="filter_date_to_picker">
+                                <input type="text" class="form-control" name="filter_date_to" value="{{ $filter_date_to }}">
+                                <span class="input-group-addon bg-transparent"><i data-feather="calendar" class=" text-primary"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            Status:
+                            <select name="filter_order_status">
+                                @foreach (App\OrderStatus::all() as $status)
+                                <option value="{{ $status->id }}">{{ $status->description }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            Product:
+                            <select class="selct2" name="filter_product">
+                                @foreach (App\OrderStatus::all() as $status)
+                                <option value="{{ $status->id }}">{{ $status->description }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <button class="btn btn-primary" type="submit" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
+                                <i class="link-icon" data-feather="check"></i> Filters
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ route('orders') }}" class="btn btn-danger">
+                                <i class="link-icon" data-feather="x"></i> Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="table-responsive">
+              <table id="dataTable" class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Commission</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Quantity</th>
+                    <th>Network</th>
+                    <th>Send</th>
+                    <th>Status</th>
+                    <th>Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    @foreach ($orders as $order)
+                    <?php
+                        $status_classes = [
+                            App\OrderStatus::WAITING => "badge badge-info-muted",
+                            App\OrderStatus::CONFIRMED => "badge badge-success",
+                            App\OrderStatus::NOT_RESPONDING => "badge badge-info-muted",
+                            App\OrderStatus::REFUSED => "badge badge-danger-muted text-white",
+                            App\OrderStatus::NOT_SENT => "badge badge-danger",
+                            App\OrderStatus::DOUBLE => "badge badge-warning",
+                        ];
+
+                        $commission = 0.00;
+                        if (!Auth::user()->hasPermission('admin') && Auth::user()->hasPermission('affiliate')) {
+                            if (isset($oder_info['sub_commission'])) {
+                                $commission = $oder_info['sub_commission'];
+                            }
+                        } else {
+                        	$commission = $order->commission;
+                        }
+                    ?>
                     <tr>
-                        <td>{{ $user['id'] }}</td>
-                        <td>{{ $user['email'] }}</td>
-                        <td>
-	                        <form method="post" action="{{ route($formRouteName) }}">
-		                        @csrf
-		                        <input type="hidden" name="page_size" value="{{ $page_size }}">
-		                		<input type="hidden" name="filter_email_id" placeholder="Email/ID" value="{{ $filter_email_id }}">
-		                        <input type="hidden" name="change_permission" value="1">
-		                        <input type="hidden" name="user_id" value="{{ $user['id'] }}">
-								<?php
-									$permissions = [
-                                        'admin',
-                                        'mediabuyer',
-                                        'affiliate',
-                                        'advertiser',
-                                        'accountant',
-                                    ];
-								?>
-
-								@foreach ($permissions as $permission)
-									<?php
-										$checked = '';
-										if ($user->hasPermission($permission)) {
-											$checked = 'checked="checked"';
-										}
-									?>
-									<div style="display: table; float: left; margin-right: 15px;">
-									    <label style="display: table-row;" for="permission_{{ $permission }}">{{ $permission }}</label>
-									    <input style="display: table-row; width: 100%;" type="checkbox" id="permission_{{ $permission }}" name="permission_{{ $permission }}" value="1" {{ $checked }} />         
-									</div>
-								@endforeach
-								<input type="submit" class="btn btn-primary" value="Confirm">
-							</form>
-						</td>
+                        <td>{{ $order->id }}</td>
+                        <td>{{ $order->created_at }}</td>
+                        <td>{{ $order->product }}</td>
+                        <td>&euro; {{ $commission }}</td>
+                        <td>{{ $order->name }}</td>
+                        <td>{{ $order->phone }}</td>
+                        <td>{{ $order->quantity }}</td>
+                        <td>{{ $order->network }}</td>
+                        <td></td>
+                        <td><span class="{{ $status_classes[$order->status->id] }}">{{ $order->status->description }}</span></td>
+                        <td>Info</td>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                    @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
     </div>
 </div>
+@endsection
+
+@section('plugins_js')
+<script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
+<script src="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
+<script src="{{ asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
+@endsection
+
+@section('custom_scripts')
+<script src="{{ asset('assets/js/data-table.js') }}"></script>
+<script src="{{ asset('assets/js/custom/orders.js') }}"></script>
 @endsection
