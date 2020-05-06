@@ -48,7 +48,9 @@ Route::get('/test_app', function() {
 
 /* Auth routes */
 
-Auth::routes(['register' => false]); // Closed registration
+//Auth::routes(['register' => false]); // Closed registration
+Auth::routes(); // Open registration
+Route::get('/logout', 'Auth\LoginController@logout')->name('logout'); // GET method logout
 
 /* Home routes */
 
