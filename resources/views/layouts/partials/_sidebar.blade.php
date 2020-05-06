@@ -1,6 +1,6 @@
     <nav class="sidebar">
       <div class="sidebar-header">
-        <a href="#" class="sidebar-brand">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand">
           Zaro<span>Lead</span>
         </a>
         <div class="sidebar-toggler not-active">
@@ -18,7 +18,14 @@
               <span class="link-title">Dashboard</span>
             </a>
           </li>
-          <li class="nav-item nav-category">web apps</li>
+
+          <li class="nav-item nav-category">stats</li>
+          <li class="nav-item">
+            <a href="{{ route('orders') }}" class="nav-link">
+              <i class="link-icon" data-feather="list"></i>
+              <span class="link-title">Orders</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" data-toggle="collapse" href="#emails" role="button" aria-expanded="false" aria-controls="emails">
               <i class="link-icon" data-feather="mail"></i>
@@ -38,12 +45,6 @@
                 </li>
               </ul>
             </div>
-          </li>
-          <li class="nav-item">
-            <a href="pages/apps/chat.html" class="nav-link">
-              <i class="link-icon" data-feather="message-square"></i>
-              <span class="link-title">Chat</span>
-            </a>
           </li>
           <li class="nav-item">
             <a href="pages/apps/calendar.html" class="nav-link">
