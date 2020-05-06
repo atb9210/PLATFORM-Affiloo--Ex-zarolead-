@@ -36,6 +36,7 @@ Route::get('/mobile-form-affiliationpark', function () {
 })->name('mobile-form-affiliationpark');
 
 Route::get('/test', 'TestController@test')->name('test');
+Route::post('/test', 'TestController@post')->name('test');
 
 Route::get('/test2', function () {
 	return view('test2');

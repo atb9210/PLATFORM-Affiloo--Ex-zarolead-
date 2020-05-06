@@ -79,4 +79,9 @@ class TestController extends Controller
             $form->save();
         }
     }
+
+    public function post(Request $request) {
+        echo "<pre>" . var_export($request, true) . "</pre>";
+        exit();
+    }
 }
