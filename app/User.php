@@ -32,9 +32,17 @@ class User extends Authenticatable {
         'info' => 'array'
     ];
 
-    public function hasPermission($permission) {
+    public function hasPermission($object, $permission) {
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($object, $permission)) {
+                return true;
+            }
+        }
+        return false;
+        /*
         return (isset($this->info['permissions'][$permission]) &&
             $this->info['permissions'][$permission] == true);
+        */
     }
 
     public function setPermission($permission, $value) {

@@ -21,7 +21,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 /* Auth routes */
 Route::post('/login', 'api\v1\Auth\LoginController@login');
+//Route::post('/register', 'api\v1\Auth\RegisterController@register');
 
 /* Users routes */
-Route::middleware('auth:api')->get('/users', 'api\v1\UserController@index');
-Route::middleware('auth:api')->get('/user/{id}', 'api\v1\UserController@show');
+Route::get('/users', 'api\v1\UserController@index')->middleware('auth:api');
+Route::get('/user/{id}', 'api\v1\UserController@show')->middleware('auth:api');
+Route::put('/user/{id}', 'api\v1\UserController@update')->middleware('auth:api');
+Route::delete('/user/{id}', 'api\v1\UserController@destroy')->middleware('auth:api');

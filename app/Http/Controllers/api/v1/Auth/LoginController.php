@@ -28,28 +28,20 @@ class LoginController extends Controller {
      * }
      */
     public function login(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|max:255',
+        // Param validation
+        $data = $request->validate([
+            'email' => 'required|email|min:4|max:255',
             'password' => 'required|string',
         ]);
-
-        if ($validator->fails()) {
-            return response([
-                "errors" => $validator->errors(),
-            ], 400);
-        }
         
-        $credentials = [
-            'email' => $validator->valid()['email'],
-            'password' => $validator->valid()['password'],
-        ];
-
-        if (!Auth::attempt($credentials)) {
+        // Login
+        if (!Auth::attempt($data)) {
             return response([
                 'message' => 'Invalid login credentials!'
             ], 401);
         }
 
+        // Generate access token
         $accessToken = Auth::user()->createToken('authToken')->accessToken;
         return response([
             'user' => Auth::user(),

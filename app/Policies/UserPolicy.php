@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Auth;
 
 class UserPolicy {
     use HandlesAuthorization;
@@ -15,7 +16,7 @@ class UserPolicy {
      * @return mixed
      */
     public function viewAny(User $user) {
-        //
+        return $user->hasPermission('user', 'viewAny');
     }
 
     /**
@@ -26,7 +27,7 @@ class UserPolicy {
      * @return mixed
      */
     public function view(User $user, User $model) {
-        //
+        return $user->hasPermission('user', 'viewAny') || $user->id === $model->id;
     }
 
     /**
@@ -36,7 +37,7 @@ class UserPolicy {
      * @return mixed
      */
     public function create(User $user) {
-        //
+        return true;
     }
 
     /**
@@ -47,7 +48,7 @@ class UserPolicy {
      * @return mixed
      */
     public function update(User $user, User $model) {
-        //
+        return $user->hasPermission('user', 'update') || $user->id === $model->id;
     }
 
     /**
@@ -58,7 +59,7 @@ class UserPolicy {
      * @return mixed
      */
     public function delete(User $user, User $model) {
-        //
+        return $user->hasPermission('user', 'delete') || $user->id === $model->id;
     }
 
     /**

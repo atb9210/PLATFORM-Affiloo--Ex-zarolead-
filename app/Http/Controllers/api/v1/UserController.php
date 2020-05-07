@@ -4,8 +4,10 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
-use App\User;
+use App\User as User;
 
 class UserController extends Controller {
     /**
@@ -16,6 +18,8 @@ class UserController extends Controller {
      * }
      */
     public function index() {
+        $this->authorize('viewAny', 'App\User');
+
         return response([
             'users' => User::all(),
         ]);
@@ -45,17 +49,12 @@ class UserController extends Controller {
      * }
      */
     public function show($id) {
-        $user = User::find($id);
+        $user = User::findOrFail($id);
+        $this->authorize('view', $user);
 
-        if ($user) {
-            return response([
-                "user" => $user;
-            ]);
-        } else {
-            return response([
-                "message" => "User not found!",
-            ], 404);
-        }
+        return response([
+            "user" => $user,
+        ]);
     }
 
     /**
@@ -69,7 +68,21 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-        //
+        $user = User::findOrFail($id);
+
+        $this->authorize('update', $user);
+
+        // Param validation
+        $data = $request->validate([
+            'name' => 'string|min:3|max:255',
+            'email' => 'email|min:4|max:255',
+        ]);
+
+        $user->update($data);
+
+        return response([
+            "user" => $user,
+        ]);    
     }
 
     /**
@@ -79,6 +92,15 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //
+        $user = User::findOrFail($id);
+
+        $this->authorize('delete', $user);
+
+        // Delete the user
+        $user->delete();
+
+        return response([
+            "message" => "User has been deleted"
+        ]);
     }
 }
