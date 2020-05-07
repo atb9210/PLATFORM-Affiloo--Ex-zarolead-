@@ -17,7 +17,7 @@ class CreateOrdersTable extends Migration {
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
 			$table->string('product')->nullable();
-            $table->integer('product_id')->unsigned();
+            $table->integer('product_id')->unsigned()->default(0); // TODO: to remove default 0????
             $table->string('quantity')->nullable();
 			$table->decimal('commission', 9, 2)->default(0.0);
 			$table->string('network');
