@@ -37,7 +37,7 @@ class UserPolicy {
      * @return mixed
      */
     public function create(User $user) {
-        return true;
+        return $user->hasPermission('user', 'create');
     }
 
     /**

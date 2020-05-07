@@ -27,9 +27,6 @@ class UserController extends Controller {
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
         //
@@ -42,10 +39,6 @@ class UserController extends Controller {
      *
      * @response {
      *  "user" => [user],
-     * }
-     *
-     * @response 404 {
-     *  "message" => "User not found!",
      * }
      */
     public function show($id) {
@@ -65,7 +58,9 @@ class UserController extends Controller {
      * @bodyParam name string User's new name
      * @bodyParam email string User's new email
      *
-     * @return \Illuminate\Http\Response
+     * @response {
+     *  "user": user
+     * }
      */
     public function update(Request $request, $id) {
         $user = User::findOrFail($id);

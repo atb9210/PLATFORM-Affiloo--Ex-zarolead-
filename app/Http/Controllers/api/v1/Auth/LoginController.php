@@ -18,14 +18,6 @@ class LoginController extends Controller {
      *  "user" => [user],
      *  "access_token" => [access_token],
      * }
-     *
-     * @response 401 {
-     *  "message" => "Invalid login credentials!",
-     * }
-     *
-     * @response 400 {
-     *  "errors" => [errors],
-     * }
      */
     public function login(Request $request) {
         // Param validation
