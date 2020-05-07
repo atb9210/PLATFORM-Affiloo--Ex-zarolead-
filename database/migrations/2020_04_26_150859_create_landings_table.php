@@ -12,7 +12,7 @@ class CreateLandingsTable extends Migration {
      */
     public function up() {
         Schema::create('landings', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('name');
             $table->integer('product_id')->unsigned();
             $table->integer('tag_id')->unsigned();

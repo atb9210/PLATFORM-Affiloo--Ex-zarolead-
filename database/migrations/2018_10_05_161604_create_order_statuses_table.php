@@ -13,7 +13,7 @@ class CreateOrderStatusesTable extends Migration {
      */
     public function up() {
         Schema::create('order_statuses', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('description');
             $table->timestamps();
         });
@@ -26,51 +26,6 @@ class CreateOrderStatusesTable extends Migration {
                 )
             );
         }
-        return;
-
-
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'waiting',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'confirmed',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'not responding',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'refused',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'not sent',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
-        DB::table('order_statuses')->insert(
-            array(
-                'description' => 'not sent',
-                'created_at' => $d,
-                'updated_at' => $d
-            )
-        );
     }
 
     /**

@@ -12,7 +12,7 @@ class CreateOrdersTable extends Migration {
      */
     public function up() {
         Schema::create('orders', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->integer('user_id')->unsigned();
             $table->string('name')->nullable();
             $table->string('phone')->nullable();

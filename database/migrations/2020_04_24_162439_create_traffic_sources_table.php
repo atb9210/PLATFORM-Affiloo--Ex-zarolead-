@@ -12,7 +12,7 @@ class CreateTrafficSourcesTable extends Migration {
      */
     public function up() {
         Schema::create('traffic_sources', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('name');
             $table->json('custom_params')->nullable();
             $table->timestamps();

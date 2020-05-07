@@ -12,7 +12,7 @@ class CreateFormStatsTable extends Migration {
      */
     public function up() {
         Schema::create('form_stats', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->integer('form_id')->unsigned();
             $table->date('day');
             $table->integer('visits')->unsigned()->default(0);
