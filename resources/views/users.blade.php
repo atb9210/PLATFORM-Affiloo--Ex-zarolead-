@@ -3,13 +3,14 @@
 @section('plugins_css')
 <link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/vendors/select2/select2.min.css') }}">
 @endsection
 
 @section('content')
 <nav class="page-breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+        <li class="breadcrumb-item active" aria-current="page">Users</li>
     </ol>
 </nav>
 
@@ -17,116 +18,61 @@
     <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h6 class="card-title">Orders Table</h6>
+            <h6 class="card-title">Users Table</h6>
             <p class="card-description"></p>
-            <div class="mb-3">
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
-                    <i class="link-icon" data-feather="filter"></i> Filters
-                </button>
-            </div>
-            <div class="collapse filters" id="collapseExample">
-                <form method="post" action="{{ route('test') }}">
-                    @csrf
-                    <div class="form-group row">
-                        <div class="col-md-4">
-                            From:
-                            <div class="input-group date datepicker" id="filter_date_from_picker">
-                                <input type="text" class="form-control" name="filter_date_from" value="{{ $filter_date_from }}">
-                                <span class="input-group-addon bg-transparent"><i data-feather="calendar" class=" text-primary"></i></span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            To:
-                            <div class="input-group date datepicker" id="filter_date_to_picker">
-                                <input type="text" class="form-control" name="filter_date_to" value="{{ $filter_date_to }}">
-                                <span class="input-group-addon bg-transparent"><i data-feather="calendar" class=" text-primary"></i></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group row">
-                        <div class="col-md-4">
-                            Status:
-                            <select name="filter_order_status">
-                                @foreach (App\OrderStatus::all() as $status)
-                                <option value="{{ $status->id }}">{{ $status->description }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            Product:
-                            <select class="selct2" name="filter_product">
-                                @foreach (App\OrderStatus::all() as $status)
-                                <option value="{{ $status->id }}">{{ $status->description }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group row">
-                        <div class="col-md-4">
-                            <button class="btn btn-primary" type="submit" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="filtersFormDiv">
-                                <i class="link-icon" data-feather="check"></i> Filters
-                            </button>
-                        </div>
-                        <div class="col-md-4">
-                            <a href="{{ route('orders') }}" class="btn btn-danger">
-                                <i class="link-icon" data-feather="x"></i> Reset
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
             <div class="table-responsive">
               <table id="dataTable" class="table">
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Date</th>
-                    <th>Product</th>
-                    <th>Commission</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Quantity</th>
-                    <th>Network</th>
-                    <th>Send</th>
-                    <th>Status</th>
-                    <th>Info</th>
+                    <th>Email</th>
+                    <th>Registration</th>
+                    <th>Permissions</th>
                   </tr>
                 </thead>
                 <tbody>
-                    @foreach ($orders as $order)
-                    <?php
-                        $status_classes = [
-                            App\OrderStatus::WAITING => "badge badge-info-muted",
-                            App\OrderStatus::CONFIRMED => "badge badge-success",
-                            App\OrderStatus::NOT_RESPONDING => "badge badge-info-muted",
-                            App\OrderStatus::REFUSED => "badge badge-danger-muted text-white",
-                            App\OrderStatus::NOT_SENT => "badge badge-danger",
-                            App\OrderStatus::DOUBLE => "badge badge-warning",
-                        ];
-
-                        $commission = 0.00;
-                        if (!Auth::user()->hasPermission('admin') && Auth::user()->hasPermission('affiliate')) {
-                            if (isset($oder_info['sub_commission'])) {
-                                $commission = $oder_info['sub_commission'];
-                            }
-                        } else {
-                        	$commission = $order->commission;
-                        }
-                    ?>
+                    @foreach ($users as $user)
                     <tr>
-                        <td>{{ $order->id }}</td>
-                        <td>{{ $order->created_at }}</td>
-                        <td>{{ $order->product }}</td>
-                        <td>&euro; {{ $commission }}</td>
-                        <td>{{ $order->name }}</td>
-                        <td>{{ $order->phone }}</td>
-                        <td>{{ $order->quantity }}</td>
-                        <td>{{ $order->network }}</td>
-                        <td></td>
-                        <td><span class="{{ $status_classes[$order->status->id] }}">{{ $order->status->description }}</span></td>
-                        <td>Info</td>
+                        <td>{{ $user->id }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->created_at }}</td>
+                        <td>
+								<?php
+									$permissions = [
+                                        'admin',
+                                        'mediabuyer',
+                                        'affiliate',
+                                        'advertiser',
+                                        'accountant',
+                                    ];
+
+                                    $permissions_init_value = [];
+                                    foreach($permissions as $permission) {
+                                        if ($user->hasPermission($permission)) {
+                                            $arr = array(
+                                                "id" => $permission,
+                                                "value" => $permission,
+                                            );
+                                            $permissions_init_value[] = $arr;
+                                        }
+                                    }
+								?>
+
+                                <div class="form-group row">
+                                    <div class="col-md-8">
+                                        <select class="multiple-selection" name="permissions" multiple="multiple">
+                                            @foreach ($permissions as $permission)
+                                            <option value="{{ $permission }}">{{ $permission }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -142,9 +88,10 @@
 <script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
 <script src="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
 <script src="{{ asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js') }}"></script>
+<script src="{{ asset('assets/vendors/select2/select2.min.js') }}"></script>
 @endsection
 
 @section('custom_scripts')
 <script src="{{ asset('assets/js/data-table.js') }}"></script>
-<script src="{{ asset('assets/js/custom/orders.js') }}"></script>
+<script src="{{ asset('assets/js/custom/users.js') }}"></script>
 @endsection

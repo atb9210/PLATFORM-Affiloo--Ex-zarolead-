@@ -19,15 +19,15 @@ class OrderController extends Controller {
         'admin_delete' => ['admin'],
 	];
 
-    public function permissionGuard($action = 'view') {
-		$redirect = true;
+    public function permissionGuard($action) {
+		$result = false;
         foreach ($this->permissions[$action] as $permission) {
         	if (Auth::user()->hasPermission($permission)) {
-        		$redirect = false;
+        		$result = true;
         		break;
         	}
         }
-        return (!$redirect);
+        return $result;
 	}
 
     public function show($id) {

@@ -8,6 +8,23 @@ use App\Http\Resources\User as UserResource;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller {
+    private $permissions = [
+        'view' => ['admin'],
+        'delete' => [],
+        'edit' => ['admin'],
+	];
+
+    public function permissionGuard($action) {
+		$result = false;
+        foreach ($this->permissions[$action] as $permission) {
+        	if (Auth::user()->hasPermission($permission)) {
+        		$result = true;
+        		break;
+        	}
+        }
+        return $result;
+	}
+
 	public function show(Request $request) {
 		if(!Auth::check()) {
             return redirect()->route('login');
