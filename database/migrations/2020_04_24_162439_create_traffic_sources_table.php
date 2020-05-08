@@ -16,6 +16,7 @@ class CreateTrafficSourcesTable extends Migration {
             $table->string('name');
             $table->json('custom_params')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

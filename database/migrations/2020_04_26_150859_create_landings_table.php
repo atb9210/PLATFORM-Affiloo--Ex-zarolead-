@@ -19,6 +19,7 @@ class CreateLandingsTable extends Migration {
             $table->string('url');
             $table->string('country')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

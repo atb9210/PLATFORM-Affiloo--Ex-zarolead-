@@ -16,6 +16,7 @@ class CreateTagsTable extends Migration {
             $table->string('name');
             $table->json('info')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

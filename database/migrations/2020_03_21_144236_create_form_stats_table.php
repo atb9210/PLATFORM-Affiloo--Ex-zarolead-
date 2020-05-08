@@ -21,6 +21,7 @@ class CreateFormStatsTable extends Migration {
             $table->decimal('total_cost', 9, 2)->default(0.0);
             $table->json('info')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

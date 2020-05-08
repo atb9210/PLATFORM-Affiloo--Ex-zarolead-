@@ -28,6 +28,7 @@ class CreateFormsTable extends Migration {
             $table->integer('leads')->unsigned()->default(0);
             $table->decimal('total_cost', 9, 2)->default(0.0);
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

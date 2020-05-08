@@ -26,6 +26,7 @@ class CreateInvoicesTable extends Migration {
             $table->json('info')->nullable();
             $table->string('original_file_name')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

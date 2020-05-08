@@ -25,6 +25,7 @@ class CreateOrdersTable extends Migration {
             $table->bigInteger('order_status_id')->unsigned();
             $table->json('info')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
 			
 			//$table->foreign('order_status_id')->references('id')->on('order_statuses');
         });

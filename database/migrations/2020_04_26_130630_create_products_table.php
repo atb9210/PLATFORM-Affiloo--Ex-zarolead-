@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration {
             $table->bigInteger('advertiser_id')->unsigned();
             $table->string('country')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

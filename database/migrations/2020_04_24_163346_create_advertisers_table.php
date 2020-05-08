@@ -15,6 +15,7 @@ class CreateAdvertisersTable extends Migration {
             $table->bigIncrements('id');
             $table->string('name');
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 
