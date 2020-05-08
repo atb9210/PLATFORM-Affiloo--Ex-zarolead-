@@ -30,4 +30,8 @@ class Order extends Model {
     public function product() {
         return $this->belongsTo('App\Product', 'product_id');
     }
+
+    public function network() {
+        return $this->belongsTo('App\Network', 'network_id');
+    }
 }

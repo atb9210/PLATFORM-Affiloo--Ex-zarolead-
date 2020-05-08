@@ -39,10 +39,6 @@ class User extends Authenticatable {
             }
         }
         return false;
-        /*
-        return (isset($this->info['permissions'][$permission]) &&
-            $this->info['permissions'][$permission] == true);
-        */
     }
 
     public function setPermission($permission, $value) {
