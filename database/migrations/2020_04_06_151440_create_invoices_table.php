@@ -27,6 +27,8 @@ class CreateInvoicesTable extends Migration {
             $table->string('original_file_name')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
+
+			$table->foreign('user_id')->references('id')->on('users');
         });
     }
 

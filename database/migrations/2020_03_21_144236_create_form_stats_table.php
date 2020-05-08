@@ -22,6 +22,8 @@ class CreateFormStatsTable extends Migration {
             $table->json('info')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
+
+			$table->foreign('form_id')->references('id')->on('forms');
         });
     }
 

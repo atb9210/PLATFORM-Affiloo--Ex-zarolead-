@@ -27,7 +27,7 @@ class OrderPolicy {
      * @return mixed
      */
     public function view(User $user, Order $order) {
-        return $user->hasPermission('order', 'viewAny') || $user->id === $order->id;
+        return $user->hasPermission('order', 'viewAny') || ($user->id === $order->id && !$order->archived);
     }
 
     /**
@@ -48,7 +48,7 @@ class OrderPolicy {
      * @return mixed
      */
     public function update(User $user, Order $order) {
-        return $user->hasPermission('order', 'update') || $user->id === $order->id;
+        return $user->hasPermission('order', 'update') || ($user->id === $order->id && !$order->archived);
     }
 
     /**
@@ -59,7 +59,7 @@ class OrderPolicy {
      * @return mixed
      */
     public function delete(User $user, Order $order) {
-        return $user->hasPermission('order', 'delete') || $user->id === $order->id;
+        return ($user->hasPermission('order', 'delete') || $user->id === $order->id && !$order->archived);
     }
 
     /**

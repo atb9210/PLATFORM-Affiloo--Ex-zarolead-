@@ -20,6 +20,9 @@ class CreateLandingsTable extends Migration {
             $table->string('country')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
+
+			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('tag_id')->references('id')->on('tags');
         });
     }
 

@@ -17,7 +17,7 @@ class CreateOrdersTable extends Migration {
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
-            $table->bigInteger('product_id')->unsigned()->default(0); // TODO: to remove default 0????
+            $table->bigInteger('product_id')->unsigned();
             $table->string('quantity')->nullable();
 			$table->decimal('commission', 9, 2)->default(0.0);
 			$table->decimal('sub_commission', 9, 2)->default(0.0);
@@ -27,7 +27,9 @@ class CreateOrdersTable extends Migration {
             $table->timestamps();
             $table->boolean('archived')->default(0);
 			
-			//$table->foreign('order_status_id')->references('id')->on('order_statuses');
+			$table->foreign('user_id')->references('id')->on('users');
+			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('order_status_id')->references('id')->on('order_statuses');
         });
     }
 

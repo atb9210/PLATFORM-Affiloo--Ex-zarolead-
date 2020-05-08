@@ -36,7 +36,7 @@ class UserController extends Controller {
         $user = User::findOrFail($id);
         $this->authorize('view', $user);
 
-        return UserResource($user);
+        return new UserResource($user);
     }
 
     /**

@@ -29,6 +29,10 @@ class CreateFormsTable extends Migration {
             $table->decimal('total_cost', 9, 2)->default(0.0);
             $table->timestamps();
             $table->boolean('archived')->default(0);
+
+			$table->foreign('user_id')->references('id')->on('users');
+			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
         });
     }
 

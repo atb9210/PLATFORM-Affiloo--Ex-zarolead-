@@ -19,6 +19,9 @@ class CreateProductsTable extends Migration {
             $table->string('country')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
+
+			$table->foreign('tag_id')->references('id')->on('tags');
+			$table->foreign('advertiser_id')->references('id')->on('advertisers');
         });
     }
 
