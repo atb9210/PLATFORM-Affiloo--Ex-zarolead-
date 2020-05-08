@@ -21,7 +21,7 @@ class CreateOrdersTable extends Migration {
             $table->string('quantity')->nullable();
 			$table->decimal('commission', 9, 2)->default(0.0);
 			$table->decimal('sub_commission', 9, 2)->default(0.0);
-			$table->string('network');
+			$table->bigInteger('network_id')->unsigned();
             $table->bigInteger('order_status_id')->unsigned();
             $table->json('info')->nullable();
             $table->timestamps();
@@ -29,6 +29,7 @@ class CreateOrdersTable extends Migration {
 			
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('network_id')->references('id')->on('networks');
 			$table->foreign('order_status_id')->references('id')->on('order_statuses');
         });
     }

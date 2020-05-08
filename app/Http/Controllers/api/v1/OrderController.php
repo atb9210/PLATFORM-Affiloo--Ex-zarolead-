@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Order as Order;
 use App\Http\Resources\api\v1\OrderResource;
 
+use App\OrderStatus;
+
 class OrderController extends Controller {
     /**
      * Get all orders list.
@@ -19,7 +21,7 @@ class OrderController extends Controller {
      * @urlParam filter_product int Order's product id
      *
      * @response {
-     *  "data": [orders],
+     *  "data": [orders]
      * }
      */
     public function index(Request $request) {
@@ -67,6 +69,11 @@ class OrderController extends Controller {
         $order = Order::findOrFail($id);
         $this->authorize('view', $order);
 
+        if ($order->archived) {
+            return response([
+                "message" => "That order is archived"
+            ], 403);
+        }
 
         return new OrderResource($order);
     }
@@ -82,23 +89,35 @@ class OrderController extends Controller {
      * @bodyParam quantity string required Quantity
      * @bodyParam commission float required Commission
      * @bodyParam sub_commission float required Sub commission
-     * @bodyParam network string required Network name
+     * @bodyParam network_id int required Order's network id
      *
      * @response {
-     *  "data": order
+     *  "message": "Order created",
      * }
      */
     public function store(Request $request) {
         // Params validation
         $params = $request->validate([
-            'user_id' => 'required|integer|min:1',
+            'user_id' => 'required|integer|min:1|exists:users,id',
             'name' => 'required|string|min:3',
             'phone' => 'required|string|min:3',
             'address' => 'required|string|min:3',
-            'product_id' => 'required|integer|min:1',
+            'product_id' => 'required|integer|min:1|exists:products,id',
             'quantity' => 'required|string|min:1',
             'commission' => 'required|numeric|min:1',
             'sub_commission' => 'required|numeric|min:1',
+            'network_id' => 'required|integer|min:1|exists:networks,id',
+        ]);
+
+        // Create order
+        $params['order_status_id'] = OrderStatus::NOT_SENT;
+        $order = Order::create($params);
+
+        // @TODO: send order to the network
+        // ...
+
+        return response([
+            "message" => "Order created",
         ]);
     }
 
@@ -107,8 +126,14 @@ class OrderController extends Controller {
      *
      * @urlParam id int required Order's id
      *
-     * @bodyParam name string Order's new name
-     * @bodyParam email string Order's new email
+     * @bodyParam name string Customer's name
+     * @bodyParam phone string Customer's phone number
+     * @bodyParam address string Customer's address
+     * @bodyParam product_id int Order's product id
+     * @bodyParam quantity string Quantity
+     * @bodyParam commission float Commission
+     * @bodyParam sub_commission float Sub commission
+     * @bodyParam network_id int Order's network id
      *
      * @response {
      *  "data": order
@@ -119,12 +144,20 @@ class OrderController extends Controller {
 
         $this->authorize('update', $order);
 
-        // Param validation
+        // Params validation
         $params = $request->validate([
-            'name' => 'string|min:3|max:255',
-            'email' => 'email|min:4|max:255',
+            'order_status_id' => 'nullable|int|min:1|exists:order_statuses,id',
+            'name' => 'nullable|string|min:3',
+            'phone' => 'nullable|string|min:3',
+            'address' => 'nullable|string|min:3',
+            'product_id' => 'nullable|integer|min:1|exists:products,id',
+            'quantity' => 'nullable|string|min:1',
+            'commission' => 'nullable|numeric|min:1',
+            'sub_commission' => 'nullable|numeric|min:1',
+            'network_id' => 'nullable|integer|min:1|exists:networks,id',
         ]);
 
+        // Update orders information
         $order->update($params);
 
         return response([

@@ -13,11 +13,10 @@ class Order extends Model {
     protected $fillable = [
         'user_id',
         'order_status_id',
-        'product_id',
-
         'name', 'phone', 'address',
-
+        'product_id', 'quantity',
         'commission', 'sub_commission',
+        'network_id',
     ];
     
     public function status() {
