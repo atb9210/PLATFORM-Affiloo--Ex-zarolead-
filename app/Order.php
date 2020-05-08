@@ -14,6 +14,10 @@ class Order extends Model {
         'user_id',
         'order_status_id',
         'product_id',
+
+        'name', 'phone', 'address',
+
+        'commission', 'sub_commission',
     ];
     
     public function status() {

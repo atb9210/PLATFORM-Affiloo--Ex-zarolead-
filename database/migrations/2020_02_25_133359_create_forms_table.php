@@ -13,16 +13,16 @@ class CreateFormsTable extends Migration {
     public function up() {
         Schema::create('forms', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('user_id')->unsigned();
+            $table->bigInteger('user_id')->unsigned();
             $table->string('name');
             $table->string('network');
-            $table->integer('product_id')->unsigned();
+            $table->bigInteger('product_id')->unsigned();
             $table->string('quantity')->nullable();
             $table->decimal('price', 9, 2)->default(0.0);
             $table->decimal('commission', 9, 2)->default(0.0);
             $table->decimal('sub_commission', 9, 2)->default(0.0);
             $table->decimal('total_commission', 9, 2)->default(0.0);
-            $table->integer('traffic_source_id')->unsigned();
+            $table->bigInteger('traffic_source_id')->unsigned();
             $table->json('info')->nullable();
             $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);

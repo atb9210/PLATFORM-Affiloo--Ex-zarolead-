@@ -14,8 +14,8 @@ class CreateLandingsTable extends Migration {
         Schema::create('landings', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->integer('product_id')->unsigned();
-            $table->integer('tag_id')->unsigned();
+            $table->bigInteger('product_id')->unsigned();
+            $table->bigInteger('tag_id')->unsigned();
             $table->string('url');
             $table->string('country')->nullable();
             $table->timestamps();

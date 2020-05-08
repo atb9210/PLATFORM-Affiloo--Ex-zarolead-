@@ -13,7 +13,7 @@ class CreateInvoicesTable extends Migration {
     public function up() {
         Schema::create('invoices', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('user_id')->unsigned();
+            $table->bigInteger('user_id')->unsigned();
             $table->boolean('uploaded')->default(0);
             $table->boolean('transaction')->default(0);
             $table->string('language')->nullable();

@@ -23,6 +23,10 @@ class Role extends Model {
     }
 
     public function hasPermission($object, $action) {
+        if (isset($this->permissions["*"]) && $this->permissions["*"]) {
+            return true;
+        }
+
         if (isset($this->permissions[$object]["*"]) && $this->permissions[$object]["*"]) {
             return true;
         }

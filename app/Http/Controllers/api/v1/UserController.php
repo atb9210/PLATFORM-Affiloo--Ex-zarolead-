@@ -5,31 +5,22 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 use App\User as User;
+use App\Http\Resources\api\v1\UserResource;
 
 class UserController extends Controller {
     /**
-     * Get all users list (with informations).
+     * Get all users list.
      *
      * @response {
-     *  "users" => [users],
+     *  "data": [users],
      * }
      */
     public function index() {
         $this->authorize('viewAny', 'App\User');
 
-        return response([
-            'users' => User::all(),
-        ]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {
-        //
+        return UserResource::collection(User::all());
     }
 
     /**
@@ -38,20 +29,18 @@ class UserController extends Controller {
      * @urlParam id int required User's id
      *
      * @response {
-     *  "user" => [user],
+     *  "data": user,
      * }
      */
     public function show($id) {
         $user = User::findOrFail($id);
         $this->authorize('view', $user);
 
-        return response([
-            "user" => $user,
-        ]);
+        return UserResource($user);
     }
 
     /**
-     * Update the user's field.
+     * Update the user's fields.
      *
      * @urlParam id int required User's id
      *
@@ -59,7 +48,7 @@ class UserController extends Controller {
      * @bodyParam email string User's new email
      *
      * @response {
-     *  "user": user
+     *  "data": user,
      * }
      */
     public function update(Request $request, $id) {
@@ -75,16 +64,17 @@ class UserController extends Controller {
 
         $user->update($data);
 
-        return response([
-            "user" => $user,
-        ]);    
+        return UserResource($user);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete the specified user.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @urlParam id int required User's id
+     *
+     * @response {
+     *  "message": "User has been deleted",
+     * }
      */
     public function destroy($id) {
         $user = User::findOrFail($id);
@@ -95,7 +85,7 @@ class UserController extends Controller {
         $user->delete();
 
         return response([
-            "message" => "User has been deleted"
+            "message" => "Resource has been deleted"
         ]);
     }
 }
