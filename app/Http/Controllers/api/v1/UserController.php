@@ -73,7 +73,7 @@ class UserController extends Controller {
      * @urlParam id int required User's id
      *
      * @response {
-     *  "message": "User has been deleted",
+     *  "message": "User archived",
      * }
      */
     public function destroy($id) {
@@ -81,11 +81,12 @@ class UserController extends Controller {
 
         $this->authorize('delete', $user);
 
-        // Delete the user
-        $user->delete();
+        // Archive the user
+        $user->archived = 1;
+        $user->save();
 
         return response([
-            "message" => "Resource has been deleted"
+            'message' => 'User archived'
         ]);
     }
 }

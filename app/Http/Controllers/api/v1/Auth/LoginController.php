@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
+use App\User;
+
 class LoginController extends Controller {
     /**
      * Create and get an access token by logging in with email and password.
@@ -25,6 +27,13 @@ class LoginController extends Controller {
             'email' => 'required|email|min:4|max:255',
             'password' => 'required|string',
         ]);
+
+        // Check if the user is archived
+        if (User::where('email', $data['email'])->where('archived', 0)->get()->count()) {
+            return response([
+                'message' => 'User archived!'
+            ], 404);
+        }
         
         // Login
         if (!Auth::attempt($data)) {

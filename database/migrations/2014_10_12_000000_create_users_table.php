@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration {
             $table->json('info')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 
