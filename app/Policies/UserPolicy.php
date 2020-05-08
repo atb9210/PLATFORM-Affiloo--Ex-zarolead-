@@ -27,7 +27,7 @@ class UserPolicy {
      * @return mixed
      */
     public function view(User $user, User $model) {
-        return $user->hasPermission('user', 'viewAny') || $user->id === $model->id;
+        return $user->hasPermission('user', 'viewAny') || ($user->id === $model->id && !$model->archived);
     }
 
     /**
@@ -48,7 +48,7 @@ class UserPolicy {
      * @return mixed
      */
     public function update(User $user, User $model) {
-        return $user->hasPermission('user', 'update') || $user->id === $model->id;
+        return $user->hasPermission('user', 'update') || ($user->id === $model->id && !$model->archived);
     }
 
     /**
@@ -59,7 +59,7 @@ class UserPolicy {
      * @return mixed
      */
     public function delete(User $user, User $model) {
-        return $user->hasPermission('user', 'delete') || $user->id === $model->id;
+        return $user->hasPermission('user', 'delete') || ($user->id === $model->id && !$model->archived);
     }
 
     /**
