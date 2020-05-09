@@ -91,7 +91,7 @@ class OrderController extends Controller {
      * @bodyParam sub_commission float required Sub commission
      * @bodyParam network_id int required Order's network id
      *
-     * @response {
+     * @response 201 {
      *  "message": "Order created",
      * }
      */
@@ -118,7 +118,7 @@ class OrderController extends Controller {
 
         return response([
             "message" => "Order created",
-        ]);
+        ], 201);
     }
 
     /**

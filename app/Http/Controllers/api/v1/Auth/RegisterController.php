@@ -18,7 +18,7 @@ class RegisterController extends Controller
      * @bodyParam password string required User's password
      * @bodyParam password_confirmation string required Repeat user's password
      *
-     * @response {
+     * @response 201 {
      *  "user": user
      * }
      */
@@ -26,7 +26,7 @@ class RegisterController extends Controller
         // Param validation
         $data = $request->validate([
             'name' => 'required|string|min:3|max:255',
-            'email' => 'required|email|min:4|max:255',
+            'email' => 'required|email|min:4|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -38,6 +38,6 @@ class RegisterController extends Controller
 
         return response([
             "user" => $user,
-        ]);
+        ], 201);
     }
 }

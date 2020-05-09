@@ -15,6 +15,14 @@ use Faker\Generator as Faker;
 
 $factory->define(App\Order::class, function (Faker $faker) {
     return [
-        'order_status_id' => $faker->numberBetween(1, 4),
+        'user_id' => $faker->randomElement([1, 3]),
+        'name' => $faker->name,
+        'phone' => $faker->e164PhoneNumber,
+        'address' => $faker->address,
+        'product_id' => $faker->randomElement([1, 2, 3]),
+        'commission' => $faker->randomElement([20, 29.99]),
+        'sub_commission' => $faker->randomElement([10, 12]),
+        'network_id' => $faker->randomElement([1, 2, 3]),
+        'order_status_id' => 1,
     ];
 });

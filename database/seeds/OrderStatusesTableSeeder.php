@@ -9,17 +9,6 @@ class OrderStatusesTableSeeder extends Seeder {
      * @return void
      */
     public function run() {
-      DB::table('order_statuses')->insert([
-        'description' => 'Attesa',
-      ]);
-      DB::table('order_statuses')->insert([
-        'description' => 'Conferma',
-      ]);
-      DB::table('order_statuses')->insert([
-        'description' => 'Non risponde',
-      ]);
-      DB::table('order_statuses')->insert([
-        'description' => 'Rifiuto',
-      ]);
+        //
     }
 }

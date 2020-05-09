@@ -59,7 +59,7 @@ class OrderPolicy {
      * @return mixed
      */
     public function delete(User $user, Order $order) {
-        return ($user->hasPermission('order', 'delete') || ($user->id === $order->id && !$order->archived);
+        return $user->hasPermission('order', 'delete') || ($user->id === $order->id && !$order->archived);
     }
 
     /**

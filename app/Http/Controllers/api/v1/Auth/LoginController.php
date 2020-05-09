@@ -29,7 +29,7 @@ class LoginController extends Controller {
         ]);
 
         // Check if the user is archived
-        if (User::where('email', $data['email'])->where('archived', 0)->get()->count()) {
+        if (User::where('email', $data['email'])->where('archived', 1)->get()->count()) {
             return response([
                 'message' => 'User archived!'
             ], 404);
