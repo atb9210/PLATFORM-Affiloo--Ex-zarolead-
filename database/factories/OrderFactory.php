@@ -20,9 +20,11 @@ $factory->define(App\Order::class, function (Faker $faker) {
         'phone' => $faker->e164PhoneNumber,
         'address' => $faker->address,
         'product_id' => $faker->randomElement([1, 2, 3]),
+        'quantity' => 1,
         'commission' => $faker->randomElement([20, 29.99]),
         'sub_commission' => $faker->randomElement([10, 12]),
         'network_id' => $faker->randomElement([1, 2, 3]),
         'order_status_id' => 1,
+        'created_at' => $faker->dateTimeBetween($startDate = '-7 days'),
     ];
 });

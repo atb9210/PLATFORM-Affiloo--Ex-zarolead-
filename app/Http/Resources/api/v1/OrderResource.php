@@ -18,19 +18,15 @@ class OrderResource extends JsonResource {
             $commission = $this->commission;
         }
 
-        /**
-         * @TODO:
-         * - Change product_id into product->name (when product field will be eliminated)
-         * - Change network into network->name (when network will be an asset)
-         */
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
             'name' => $this->name,
             'phone' => $this->phone,
-            'product_id' => $this->product_id,
+            'product' => $this->product->name,
             'commission' => $commission,
-            'network' => $this->network,
+            'quantity' => $this->quantity,
+            'network' => $this->network->name,
             'status' => $this->status->description,
             'info' => $this->info,
             'created_at' => $this->created_at,

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 
 /* Test routes */
 
+/*
 Route::get('/mobile-form', function () {
 	return view('mobile-form');
 })->name('mobile-form');
@@ -36,8 +37,11 @@ Route::get('/mobile-form-affiliationpark', function () {
 })->name('mobile-form-affiliationpark');
 
 Route::get('/test', function () {
-    return view('test');
+    return view('application');
 })->name('test');
+
+
+/*
 Route::post('/test', 'TestController@post')->name('test');
 
 Route::get('/test2', function () {
@@ -50,12 +54,14 @@ Route::get('/test_app', function() {
 
 /* Auth routes */
 
+/*
 //Auth::routes(['register' => false]); // Closed registration
 Auth::routes(); // Open registration
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout'); // GET method logout
 
 /* Home routes */
 
+/*
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/', function () {
     return view('welcome');
@@ -63,11 +69,13 @@ Route::get('/', function () {
 
 /* Dashboard */
 
+/*
 Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
 Route::post('/dashboard', 'DashboardController@filter')->name('dashboard');
 
 /* Orders routes */
 
+/*
 Route::get('/orders', 'OrderController@ordersIndex')->name('orders');
 Route::post('/orders', 'OrderController@ordersFilter')->name('orders');
 Route::get('/order/{id}', 'OrderController@show')->name('order');
@@ -76,6 +84,7 @@ Route::delete('/order/{id}', 'OrderController@delete')->name('order');
 
 /* Forms routes */
 
+/*
 Route::get('/form-builder', 'FormBuilderController@index')->name('form-builder');
 Route::post('/form-builder', 'FormBuilderController@index')->name('form-builder');
 
@@ -90,6 +99,8 @@ Route::get('form/{id}/edit', 'FormController@edit')->name('form_edit');
 Route::post('form/{id}/edit', 'FormController@update')->name('form_edit');
 
 /* Invoice routes */
+
+/*
 Route::get('/invoice/upload', 'InvoiceController@uploadIndex')->name('invoice/upload');
 Route::post('/invoice/upload', 'InvoiceController@upload')->name('invoice/upload');
 
@@ -109,6 +120,8 @@ Route::post('/invoices/summary/download', 'InvoiceController@invocesSummaryDowno
 Route::post('/auto-invoices/summary/download', 'InvoiceController@autoInvocesSummaryDownoad')->name('auto-invoices/summary/download');
 
 /* Advertiser routes */
+
+/*
 Route::get('/advertisers', 'AdvertiserController@index')->name('advertisers');
 Route::get('/advertiser/create', 'AdvertiserController@createIndex')->name('advertiser/create');
 Route::post('/advertiser/create', 'AdvertiserController@store')->name('advertiser/create');
@@ -117,6 +130,8 @@ Route::post('/advertiser/{id}/edit', 'AdvertiserController@update')->name('adver
 Route::delete('/advertiser/{id}', 'AdvertiserController@delete')->name('advertiser');
 
 /* Tag routes */
+
+/*
 Route::get('/tags', 'TagController@index')->name('tags');
 Route::get('/tag/create', 'TagController@createIndex')->name('tag/create');
 Route::post('/tag/create', 'TagController@store')->name('tag/create');
@@ -125,6 +140,8 @@ Route::post('/tag/{id}/edit', 'TagController@update')->name('tag/edit');
 Route::delete('/tag/{id}', 'TagController@delete')->name('tag');
 
 /* Product routes */
+
+/*
 Route::get('/products', 'ProductController@index')->name('products');
 Route::get('/product/create', 'ProductController@createIndex')->name('product/create');
 Route::post('/product/create', 'ProductController@store')->name('product/create');
@@ -133,6 +150,8 @@ Route::post('/product/{id}/edit', 'ProductController@update')->name('product/edi
 Route::delete('/product/{id}', 'ProductController@delete')->name('product');
 
 /* Traffic Sources routes */
+
+/*
 Route::get('/traffic-sources', 'TrafficSourceController@index')->name('traffic-sources');
 Route::get('/traffic-source/create', 'TrafficSourceController@createIndex')->name('traffic-source/create');
 Route::post('/traffic-source/create', 'TrafficSourceController@store')->name('traffic-source/create');
@@ -141,6 +160,8 @@ Route::post('/traffic-source/{id}/edit', 'TrafficSourceController@update')->name
 Route::delete('/traffic-source/{id}', 'TrafficSourceController@delete')->name('traffic-source');
 
 /* Landing routes */
+
+/*
 Route::get('/landings', 'LandingController@index')->name('landings');
 Route::get('/landing/create', 'LandingController@createIndex')->name('landing/create');
 Route::post('/landing/create', 'LandingController@store')->name('landing/create');
@@ -149,6 +170,8 @@ Route::post('/landing/{id}/edit', 'LandingController@update')->name('landing/edi
 Route::delete('/landing/{id}', 'LandingController@delete')->name('landing');
 
 /* Admin routes */
+
+/*
 Route::get('/admin/dashboard', 'DashboardController@adminIndex')->name('admin/dashboard');
 Route::post('/admin/dashboard', 'DashboardController@adminFilter')->name('admin/dashboard');
 
@@ -177,3 +200,8 @@ Route::post('/admin/report/advertisers', 'ReportController@advertisersReport')->
 
 Route::get('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoices');
 Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoices');
+
+*/
+Route::get('/{any}', function() {
+    return view('application');
+})->where('any', '.*');

@@ -20,7 +20,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 */
 
 /* Auth routes */
-Route::post('/login', 'api\v1\Auth\LoginController@login');
+Route::post('/login', 'api\v1\Auth\LoginController@login')->name('login');
+Route::post('/refresh-token', 'api\v1\Auth\LoginController@refreshToken');
 Route::post('/register', 'api\v1\Auth\RegisterController@register');
 
 /* Users routes */

@@ -14,10 +14,6 @@ class DashboardController extends Controller {
 			return redirect()->route('login');
 		}
 
-		if (Auth::user()->hasPermission('admin')) {
-			return redirect()->route('admin/dashboard');
-		}
-
 		$o = new OrderController();
 	    return view('dashboard')->with($o->filter($request));
     }

@@ -49,4 +49,20 @@ class LoginController extends Controller {
             'access_token' => $accessToken,
         ]);
     }
+
+    /**
+     * Refresh access token.
+     *
+     * @response {
+     *  "access_token" => [access_token],
+     * }
+     */
+    public function refreshToken(Request $request) {
+        // TODO: Really refresh the token
+        // Return access token
+        return response([
+            'user' => Auth::user(),
+            'access_token' => $request->input('access_token'),
+        ]);
+    }
 }
