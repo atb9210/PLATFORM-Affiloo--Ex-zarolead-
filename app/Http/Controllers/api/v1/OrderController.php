@@ -11,7 +11,8 @@ use App\Http\Resources\api\v1\OrderResource;
 
 use App\OrderStatus;
 
-class OrderController extends Controller {
+class OrderController extends Controller
+{
     /**
      * Get all orders list.
      *
@@ -24,7 +25,8 @@ class OrderController extends Controller {
      *  "data": [orders]
      * }
      */
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         // Param validation
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
@@ -65,7 +67,8 @@ class OrderController extends Controller {
      *  "data": order,
      * }
      */
-    public function show($id) {
+    public function show($id)
+    {
         $order = Order::findOrFail($id);
         $this->authorize('view', $order);
 
@@ -95,7 +98,8 @@ class OrderController extends Controller {
      *  "message": "Order created",
      * }
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         // Params validation
         $params = $request->validate([
             'user_id' => 'required|integer|min:1|exists:users,id',
@@ -139,7 +143,8 @@ class OrderController extends Controller {
      *  "data": order
      * }
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $order = Order::findOrFail($id);
 
         $this->authorize('update', $order);
@@ -174,7 +179,8 @@ class OrderController extends Controller {
      *  "message": "Order has been archived",
      * }
      */
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $order = Order::findOrFail($id);
 
         $this->authorize('delete', $order);

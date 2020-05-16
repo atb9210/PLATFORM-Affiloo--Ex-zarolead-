@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 use App\User as User;
 use App\Http\Resources\api\v1\UserResource;
+use App\Role as Role;
 
-class UserController extends Controller {
+class UserController extends Controller
+{
     /**
      * Get all users list.
      *
@@ -17,7 +19,8 @@ class UserController extends Controller {
      *  "data": [users],
      * }
      */
-    public function index() {
+    public function index()
+    {
         $this->authorize('viewAny', 'App\User');
 
         return UserResource::collection(User::all());
@@ -32,7 +35,8 @@ class UserController extends Controller {
      *  "data": user,
      * }
      */
-    public function show($id) {
+    public function show($id)
+    {
         $user = User::findOrFail($id);
         $this->authorize('view', $user);
 
@@ -51,7 +55,8 @@ class UserController extends Controller {
      *  "data": user,
      * }
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $user = User::findOrFail($id);
 
         $this->authorize('update', $user);
@@ -76,7 +81,8 @@ class UserController extends Controller {
      *  "message": "User archived",
      * }
      */
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $user = User::findOrFail($id);
 
         $this->authorize('delete', $user);
@@ -88,5 +94,60 @@ class UserController extends Controller {
         return response([
             'message' => 'User archived'
         ]);
+    }
+
+    /**
+     * Change user's roles.
+     *
+     * @urlParam id int required User's id
+     *
+     * @bodyParam admin boolean Admin role
+     * @bodyParam mediabuyer boolean Admin role
+     * @bodyParam affiliate boolean Admin role
+     * @bodyParam advertiser boolean Admin role
+     * @bodyParam accountant boolean Admin role
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function changeRoles(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $this->authorize('changeRoles', $user);
+
+        // Param validation
+        $data = $request->validate([
+            'admin' => 'boolean',
+            'mediabuyer' => 'boolean',
+            'affiliate' => 'boolean',
+            'advertiser' => 'boolean',
+            'accountant' => 'boolean',
+        ]);
+
+        // User cannot remove himself admin role
+        if (Auth::user()->id == $user->id && isset($data['admin']) && !$data['admin']) {
+            return response([
+                "message" => "You cannot remove admin role to yourself."
+            ], 403);
+        }
+
+        // Change roles
+        foreach ($data as $name => $value) {
+            $role = Role::where('name', $name)->first();
+            if ($value) {
+                if (!$user->roles()->where('id', $role->id)->exists()) {
+                    $user->roles()->attach($role->id);
+                }
+            } else {
+                if ($user->roles()->where('id', $role->id)->exists()) {
+                    $user->roles()->detach($role->id);
+                }
+            }
+        }
+        Auth::user()->refresh();
+
+        return new UserResource(Auth::user());
     }
 }

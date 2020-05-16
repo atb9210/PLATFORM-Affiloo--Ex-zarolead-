@@ -1,0 +1,152 @@
+<?php
+
+namespace App\Http\Controllers\api\v1;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+use App\Product as Product;
+use App\Http\Resources\api\v1\ProductResource;
+
+class ProductController extends Controller
+{
+    /**
+     * Get all users list.
+     *
+     * @response {
+     *  "data": [users],
+     * }
+     */
+    public function index()
+    {
+        $this->authorize('viewAny', 'App\Product');
+
+        return ProductResource::collection(Product::all());
+    }
+
+    /**
+     * Get user's informations.
+     *
+     * @urlParam id int required User's id
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
+        $this->authorize('view', $user);
+
+        return new ProductResource($user);
+    }
+
+    /**
+     * Update the user's fields.
+     *
+     * @urlParam id int required User's id
+     *
+     * @bodyParam name string User's new name
+     * @bodyParam email string User's new email
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $this->authorize('update', $user);
+
+        // Param validation
+        $data = $request->validate([
+            'name' => 'string|min:3|max:255',
+            'email' => 'email|min:4|max:255',
+        ]);
+
+        $user->update($data);
+
+        return ProductResource($user);
+    }
+
+    /**
+     * Delete the specified user.
+     *
+     * @urlParam id int required User's id
+     *
+     * @response {
+     *  "message": "User archived",
+     * }
+     */
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+
+        $this->authorize('delete', $user);
+
+        // Archive the user
+        $user->archived = 1;
+        $user->save();
+
+        return response([
+            'message' => 'User archived'
+        ]);
+    }
+
+    /**
+     * Change user's roles.
+     *
+     * @urlParam id int required User's id
+     *
+     * @bodyParam admin boolean Admin role
+     * @bodyParam mediabuyer boolean Admin role
+     * @bodyParam affiliate boolean Admin role
+     * @bodyParam advertiser boolean Admin role
+     * @bodyParam accountant boolean Admin role
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function changeRoles(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $this->authorize('changeRoles', $user);
+
+        // Param validation
+        $data = $request->validate([
+            'admin' => 'boolean',
+            'mediabuyer' => 'boolean',
+            'affiliate' => 'boolean',
+            'advertiser' => 'boolean',
+            'accountant' => 'boolean',
+        ]);
+
+        // User cannot remove himself admin role
+        if (Auth::user()->id == $user->id && isset($data['admin']) && !$data['admin']) {
+            return response([
+                "message" => "You cannot remove admin role to yourself."
+            ], 403);
+        }
+
+        // Change roles
+        foreach ($data as $name => $value) {
+            $role = Role::where('name', $name)->first();
+            if ($value) {
+                if (!$user->roles()->where('id', $role->id)->exists()) {
+                    $user->roles()->attach($role->id);
+                }
+            } else {
+                if ($user->roles()->where('id', $role->id)->exists()) {
+                    $user->roles()->detach($role->id);
+                }
+            }
+        }
+        Auth::user()->refresh();
+
+        return new ProductResource(Auth::user());
+    }
+}

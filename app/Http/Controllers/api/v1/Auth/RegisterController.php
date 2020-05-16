@@ -22,7 +22,8 @@ class RegisterController extends Controller
      *  "user": user
      * }
      */
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         // Param validation
         $data = $request->validate([
             'name' => 'required|string|min:3|max:255',

@@ -1253,7 +1253,38 @@ const router = new Router({
             pageTitle: 'Export Excel',
             rule: 'editor'
           }
-        }
+        },
+
+
+        // =============================================================================
+        // MY ROUTES
+        // =============================================================================
+        {
+          path: '/app/users',
+          name: 'users',
+          component: () => import('./views/Users.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Users', active: true }
+            ],
+            pageTitle: 'Users',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/app/orders',
+          name: 'orders',
+          component: () => import('./views/Orders.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Orders', active: true }
+            ],
+            pageTitle: 'Orders',
+            rule: 'editor'
+          }
+        },
       ]
     },
     // =============================================================================

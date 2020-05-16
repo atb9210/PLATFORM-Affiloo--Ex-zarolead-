@@ -6,7 +6,8 @@ use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Facades\Auth;
 
-class UserPolicy {
+class UserPolicy
+{
     use HandlesAuthorization;
 
     /**
@@ -15,7 +16,8 @@ class UserPolicy {
      * @param  \App\User  $user
      * @return mixed
      */
-    public function viewAny(User $user) {
+    public function viewAny(User $user)
+    {
         return $user->hasPermission('user', 'viewAny');
     }
 
@@ -26,7 +28,8 @@ class UserPolicy {
      * @param  \App\User  $model
      * @return mixed
      */
-    public function view(User $user, User $model) {
+    public function view(User $user, User $model)
+    {
         return $user->hasPermission('user', 'viewAny') || ($user->id === $model->id && !$model->archived);
     }
 
@@ -36,7 +39,8 @@ class UserPolicy {
      * @param  \App\User  $user
      * @return mixed
      */
-    public function create(User $user) {
+    public function create(User $user)
+    {
         return $user->hasPermission('user', 'create');
     }
 
@@ -47,7 +51,8 @@ class UserPolicy {
      * @param  \App\User  $model
      * @return mixed
      */
-    public function update(User $user, User $model) {
+    public function update(User $user, User $model)
+    {
         return $user->hasPermission('user', 'update') || ($user->id === $model->id && !$model->archived);
     }
 
@@ -58,7 +63,8 @@ class UserPolicy {
      * @param  \App\User  $model
      * @return mixed
      */
-    public function delete(User $user, User $model) {
+    public function delete(User $user, User $model)
+    {
         return $user->hasPermission('user', 'delete') || ($user->id === $model->id && !$model->archived);
     }
 
@@ -69,7 +75,8 @@ class UserPolicy {
      * @param  \App\User  $model
      * @return mixed
      */
-    public function restore(User $user, User $model) {
+    public function restore(User $user, User $model)
+    {
         //
     }
 
@@ -80,7 +87,19 @@ class UserPolicy {
      * @param  \App\User  $model
      * @return mixed
      */
-    public function forceDelete(User $user, User $model) {
+    public function forceDelete(User $user, User $model)
+    {
         //
+    }
+
+    /**
+     * Determine whether the user can change users roles.
+     *
+     * @param  \App\User  $user
+     * @return mixed
+     */
+    public function changeRoles(User $user)
+    {
+        return $user->hasPermission('user', 'update');
     }
 }

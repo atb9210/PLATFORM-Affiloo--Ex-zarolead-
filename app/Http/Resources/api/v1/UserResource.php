@@ -12,10 +12,16 @@ class UserResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
+        $roles = [];
+        foreach ($this->roles as $role) {
+            array_push($roles, $role->name);
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'roles' => $roles,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

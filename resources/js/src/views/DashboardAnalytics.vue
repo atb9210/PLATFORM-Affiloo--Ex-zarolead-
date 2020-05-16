@@ -24,7 +24,7 @@
 
       <!-- CARD 2: SUBSCRIBERS GAINED -->
       <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-        <statistics-card-line icon="UsersIcon" statistic="92.6k" statisticTitle="Subscribers Gained" :chartData="subscribersGained.series" type="area"></statistics-card-line>
+        <statistics-card-line icon="UsersIcon" statistic="92.6k" statisticTitle="Commission Total" :chartData="ordersSeries.commission" type="area"></statistics-card-line>
       </div>
 
       <!-- CARD 3: ORDER RECIEVED -->
@@ -244,6 +244,15 @@ export default {
   data () {
     return {
       orders: [],
+      ordersSeries: {
+          commission: [
+            {
+              data: [],
+              name: 'Commissions'
+            }
+          ],
+          count: [],
+      },
 
       checkpointReward: {},
       subscribersGained: {},
@@ -302,12 +311,15 @@ export default {
     ChangeTimeDurationDropdown,
     VxTimeline
   },
-  computed: {
-  },
   created () {
     // Fetch orders
     this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
       .then((response) => { this.orders = response.data })
+
+    // Calculate orders series
+    // TODO:
+    this.ordersSeries.commission[0].data = [3, 8, 9, 5, 10, 8, 7]
+    console.log(this.ordersSeries.commission)
 
     //  User Reward Card
     this.$http.get('/api/user/checkpoint-reward')

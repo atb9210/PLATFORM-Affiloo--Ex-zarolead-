@@ -6,7 +6,8 @@ use App\Order;
 use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class OrderPolicy {
+class OrderPolicy
+{
     use HandlesAuthorization;
 
     /**
@@ -15,7 +16,8 @@ class OrderPolicy {
      * @param  \App\User  $user
      * @return mixed
      */
-    public function viewAny(User $user) {
+    public function viewAny(User $user)
+    {
         return $user->hasPermission('order', 'viewAny');
     }
 
@@ -26,7 +28,8 @@ class OrderPolicy {
      * @param  \App\Order  $order
      * @return mixed
      */
-    public function view(User $user, Order $order) {
+    public function view(User $user, Order $order)
+    {
         return $user->hasPermission('order', 'viewAny') || ($user->id === $order->id && !$order->archived);
     }
 
@@ -36,7 +39,8 @@ class OrderPolicy {
      * @param  \App\User  $user
      * @return mixed
      */
-    public function create(User $user) {
+    public function create(User $user)
+    {
         return $user->hasPermission('order', 'create');
     }
 
@@ -47,7 +51,8 @@ class OrderPolicy {
      * @param  \App\Order  $order
      * @return mixed
      */
-    public function update(User $user, Order $order) {
+    public function update(User $user, Order $order)
+    {
         return $user->hasPermission('order', 'update') || ($user->id === $order->id && !$order->archived);
     }
 
@@ -58,7 +63,8 @@ class OrderPolicy {
      * @param  \App\Order  $order
      * @return mixed
      */
-    public function delete(User $user, Order $order) {
+    public function delete(User $user, Order $order)
+    {
         return $user->hasPermission('order', 'delete') || ($user->id === $order->id && !$order->archived);
     }
 

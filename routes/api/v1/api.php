@@ -34,6 +34,7 @@ Route::delete('/users/{id}', 'api\v1\UserController@destroy')->middleware('auth:
 Route::apiResource('users', 'api\v1\UserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api');
 
 /* Orders routes */
 /*
@@ -46,3 +47,7 @@ Route::apiResource('orders', 'api\v1\OrderController')->except([
     'create', 'edit', 'store',
 ])->middleware('auth:api');
 Route::post('orders', 'api\v1\OrderController@store');
+
+Route::apiResource('products', 'api\v1\ProductController')->except([
+    'create', 'edit',
+])->middleware('auth:api');

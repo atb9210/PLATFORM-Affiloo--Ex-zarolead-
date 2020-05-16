@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 use App\User;
 
-class LoginController extends Controller {
+class LoginController extends Controller
+{
     /**
      * Create and get an access token by logging in with email and password.
      *
@@ -21,7 +22,8 @@ class LoginController extends Controller {
      *  "access_token" => [access_token],
      * }
      */
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         // Param validation
         $data = $request->validate([
             'email' => 'required|email|min:4|max:255',
@@ -57,7 +59,8 @@ class LoginController extends Controller {
      *  "access_token" => [access_token],
      * }
      */
-    public function refreshToken(Request $request) {
+    public function refreshToken(Request $request)
+    {
         // TODO: Really refresh the token
         // Return access token
         return response([
