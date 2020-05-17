@@ -20,11 +20,15 @@ class CreateRolesTable extends Migration {
 
         $roles = [
             [
+                "name" => "developer",
+                "permissions" => [
+                    "*" => true,
+                ],
+            ],
+            [
                 "name" => "admin",
                 "permissions" => [
-                    "user" => [
-                        "*" => true,
-                    ],
+                    "*" => true,
                 ],
             ],
             [

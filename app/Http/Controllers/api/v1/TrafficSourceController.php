@@ -60,6 +60,8 @@ class TrafficSourceController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', 'App\TrafficSource');
+
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',

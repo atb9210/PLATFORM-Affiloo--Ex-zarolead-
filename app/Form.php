@@ -12,7 +12,7 @@ class Form extends Model {
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'network', 'product_id', 'quantity', 'price',
+        'user_id', 'name', 'network_id', 'product_id', 'quantity', 'price',
         'commission', 'sub_commission', 'tag_id', 'traffic_source_id',
         'info'
     ];
@@ -31,6 +31,10 @@ class Form extends Model {
 
     public function user() {
         return $this->belongsTo('App\User', 'user_id');
+    }
+
+    public function network() {
+        return $this->belongsTo('App\Network', 'network_id');
     }
 
     public function product() {

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 use App\Product as Product;
 use App\Http\Resources\api\v1\ProductResource;
@@ -63,6 +62,8 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', 'App\Product');
+
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',

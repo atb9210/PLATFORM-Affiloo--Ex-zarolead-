@@ -12,19 +12,14 @@ class UsersTableSeeder extends Seeder
     public function run()
     {
         \App\User::create([
-            'name' => 'Testeron dei Testeroni',
-            'email' => 'test@test.com',
-            'password' => bcrypt('test123'),
+            'name' => 'ZaroLead Developer',
+            'email' => 'dev@zarolead.com',
+            'password' => bcrypt('dev123'),
         ]);
         \App\User::create([
-            'name' => 'Testeron dei Testeroni 2',
-            'email' => 'test2@test.com',
-            'password' => bcrypt('test123'),
-        ]);
-        \App\User::create([
-            'name' => 'Testeron dei Testeroni 3',
-            'email' => 'test3@test.com',
-            'password' => bcrypt('test123'),
+            'name' => 'ZaroLead Admin',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('admin123'),
         ]);
         factory(App\User::class, 50)->create();
     }

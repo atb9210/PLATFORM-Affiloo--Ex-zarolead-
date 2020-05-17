@@ -17,4 +17,8 @@ class Network extends Model {
     public function orders() {
         return $this->hasMany('App\Order');
     }
+
+    public function forms() {
+        return $this->hasMany('App\Form');
+    }
 }

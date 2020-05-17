@@ -60,3 +60,8 @@ Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except(
 Route::apiResource('landings', 'api\v1\LandingController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+/* Form routes */
+Route::apiResource('forms', 'api\v1\FormController')->except([
+    'create', 'edit',
+])->middleware('auth:api');

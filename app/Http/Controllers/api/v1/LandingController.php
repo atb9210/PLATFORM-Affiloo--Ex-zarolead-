@@ -63,6 +63,8 @@ class LandingController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', 'App\Landing');
+
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',

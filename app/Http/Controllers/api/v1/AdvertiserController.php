@@ -59,6 +59,8 @@ class AdvertiserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', 'App\Advertiser');
+
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
