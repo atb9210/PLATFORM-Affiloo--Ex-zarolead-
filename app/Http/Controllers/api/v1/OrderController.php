@@ -96,6 +96,7 @@ class OrderController extends Controller
      *
      * @response 201 {
      *  "message": "Order created",
+     *  "data": [order],
      * }
      */
     public function store(Request $request)
@@ -122,6 +123,7 @@ class OrderController extends Controller
 
         return response([
             "message" => "Order created",
+            "data" => new OrderResource($order),
         ], 201);
     }
 
@@ -165,9 +167,7 @@ class OrderController extends Controller
         // Update orders information
         $order->update($params);
 
-        return response([
-            "order" => $order,
-        ]);    
+        return new OrderResource($order);
     }
 
     /**

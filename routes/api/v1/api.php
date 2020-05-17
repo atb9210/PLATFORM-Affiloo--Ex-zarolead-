@@ -25,29 +25,28 @@ Route::post('/refresh-token', 'api\v1\Auth\LoginController@refreshToken');
 Route::post('/register', 'api\v1\Auth\RegisterController@register');
 
 /* Users routes */
-/*
-Route::get('/users', 'api\v1\UserController@index')->middleware('auth:api');
-Route::get('/users/{id}', 'api\v1\UserController@show')->middleware('auth:api');
-Route::put('/users/{id}', 'api\v1\UserController@update')->middleware('auth:api');
-Route::delete('/users/{id}', 'api\v1\UserController@destroy')->middleware('auth:api');
-*/
 Route::apiResource('users', 'api\v1\UserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api');
 
 /* Orders routes */
-/*
-Route::get('/orders', 'api\v1\OrderController@index')->middleware('auth:api');
-Route::get('/order/{id}', 'api\v1\OrderController@show')->middleware('auth:api');
-Route::put('/order/{id}', 'api\v1\OrderController@update')->middleware('auth:api');
-Route::delete('/order/{id}', 'api\v1\OrderController@destroy')->middleware('auth:api');
-*/
 Route::apiResource('orders', 'api\v1\OrderController')->except([
     'create', 'edit', 'store',
 ])->middleware('auth:api');
 Route::post('orders', 'api\v1\OrderController@store');
 
+/* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Tags routes */
+Route::apiResource('tags', 'api\v1\TagController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Advertisers routes */
+Route::apiResource('advertisers', 'api\v1\AdvertiserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');

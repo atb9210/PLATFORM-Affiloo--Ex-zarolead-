@@ -20,6 +20,7 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'tag' => $this->tag->name,
             'advertiser' => $this->advertiser->name,
+            'country' => $this->country,
         ];
     }
 }

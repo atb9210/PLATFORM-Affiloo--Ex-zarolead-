@@ -12,141 +12,134 @@ use App\Http\Resources\api\v1\ProductResource;
 class ProductController extends Controller
 {
     /**
-     * Get all users list.
+     * Get all products list.
      *
      * @response {
-     *  "data": [users],
+     *  "data": [products],
      * }
      */
     public function index()
     {
         $this->authorize('viewAny', 'App\Product');
 
-        return ProductResource::collection(Product::all());
+        return ProductResource::collection(Product::where('archived', 0)->get());
     }
 
     /**
-     * Get user's informations.
+     * Get product's informations.
      *
-     * @urlParam id int required User's id
+     * @urlParam id int required Product's id
      *
      * @response {
-     *  "data": user,
+     *  "data": product,
      * }
      */
     public function show($id)
     {
-        $user = User::findOrFail($id);
-        $this->authorize('view', $user);
+        $product = Product::findOrFail($id);
+        $this->authorize('view', $product);
 
-        return new ProductResource($user);
+        if ($product->archived) {
+            return response([
+                "message" => "That product is archived"
+            ], 403);
+        }
+
+        return new ProductResource($product);
     }
 
     /**
-     * Update the user's fields.
+     * Create a new product.
      *
-     * @urlParam id int required User's id
+     * @bodyParam name string required Product's name
+     * @bodyParam tag_id int required Product's tag id
+     * @bodyParam advertiser_id int required Product's advertiser id
+     * @bodyParam country string Country
      *
-     * @bodyParam name string User's new name
-     * @bodyParam email string User's new email
+     * @response 201 {
+     *  "message": "Product created",
+     *  "data": [product],
+     * }
+     */
+    public function store(Request $request)
+    {
+        // Params validation
+        $params = $request->validate([
+            'name' => 'required|string|min:3',
+            'tag_id' => 'required|integer|exists:tags,id',
+            'advertiser_id' => 'required|integer|exists:advertisers,id',
+            'country' => 'string|min:1',
+        ]);
+
+        $product = Product::create($params);
+
+        return response([
+            "message" => "Product created",
+            "data" => new ProductResource($product),
+        ], 201);
+    }
+
+
+
+    /**
+     * Update the product's fields.
+     *
+     * @urlParam id int required Product's id
+     *
+     * @bodyParam name string Product's new name
+     * @bodyParam tag_id int Product's new tag ID
+     * @bodyParam advertiser_id int Product's new advertiser ID
+     * @bodyParam country string Product's new country
      *
      * @response {
-     *  "data": user,
+     *  "data": product,
      * }
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $product = Product::findOrFail($id);
+        $this->authorize('update', $product);
 
-        $this->authorize('update', $user);
+        if ($product->archived) {
+            return response([
+                "message" => "That product is archived"
+            ], 403);
+        }
 
         // Param validation
         $data = $request->validate([
             'name' => 'string|min:3|max:255',
-            'email' => 'email|min:4|max:255',
+            'tag_id' => 'integer|min:1|exists:tags,id',
+            'advertiser_id' => 'integer|min:1|exists:advertisers,id',
+            'country' => 'string|min:1|max:255',
         ]);
 
-        $user->update($data);
+        $product->update($data);
 
-        return ProductResource($user);
+        return new ProductResource($product);
     }
 
     /**
-     * Delete the specified user.
+     * Delete the specified product.
      *
-     * @urlParam id int required User's id
+     * @urlParam id int required Product's id
      *
      * @response {
-     *  "message": "User archived",
+     *  "message": "Product has been archived",
      * }
      */
     public function destroy($id)
     {
-        $user = User::findOrFail($id);
+        $product = Product::findOrFail($id);
 
-        $this->authorize('delete', $user);
+        $this->authorize('delete', $product);
 
-        // Archive the user
-        $user->archived = 1;
-        $user->save();
+        // Archive the product
+        $product->archived = 1;
+        $product->save();
 
         return response([
-            'message' => 'User archived'
+            'message' => 'Product has been archived'
         ]);
-    }
-
-    /**
-     * Change user's roles.
-     *
-     * @urlParam id int required User's id
-     *
-     * @bodyParam admin boolean Admin role
-     * @bodyParam mediabuyer boolean Admin role
-     * @bodyParam affiliate boolean Admin role
-     * @bodyParam advertiser boolean Admin role
-     * @bodyParam accountant boolean Admin role
-     *
-     * @response {
-     *  "data": user,
-     * }
-     */
-    public function changeRoles(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        $this->authorize('changeRoles', $user);
-
-        // Param validation
-        $data = $request->validate([
-            'admin' => 'boolean',
-            'mediabuyer' => 'boolean',
-            'affiliate' => 'boolean',
-            'advertiser' => 'boolean',
-            'accountant' => 'boolean',
-        ]);
-
-        // User cannot remove himself admin role
-        if (Auth::user()->id == $user->id && isset($data['admin']) && !$data['admin']) {
-            return response([
-                "message" => "You cannot remove admin role to yourself."
-            ], 403);
-        }
-
-        // Change roles
-        foreach ($data as $name => $value) {
-            $role = Role::where('name', $name)->first();
-            if ($value) {
-                if (!$user->roles()->where('id', $role->id)->exists()) {
-                    $user->roles()->attach($role->id);
-                }
-            } else {
-                if ($user->roles()->where('id', $role->id)->exists()) {
-                    $user->roles()->detach($role->id);
-                }
-            }
-        }
-        Auth::user()->refresh();
-
-        return new ProductResource(Auth::user());
     }
 }
