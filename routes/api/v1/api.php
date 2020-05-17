@@ -50,3 +50,13 @@ Route::apiResource('tags', 'api\v1\TagController')->except([
 Route::apiResource('advertisers', 'api\v1\AdvertiserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+/* Traffic source routes */
+Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Landing routes */
+Route::apiResource('landings', 'api\v1\LandingController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
