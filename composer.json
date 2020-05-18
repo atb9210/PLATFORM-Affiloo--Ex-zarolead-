@@ -12,7 +12,8 @@
         "laravel/passport": "^9.0",
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.0",
-        "smalot/pdfparser": "^0.14.0"
+        "smalot/pdfparser": "^0.14.0",
+        "spatie/flysystem-dropbox": "^1.2"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

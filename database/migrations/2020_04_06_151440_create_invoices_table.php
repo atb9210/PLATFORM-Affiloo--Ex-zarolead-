@@ -24,6 +24,7 @@ class CreateInvoicesTable extends Migration {
             $table->decimal('amount', 9, 2)->default(0.0);
             $table->string('currency')->nullable();
             $table->json('info')->nullable();
+            $table->string('pathname')->nullable();
             $table->string('original_file_name')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);

@@ -51,17 +51,23 @@ Route::apiResource('advertisers', 'api\v1\AdvertiserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
-/* Traffic source routes */
+/* Traffic sources routes */
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
-/* Landing routes */
+/* Landings routes */
 Route::apiResource('landings', 'api\v1\LandingController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
-/* Form routes */
+/* Forms routes */
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+/* Invoices routes */
+Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
+    'create', 'edit', 'update',
+])->middleware('auth:api');
+Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api');
