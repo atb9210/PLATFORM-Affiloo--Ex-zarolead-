@@ -11,8 +11,12 @@ class Landing extends Model {
      * @var array
      */
     protected $fillable = [
-        'name', 'product_id', 'tag_id', 'url', 'country'
+        'name', 'campaign_id', 'product_id', 'tag_id', 'url', 'country'
     ];
+
+    public function campaign() {
+        return $this->belongsTo('App\Campaign', 'campaign_id');
+    }
 
 	public function product() {
 		return $this->belongsTo('App\Product', 'product_id');

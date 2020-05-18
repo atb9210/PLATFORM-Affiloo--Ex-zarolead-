@@ -14,6 +14,10 @@ class Network extends Model {
         'name',
     ];
 
+    protected $casts = [
+        'api' => 'array'
+    ];
+
     public function orders() {
         return $this->hasMany('App\Order');
     }

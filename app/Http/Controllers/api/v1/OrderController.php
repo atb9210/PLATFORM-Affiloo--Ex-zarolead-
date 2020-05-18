@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Order as Order;
 use App\Http\Resources\api\v1\OrderResource;
-
 use App\OrderStatus;
+use App\Form;
 
 class OrderController extends Controller
 {
@@ -112,18 +112,26 @@ class OrderController extends Controller
             'commission' => 'required|numeric|min:1',
             'sub_commission' => 'required|numeric|min:1',
             'network_id' => 'required|integer|min:1|exists:networks,id',
+
+            'form_id' => 'required|integer|exists:forms,id',
+            'network_data' => 'required|json',
         ]);
+
+        $form = Form::findOrFail($params['form_id']);
+        $network_data = json_decode($params['network_data'], TRUE);
+        $network_params = json_decode($form->network_params, TRUE);
 
         // Create order
         $params['order_status_id'] = OrderStatus::NOT_SENT;
         $order = Order::create($params);
 
-        // @TODO: send order to the network
-        // ...
+        // Send order to the network
+        $api_call = $order->sendToNetwork($network_data, $network_params);
 
         return response([
             "message" => "Order created",
             "data" => new OrderResource($order),
+            "api_call" => $api_call,
         ], 201);
     }
 

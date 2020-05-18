@@ -52,6 +52,7 @@ class FormController extends Controller
      * Create a new form.
      *
      * @bodyParam name string required Form's name
+     * @bodyParam campaign_id int required Form's campaign id
      * @bodyParam network_id int required Form's network id
      * @bodyParam product_id int required Form's product id
      * @bodyParam quantity string required Product's quantity
@@ -59,6 +60,7 @@ class FormController extends Controller
      * @bodyParam commission float required Product's conversion commission
      * @bodyParam sub_commission float required Product's conversion sub commission
      * @bodyParam traffic_source_id int required Form's traffic source id
+     * @bodyParam network_params json required Form params depending on the network
      *
      * @response 201 {
      *  "message": "Form created",
@@ -72,21 +74,39 @@ class FormController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
+            'campaign_id' => 'required|integer|exists:campaigns,id',
             'network_id' => 'required|integer|exists:networks,id',
             'product_id' => 'required|integer|exists:products,id',
             'quantity' => 'string|min:1',
-            'price' => 'required|numeric',
-            'commission' => 'required|numeric',
-            'sub_commission' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
+            'commission' => 'required|numeric|min:0',
+            'sub_commission' => 'required|numeric|min:0',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
+            'network_params' => 'required|json',
         ]);
         $params['user_id'] = Auth::user()->id;
 
+        // Create form
         $form = Form::create($params);
+
+        // Generate HTML
+        $params['form_id'] = $form->id;
+        $params['network'] = $form->network->name;
+        $params['network_params'] = json_decode($params['network_params'], TRUE);
+        $output = Form::generateHTML($params);
+
+        if (!$output['error']) {
+            $form->info = $output['info'];
+
+            $form->save();
+        } else {
+            $form->delete();
+        }
 
         return response([
             "message" => "Form created",
             "data" => new FormResource($form),
+            "html" => $output['form_html'],
         ], 201);
     }
 

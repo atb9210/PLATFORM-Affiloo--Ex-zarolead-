@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\Auth;
 
 /* Test routes */
 
+Route::get('/form_test', function () {
+    return view('form_test');
+})->name('form_test');
+
 /*
 Route::get('/mobile-form', function () {
 	return view('mobile-form');

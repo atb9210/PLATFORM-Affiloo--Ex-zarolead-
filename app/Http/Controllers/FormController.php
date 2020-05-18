@@ -191,6 +191,8 @@ class FormController extends Controller {
     }
 
     public function visited(Request $request) {
+        echo "BYEEE";
+        exit();
         $formStats = FormStats::getObject($request->input('form_id'), date('Y-m-d'));
         $formStats->visits += 1;
         $formStats->save();

@@ -22,12 +22,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 // Orders
 Route::get('orders', 'OrderController@index');
 Route::get('order/{id}', 'OrderController@show');
-Route::post('order', 'OrderController@store');
+Route::post('order', 'api\v1\OrderController@store');
 Route::put('order', 'OrderController@store');
 Route::delete('order/{id}', 'OrderController@delete');
 
 Route::get('order_sent_to_network/{id}', 'OrderController@orderSentToNetwork');
 
 // Form
-Route::post('form_visited', 'FormController@visited');
+Route::post('form_visited', 'FormController@visited')->middleware('cors');
 Route::post('form_set_daily_cost', 'FormController@setDailyCost');

@@ -14,14 +14,16 @@ class CreateLandingsTable extends Migration {
         Schema::create('landings', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->bigInteger('product_id')->unsigned();
+            $table->bigInteger('campaign_id')->unsigned();
+            $table->bigInteger('form_id')->unsigned();
             $table->bigInteger('tag_id')->unsigned();
             $table->string('url');
             $table->string('country')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
 
-			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('campaign_id')->references('id')->on('campaigns');
+			$table->foreign('form_id')->references('id')->on('forms');
 			$table->foreign('tag_id')->references('id')->on('tags');
         });
     }

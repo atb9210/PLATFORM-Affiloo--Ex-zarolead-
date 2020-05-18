@@ -69,7 +69,7 @@ class OrderController extends Controller {
         $order->name = $request->input('name');
         $order->phone = $request->input('phone');
         $order->quantity = $request->input('quantity');
-		$order->product = $request->input('product');
+		$order->product_id = $request->input('product_id');
 
 		$order->commission = $request->input('order_commission');
 		$order->network = $request->input('order_network');

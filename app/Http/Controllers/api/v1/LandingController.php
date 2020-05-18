@@ -51,6 +51,7 @@ class LandingController extends Controller
      * Create a new landing.
      *
      * @bodyParam name string required Landing's name
+     * @bodyParam campaign_id int required Landing's campaign id
      * @bodyParam product_id int required Landing's product id
      * @bodyParam tag_id int required Landing's tag id
      * @bodyParam url string required Landing's URL
@@ -68,6 +69,7 @@ class LandingController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
+            'campaign_id' => 'required|integer|exists:campaigns,id',
             'product_id' => 'required|integer|exists:products,id',
             'tag_id' => 'required|integer|exists:tags,id',
             'url' => 'required|url',

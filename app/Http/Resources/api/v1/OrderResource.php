@@ -14,7 +14,7 @@ class OrderResource extends JsonResource {
      */
     public function toArray($request) {
         $commission = $this->sub_commission;
-        if (Auth::user()->hasPermission('order', 'viewCommission')) {
+        if (Auth::check() && Auth::user()->hasPermission('order', 'viewCommission')) {
             $commission = $this->commission;
         }
 
