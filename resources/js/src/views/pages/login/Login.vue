@@ -28,6 +28,14 @@
                   <p>Welcome back, please login to your account.</p>
                 </div>
 
+
+                <vs-tabs>
+                  <vs-tab label="Login">
+                    <login-api></login-api>
+                  </vs-tab>
+                </vs-tabs>
+
+                <!--
                 <vs-tabs>
                   <vs-tab label="JWT">
                     <login-jwt></login-jwt>
@@ -41,6 +49,7 @@
                     <login-auth0></login-auth0>
                   </vs-tab>
                 </vs-tabs>
+                -->
 
               </div>
             </div>
@@ -53,16 +62,19 @@
 
 
 <script>
-import LoginJwt from './LoginJWT.vue'
-import LoginFirebase from './LoginFirebase.vue'
-import LoginAuth0 from './LoginAuth0.vue'
+import auth from '@/auth/authService'
+import LoginApi from './LoginApi.vue'
 
 export default {
   components: {
-    LoginJwt,
-    LoginFirebase,
-    LoginAuth0
-  }
+    LoginApi,
+  },
+  created() {
+    if (this.$auth.isAuthenticated()) {
+        // Navigate User to homepage
+        this.$router.push(this.$router.currentRoute.query.to || '/')
+    }
+  },
 }
 </script>
 

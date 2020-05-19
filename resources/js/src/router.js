@@ -1260,7 +1260,7 @@ const router = new Router({
         // MY ROUTES
         // =============================================================================
         {
-          path: '/app/users',
+          path: '/dashboard/users',
           name: 'users',
           component: () => import('./views/Users.vue'),
           meta: {
@@ -1273,7 +1273,7 @@ const router = new Router({
           }
         },
         {
-          path: '/app/orders',
+          path: '/dashboard/orders',
           name: 'orders',
           component: () => import('./views/Orders.vue'),
           meta: {

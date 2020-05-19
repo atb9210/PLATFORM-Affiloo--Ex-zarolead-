@@ -40,8 +40,8 @@
 export default {
   data () {
     return {
-      email: 'test@test.com',
-      password: 'test123',
+      email: 'dev@zarolead.com',
+      password: 'dev123',
       checkbox_remember_me: false
     }
   },

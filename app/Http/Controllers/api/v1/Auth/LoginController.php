@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Passport\Client;
 
 use App\User;
 
@@ -18,37 +19,53 @@ class LoginController extends Controller
      * @bodyParam password string required User's password
      *
      * @response {
-     *  "user" => [user],
-     *  "access_token" => [access_token],
+     *  "user" => user,
+     *  "token" => {
+     *      "token_type" => "Bearer",
+     *      "expires_in" => expires_in_seconds,
+     *      "access_token" => access_token,
+     *      "refresh_token" => refresh_token,
      * }
      */
     public function login(Request $request)
     {
         // Param validation
-        $data = $request->validate([
+        $params = $request->validate([
             'email' => 'required|email|min:4|max:255',
             'password' => 'required|string',
         ]);
 
         // Check if the user is archived
-        if (User::where('email', $data['email'])->where('archived', 1)->get()->count()) {
+        if (User::where('email', $params['email'])->where('archived', 1)->get()->count()) {
             return response([
                 'message' => 'User archived!'
             ], 404);
         }
+
+        $passwordGrantClient = Client::where('password_client', 1)->first();
+        $data = [
+            'grant_type' => 'password',
+            'client_id' => $passwordGrantClient->id,
+            'client_secret' => $passwordGrantClient->secret,
+            'username' => $params['email'],
+            'password' => $params['password'],
+            'scope' => '*',
+        ];
+        $tokenRequest = Request::create(route('passport.token'), 'post', $data);
+
+        $result = app()->handle($tokenRequest);
         
         // Login
-        if (!Auth::attempt($data)) {
+        if (!Auth::attempt($params)) {
             return response([
                 'message' => 'Invalid login credentials!'
             ], 401);
         }
 
         // Generate access token
-        $accessToken = Auth::user()->createToken('authToken')->accessToken;
         return response([
             'user' => Auth::user(),
-            'access_token' => $accessToken,
+            'token' => json_decode($result->getContent()),
         ]);
     }
 

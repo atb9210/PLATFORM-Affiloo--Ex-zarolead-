@@ -63,7 +63,9 @@ export default{
           this.users = response.data.data
           this.adjustUsersArray()
         })
-        .catch()
+        .catch((error) => {
+          console.log(error.data);
+        })
   }
 }
 </script>

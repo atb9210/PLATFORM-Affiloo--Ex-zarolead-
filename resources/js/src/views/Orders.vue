@@ -10,7 +10,7 @@
 
 <template>
     <div id="table-demo">
-        <orders-table :orders="orders"></orders-table>
+        <orders-table></orders-table>
     </div>
 </template>
 
@@ -29,11 +29,6 @@ export default{
   methods: {
   },
   created() {
-      this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
-        .then((response) => {
-          this.orders = response.data.data
-        })
-        .catch()
   }
 }
 </script>

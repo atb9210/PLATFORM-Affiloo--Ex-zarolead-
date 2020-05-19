@@ -91690,7 +91690,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
       path: '/apps/calendar/vue-simple-calendar',
       name: 'calendar-simple-calendar',
       component: function component() {
-        return Promise.all(/*! import() */[__webpack_require__.e(9), __webpack_require__.e(122), __webpack_require__.e(83)]).then(__webpack_require__.bind(null, /*! ./views/apps/calendar/SimpleCalendar.vue */ "./resources/js/src/views/apps/calendar/SimpleCalendar.vue"));
+        return Promise.all(/*! import() */[__webpack_require__.e(9), __webpack_require__.e(87), __webpack_require__.e(83), __webpack_require__.e(129)]).then(__webpack_require__.bind(null, /*! ./views/apps/calendar/SimpleCalendar.vue */ "./resources/js/src/views/apps/calendar/SimpleCalendar.vue"));
       },
       meta: {
         rule: 'editor',
@@ -93000,7 +93000,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
       path: '/extensions/datepicker',
       name: 'extra-component-datepicker',
       component: function component() {
-        return Promise.all(/*! import() */[__webpack_require__.e(9), __webpack_require__.e(24)]).then(__webpack_require__.bind(null, /*! @/views/components/extra-components/datepicker/Datepicker.vue */ "./resources/js/src/views/components/extra-components/datepicker/Datepicker.vue"));
+        return Promise.all(/*! import() */[__webpack_require__.e(9), __webpack_require__.e(87), __webpack_require__.e(128)]).then(__webpack_require__.bind(null, /*! @/views/components/extra-components/datepicker/Datepicker.vue */ "./resources/js/src/views/components/extra-components/datepicker/Datepicker.vue"));
       },
       meta: {
         breadcrumb: [{
@@ -93234,7 +93234,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
     // MY ROUTES
     // =============================================================================
     {
-      path: '/app/users',
+      path: '/dashboard/users',
       name: 'users',
       component: function component() {
         return __webpack_require__.e(/*! import() */ 88).then(__webpack_require__.bind(null, /*! ./views/Users.vue */ "./resources/js/src/views/Users.vue"));
@@ -93251,10 +93251,10 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         rule: 'editor'
       }
     }, {
-      path: '/app/orders',
+      path: '/dashboard/orders',
       name: 'orders',
       component: function component() {
-        return Promise.all(/*! import() */[__webpack_require__.e(3), __webpack_require__.e(8), __webpack_require__.e(87)]).then(__webpack_require__.bind(null, /*! ./views/Orders.vue */ "./resources/js/src/views/Orders.vue"));
+        return Promise.all(/*! import() */[__webpack_require__.e(3), __webpack_require__.e(9), __webpack_require__.e(8), __webpack_require__.e(130)]).then(__webpack_require__.bind(null, /*! ./views/Orders.vue */ "./resources/js/src/views/Orders.vue"));
       },
       meta: {
         breadcrumb: [{
@@ -93548,10 +93548,12 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _http_requests_auth_jwt_index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../http/requests/auth/jwt/index.js */ "./resources/js/src/http/requests/auth/jwt/index.js");
-/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.cjs.js");
-/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(firebase_app__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
-/* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/router */ "./resources/js/src/router.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.cjs.js");
+/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(firebase_app__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
+/* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/router */ "./resources/js/src/router.js");
 /*=========================================================================================
   File Name: moduleAuthActions.js
   Description: Auth Module Actions
@@ -93560,6 +93562,7 @@ __webpack_require__.r(__webpack_exports__);
   Author: Pixinvent
   Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
+
 
 
 
@@ -93576,7 +93579,7 @@ __webpack_require__.r(__webpack_exports__);
 
     if (!payload.checkbox_remember_me) {
       // Change firebase Persistence
-      firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().setPersistence(firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth.Auth.Persistence.SESSION) // If success try to login
+      firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().setPersistence(firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth.Auth.Persistence.SESSION) // If success try to login
       .then(function () {
         dispatch('login', newPayload);
       }) // If error notify
@@ -93617,7 +93620,7 @@ __webpack_require__.r(__webpack_exports__);
     } // Try to sigin
 
 
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().signInWithEmailAndPassword(payload.userDetails.email, payload.userDetails.password).then(function (result) {
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().signInWithEmailAndPassword(payload.userDetails.email, payload.userDetails.password).then(function (result) {
       // Set FLAG username update required for updating username
       var isUsernameUpdateRequired = false; // if username is provided and updateUsername FLAG is true
       // set local username update FLAG to true
@@ -93639,7 +93642,7 @@ __webpack_require__.r(__webpack_exports__);
       // set new user data in localstorage
 
       if (!isUsernameUpdateRequired) {
-        _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+        _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
         commit('UPDATE_USER_INFO', result.user.providerData[0], {
           root: true
         });
@@ -93673,9 +93676,9 @@ __webpack_require__.r(__webpack_exports__);
       return false;
     }
 
-    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth.GoogleAuthProvider();
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().signInWithPopup(provider).then(function (result) {
-      _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth.GoogleAuthProvider();
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().signInWithPopup(provider).then(function (result) {
+      _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
       commit('UPDATE_USER_INFO', result.user.providerData[0], {
         root: true
       });
@@ -93706,9 +93709,9 @@ __webpack_require__.r(__webpack_exports__);
       return false;
     }
 
-    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth.FacebookAuthProvider();
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().signInWithPopup(provider).then(function (result) {
-      _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth.FacebookAuthProvider();
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().signInWithPopup(provider).then(function (result) {
+      _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
       commit('UPDATE_USER_INFO', result.user.providerData[0], {
         root: true
       });
@@ -93739,9 +93742,9 @@ __webpack_require__.r(__webpack_exports__);
       return false;
     }
 
-    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth.TwitterAuthProvider();
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().signInWithPopup(provider).then(function (result) {
-      _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth.TwitterAuthProvider();
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().signInWithPopup(provider).then(function (result) {
+      _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
       commit('UPDATE_USER_INFO', result.user.providerData[0], {
         root: true
       });
@@ -93772,9 +93775,9 @@ __webpack_require__.r(__webpack_exports__);
       return false;
     }
 
-    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth.GithubAuthProvider();
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().signInWithPopup(provider).then(function (result) {
-      _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+    var provider = new firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth.GithubAuthProvider();
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().signInWithPopup(provider).then(function (result) {
+      _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
       commit('UPDATE_USER_INFO', result.user.providerData[0], {
         root: true
       });
@@ -93792,7 +93795,7 @@ __webpack_require__.r(__webpack_exports__);
   registerUser: function registerUser(_ref7, payload) {
     var dispatch = _ref7.dispatch;
     // create user using firebase
-    firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().createUserWithEmailAndPassword(payload.userDetails.email, payload.userDetails.password).then(function () {
+    firebase_app__WEBPACK_IMPORTED_MODULE_2___default.a.auth().createUserWithEmailAndPassword(payload.userDetails.email, payload.userDetails.password).then(function () {
       payload.notify({
         title: 'Account Created',
         text: 'You are successfully registered!',
@@ -93831,7 +93834,7 @@ __webpack_require__.r(__webpack_exports__);
       // Reload current page
 
       if (payload.isReloadRequired) {
-        _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/');
+        _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
       }
     })["catch"](function (err) {
       payload.notify({
@@ -93850,7 +93853,7 @@ __webpack_require__.r(__webpack_exports__);
     return new Promise(function (resolve, reject) {
       _http_requests_auth_jwt_index_js__WEBPACK_IMPORTED_MODULE_0__["default"].login(payload.userDetails.email, payload.userDetails.password).then(function (response) {
         // Navigate User to homepage
-        _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/'); // Set accessToken
+        _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/'); // Set accessToken
 
         localStorage.setItem('accessToken', response.data.access_token); // Update user details
 
@@ -93882,7 +93885,7 @@ __webpack_require__.r(__webpack_exports__);
 
       _http_requests_auth_jwt_index_js__WEBPACK_IMPORTED_MODULE_0__["default"].registerUser(displayName, email, password).then(function (response) {
         // Redirect User
-        _router__WEBPACK_IMPORTED_MODULE_3__["default"].push(_router__WEBPACK_IMPORTED_MODULE_3__["default"].currentRoute.query.to || '/'); // Update data in localStorage
+        _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/'); // Update data in localStorage
 
         localStorage.setItem('accessToken', response.data.access_token);
         commit('UPDATE_USER_INFO', response.data.user, {
@@ -93900,6 +93903,40 @@ __webpack_require__.r(__webpack_exports__);
         resolve(response);
       });
     });
+  },
+  loginAPI: function loginAPI(_ref11, payload) {
+    var commit = _ref11.commit;
+    return new Promise(function (resolve, reject) {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/api/v1/login', {
+        email: payload.email,
+        password: payload.password
+      }).then(function (response) {
+        // Set accessToken
+        var expDate = new Date(Date.now() + response.data.token.expires_in * 1000);
+        localStorage.setItem('accessToken', response.data.token.access_token);
+        localStorage.setItem('tokenExpiry', expDate);
+        localStorage.setItem('loggedIn', 'true');
+        console.log('asd: ' + localStorage.getItem('tokenExpiry'));
+        console.log('asd: ' + localStorage.getItem('loggedIn')); // Update user details
+
+        commit('UPDATE_USER_INFO', response.data.user, {
+          root: true
+        }); // Set bearer token in axios
+
+        commit('SET_BEARER', response.data.token.access_token); // Navigate User to homepage
+
+        _router__WEBPACK_IMPORTED_MODULE_4__["default"].push(_router__WEBPACK_IMPORTED_MODULE_4__["default"].currentRoute.query.to || '/');
+        resolve(response);
+      })["catch"](function (error) {
+        reject(error);
+      });
+    });
+  },
+  logoutAPI: function logoutAPI(_ref12) {
+    var commit = _ref12.commit;
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userInfo');
   }
 });
 
@@ -93979,10 +94016,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   isUserLoggedIn: function isUserLoggedIn() {
-    var isAuthenticated = false; // get firebase current user
-
-    var firebaseCurrentUser = firebase_app__WEBPACK_IMPORTED_MODULE_1___default.a.auth().currentUser;
-    if (_auth_authService__WEBPACK_IMPORTED_MODULE_0__["default"].isAuthenticated() || firebaseCurrentUser) isAuthenticated = true;else isAuthenticated = false;
+    var isAuthenticated = false;
+    if (_auth_authService__WEBPACK_IMPORTED_MODULE_0__["default"].isAuthenticated()) isAuthenticated = true;else isAuthenticated = false;
     return localStorage.getItem('userInfo') && isAuthenticated;
   }
 });

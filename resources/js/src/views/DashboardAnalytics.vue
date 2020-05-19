@@ -313,13 +313,13 @@ export default {
   },
   created () {
     // Fetch orders
+    console.log("Token: " + localStorage.getItem('accessToken'))
     this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
       .then((response) => { this.orders = response.data })
 
     // Calculate orders series
     // TODO:
     this.ordersSeries.commission[0].data = [3, 8, 9, 5, 10, 8, 7]
-    console.log(this.ordersSeries.commission)
 
     //  User Reward Card
     this.$http.get('/api/user/checkpoint-reward')

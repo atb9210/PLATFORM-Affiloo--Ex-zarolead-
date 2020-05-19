@@ -9,148 +9,183 @@
 
 
 <template>
-  <div id="ag-grid-demo">
-    <vx-card>
+    <vx-card title="Miscellaneous" code-toggler>
 
-      <!-- TABLE ACTION ROW -->
-      <div class="flex flex-wrap justify-between items-center">
+        <p class="flex items-center mb-4">
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders">Delete</vs-button> 
+        </p>
 
-        <!-- ITEMS PER PAGE -->
-        <div class="mb-4 md:mb-0 mr-4 ag-grid-table-actions-left">
-          <vs-dropdown vs-trigger-click class="cursor-pointer">
-            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-              <span class="mr-2">{{ currentPage * paginationPageSize - (paginationPageSize - 1) }} - {{ orders.length - currentPage * paginationPageSize > 0 ? currentPage * paginationPageSize : orders.length }} of {{ orders.length }}</span>
-              <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+        <div v-if="showFilters">
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>From</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                </div>
             </div>
-            <!-- <vs-button class="btn-drop" type="line" color="primary" icon-pack="feather" icon="icon-chevron-down"></vs-button> -->
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>To</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                </div>
+            </div>
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>Status</label>
+                    <v-select :options="orderStatuses" v-model="filters.status" />
+                </div>
+            </div>
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>Product</label>
+                    <v-select :options="orderProducts" v-model="filters.product" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                </div>
+            </div>
+            <div class="vx-row">
+                <div class="vx-col w-full">
+                    <vs-button class="mr-3 mb-2" @click="applyFilters">Submit</vs-button>
+                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                </div>
+            </div>
+        </div>
+
+        <vs-dropdown vs-trigger-click class="cursor-pointer">
+            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
+                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ orders.length - currentPage * maxItems > 0 ? currentPage * maxItems : orders.length }} of {{ orders.length }}</span>
+                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+            </div>
             <vs-dropdown-menu>
-
-              <vs-dropdown-item @click="gridApi.paginationSetPageSize(20)">
-                <span>20</span>
-              </vs-dropdown-item>
-              <vs-dropdown-item @click="gridApi.paginationSetPageSize(50)">
-                <span>50</span>
-              </vs-dropdown-item>
-              <vs-dropdown-item @click="gridApi.paginationSetPageSize(100)">
-                <span>100</span>
-              </vs-dropdown-item>
-              <vs-dropdown-item @click="gridApi.paginationSetPageSize(150)">
-                <span>150</span>
-              </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 20">
+                    <span>20</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 50">
+                    <span>50</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 100">
+                    <span>100</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 150">
+                    <span>150</span>
+                </vs-dropdown-item>
             </vs-dropdown-menu>
-          </vs-dropdown>
-        </div>
+        </vs-dropdown>
 
-        <!-- TABLE ACTION COL-2: SEARCH & EXPORT AS CSV -->
-        <div class="flex flex-wrap items-center justify-between ag-grid-table-actions-right">
-          <vs-input class="mb-4 md:mb-0 mr-4" v-model="searchQuery" @input="updateSearchQuery" placeholder="Search..." />
-          <vs-button class="mb-4 md:mb-0" @click="gridApi.exportDataAsCsv()">Export as CSV</vs-button>
-        </div>
-      </div>
-      <ag-grid-vue
-        ref="agGridTable"
-        :gridOptions="gridOptions"
-        class="ag-theme-material w-100 my-4 ag-grid-table"
-        :columnDefs="columnDefs"
-        :defaultColDef="defaultColDef"
-        :rowData="orders"
-        rowSelection="multiple"
-        colResizeDefault="shift"
-        :animateRows="true"
-        :floatingFilter="true"
-        :pagination="true"
-        :paginationPageSize="paginationPageSize"
-        :suppressPaginationPanel="true"
-        :enableRtl="$vs.rtl">
-      </ag-grid-vue>
-      <vs-pagination
-        :total="totalPages"
-        :max="maxPageNumbers"
-        v-model="currentPage" />
+        <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="orders" :currentPage="currentPage" @change-page="onPageChanged">
+
+            <template slot="thead">
+                <vs-th sort-key="email">Id</vs-th>
+                <vs-th sort-key="created_at">Date</vs-th>
+                <vs-th sort-key="product">Product</vs-th>
+                <vs-th sort-key="username">Name</vs-th>
+                <vs-th sort-key="roles">Phone</vs-th>
+                <vs-th sort-key="quantity">Q.ty</vs-th>
+                <vs-th sort-key="commission">Commission</vs-th>
+                <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="network">Network</vs-th>
+            </template>
+
+            <template slot-scope="{data}">
+                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td :data="data[indextr].id">
+                        {{data[indextr].id}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].created_at">
+                        {{data[indextr].created_at}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].product">
+                        {{data[indextr].product}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].name">
+                        {{data[indextr].name}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].phone">
+                        {{data[indextr].phone}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].quantity">
+                        {{data[indextr].quantity}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].commission">
+                        {{data[indextr].commission}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].status">
+                        <span class="flex items-center px-2 py-1 rounded">
+                            <!--<div class="h-3 w-3 rounded-full mr-2" :class="'bg-' + statusColors[data[indextr].status]"></div>{{data[indextr].status}}-->
+                            <vs-chip :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
+                        </span>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].network">
+                        {{data[indextr].network}}
+                    </vs-td>
+
+                </vs-tr>
+            </template>
+        </vs-table>
 
     </vx-card>
-  </div>
 </template>
 
 <script>
 import { AgGridVue } from 'ag-grid-vue'
+import Datepicker from 'vuejs-datepicker'
+import vSelect from 'vue-select'
 
 import '@sass/vuexy/extraComponents/agGridStyleOverride.scss'
 
 export default {
   components: {
-    AgGridVue
+    AgGridVue,
+    Datepicker,
+    'v-select': vSelect,
   },
   props: {
-    orders: Array,
   },
   data () {
     return {
-      searchQuery: '',
-      gridOptions: {},
-      maxPageNumbers: 7,
-      gridApi: null,
-      defaultColDef: {
-        sortable: true,
-        editable: true,
-        resizable: true,
-        suppressMenu: true
+      orders: [],
+      selected: [],
+      deleted: [],
+
+      maxItems: 20,
+
+      statusColors: {
+          'waiting': 'primary',
+          'confirmed': 'success',
+          'not responding': 'warning',
+          'refused': 'danger',
+          'not sent': 'danger',
+          'double': 'warning',
       },
-      columnDefs: [
-        {
-          headerName: 'ID',
-          field: 'id',
-          width: 175,
-          filter: true,
-          checkboxSelection: true,
-          headerCheckboxSelectionFilteredOnly: true,
-          headerCheckboxSelection: true
-        },
-        {
-          headerName: 'Date',
-          field: 'created_at',
-          filter: 'agDateColumnFilter',
-          width: 275
-        },
-        {
-          headerName: 'Product',
-          field: 'product',
-          filter: true,
-          width: 175
-        },
-        {
-          headerName: 'Name',
-          field: 'name',
-          filter: true,
-          width: 250,
-          pinned: 'left'
-        },
-        {
-          headerName: 'Phone',
-          field: 'phone',
-          filter: true,
-          width: 250
-        },
-        {
-          headerName: 'Commission',
-          field: 'commission',
-          filter: true,
-          width: 150
-        },
-        {
-          headerName: 'Quantity',
-          field: 'quantity',
-          filter: true,
-          width: 125
-        },
-        {
-          headerName: 'Network',
-          field: 'network',
-          filter: true,
-          width: 125,
-          editable: false,
-        },
+
+      dateFormat: 'yyyy-MM-dd',
+      filters: {
+        date_from: '',
+        date_to: '',
+        status: '',
+        product: '',
+      },
+      showFilters: false,
+      orderStatuses: [
+        { id: 1, label: 'waiting' },
+        { id: 2, label: 'confirmed' },
+        { id: 3, label: 'not responding' },
+        { id: 4, label: 'refused' },
+        { id: 5, label: 'not sent' },
+        { id: 6, label: 'double' },
       ],
+      orderProducts: [],
     }
   },
   watch: {
@@ -181,9 +216,144 @@ export default {
     }
   },
   methods: {
+    onPageChanged(val) {
+      this.currentPage = val
+    },
     updateSearchQuery (val) {
       this.gridApi.setQuickFilter(val)
+    },
+    resetFilters() {
+      this.filters = {
+        date_from: '',
+        date_to: '',
+        status: '',
+        product: '',
+      }
+      this.applyFilters()
+    },
+    applyFilters() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {}
+      if (this.filters.date_from != '') {
+        data['filter_date_from'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        data['filter_date_to'] = this.filters.date_to
+      }
+      if (this.filters.status != '') {
+        data['filter_status'] = this.filters.status.id
+      }
+      if (this.filters.product != '') {
+        data['filter_product'] = this.filters.product.id
+      }
+
+      // Retrieve orders
+      this.$http.get('/api/v1/orders', { headers, params: data })
+        .then((response) => {
+            console.log(response)
+          this.orders = response.data.data
+          this.$vs.loading.close()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+        })
+    },
+    deleteOrders() {
+      this.$vs.loading()
+
+      this.deleted = []
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.selected.forEach((order) => {
+        this.$http.delete('/api/v1/orders/' + order.id, { headers })
+          .then((response) => {
+            this.deleted.push(order.id)
+            if (this.deleted.length == this.selected.length) {
+              this.$vs.loading.close()
+              this.selected = []
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Order(s) deleted',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.applyFilters()
+            }
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      })
+    },
+  },
+  created() {
+    this.$vs.loading()
+
+    let headers = {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
+
+    // Retrieve products list
+    this.$http.get('/api/v1/products', { headers })
+      .then((response) => {
+        this.orderProducts = []
+        response.data.data.forEach((product) => {
+          this.orderProducts.push({
+            id: product.id,
+            label: product.name,
+          })
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      })
+
+    // Retrieve orders
+    this.$http.get('/api/v1/orders', { headers })
+      .then((response) => {
+        this.orders = response.data.data
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+      })
   },
   mounted () {
     this.gridApi = this.gridOptions.api

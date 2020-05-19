@@ -9,6 +9,7 @@
 
 import jwt from '../../http/requests/auth/jwt/index.js'
 
+import axios from 'axios'
 
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -352,5 +353,39 @@ export default {
     return new Promise((resolve) => {
       jwt.refreshToken().then(response => { resolve(response) })
     })
-  }
+  },
+
+  loginAPI({ commit }, payload) {
+    return new Promise((resolve, reject) => {
+      axios.post('/api/v1/login', { email: payload.email, password: payload.password })
+        .then(response => {
+
+          // Set accessToken
+          let expDate = new Date(Date.now() + response.data.token.expires_in * 1000)
+          localStorage.setItem('accessToken', response.data.token.access_token)
+          localStorage.setItem('tokenExpiry', expDate)
+          localStorage.setItem('loggedIn', 'true')
+          console.log('asd: ' + localStorage.getItem('tokenExpiry'))
+          console.log('asd: ' + localStorage.getItem('loggedIn'))
+
+          // Update user details
+          commit('UPDATE_USER_INFO', response.data.user, {root: true})
+
+          // Set bearer token in axios
+          commit('SET_BEARER', response.data.token.access_token)
+
+          // Navigate User to homepage
+          router.push(router.currentRoute.query.to || '/')
+
+          resolve(response)
+        })
+        .catch(error => { reject(error) })
+    })
+  },
+
+  logoutAPI({ commit }) {
+    localStorage.removeItem('loggedIn')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('userInfo')
+  },
 }
