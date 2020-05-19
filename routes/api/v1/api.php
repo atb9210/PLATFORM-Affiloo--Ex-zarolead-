@@ -71,3 +71,8 @@ Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
     'create', 'edit', 'update',
 ])->middleware('auth:api');
 Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api');
+
+/* Networks routes */
+Route::apiResource('networks', 'api\v1\NetworkController')->except([
+    'create', 'edit',
+])->middleware('auth:api');

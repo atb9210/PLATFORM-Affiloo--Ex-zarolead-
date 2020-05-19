@@ -1285,6 +1285,32 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/advertisers',
+          name: 'advertisers',
+          component: () => import('./views/Advertisers.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Advertisers', active: true }
+            ],
+            pageTitle: 'Advertisers',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/networks',
+          name: 'networks',
+          component: () => import('./views/Networks.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Networks', active: true }
+            ],
+            pageTitle: 'Networks',
+            rule: 'editor'
+          }
+        }
       ]
     },
     // =============================================================================

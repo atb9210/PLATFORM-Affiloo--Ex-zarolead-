@@ -18,6 +18,7 @@ class CreateNetworksTable extends Migration
             $table->string('name');
             $table->json('api')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
         });
     }
 

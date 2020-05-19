@@ -55,6 +55,34 @@ export default [
     i18n: 'Apps',
     items: [
       {
+        url: '/dashboard/users',
+        name: 'Users',
+        slug: 'users',
+        icon: 'UserIcon',
+        i18n: 'Users'
+      },
+      {
+        url: '/dashboard/orders',
+        name: 'Orders',
+        slug: 'orders',
+        icon: 'PackageIcon',
+        i18n: 'Orders'
+      },
+      {
+        url: '/dashboard/advertisers',
+        name: 'Advertisers',
+        slug: 'advertisers',
+        icon: 'LayersIcon',
+        i18n: 'Advertisers'
+      },
+      {
+        url: '/dashboard/networks',
+        name: 'Networks',
+        slug: 'networks',
+        icon: 'GlobeIcon',
+        i18n: 'Networks'
+      },
+      {
         url: '/apps/email',
         name: 'Email',
         slug: 'email',

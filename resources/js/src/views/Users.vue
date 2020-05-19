@@ -58,14 +58,18 @@ export default{
     },
   },
   created() {
-      this.$http.get('/api/v1/users', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
-        .then((response) => {
-          this.users = response.data.data
-          this.adjustUsersArray()
-        })
-        .catch((error) => {
-          console.log(error.data);
-        })
+    this.$vs.loading()
+
+    this.$http.get('/api/v1/users', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
+      .then((response) => {
+        this.users = response.data.data
+        this.adjustUsersArray()
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+        console.log(error);
+      })
   }
 }
 </script>
