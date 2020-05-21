@@ -17,8 +17,18 @@ class LandingResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'product' => $this->product->name,
-            'tag' => $this->tag->name,
+            'campaign' => [
+                'id' => $this->campaign->id,
+                'name' => $this->campaign->name,
+            ],
+            'form' => [
+                'id' => $this->form->id,
+                'name' => $this->form->name,
+            ],
+            'tag' => [
+                'id' => $this->tag->id,
+                'name' => $this->tag->name,
+            ],
             'url' => $this->url,
             'country' => $this->country,
             'created_at' => $this->created_at,

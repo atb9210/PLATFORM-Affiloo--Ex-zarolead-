@@ -9,9 +9,8 @@
 
 
 <template>
-    <vx-card title="Miscellaneous" code-toggler>
+    <vx-card title="Users" code-toggler>
 
-        <p>You can add a <strong>filtered, sorted, paginated and multi selected</strong> table with combination of the <code>search</code>, <code>multiple</code> and <code>pagination</code> properties for example</p><br>
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                 <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ users.length - currentPage * maxItems > 0 ? currentPage * maxItems : users.length }} of {{ users.length }}</span>
@@ -111,26 +110,28 @@ export default {
       data[role] = user.roles[role]
 
       this.$http.post('/api/v1/users/' + user.id + '/change-roles', data, {
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') },
-      }).then((response) => {
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Roles changed',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'success'
+          headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') },
         })
-      }).catch((error) => {
-        this.users[index].roles[role] = !this.users[index].roles[role]
+        .then((response) => {
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Roles changed',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.users[index].roles[role] = !this.users[index].roles[role]
 
-        this.$vs.notify({
-          title: 'Error',
-          text: error.response.data.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
+          this.$vs.notify({
+            title: 'Error',
+            text: error.response.data.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
         })
-      });
     },
     onPageChanged(val) {
       this.currentPage = val

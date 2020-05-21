@@ -26,7 +26,8 @@ class Form extends Model {
     ];
 
     protected $casts = [
-        'info' => 'array'
+        'info' => 'array',
+        'network_params' => 'array',
     ];
 
     public function user() {
@@ -35,6 +36,10 @@ class Form extends Model {
 
     public function campaign() {
         return $this->belongsTo('App\Campaign', 'campaign_id');
+    }
+
+    public function landings() {
+        return $this->hasMany('App\Landing');
     }
 
     public function network() {

@@ -14,8 +14,8 @@ class TagResource extends JsonResource
      */
     public function toArray($request)
     {
-        $bg_color = '';
-        $fg_color = '';
+        $bg_color = '#ffffff';
+        $fg_color = '#000000';
 
         if (isset($this->info['bg_color'])) {
             $bg_color = $this->info['bg_color'];

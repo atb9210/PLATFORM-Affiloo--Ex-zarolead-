@@ -73,8 +73,8 @@ class TagController extends Controller
         $data = [
             'name' => $params['name'],
             'info' => [
-                'bg_color' => '',
-                'fg_color' => '',
+                'bg_color' => '#ffffff',
+                'fg_color' => '#000000',
             ],
         ];
 
@@ -127,11 +127,9 @@ class TagController extends Controller
         ]);
 
         $data = [
-            'info' => [
-                'bg_color' => '',
-                'fg_color' => '',
-            ],
+            'info' => $tag->info
         ];
+
         if (isset($params['name'])) {
             $data['name'] = $params['name'];
         }

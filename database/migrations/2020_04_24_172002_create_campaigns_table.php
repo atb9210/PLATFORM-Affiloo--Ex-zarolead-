@@ -18,6 +18,7 @@ class CreateCampaignsTable extends Migration
             $table->string('name');
             $table->bigInteger('user_id')->unsigned();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
 
 			$table->foreign('user_id')->references('id')->on('users');
         });

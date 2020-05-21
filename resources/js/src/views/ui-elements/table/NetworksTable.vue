@@ -97,6 +97,7 @@ export default {
   },
   methods: {
     retrieveData() {
+      this.selected = []
       this.$vs.loading()
 
       let headers = {

@@ -4,6 +4,10 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+use App\Campaign as Campaign;
+use App\Http\Resources\api\v1\CampaignResource;
 
 class CampaignController extends Controller
 {
@@ -16,9 +20,13 @@ class CampaignController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', 'App\Campaign');
+        $campaigns = Campaign::query();
+        if(!Auth::user()->can('viewAny', 'App\Campaign')) {
+            $campaigns = $campaigns->where('user_id', Auth::user()->id);
+        }
+        $campaigns = $campaigns->where('archived', 0);
 
-        return CampaignResource::collection(Campaign::where('archived', 0)->get());
+        return CampaignResource::collection($campaigns->get());
     }
 
     /**

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Form as Form;
 use App\Http\Resources\api\v1\FormResource;
+use App\Network as Network;
 
 class FormController extends Controller
 {
@@ -85,6 +86,7 @@ class FormController extends Controller
             'network_params' => 'required|json',
         ]);
         $params['user_id'] = Auth::user()->id;
+        $params['network_params'] = json_decode($params['network_params'], TRUE);
 
         // Create form
         $form = Form::create($params);
@@ -92,7 +94,6 @@ class FormController extends Controller
         // Generate HTML
         $params['form_id'] = $form->id;
         $params['network'] = $form->network->name;
-        $params['network_params'] = json_decode($params['network_params'], TRUE);
         $output = Form::generateHTML($params);
 
         if (!$output['error']) {
@@ -125,6 +126,7 @@ class FormController extends Controller
      * @bodyParam commission float Product's conversion commission
      * @bodyParam sub_commission float Product's conversion sub commission
      * @bodyParam traffic_source_id int Form's traffic source id
+     * @bodyParam network_params json required Form params depending on the network
      *
      * @response {
      *  "data": form,
@@ -151,7 +153,9 @@ class FormController extends Controller
             'commission' => 'numeric',
             'sub_commission' => 'numeric',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
+            'network_params' => 'required|json',
         ]);
+        $params['network_params'] = json_decode($params['network_params'], TRUE);
 
         $form->update($params);
 

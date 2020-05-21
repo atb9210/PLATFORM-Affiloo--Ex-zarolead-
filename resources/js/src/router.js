@@ -1257,7 +1257,7 @@ const router = new Router({
 
 
         // =============================================================================
-        // MY ROUTES
+        // DASHBOARD ROUTES
         // =============================================================================
         {
           path: '/dashboard/users',
@@ -1310,7 +1310,156 @@ const router = new Router({
             pageTitle: 'Networks',
             rule: 'editor'
           }
-        }
+        },
+        {
+          path: '/dashboard/tags',
+          name: 'tags',
+          component: () => import('./views/Tags.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Tags', active: true }
+            ],
+            pageTitle: 'Tags',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/products',
+          name: 'products',
+          component: () => import('./views/Products.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Products', active: true }
+            ],
+            pageTitle: 'Products',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/traffic-sources',
+          name: 'traffic-sources',
+          component: () => import('./views/TrafficSources.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Traffic Sources', active: true }
+            ],
+            pageTitle: 'Traffic Sources',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/campaigns',
+          name: 'campaigns',
+          component: () => import('./views/Campaigns.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Campaigns', active: true }
+            ],
+            pageTitle: 'Campaigns',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/forms',
+          name: 'forms',
+          component: () => import('./views/Forms.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Forms', active: true }
+            ],
+            pageTitle: 'Forms',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/landings',
+          name: 'landings',
+          component: () => import('./views/Landings.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Landings', active: true }
+            ],
+            pageTitle: 'Landings',
+            rule: 'editor'
+          }
+        },
+
+        // =============================================================================
+        // REPORTS ROUTES
+        // =============================================================================
+        {
+          path: '/dashboard/reports/users',
+          name: 'report-users',
+          component: () => import('./views/ReportUsers.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Users', active: true }
+            ],
+            pageTitle: 'Report Users',
+            rule: 'editor'
+          }
+        },
+        /*
+        {
+          path: '/dashboard/reports/affiliates',
+          name: 'report-affiliates',
+          component: () => import('./views/ReportAffiliates.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Affiliates', active: true }
+            ],
+            pageTitle: 'Report Affiliates',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/reports/advertisers',
+          name: 'report-advertisers',
+          component: () => import('./views/ReportAdvertisers.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Advertisers', active: true }
+            ],
+            pageTitle: 'Report Advertisers',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/reports/mediabuyers',
+          name: 'report-mediabuyers',
+          component: () => import('./views/ReportMediabuyers.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Mediabuyers', active: true }
+            ],
+            pageTitle: 'Report Mediabuyers',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/reports/products',
+          name: 'report-products',
+          component: () => import('./views/ReportProducts.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Products', active: true }
+            ],
+            pageTitle: 'Report Products',
+            rule: 'editor'
+          }
+        },
+        */
       ]
     },
     // =============================================================================

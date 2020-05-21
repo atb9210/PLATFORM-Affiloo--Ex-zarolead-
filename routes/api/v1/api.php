@@ -76,3 +76,13 @@ Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middl
 Route::apiResource('networks', 'api\v1\NetworkController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+/* Campaigns routes */
+Route::apiResource('campaigns', 'api\v1\CampaignController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Reports routes */
+Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
+    Route::get('users', 'api\v1\ReportController@users')->name('reports.users');
+});

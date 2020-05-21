@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Network as Advertiser;
+use App\Network as Network;
 use App\Http\Resources\api\v1\NetworkResource;
 
 class NetworkController extends Controller
@@ -21,7 +21,7 @@ class NetworkController extends Controller
     {
         $this->authorize('viewAny', 'App\Network');
 
-        return NetworkResource::collection(Advertiser::where('archived', 0)->get());
+        return NetworkResource::collection(Network::where('archived', 0)->get());
     }
 
     /**

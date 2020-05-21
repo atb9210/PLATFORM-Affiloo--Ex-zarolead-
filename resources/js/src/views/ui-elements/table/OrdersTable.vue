@@ -9,14 +9,14 @@
 
 
 <template>
-    <vx-card title="Miscellaneous" code-toggler>
+    <vx-card title="Orders" code-toggler>
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders">Delete</vs-button> 
         </p>
 
-        <div v-if="showFilters">
+        <div v-if="showFilters" class="mb-12">
             <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>From</label>
@@ -47,7 +47,7 @@
             </div>
             <div class="vx-row">
                 <div class="vx-col w-full">
-                    <vs-button class="mr-3 mb-2" @click="applyFilters">Submit</vs-button>
+                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
                     <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
                 </div>
             </div>
@@ -55,7 +55,7 @@
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ orders.length - currentPage * maxItems > 0 ? currentPage * maxItems : orders.length }} of {{ orders.length }}</span>
+                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
                 <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
             </div>
             <vs-dropdown-menu>
@@ -74,7 +74,7 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="orders" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="email">Id</vs-th>
@@ -138,23 +138,19 @@
 </template>
 
 <script>
-import { AgGridVue } from 'ag-grid-vue'
-import Datepicker from 'vuejs-datepicker'
 import vSelect from 'vue-select'
 
 import '@sass/vuexy/extraComponents/agGridStyleOverride.scss'
 
 export default {
   components: {
-    AgGridVue,
-    Datepicker,
     'v-select': vSelect,
   },
   props: {
   },
   data () {
     return {
-      orders: [],
+      objects: [],
       selected: [],
       deleted: [],
 
@@ -216,6 +212,32 @@ export default {
     }
   },
   methods: {
+    retrieveObjects() {
+      this.selected = []
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve orders
+      this.$http.get('/api/v1/orders', { headers })
+        .then((response) => {
+          this.objects = response.data.data
+          this.$vs.loading.close()
+          console.log(this.objects)
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
     onPageChanged(val) {
       this.currentPage = val
     },
@@ -255,7 +277,7 @@ export default {
       this.$http.get('/api/v1/orders', { headers, params: data })
         .then((response) => {
             console.log(response)
-          this.orders = response.data.data
+          this.objects = response.data.data
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -286,14 +308,15 @@ export default {
             this.deleted.push(order.id)
             if (this.deleted.length == this.selected.length) {
               this.$vs.loading.close()
-              this.selected = []
               this.$vs.notify({
                 title: 'Success',
-                text: 'Order(s) deleted',
+                text: this.deleted.length + ' Order(s) deleted',
                 iconPack: 'feather',
                 icon: 'icon-alert-circle',
                 color: 'success'
               })
+              this.selected = []
+              this.deleted = []
               this.applyFilters()
             }
           })
@@ -341,21 +364,7 @@ export default {
       })
 
     // Retrieve orders
-    this.$http.get('/api/v1/orders', { headers })
-      .then((response) => {
-        this.orders = response.data.data
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-      })
+    this.retrieveObjects()
   },
 }
 

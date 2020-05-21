@@ -83,6 +83,86 @@ export default [
         i18n: 'Networks'
       },
       {
+        url: '/dashboard/tags',
+        name: 'Tags',
+        slug: 'tags',
+        icon: 'TagIcon',
+        i18n: 'Tags'
+      },
+      {
+        url: '/dashboard/products',
+        name: 'Products',
+        slug: 'products',
+        icon: 'CodesandboxIcon',
+        i18n: 'Products'
+      },
+      {
+        url: '/dashboard/traffic-sources',
+        name: 'Traffic Sources',
+        slug: 'traffic-sources',
+        icon: 'FacebookIcon',
+        i18n: 'Traffic Sources'
+      },
+      {
+        url: '/dashboard/campaigns',
+        name: 'Campaigns',
+        slug: 'campaigns',
+        icon: 'DollarSignIcon',
+        i18n: 'Campaigns'
+      },
+      {
+        url: '/dashboard/forms',
+        name: 'Forms',
+        slug: 'forms',
+        icon: 'ClipboardIcon',
+        i18n: 'Forms'
+      },
+      {
+        url: '/dashboard/landings',
+        name: 'Landings',
+        slug: 'landings',
+        icon: 'LayoutIcon',
+        i18n: 'Landings'
+      },
+      {
+        url: null,
+        name: 'Reports',
+        icon: 'BarChart2Icon',
+        i18n: 'Reports',
+        submenu: [
+          {
+            url: '/dashboard/reports/users',
+            name: 'Users',
+            slug: 'report-users',
+            i18n: 'Users'
+          },
+          {
+            url: '/dashboard/reports/affiliates',
+            name: 'Affiliates',
+            slug: 'report-affiliates',
+            i18n: 'Affiliates'
+          },
+          {
+            url: '/dashboard/reports/advertisers',
+            name: 'Advertisers',
+            slug: 'report-advertisers',
+            i18n: 'Advertisers'
+          },
+          {
+            url: '/dashboard/reports/mediabuyers',
+            name: 'Mediabuyers',
+            slug: 'report-mediabuyers',
+            i18n: 'Mediabuyers'
+          },
+          {
+            url: '/dashboard/reports/products',
+            name: 'Products',
+            slug: 'report-products',
+            i18n: 'Products'
+          },
+        ]
+      },
+      {
         url: '/apps/email',
         name: 'Email',
         slug: 'email',

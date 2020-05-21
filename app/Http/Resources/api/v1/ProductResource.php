@@ -18,8 +18,14 @@ class ProductResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'tag' => $this->tag->name,
-            'advertiser' => $this->advertiser->name,
+            'tag' => [
+                'id' => $this->tag->id,
+                'name' => $this->tag->name,
+            ],
+            'advertiser' => [
+                'id' => $this->advertiser->id,
+                'name' => $this->advertiser->name,
+            ],
             'country' => $this->country,
         ];
     }
