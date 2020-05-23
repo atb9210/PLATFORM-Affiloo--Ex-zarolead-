@@ -20,21 +20,23 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 */
 
 /* Auth routes */
-Route::post('/login', 'api\v1\Auth\LoginController@login')->name('login');
-Route::post('/refresh-token', 'api\v1\Auth\LoginController@refreshToken');
-Route::post('/register', 'api\v1\Auth\RegisterController@register');
+Route::post('/login', 'api\v1\Auth\LoginController@login')->name('login')->name('auth.login');
+Route::post('/refresh-token', 'api\v1\Auth\LoginController@refreshToken')->name('auth.refresh-token');
+Route::post('/register', 'api\v1\Auth\RegisterController@register')->name('auth.register');
 
 /* Users routes */
 Route::apiResource('users', 'api\v1\UserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
-Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api');
+Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api')
+    ->name('users.change-roles');
 
 /* Orders routes */
 Route::apiResource('orders', 'api\v1\OrderController')->except([
     'create', 'edit', 'store',
 ])->middleware('auth:api');
-Route::post('orders', 'api\v1\OrderController@store');
+Route::post('orders', 'api\v1\OrderController@store')
+    ->name('orders.store');
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
@@ -65,12 +67,17 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')
+    ->name('forms.stats');
+Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware('auth:api')
+    ->name('forms.stats.update');
 
 /* Invoices routes */
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
     'create', 'edit', 'update',
 ])->middleware('auth:api');
-Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api');
+Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api')
+    ->name('invoices.download');
 
 /* Networks routes */
 Route::apiResource('networks', 'api\v1\NetworkController')->except([
@@ -85,4 +92,5 @@ Route::apiResource('campaigns', 'api\v1\CampaignController')->except([
 /* Reports routes */
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::get('users', 'api\v1\ReportController@users')->name('reports.users');
+    Route::get('products', 'api\v1\ReportController@products')->name('reports.products');
 });

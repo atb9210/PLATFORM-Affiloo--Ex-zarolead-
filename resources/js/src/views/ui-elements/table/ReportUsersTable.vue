@@ -16,34 +16,47 @@
         </p>
 
         <div v-if="showFilters" class="mb-12">
+
             <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>From</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
                 </div>
             </div>
+
             <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>To</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
             </div>
+
             <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>User</label>
                     <v-select :options="users" v-model="filters.user" />
                 </div>
             </div>
+
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>Role</label>
+                    <v-select :options="roles" v-model="filters.role" />
+                </div>
+            </div>
+
             <div class="vx-row mb-6">
                 <div class="vx-col w-full">
                 </div>
             </div>
+
             <div class="vx-row">
                 <div class="vx-col w-full">
                     <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
                     <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
                 </div>
             </div>
+
         </div>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -125,10 +138,19 @@ export default {
         date_from: '',
         date_to: '',
         user: '',
+        role: '',
       },
       showFilters: false,
 
       users: [],
+      roles: [
+        { id: 1, label: 'developer' },
+        { id: 2, label: 'admin' },
+        { id: 3, label: 'mediabuyer' },
+        { id: 4, label: 'affiliate' },
+        { id: 5, label: 'advertiser' },
+        { id: 6, label: 'accountant' },
+      ],
     }
   },
   computed: {
@@ -178,6 +200,9 @@ export default {
       if (this.filters.user != '') {
         data['filter_user'] = this.filters.user.id
       }
+      if (this.filters.role != '') {
+        data['filter_role'] = this.filters.role.id
+      }
 
       // Retrieve report
       this.$http.get('/api/v1/reports/users', { headers, params: data })
@@ -205,6 +230,7 @@ export default {
         date_from: '',
         date_to: '',
         user: '',
+        role: '',
       }
       this.applyFilters()
     },

@@ -1377,6 +1377,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/forms/:form_id',
+          name: 'form-stats',
+          component: () => import('./views/FormStats.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Forms', url: '/dashboard/forms' },
+              { title: 'Stats', active: true }
+            ],
+            pageTitle: 'Form Stats',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/landings',
           name: 'landings',
           component: () => import('./views/Landings.vue'),
@@ -1446,6 +1460,7 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        */
         {
           path: '/dashboard/reports/products',
           name: 'report-products',
@@ -1459,7 +1474,6 @@ const router = new Router({
             rule: 'editor'
           }
         },
-        */
       ]
     },
     // =============================================================================

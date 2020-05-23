@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Form as Form;
 use App\Http\Resources\api\v1\FormResource;
+use App\FormStats as FormStats;
+use App\Http\Resources\api\v1\FormStatsResource;
 use App\Network as Network;
 
 class FormController extends Controller
@@ -184,5 +186,70 @@ class FormController extends Controller
         return response([
             'message' => 'Form has been archived'
         ]);
+    }
+
+    /**
+     * Get form stats.
+     *
+     * @urlParam id int required Form's id
+     *
+     * @urlParam filter_date_from string From date (Y-m-d format)
+     * @urlParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function stats($id, Request $request)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('view', $form);
+
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+        ]);
+
+        $stats = FormStats::where('form_id', $id);
+        if (isset($params['filter_date_from'])) {
+            $stats = $stats->where('day', '>=', $params['filter_date_from']);
+        }
+        if (isset($params['filter_date_to'])) {
+            $stats = $stats->where('day', '<=', $params['filter_date_to']);
+        }
+        $stats = $stats->orderBy('day', 'desc');
+
+        return FormStatsResource::collection($stats->get());
+    }
+
+    /**
+     * Edit form stats
+     *
+     * @urlParam id int required Form's id
+     *
+     * @bodyParam form_stats_id int required Form stats id
+     * @bodyParam total_cost float required Form stats total_cost new value
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function updateStats($id, Request $request)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('update', $form);
+
+        // Param validation
+        $params = $request->validate([
+            'form_stats_id' => 'required|integer|exists:form_stats,id',
+            'total_cost' => 'required|numeric|min:0',
+        ]);
+
+        $stats = FormStats::findOrFail($params['form_stats_id']);
+        $stats->total_cost = $params['total_cost'];
+        $stats->save();
+
+        return new FormStatsResource($stats);
     }
 }

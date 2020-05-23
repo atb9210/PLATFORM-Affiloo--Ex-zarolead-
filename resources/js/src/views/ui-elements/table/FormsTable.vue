@@ -88,6 +88,7 @@
 
                     <vs-td>
                         <div class="flex items-center">
+                            <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -905,6 +906,9 @@ export default {
             color: 'danger'
           })
         })
+    },
+    showFormStats(id) {
+      this.$router.push({name: 'form-stats', params: {form_id: id}})
     },
   },
   created() {
