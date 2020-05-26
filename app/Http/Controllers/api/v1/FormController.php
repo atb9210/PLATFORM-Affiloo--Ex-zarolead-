@@ -252,4 +252,46 @@ class FormController extends Controller
 
         return new FormStatsResource($stats);
     }
+
+    /**
+     * Get form code
+     *
+     * @urlParam id int required Form's id
+     *
+     * @response {
+     *  "data": code
+     * }
+     */
+    public function code($id)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('view', $form);
+
+        $params = [
+            'name' => $form->name,
+            'campaign_id' => $form->campaign_id,
+            'network_id' => $form->network_id,
+            'product_id' => $form->product_id,
+            'quantity' => $form->quantity,
+            'price' => $form->price,
+            'commission' => $form->commission,
+            'sub_commission' => $form->sub_commission,
+            'traffic_source_id' => $form->traffic_source_id,
+            'network_params' => json_decode(json_encode($form->network_params), TRUE),
+            'user_id' => $form->user_id,
+            'form_id' => $form->id,
+            'network' => $form->network->name,
+        ];
+
+        $output = $form->generateHTML($params);
+        if ($output['error']) {
+            return response([
+                "message" => "Unexpected error in generating form code"
+            ], 500);
+        }
+
+        return response([
+            'data' => $output['form_html']
+        ]);
+    }
 }

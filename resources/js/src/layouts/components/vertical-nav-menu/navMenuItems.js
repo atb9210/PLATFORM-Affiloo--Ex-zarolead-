@@ -136,6 +136,7 @@ export default [
             slug: 'report-users',
             i18n: 'Users'
           },
+          /*
           {
             url: '/dashboard/reports/affiliates',
             name: 'Affiliates',
@@ -154,6 +155,7 @@ export default [
             slug: 'report-mediabuyers',
             i18n: 'Mediabuyers'
           },
+          */
           {
             url: '/dashboard/reports/products',
             name: 'Products',
@@ -162,6 +164,14 @@ export default [
           },
         ]
       },
+      {
+        url: '/dashboard/invoices',
+        name: 'Invoices',
+        slug: 'invoices',
+        icon: 'FileTextIcon',
+        i18n: 'Invoices'
+      },
+      /*
       {
         url: '/apps/email',
         name: 'Email',
@@ -249,6 +259,7 @@ export default [
           }
         ]
       }
+      */
     ]
   },
   {

@@ -1474,6 +1474,19 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/invoices',
+          name: 'invoices',
+          component: () => import('./views/Invoices.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Invoices', active: true }
+            ],
+            pageTitle: 'Invoices',
+            rule: 'editor'
+          }
+        },
       ]
     },
     // =============================================================================

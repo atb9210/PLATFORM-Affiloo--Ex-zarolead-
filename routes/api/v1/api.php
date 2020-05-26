@@ -67,6 +67,8 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
+    ->name('forms.code');
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')
     ->name('forms.stats');
 Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware('auth:api')
@@ -74,10 +76,14 @@ Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware(
 
 /* Invoices routes */
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
-    'create', 'edit', 'update',
+    'create', 'edit',
 ])->middleware('auth:api');
 Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api')
     ->name('invoices.download');
+Route::post('invoices/download-zip', 'api\v1\InvoiceController@downloadZip')->middleware('auth:api')
+    ->name('invoices.download-zip');
+Route::post('invoices/download-summary', 'api\v1\InvoiceController@downloadSummary')->middleware('auth:api')
+    ->name('invoices.download-summary');
 
 /* Networks routes */
 Route::apiResource('networks', 'api\v1\NetworkController')->except([

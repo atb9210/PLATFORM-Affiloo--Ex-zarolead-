@@ -89,6 +89,7 @@
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
+                            <vs-button @click="showFormCode(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -97,6 +98,14 @@
                 </vs-tr>
             </template>
         </vs-table>
+
+        <!-- Form code popup -->
+        <vs-popup title="Form code" :active.sync="showPopup['code']">
+            <vs-textarea v-model="formCode" disabled height="10rem" />
+            <div class="vx-row mt-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
+            </div>
+        </vs-popup>
 
         <!-- Create popup -->
         <vs-popup title="Create Form" :active.sync="showPopup['create']">
@@ -473,6 +482,7 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
+        'code': false,
       },
       newObject: {
         'create': {
@@ -524,6 +534,7 @@ export default {
           offer_id: '',
         },
       },
+      formCode: '',
 
       campaigns: [],
       networks: [],
@@ -669,6 +680,31 @@ export default {
         && obj.product != '' && obj.product.id >= 1
         && obj.quantity.length > 0
         && obj.traffic_source != '' && obj.traffic_source.id >= 1)
+    },
+    showFormCode(id) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve form code
+      this.$http.get('/api/v1/forms/' + id + '/code', { headers: headers })
+        .then((response) => {
+          this.formCode = response.data.data
+          this.$vs.loading.close()
+          this.showPopup['code'] = true
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
     createObject() {
       this.$vs.loading()
@@ -909,6 +945,15 @@ export default {
     },
     showFormStats(id) {
       this.$router.push({name: 'form-stats', params: {form_id: id}})
+    },
+    onCodeCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Form code copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   created() {
