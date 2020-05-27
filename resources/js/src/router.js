@@ -53,7 +53,8 @@ const router = new Router({
           name: 'dashboard-analytics',
           component: () => import('./views/DashboardAnalytics.vue'),
           meta: {
-            rule: 'editor'
+            authRequired: true,
+            rule: 'editor',
           }
         },
         {
@@ -1264,6 +1265,7 @@ const router = new Router({
           name: 'users',
           component: () => import('./views/Users.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Users', active: true }
@@ -1277,6 +1279,7 @@ const router = new Router({
           name: 'orders',
           component: () => import('./views/Orders.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Orders', active: true }
@@ -1290,6 +1293,7 @@ const router = new Router({
           name: 'advertisers',
           component: () => import('./views/Advertisers.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Advertisers', active: true }
@@ -1303,6 +1307,7 @@ const router = new Router({
           name: 'networks',
           component: () => import('./views/Networks.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Networks', active: true }
@@ -1316,6 +1321,7 @@ const router = new Router({
           name: 'tags',
           component: () => import('./views/Tags.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Tags', active: true }
@@ -1329,6 +1335,7 @@ const router = new Router({
           name: 'products',
           component: () => import('./views/Products.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Products', active: true }
@@ -1342,6 +1349,7 @@ const router = new Router({
           name: 'traffic-sources',
           component: () => import('./views/TrafficSources.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Traffic Sources', active: true }
@@ -1355,6 +1363,7 @@ const router = new Router({
           name: 'campaigns',
           component: () => import('./views/Campaigns.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Campaigns', active: true }
@@ -1368,6 +1377,7 @@ const router = new Router({
           name: 'forms',
           component: () => import('./views/Forms.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Forms', active: true }
@@ -1381,6 +1391,7 @@ const router = new Router({
           name: 'form-stats',
           component: () => import('./views/FormStats.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Forms', url: '/dashboard/forms' },
@@ -1395,6 +1406,7 @@ const router = new Router({
           name: 'landings',
           component: () => import('./views/Landings.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Landings', active: true }
@@ -1412,6 +1424,7 @@ const router = new Router({
           name: 'report-users',
           component: () => import('./views/ReportUsers.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Report Users', active: true }
@@ -1426,6 +1439,7 @@ const router = new Router({
           name: 'report-affiliates',
           component: () => import('./views/ReportAffiliates.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Report Affiliates', active: true }
@@ -1439,6 +1453,7 @@ const router = new Router({
           name: 'report-advertisers',
           component: () => import('./views/ReportAdvertisers.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Report Advertisers', active: true }
@@ -1452,6 +1467,7 @@ const router = new Router({
           name: 'report-mediabuyers',
           component: () => import('./views/ReportMediabuyers.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Report Mediabuyers', active: true }
@@ -1466,6 +1482,7 @@ const router = new Router({
           name: 'report-products',
           component: () => import('./views/ReportProducts.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Report Products', active: true }
@@ -1479,6 +1496,7 @@ const router = new Router({
           name: 'invoices',
           component: () => import('./views/Invoices.vue'),
           meta: {
+            authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
               { title: 'Invoices', active: true }
@@ -1606,11 +1624,6 @@ router.afterEach(() => {
 })
 
 router.beforeEach((to, from, next) => {
-  firebase.auth().onAuthStateChanged(() => {
-
-    // get firebase current user
-    const firebaseCurrentUser = firebase.auth().currentUser
-
     // if (
     //     to.path === "/pages/login" ||
     //     to.path === "/pages/forgot-password" ||
@@ -1626,7 +1639,7 @@ router.beforeEach((to, from, next) => {
 
     // If auth required, check login. If login fails redirect to login page
     if (to.meta.authRequired) {
-      if (!(auth.isAuthenticated() || firebaseCurrentUser)) {
+      if (!auth.isAuthenticated()) {
         router.push({ path: '/pages/login', query: { to: to.path } })
       }
     }
@@ -1635,8 +1648,6 @@ router.beforeEach((to, from, next) => {
     // Specify the current path as the customState parameter, meaning it
     // will be returned to the application after auth
     // auth.login({ target: to.path });
-
-  })
 
 })
 

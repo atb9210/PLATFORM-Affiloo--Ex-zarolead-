@@ -91634,6 +91634,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return Promise.all(/*! import() */[__webpack_require__.e(1), __webpack_require__.e(4), __webpack_require__.e(72)]).then(__webpack_require__.bind(null, /*! ./views/DashboardAnalytics.vue */ "./resources/js/src/views/DashboardAnalytics.vue"));
       },
       meta: {
+        authRequired: true,
         rule: 'editor'
       }
     }, {
@@ -93240,6 +93241,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 100).then(__webpack_require__.bind(null, /*! ./views/Users.vue */ "./resources/js/src/views/Users.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93257,6 +93259,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return Promise.all(/*! import() */[__webpack_require__.e(7), __webpack_require__.e(94)]).then(__webpack_require__.bind(null, /*! ./views/Orders.vue */ "./resources/js/src/views/Orders.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93274,6 +93277,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 87).then(__webpack_require__.bind(null, /*! ./views/Advertisers.vue */ "./resources/js/src/views/Advertisers.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93291,6 +93295,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 93).then(__webpack_require__.bind(null, /*! ./views/Networks.vue */ "./resources/js/src/views/Networks.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93308,6 +93313,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 98).then(__webpack_require__.bind(null, /*! ./views/Tags.vue */ "./resources/js/src/views/Tags.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93325,6 +93331,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 95).then(__webpack_require__.bind(null, /*! ./views/Products.vue */ "./resources/js/src/views/Products.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93342,6 +93349,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 99).then(__webpack_require__.bind(null, /*! ./views/TrafficSources.vue */ "./resources/js/src/views/TrafficSources.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93359,6 +93367,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 89).then(__webpack_require__.bind(null, /*! ./views/Campaigns.vue */ "./resources/js/src/views/Campaigns.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93376,6 +93385,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 91).then(__webpack_require__.bind(null, /*! ./views/Forms.vue */ "./resources/js/src/views/Forms.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93393,6 +93403,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 90).then(__webpack_require__.bind(null, /*! ./views/FormStats.vue */ "./resources/js/src/views/FormStats.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93413,6 +93424,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 92).then(__webpack_require__.bind(null, /*! ./views/Landings.vue */ "./resources/js/src/views/Landings.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93433,6 +93445,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 97).then(__webpack_require__.bind(null, /*! ./views/ReportUsers.vue */ "./resources/js/src/views/ReportUsers.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93450,6 +93463,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
       name: 'report-affiliates',
       component: () => import('./views/ReportAffiliates.vue'),
       meta: {
+        authRequired: true,
         breadcrumb: [
           { title: 'Home', url: '/' },
           { title: 'Report Affiliates', active: true }
@@ -93463,6 +93477,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
       name: 'report-advertisers',
       component: () => import('./views/ReportAdvertisers.vue'),
       meta: {
+        authRequired: true,
         breadcrumb: [
           { title: 'Home', url: '/' },
           { title: 'Report Advertisers', active: true }
@@ -93476,6 +93491,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
       name: 'report-mediabuyers',
       component: () => import('./views/ReportMediabuyers.vue'),
       meta: {
+        authRequired: true,
         breadcrumb: [
           { title: 'Home', url: '/' },
           { title: 'Report Mediabuyers', active: true }
@@ -93492,6 +93508,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 96).then(__webpack_require__.bind(null, /*! ./views/ReportProducts.vue */ "./resources/js/src/views/ReportProducts.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93509,6 +93526,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
         return __webpack_require__.e(/*! import() */ 83).then(__webpack_require__.bind(null, /*! ./views/Invoices.vue */ "./resources/js/src/views/Invoices.vue"));
       },
       meta: {
+        authRequired: true,
         breadcrumb: [{
           title: 'Home',
           url: '/'
@@ -93646,37 +93664,33 @@ router.afterEach(function () {
   }
 });
 router.beforeEach(function (to, from, next) {
-  firebase_app__WEBPACK_IMPORTED_MODULE_3___default.a.auth().onAuthStateChanged(function () {
-    // get firebase current user
-    var firebaseCurrentUser = firebase_app__WEBPACK_IMPORTED_MODULE_3___default.a.auth().currentUser; // if (
-    //     to.path === "/pages/login" ||
-    //     to.path === "/pages/forgot-password" ||
-    //     to.path === "/pages/error-404" ||
-    //     to.path === "/pages/error-500" ||
-    //     to.path === "/pages/register" ||
-    //     to.path === "/callback" ||
-    //     to.path === "/pages/comingsoon" ||
-    //     (auth.isAuthenticated() || firebaseCurrentUser)
-    // ) {
-    //     return next();
-    // }
-    // If auth required, check login. If login fails redirect to login page
-
-    if (to.meta.authRequired) {
-      if (!(_auth_authService__WEBPACK_IMPORTED_MODULE_2__["default"].isAuthenticated() || firebaseCurrentUser)) {
-        router.push({
-          path: '/pages/login',
-          query: {
-            to: to.path
-          }
-        });
-      }
+  // if (
+  //     to.path === "/pages/login" ||
+  //     to.path === "/pages/forgot-password" ||
+  //     to.path === "/pages/error-404" ||
+  //     to.path === "/pages/error-500" ||
+  //     to.path === "/pages/register" ||
+  //     to.path === "/callback" ||
+  //     to.path === "/pages/comingsoon" ||
+  //     (auth.isAuthenticated() || firebaseCurrentUser)
+  // ) {
+  //     return next();
+  // }
+  // If auth required, check login. If login fails redirect to login page
+  if (to.meta.authRequired) {
+    if (!_auth_authService__WEBPACK_IMPORTED_MODULE_2__["default"].isAuthenticated()) {
+      router.push({
+        path: '/pages/login',
+        query: {
+          to: to.path
+        }
+      });
     }
+  }
 
-    return next(); // Specify the current path as the customState parameter, meaning it
-    // will be returned to the application after auth
-    // auth.login({ target: to.path });
-  });
+  return next(); // Specify the current path as the customState parameter, meaning it
+  // will be returned to the application after auth
+  // auth.login({ target: to.path });
 });
 /* harmony default export */ __webpack_exports__["default"] = (router);
 
