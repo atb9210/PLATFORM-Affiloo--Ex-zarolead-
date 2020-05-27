@@ -95691,7 +95691,7 @@ var colors = {
 }; // CONFIGS
 
 var themeConfig = {
-  disableCustomizer: false,
+  disableCustomizer: true,
   // options[Boolean] : true, false(default)
   disableThemeTour: true,
   // options[Boolean] : true, false(default)
@@ -95711,7 +95711,7 @@ var themeConfig = {
   // options[Boolean] : true, false(default)
   sidebarCollapsed: false,
   // options[Boolean] : true, false(default)
-  theme: 'light',
+  theme: 'dark',
   // options[String]  : "light"(default), "dark", "semi-dark"
   // Not required yet - WIP
   userInfoLocalStorageKey: 'userInfo' // NOTE: themeTour will be disabled in screens < 1200. Please refer docs for more info.

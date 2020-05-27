@@ -23,7 +23,7 @@
         </span>
 
         <!-- buyNow component -->
-        <component :is="injections.components.BuyNow"></component>
+        <!--<component :is="injections.components.BuyNow"></component>-->
     </footer>
 </template>
 
