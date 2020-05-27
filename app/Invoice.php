@@ -16,7 +16,7 @@ class Invoice extends Model {
      */
     protected $fillable = [
         'user_id', 'uploaded', 'transaction',
-        'language', 'invoice_date', 'transaction_id', 'number', 'status', 'amount', 'currency',
+        'language', 'invoice_date', 'transaction_id', 'number', 'status', 'amount', 'currency', 'type',
         'info', 'original_file_name',
     ];
 
@@ -101,13 +101,6 @@ class Invoice extends Model {
     public function user() {
 		return $this->belongsTo('App\User', 'user_id');
 	}
-
-    public function setAutoInvoice($value = true) {
-        $info = $this->info;
-        $info['auto_invoice'] = $value;
-        $this->info = $info;
-        $this->save();
-    }
 
     public function getStoragePath() {
         $pathname = env('DROPBOX_FOLDER') . '/invoices/';

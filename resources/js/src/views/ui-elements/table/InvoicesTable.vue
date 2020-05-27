@@ -19,8 +19,8 @@
         </p>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="downloadSummary(false)">Download invoices summary</vs-button> 
-            <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-download-cloud" @click="downloadSummary(true)">Download auto invoices summary</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="downloadSummary('normal')">Download invoices summary</vs-button> 
+            <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-download-cloud" @click="downloadSummary('auto')">Download auto invoices summary</vs-button> 
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -47,11 +47,11 @@
             <div class="vx-row mb-2">
                 <div class="vx-col w-1/2">
                     <label>Status</label>
-                    <v-select :options="invoiceStatusesOptions" v-model="filters.status" />
+                    <v-select :options="invoiceStatusOptions" v-model="filters.status" />
                 </div>
                 <div class="vx-col w-1/2">
-                    <label>Auto invoice</label>
-                    <v-select :options="yesNoOptions" v-model="filters.auto_invoice" />
+                    <label>Type</label>
+                    <v-select :options="invoiceTypeOptions" v-model="filters.type" />
                 </div>
             </div>
             <div class="vx-row mb-2">
@@ -148,7 +148,7 @@
                     </vs-td>
 
                     <vs-td>
-                        <vs-chip :color="invoiceTypeColor[getInvoiceType(data[indextr].info)]">{{getInvoiceType(data[indextr].info)}}</vs-chip>
+                        <vs-chip :color="invoiceTypeColor[data[indextr].type]">{{data[indextr].type}}</vs-chip>
                     </vs-td>
 
                     <vs-td>
@@ -260,14 +260,19 @@ export default {
         min_amount: '',
         max_amount: '',
         status: '',
-        auto_invoice: '',
+        type: '',
         uploaded: '',
         transaction: '',
       },
-      invoiceStatusesOptions: [
+      invoiceStatusOptions: [
         { value: '', label: 'All' },
         { value: 'paid', label: 'Paid' },
         { value: 'failed', label: 'Failed' },
+      ],
+      invoiceTypeOptions: [
+        { value: '', label: 'All' },
+        { value: 'normal', label: 'Normal' },
+        { value: 'auto', label: 'Auto' },
       ],
       yesNoOptions: [
         { value: -1, label: 'All' },
@@ -541,8 +546,8 @@ export default {
       if (this.filters.status.value != '') {
         data['filter_status'] = this.filters.status.value
       }
-      if (this.filters.auto_invoice.value != -1) {
-        data['filter_auto_invoice'] = this.filters.auto_invoice.value
+      if (this.filters.type.value != '') {
+        data['filter_type'] = this.filters.type.value
       }
       if (this.filters.uploaded.value != -1) {
         data['filter_uploaded'] = this.filters.uploaded.value
@@ -576,7 +581,7 @@ export default {
         min_amount: '',
         max_amount: '',
         status: '',
-        auto_invoice: '',
+        type: '',
         uploaded: '',
         transaction: '',
       }
@@ -652,11 +657,10 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
       }
-      let autoInvoiceValue = true
-      if (obj.info != null && obj.info.hasOwnProperty('auto_invoice'))
-        autoInvoiceValue = !obj.info.auto_invoice
+      let type = 'auto'
+      if (obj.type == 'auto') type = 'normal'
       let data = {
-        auto_invoice: autoInvoiceValue,
+        type: type,
       }
 
       // Update invoice
@@ -755,7 +759,7 @@ export default {
           })
         })
     },
-    downloadSummary(autoInvoice) {
+    downloadSummary(type) {
       this.$vs.loading()
 
       let headers = {
@@ -777,7 +781,7 @@ export default {
       if (this.filters.status.value != '') {
         data['filter_status'] = this.filters.status.value
       }
-      data['filter_auto_invoice'] = autoInvoice
+      data['filter_type'] = type
       if (this.filters.uploaded.value != -1) {
         data['filter_uploaded'] = this.filters.uploaded.value
       }
@@ -812,12 +816,6 @@ export default {
             color: 'danger'
           })
         })
-    },
-    getInvoiceType(info) {
-      if (info != null && info.hasOwnProperty('auto_invoice') && info.auto_invoice) {
-        return 'auto'
-      }
-      return 'normal'
     },
   },
   created() {

@@ -3,14 +3,17 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 
-class CreateFormsTable extends Migration {
+class CreateFormsTable extends Migration
+{
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up() {
+    public function up()
+    {
         Schema::create('forms', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
@@ -24,7 +27,7 @@ class CreateFormsTable extends Migration {
             $table->decimal('sub_commission', 9, 2)->default(0.0);
             $table->decimal('total_commission', 9, 2)->default(0.0);
             $table->bigInteger('traffic_source_id')->unsigned();
-            $table->json('info')->nullable();
+            $table->json('info')->default(new Expression('(JSON_ARRAY())'));
             $table->json('network_params');
             $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);
@@ -45,7 +48,8 @@ class CreateFormsTable extends Migration {
      *
      * @return void
      */
-    public function down() {
+    public function down()
+    {
         Schema::dropIfExists('forms');
     }
 }

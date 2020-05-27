@@ -5,13 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use App\OrderStatus;
 
-class CreateOrderStatusesTable extends Migration {
+class CreateOrderStatusesTable extends Migration
+{
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up() {
+    public function up()
+    {
         Schema::create('order_statuses', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('description');
@@ -33,7 +35,8 @@ class CreateOrderStatusesTable extends Migration {
      *
      * @return void
      */
-    public function down() {
+    public function down()
+    {
         Schema::dropIfExists('order_statuses');
     }
 }

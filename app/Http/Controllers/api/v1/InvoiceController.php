@@ -20,7 +20,7 @@ class InvoiceController extends Controller
      * @urlParam filter_min_amount float Minimum amount
      * @urlParam filter_max_amount float Maximum amount
      * @urlParam filter_status enum('paid', 'failed') Invoice status
-     * @urlParam filter_auto_invoice boolean Auto invoice flag
+     * @urlParam filter_type enum('normal', 'auto') Invoice type
      * @urlParam filter_uploaded boolean Invoice uploaded flag
      * @urlParam filter_transaction boolean Invoice transaction flag
      *
@@ -39,7 +39,7 @@ class InvoiceController extends Controller
             'filter_min_amount' => 'numeric|min:0',
             'filter_max_amount' => 'numeric|min:0',
             'filter_status' => 'in:paid,failed',
-            'filter_auto_invoice' => 'boolean',
+            'filter_type' => 'in:normal,auto',
             'filter_uploaded' => 'boolean',
             'filter_transaction' => 'boolean',
         ]);
@@ -62,14 +62,8 @@ class InvoiceController extends Controller
         if (isset($params['filter_status'])) {
             $invoices = $invoices->where('status', $params['filter_status']);
         }
-        if (isset($params['filter_auto_invoice'])) {
-            if ($params['filter_auto_invoice']) {
-                $invoices = $invoices->where('info->auto_invoice', true);
-            } else {
-                $invoices = $invoices->where(function ($q) {
-                    $q->whereNull('info->auto_invoice')->orWhere('info->auto_invoice', false);
-                });
-            }
+        if (isset($params['filter_type'])) {
+            $invoices = $invoices->where('type', $param['filter_type']);
         }
         if (isset($params['filter_uploaded'])) {
             $invoices = $invoices->where('uploaded', $params['filter_uploaded']);
@@ -144,9 +138,9 @@ class InvoiceController extends Controller
      *
      * @urlParam id int required Invoice's id
      *
-     * @bodyParam auto_invoice bool Invoice auto_invoice
+     * @bodyParam type enum('normal', 'auto') Invoice type
      *
-     * @response 201 {
+     * @response {
      *  "data": invoice,
      * }
      */
@@ -157,15 +151,10 @@ class InvoiceController extends Controller
 
         // Params validation
         $params = $request->validate([
-            'auto_invoice' => 'boolean',
+            'type' => 'in:normal,auto',
         ]);
 
-        $info = $invoice->info;
-        if (isset($params['auto_invoice'])) {
-            $info['auto_invoice'] = (bool)$params['auto_invoice'];
-        }
-        $invoice->info = $info;
-        $invoice->save();
+        $invoice->update($params);
 
         return new InvoiceResource($invoice);
     }
@@ -281,7 +270,7 @@ class InvoiceController extends Controller
      * @bodyParam filter_min_amount float Minimum amount
      * @bodyParam filter_max_amount float Maximum amount
      * @bodyParam filter_status enum('paid', 'failed') Invoice status
-     * @bodyParam filter_auto_invoice boolean Auto invoice flag
+     * @bodyParam filter_type enum('normal', 'auto') Invoice type
      * @bodyParam filter_uploaded boolean Invoice uploaded flag
      * @bodyParam filter_transaction boolean Invoice transaction flag
      *
@@ -298,7 +287,7 @@ class InvoiceController extends Controller
             'filter_min_amount' => 'numeric|min:0',
             'filter_max_amount' => 'numeric|min:0',
             'filter_status' => 'in:paid,failed',
-            'filter_auto_invoice' => 'boolean',
+            'filter_type' => 'in:normal,auto',
             'filter_uploaded' => 'boolean',
             'filter_transaction' => 'boolean',
         ]);
@@ -321,14 +310,8 @@ class InvoiceController extends Controller
         if (isset($params['filter_status'])) {
             $invoices = $invoices->where('status', $params['filter_status']);
         }
-        if (isset($params['filter_auto_invoice'])) {
-            if ($params['filter_auto_invoice']) {
-                $invoices = $invoices->where('info->auto_invoice', true);
-            } else {
-                $invoices = $invoices->where(function ($q) {
-                    $q->whereNull('info->auto_invoice')->orWhere('info->auto_invoice', false);
-                });
-            }
+        if (isset($params['filter_type'])) {
+            $invoices = $invoices->where('type', $params['filter_type']);
         }
         if (isset($params['filter_uploaded'])) {
             $invoices = $invoices->where('uploaded', $params['filter_uploaded']);

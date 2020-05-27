@@ -3,14 +3,17 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 
-class CreateOrdersTable extends Migration {
+class CreateOrdersTable extends Migration
+{
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up() {
+    public function up()
+    {
         Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
@@ -23,7 +26,7 @@ class CreateOrdersTable extends Migration {
 			$table->decimal('sub_commission', 9, 2)->default(0.0);
 			$table->bigInteger('network_id')->unsigned();
             $table->bigInteger('order_status_id')->unsigned();
-            $table->json('info')->nullable();
+            $table->json('info')->default(new Expression('(JSON_ARRAY())'));
             $table->timestamps();
             $table->boolean('archived')->default(0);
 			
@@ -39,7 +42,8 @@ class CreateOrdersTable extends Migration {
      *
      * @return void
      */
-    public function down() {
+    public function down()
+    {
         Schema::dropIfExists('orders');
     }
 }

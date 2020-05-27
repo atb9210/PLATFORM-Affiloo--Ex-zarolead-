@@ -3,14 +3,17 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 
-class CreateInvoicesTable extends Migration {
+class CreateInvoicesTable extends Migration
+{
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up() {
+    public function up()
+    {
         Schema::create('invoices', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
@@ -23,7 +26,8 @@ class CreateInvoicesTable extends Migration {
             $table->string('status')->nullable();
             $table->decimal('amount', 9, 2)->default(0.0);
             $table->string('currency')->nullable();
-            $table->json('info')->nullable();
+            $table->enum('type', ['normal', 'auto'])->default('normal');
+            $table->json('info')->default(new Expression('(JSON_ARRAY())'));
             $table->string('pathname')->nullable();
             $table->string('original_file_name')->nullable();
             $table->timestamps();
@@ -38,7 +42,8 @@ class CreateInvoicesTable extends Migration {
      *
      * @return void
      */
-    public function down() {
+    public function down()
+    {
         Schema::dropIfExists('invoices');
     }
 }

@@ -29,6 +29,7 @@ class InvoiceResource extends JsonResource
             'status' => $this->status,
             'amount' => $this->amount,
             'currency' => $this->currency,
+            'type' => $this->type,
             'info' => $this->info,
             'original_file_name' => $this->original_file_name,
             'created_at' => $this->created_at,
