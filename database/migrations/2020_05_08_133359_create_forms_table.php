@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Query\Expression;
 
 class CreateFormsTable extends Migration
 {
@@ -27,7 +26,7 @@ class CreateFormsTable extends Migration
             $table->decimal('sub_commission', 9, 2)->default(0.0);
             $table->decimal('total_commission', 9, 2)->default(0.0);
             $table->bigInteger('traffic_source_id')->unsigned();
-            $table->json('info')->default(new Expression('(JSON_ARRAY())'));
+            $table->json('info')->default('[]');
             $table->json('network_params');
             $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);

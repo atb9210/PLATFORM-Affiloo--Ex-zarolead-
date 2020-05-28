@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Query\Expression;
 
 class CreateNetworksTable extends Migration
 {
@@ -17,7 +16,7 @@ class CreateNetworksTable extends Migration
         Schema::create('networks', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->json('api')->default(new Expression('(JSON_ARRAY())'));
+            $table->json('api')->default('[]');
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });

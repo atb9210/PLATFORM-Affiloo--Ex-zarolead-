@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Query\Expression;
 
 class CreateTrafficSourcesTable extends Migration
 {
@@ -17,7 +16,7 @@ class CreateTrafficSourcesTable extends Migration
         Schema::create('traffic_sources', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->json('custom_params')->default(new Expression('(JSON_ARRAY())'));
+            $table->json('custom_params')->default('[]');
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });

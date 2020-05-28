@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Query\Expression;
 
 class CreateTagsTable extends Migration
 {
@@ -17,7 +16,7 @@ class CreateTagsTable extends Migration
         Schema::create('tags', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->json('info')->default(new Expression('(JSON_ARRAY())'));
+            $table->json('info')->default('[]');
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });
