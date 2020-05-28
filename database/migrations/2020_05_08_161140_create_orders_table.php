@@ -25,7 +25,7 @@ class CreateOrdersTable extends Migration
 			$table->decimal('sub_commission', 9, 2)->default(0.0);
 			$table->bigInteger('network_id')->unsigned();
             $table->bigInteger('order_status_id')->unsigned();
-            $table->json('info')->default('[]');
+            $table->json('info')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
 			

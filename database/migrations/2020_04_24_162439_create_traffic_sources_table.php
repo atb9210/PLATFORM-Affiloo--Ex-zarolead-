@@ -16,7 +16,7 @@ class CreateTrafficSourcesTable extends Migration
         Schema::create('traffic_sources', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->json('custom_params')->default('[]');
+            $table->json('custom_params')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });
