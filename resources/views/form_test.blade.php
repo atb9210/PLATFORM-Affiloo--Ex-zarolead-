@@ -1,3 +1,4 @@
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Bootstrap -->
@@ -35,40 +36,40 @@ body {
 	<form id="mainForm" method="post" target="dummyframe" action="" accept-charset="utf-8" role="form" style="padding: 15px; height: 100%;">
    
 		<!-- Backend -->
-		<input type="hidden" id="form_id" name="form_id" value="8">
-		<input type="hidden" id="user_id" name="user_id" value="1">
-		<input type="hidden" id="order_commission" name="commission" value="19.99">
-		<input type="hidden" id="order_sub_commission" name="sub_commission" value="9.99">
+		<input type="hidden" id="form_id" name="form_id" value="1">
+		<input type="hidden" id="user_id" name="user_id" value="2">
+		<input type="hidden" id="order_commission" name="commission" value="0.00">
+		<input type="hidden" id="order_sub_commission" name="sub_commission" value="0.00">
 		<input type="hidden" id="network_id" name="network_id" value="1">
 		<input type="hidden" id="fb_pixel" name="fb_pixel" value="">
 		<input type="hidden" id="thankyou_page" name="thankyou_page" value="http://future-gadget.com/">
-		<input type="hidden" id="api_call_url" name="api_call_url" value="https://network.worldfilia.net/manager/inventory/buy/htf_tauroplus.json">
+		<input type="hidden" id="api_call_url" name="api_call_url" value="https://network.worldfilia.net/manager/inventory/buy/kalai_stepLuxe.json">
 		<input type="hidden" id="api_call_method" name="api_call_method" value="POST">
 		<input type="hidden" id="api_success_response" name="api_success_response" value='{"status":"success"}'>
 		<input type="hidden" id="network_data" name="network_data" value="">
 
 		<!-- Frontend -->
-		<input type="hidden" id="product_id" name="product_id" value="1">
+		<input type="hidden" id="product_id" name="product_id" value="3">
 		<input type="hidden" name="quantity" id="quantity" value="1">
-		<input type="hidden" name="price" id="price" value="49.99">
+		<input type="hidden" name="price" id="price" value="49.00">
 
-		<input type="hidden" id="source_id" name="source_id" value="abtest89">
+		<input type="hidden" id="source_id" name="source_id" value="913eb3f7a1d5">
 		<input type="hidden" id="aff_sub1" name="aff_sub1" value="">
 		<input type="hidden" id="aff_sub2" name="aff_sub2" value="">
 
 		<label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Nome e Cognome</label>
 		<div class="form-group">
-			<input id="inputName" value="test test" name="name" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="name" placeholder="" required="required"/>
+			<input id="inputName" name="name" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="name" placeholder="" required="required"/>
 			<span class="span-error" id="inputNameError"></span>
 		</div>
 		<label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Telefono (meglio cellulare)</label>
 		<div class="form-group">
-			<input id="inputPhone" value="123456789" name="phone" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="phone" placeholder="" required="required"/>
+			<input id="inputPhone" name="phone" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="phone" placeholder="" required="required"/>
 			<span class="span-error" id="inputPhoneError"></span>
 		</div>
 		<label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Città e indirizzo di consegna</label>
 		<div class="form-group">
-			<input id="inputAddress" value="test test" name="address" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="address" placeholder="" required="required">
+			<input id="inputAddress" name="address" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="address" placeholder="" required="required">
 			<span class="span-error" id="inputAddressError"></span>
 		</div>
 		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-bottom: 3em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'>Conferma l'Ordine</button>
@@ -136,7 +137,7 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = true;
+var DEBUG = false;
 
 var UPSELL_ENABLED = false;
 var UPSELL = {
@@ -158,7 +159,7 @@ function formVisited() {
 	};
 
 	// Submit
-	var api_url = 'http://127.0.0.1:8000/';
+	var api_url = '';
 	if (!DEBUG) {
 		api_url = 'http://zarolead.com/';
 	}
@@ -260,7 +261,7 @@ function onSubmit(step) {
 		};
 
 		// Submit
-		var api_url = 'http://127.0.0.1:8000/';
+		var api_url = '';
 		if (!DEBUG) {
 			api_url = 'http://zarolead.com/';
 		}
@@ -372,3 +373,4 @@ function fbPurchase() {
 	fbq('track', 'Purchase');
 }
 </script>
+

@@ -308,7 +308,8 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = false;
+var DEBUG = true;
+var BETA = true;
 
 var UPSELL_ENABLED = false;
 var UPSELL = {
@@ -330,13 +331,19 @@ function formVisited() {
 	};
 
 	// Submit
-	var api_url = '';
-	if (!DEBUG) {
-		api_url = 'http://zarolead.com/';
-	}
+	var api_url = 'http://';
+    if (BETA) {
+        api_url += 'beta2.';
+    }
+    if (DEBUG) {
+        api_url += 'localhost/';
+    } else {
+        api_url += 'zarolead.com/';
+    }
+    api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'api/form_visited',
+		url: api_url + form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -432,16 +439,22 @@ function onSubmit(step) {
 		};
 
 		// Submit
-		var api_url = '';
-		if (!DEBUG) {
-			api_url = 'http://zarolead.com/';
-		}
+        var api_url = 'http://';
+        if (BETA) {
+            api_url += 'beta2.';
+        }
+        if (DEBUG) {
+            api_url += 'localhost/';
+        } else {
+            api_url += 'zarolead.com/';
+        }
+        api_url += 'api/v1/';
 
 		$('#network_data').val(JSON.stringify(networkData));
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'api/order',
+			url: api_url + order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -697,7 +710,8 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = false;
+var DEBUG = true;
+var BETA = true;
 
 var UPSELL_ENABLED = false;
 var UPSELL = {
@@ -719,13 +733,19 @@ function formVisited() {
 	};
 
 	// Submit
-	var api_url = '';
-	if (!DEBUG) {
-		api_url = 'http://zarolead.com/';
-	}
+	var api_url = 'http://';
+    if (BETA) {
+        api_url += 'beta2.';
+    }
+    if (DEBUG) {
+        api_url += 'localhost/';
+    } else {
+        api_url += 'zarolead.com/';
+    }
+    api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'api/form_visited',
+		url: api_url + form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -832,16 +852,22 @@ function onSubmit(step) {
 		};
 
 		// Submit
-		var api_url = '';
-		if (!DEBUG) {
-			api_url = 'http://zarolead.com/';
-		}
+		var api_url = 'http://';
+        if (BETA) {
+            api_url += 'beta2.';
+        }
+        if (DEBUG) {
+            api_url += 'localhost/';
+        } else {
+            api_url += 'zarolead.com/';
+        }
+        api_url += 'api/v1/';
 
 		$('#network_data').val(JSON.stringify(networkData));
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'api/order',
+			url: api_url + order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -1096,7 +1122,8 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = false;
+var DEBUG = true;
+var BETA = true;
 
 var UPSELL_ENABLED = false;
 var UPSELL = {
@@ -1118,13 +1145,19 @@ function formVisited() {
 	};
 
 	// Submit
-	var api_url = '';
-	if (!DEBUG) {
-		api_url = 'http://zarolead.com/';
-	}
+	var api_url = 'http://';
+    if (BETA) {
+        api_url += 'beta2.';
+    }
+    if (DEBUG) {
+        api_url += 'localhost/';
+    } else {
+        api_url += 'zarolead.com/';
+    }
+    api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'api/form_visited',
+		url: api_url + form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -1222,16 +1255,22 @@ function onSubmit(step) {
 		};
 
 		// Submit
-		var api_url = '';
-		if (!DEBUG) {
-			api_url = 'http://zarolead.com/';
-		}
+		var api_url = 'http://';
+        if (BETA) {
+            api_url += 'beta2.';
+        }
+        if (DEBUG) {
+            api_url += 'localhost/';
+        } else {
+            api_url += 'zarolead.com/';
+        }
+        api_url += 'api/v1/';
 
 		$('#network_data').val(JSON.stringify(networkData));
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'api/order',
+			url: api_url + order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
