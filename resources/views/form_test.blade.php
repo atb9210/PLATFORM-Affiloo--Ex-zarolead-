@@ -37,23 +37,23 @@ body {
    
 		<!-- Backend -->
 		<input type="hidden" id="form_id" name="form_id" value="1">
-		<input type="hidden" id="user_id" name="user_id" value="2">
-		<input type="hidden" id="order_commission" name="commission" value="0.00">
-		<input type="hidden" id="order_sub_commission" name="sub_commission" value="0.00">
+		<input type="hidden" id="user_id" name="user_id" value="1">
+		<input type="hidden" id="order_commission" name="commission" value="29.99">
+		<input type="hidden" id="order_sub_commission" name="sub_commission" value="9.99">
 		<input type="hidden" id="network_id" name="network_id" value="1">
 		<input type="hidden" id="fb_pixel" name="fb_pixel" value="">
 		<input type="hidden" id="thankyou_page" name="thankyou_page" value="http://future-gadget.com/">
-		<input type="hidden" id="api_call_url" name="api_call_url" value="https://network.worldfilia.net/manager/inventory/buy/kalai_stepLuxe.json">
+		<input type="hidden" id="api_call_url" name="api_call_url" value="jsonurl.com/asdasd">
 		<input type="hidden" id="api_call_method" name="api_call_method" value="POST">
 		<input type="hidden" id="api_success_response" name="api_success_response" value='{"status":"success"}'>
 		<input type="hidden" id="network_data" name="network_data" value="">
 
 		<!-- Frontend -->
-		<input type="hidden" id="product_id" name="product_id" value="3">
+		<input type="hidden" id="product_id" name="product_id" value="1">
 		<input type="hidden" name="quantity" id="quantity" value="1">
-		<input type="hidden" name="price" id="price" value="49.00">
+		<input type="hidden" name="price" id="price" value="99.99">
 
-		<input type="hidden" id="source_id" name="source_id" value="913eb3f7a1d5">
+		<input type="hidden" id="source_id" name="source_id" value="asdasdasd">
 		<input type="hidden" id="aff_sub1" name="aff_sub1" value="">
 		<input type="hidden" id="aff_sub2" name="aff_sub2" value="">
 
@@ -137,8 +137,8 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = false;
-var BETA = true;
+var DEBUG = true;
+var BETA = false;
 
 var UPSELL_ENABLED = false;
 var UPSELL = {
@@ -158,12 +158,12 @@ function formVisited() {
     var form_id = $('#form_id').val();
 
 	// Submit
-	var api_url = 'https://';
+	var api_url = 'http://';
     if (BETA) {
         api_url += 'beta2.';
     }
     if (DEBUG) {
-        api_url += 'localhost/';
+        api_url += 'localhost:8000/';
     } else {
         api_url += 'zarolead.com/';
     }
@@ -264,12 +264,12 @@ function onSubmit(step) {
 		};
 
 		// Submit
-        var api_url = 'https://';
+        var api_url = 'http://';
         if (BETA) {
             api_url += 'beta2.';
         }
         if (DEBUG) {
-            api_url += 'localhost/';
+            api_url += 'localhost:8000/';
         } else {
             api_url += 'zarolead.com/';
         }

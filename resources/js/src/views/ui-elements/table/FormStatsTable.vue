@@ -249,20 +249,25 @@ export default {
         })
     },
     calculateStats() {
-      this.objects.forEach((obj) => {
-      })
       for (var i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
 
         let profit = obj.total_commission - obj.total_cost
-        let roi = (obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100
+        let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
         let cr = 0.0
         if (obj.leads == 0) cr = 0.0
         else if (obj.visits == 0) cr = 100.0
-        else cr = (obj.leads/obj.visits)*100.0
-        let cpv = (obj.visits == 0) ? obj.total_cost : obj.total_cost/obj.visits
-        let epv = (obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits
-        let cpl = (obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads
+        else cr = parseFloat((obj.leads/obj.visits)*100.0)
+        let cpv = parseFloat((obj.visits == 0) ? obj.total_cost : obj.total_cost/obj.visits)
+        let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
+        let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
+
+        console.log(profit)
+        console.log(roi)
+        console.log(cr)
+        console.log(cpv)
+        console.log(epv)
+        console.log(cpl)
 
         // Format calculated stats
         profit = profit.toFixed(2)

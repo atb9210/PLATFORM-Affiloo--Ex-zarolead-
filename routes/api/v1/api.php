@@ -35,7 +35,7 @@ Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->mi
 Route::apiResource('orders', 'api\v1\OrderController')->except([
     'create', 'edit', 'store',
 ])->middleware('auth:api');
-Route::post('orders', 'api\v1\OrderController@store')
+Route::post('orders', 'api\v1\OrderController@store')->middleware('cors')
     ->name('orders.store');
 
 /* Products routes */
@@ -67,7 +67,8 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
-Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
+Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->middleware('cors')
+    ->name('forms.visited');
 Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
     ->name('forms.code');
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')

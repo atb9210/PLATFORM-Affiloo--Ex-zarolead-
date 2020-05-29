@@ -39,16 +39,21 @@ class Order extends Model {
         $server_output = [];
 
         $api_call_url = $network_params['api_call_url'];
-        $api_call_method = $network_params['api_call_method'];
+        $api_call_method = '';
+        if (isset($network_params['api_call_method'])) {
+            $api_call_method = $network_params['api_call_method'];
+        }
         if ($api_call_url != '') {
             $ch = curl_init();
 
             $requestMethod = "post";
-            if (isset($api_call_method) && $api_call_method != "") {
+            if ($api_call_method != "") {
                 $requestMethod = strtolower($api_call_method);
             }
 
-            if ($this->network->name == "Affiliation Park") {
+            if ($this->network->name == "Worldfilia") {
+                $api_call_url .= '?' . http_build_query(['api_key' => $network_params['api_key']]);
+            } elseif ($this->network->name == "Affiliation Park") {
                 $network_data["user"] = "asrafatb9210@gmail.com";
                 $network_data["password"] = "1vrdNLMOjwQJIbB8Eqt0AcUgyDmp2hsC";
             }

@@ -211,6 +211,14 @@
             <!-- Worldfilia -->
             <div class="vx-row mb-6" v-if="newObject['create'].network.label == 'Worldfilia'">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>API Key</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="newObject['create'].api_key" />
+                </div>
+            </div>
+            <div class="vx-row mb-6" v-if="newObject['create'].network.label == 'Worldfilia'">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Source ID</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -387,6 +395,14 @@
             <!-- Worldfilia -->
             <div class="vx-row mb-6" v-if="newObject['edit'].network.label == 'Worldfilia'">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>API Key</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="newObject['edit'].api_key" />
+                </div>
+            </div>
+            <div class="vx-row mb-6" v-if="newObject['edit'].network.label == 'Worldfilia'">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Source ID</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -501,6 +517,7 @@ export default {
           api_call_url: '',
 
           // Worldfilia
+          api_key: '',
           source_id: '',
 
           // Amsped
@@ -525,6 +542,7 @@ export default {
           api_call_url: '',
 
           // Worldfilia
+          api_key: '',
           source_id: '',
 
           // Amsped
@@ -663,6 +681,7 @@ export default {
         api_call_url: '',
 
         // Worldfilia
+        api_key: '',
         source_id: '',
 
         // Amsped
@@ -731,12 +750,15 @@ export default {
         data.network_params = {
           fb_pixel: this.newObject['create'].fb_pixel,
           api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'POST',
+          api_key: this.newObject['create'].api_key,
           source_id: this.newObject['create'].source_id,
         }
       } else if (this.newObject['create'].network.label == 'Amsped') {
         data.network_params = {
           fb_pixel: this.newObject['create'].fb_pixel,
           api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'POST',
           sub_id: this.newObject['create'].sub_id,
           product_reference: this.newObject['create'].product_reference,
         }
@@ -744,6 +766,7 @@ export default {
         data.network_params = {
           fb_pixel: this.newObject['create'].fb_pixel,
           api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'GET',
           sub_id: this.newObject['create'].sub_id,
           offer_id: this.newObject['create'].offer_id,
         }
@@ -806,6 +829,7 @@ export default {
         sub_id: '',
 
         // Worldfilia
+        api_key: '',
         source_id: '',
 
         // Amsped
@@ -822,6 +846,9 @@ export default {
           this.newObject['edit'].api_call_url = obj.network_params.api_call_url
         }
         if (obj.network.name == 'Worldfilia') {
+          if (obj.network_params.hasOwnProperty('api_key')) {
+            this.newObject['edit'].api_key = obj.network_params.api_key
+          }
           if (obj.network_params.hasOwnProperty('source_id')) {
             this.newObject['edit'].source_id = obj.network_params.source_id
           }
@@ -869,12 +896,15 @@ export default {
         data.network_params = {
           fb_pixel: this.newObject['edit'].fb_pixel,
           api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'POST',
+          api_key: this.newObject['edit'].api_key,
           source_id: this.newObject['edit'].source_id,
         }
       } else if (this.newObject['edit'].network.label == 'Amsped') {
         data.network_params = {
           fb_pixel: this.newObject['edit'].fb_pixel,
           api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'POST',
           sub_id: this.newObject['edit'].sub_id,
           product_reference: this.newObject['edit'].product_reference,
         }
@@ -882,6 +912,7 @@ export default {
         data.network_params = {
           fb_pixel: this.newObject['edit'].fb_pixel,
           api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'GET',
           sub_id: this.newObject['edit'].sub_id,
           offer_id: this.newObject['edit'].offer_id,
         }
