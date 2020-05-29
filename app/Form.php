@@ -326,9 +326,7 @@ var UPSELL = {
 };
 
 function formVisited() {
-	visitData = {
-		form_id: $('#form_id').val(),
-	};
+    var form_id = $('#form_id').val();
 
 	// Submit
 	var api_url = 'https://';
@@ -343,10 +341,8 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'form_visited',
-		method: 'POST',
-		dataType: 'json',
-		data: visitData,
+		url: api_url + 'forms/' + form_id + '/visited',
+		method: 'GET',
 		success: function(data) {
 			console.log('[i] FORM VISITED');
 		},
@@ -728,9 +724,7 @@ var UPSELL = {
 };
 
 function formVisited() {
-	visitData = {
-		form_id: $('#form_id').val(),
-	};
+    var form_id = $('#form_id').val();
 
 	// Submit
 	var api_url = 'https://';
@@ -745,10 +739,8 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'form_visited',
-		method: 'POST',
-		dataType: 'json',
-		data: visitData,
+		url: api_url + 'forms/' + form_id + '/visited',
+		method: 'GET',
 		success: function(data) {
 			console.log('[i] FORM VISITED');
 		},
@@ -1140,9 +1132,7 @@ var UPSELL = {
 };
 
 function formVisited() {
-	visitData = {
-		form_id: $('#form_id').val(),
-	};
+    var form_id = $('#form_id').val();
 
 	// Submit
 	var api_url = 'https://';
@@ -1157,10 +1147,8 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + 'form_visited',
-		method: 'POST',
-		dataType: 'json',
-		data: visitData,
+		url: api_url + 'forms/' + form_id + '/visited',
+		method: 'GET',
 		success: function(data) {
 			console.log('[i] FORM VISITED');
 		},

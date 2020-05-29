@@ -67,6 +67,7 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
 Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
     ->name('forms.code');
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')

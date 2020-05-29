@@ -294,4 +294,24 @@ class FormController extends Controller
             'data' => $output['form_html']
         ]);
     }
+
+    /**
+     * Form is visited.
+     *
+     * @urlParam id int required Form's id
+     *
+     * @response {
+     *  "data": [forms],
+     * }
+     */
+    public function visited($id)
+    {
+        $form = Form::findOrFail($id);
+        $form->visits += 1;
+        $form->save();
+
+        $formStats = FormStats::getObject($id, date('Y-m-d'));
+        $formStats->visits += 1;
+        $formStats->save();
+    }
 }
