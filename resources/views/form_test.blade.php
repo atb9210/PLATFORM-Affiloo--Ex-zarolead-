@@ -137,7 +137,7 @@ body {
 
 <!-- Custom script -->
 <script>
-var DEBUG = true;
+var DEBUG = false;
 var BETA = true;
 
 var UPSELL_ENABLED = false;
