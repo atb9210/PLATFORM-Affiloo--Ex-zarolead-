@@ -343,7 +343,7 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + form_visited',
+		url: api_url + 'form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -454,7 +454,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + order',
+			url: api_url + 'order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -745,7 +745,7 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + form_visited',
+		url: api_url + 'form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -867,7 +867,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + order',
+			url: api_url + 'order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -1157,7 +1157,7 @@ function formVisited() {
     api_url += 'api/v1/';
 
 	$.ajax({
-		url: api_url + form_visited',
+		url: api_url + 'form_visited',
 		method: 'POST',
 		dataType: 'json',
 		data: visitData,
@@ -1270,7 +1270,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + order',
+			url: api_url + 'order',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
