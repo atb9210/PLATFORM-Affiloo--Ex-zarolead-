@@ -160,7 +160,7 @@ function formVisited() {
 	};
 
 	// Submit
-	var api_url = 'http://';
+	var api_url = 'https://';
     if (BETA) {
         api_url += 'beta2.';
     }
@@ -268,7 +268,7 @@ function onSubmit(step) {
 		};
 
 		// Submit
-        var api_url = 'http://';
+        var api_url = 'https://';
         if (BETA) {
             api_url += 'beta2.';
         }
