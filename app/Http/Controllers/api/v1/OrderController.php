@@ -119,7 +119,7 @@ class OrderController extends Controller
 
         $form = Form::findOrFail($params['form_id']);
         $network_data = json_decode($params['network_data'], TRUE);
-        $network_params = json_decode($form->network_params, TRUE);
+        $network_params = json_decode(json_encode($form->network_params), TRUE);
 
         // Create order
         $params['order_status_id'] = OrderStatus::NOT_SENT;
