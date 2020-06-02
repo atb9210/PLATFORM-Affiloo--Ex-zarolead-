@@ -110,7 +110,7 @@ class OrderController extends Controller
             'product_id' => 'required|integer|min:1|exists:products,id',
             'quantity' => 'required|string|min:1',
             'commission' => 'required|numeric|min:1',
-            'sub_commission' => 'required|numeric|min:1',
+            'sub_commission' => 'required|numeric|min:0',
             'network_id' => 'required|integer|min:1|exists:networks,id',
 
             'form_id' => 'required|integer|exists:forms,id',
