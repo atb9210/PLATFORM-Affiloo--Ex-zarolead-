@@ -450,7 +450,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'order',
+			url: api_url + 'orders',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -859,7 +859,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'order',
+			url: api_url + 'orders',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
@@ -1258,7 +1258,7 @@ function onSubmit(step) {
 		console.log($('#network_data').val());
 
 		$.ajax({
-			url: api_url + 'order',
+			url: api_url + 'orders',
 			method: \"POST\",
 			dataType: \"json\",
 			data: $(\"#mainForm\").serialize(),
