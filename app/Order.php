@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator;
 
 class Order extends Model {
     /**
@@ -35,7 +36,211 @@ class Order extends Model {
         return $this->belongsTo('App\Network', 'network_id');
     }
 
-    public function sendToNetwork($network_data, $network_params) {
+    public function sendToNetwork(array $input, array $form) {
+        // Variables to return
+        $status = 'error';
+        $postbackFlag = false;
+        $redirectFlag = false;
+        $redirectUrl = '';
+        $message = '';
+
+        // Define context
+        $context = [
+            'input' => $input,
+            'form' => $form,
+        ];
+
+        // Params validation
+        // @TODO:
+        $urlParamsValidation = $this->network->getApi('store.redirect.validation.urlParams');
+        $bodyParamsValidation = $this->network->getApi('store.redirect.validation.bodyParams');
+
+        // Form params validation
+        // @TODO:
+
+        // Make API call
+        $apiRequestUrl = $this->interpretParam($this->network->getApi('store.request.url'), $context);
+        $apiRequestMethod = $this->interpretParam($this->network->getApi('store.request.method'), $context);
+        $apiRequestType = $this->interpretParam($this->network->getApi('store.request.type'), $context);
+
+        $urlParams = $this->interpretParams($this->network->getApi('store.request.urlParams'), $context);
+        $bodyParams = $this->interpretParams($this->network->getApi('store.request.bodyParams'), $context);
+
+        $url = $apiRequestUrl;
+        $token = (strpos($apiRequestUrl, '?') === false) ? '?' : '&';
+        $url .= $token . http_build_query($urlParams);
+
+        $response = [];
+        if ($apiRequestUrl != '' && $apiRequestMethod != '') {
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            if (strtolower($apiRequestMethod) == "post") {
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+            }
+
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            $server_output = curl_exec($ch);
+            curl_close($ch);
+
+            if (strtolower($this->interpretParam($this->network->getApi('store.response.type'), $context)) == "json") {
+                $response = json_decode($server_output, true);
+            } else {
+                $response = $server_output;
+            }
+        }
+
+        // Add response to the context
+        $context['response'] = $response;
+
+        // Get status
+        $responseStatuses = $this->network->getApi('store.response.status');
+        $status = (isset($responseStatuses['default'])) ? $responseStatuses['default'] : 'error';
+        foreach ($responseStatuses as $key => $value) {
+            if (isset($responseStatuses[$key]['validation']) &&
+                Validator::make($response, $responseStatuses[$key]['validation'])->passes()) {
+                $status = $key;
+            }
+        }
+
+        // Postback
+        $postbackFlag = false;
+        $postback_response = "";
+        $postbackArray = $this->network->getApi('store.postback');
+        if (!empty($postbackArray)) {
+            $postbackIndex = -1;
+            for ($i = 0; $i < count($postbackArray); $i++) {
+                $on = explode('|', $this->interpretParam($postbackArray[$i]['on'], $context));
+                if (in_array($status, $on)) {
+                    $postbackIndex = $i;
+                    break;
+                }
+            }
+
+            if ($postbackIndex >= 0) {
+                $postbackFlag = true;
+
+                $postback = $postbackArray[$postbackIndex];
+
+                $postbackUrl = $this->interpretParam($postback['url'], $context);
+                $postbackMethod = $this->interpretParam($postback['method'], $context);
+                $postbackType = '';
+                if (isset($postback['type'])) {
+                    $postbackType = $this->interpretParam($postback['type'], $context);
+                }
+
+                $postbackUrlParams = [];
+                $postbackBodyParams = [];
+                if (isset($postback['urlParams'])) {
+                    $postbackUrlParams = $this->interpretParams($postback['urlParams'], $context);
+                }
+                if (isset($postback['bodyParams'])) {
+                    $postbackBodyParams = $this->interpretParams($postback['bodyParams'], $context);
+                }
+
+                $token = (strpos($postbackUrl, '?') === false) ? '?' : '&';
+                $postbackUrl .= $token . http_build_query($postbackUrlParams);
+
+                $postback_ch = curl_init();
+
+                curl_setopt($postback_ch, CURLOPT_URL, $postbackUrl);
+                if (strtolower($postbackMethod) == "post") {
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postbackBodyParams));
+                }
+                curl_setopt($postback_ch, CURLOPT_RETURNTRANSFER, 1);
+
+                $postback_output = curl_exec($postback_ch);
+                curl_close($postback_ch);
+
+                if (strtolower($postbackType) == "json") {
+                    $postback_response = json_decode($postback_output, true);
+                } else {
+                    $postback_response = $postback_output;
+                }
+            }
+        }
+
+        // Redirect
+        $redirectArray = $this->network->getApi('store.redirect');
+        $redirectFlag = false;
+        $redirectUrl = '';
+        if (!empty($redirectArray)) {
+            $redirectIndex = -1;
+            for ($i = 0; $i < count($redirectArray); $i++) {
+                $on = explode('|', $this->interpretParam($redirectArray[$i]['on'], $context));
+                if (in_array($status, $on)) {
+                    $redirectIndex = $i;
+                    break;
+                }
+            }
+
+            if ($redirectIndex >= 0) {
+                $redirectFlag = true;
+                $redirect = $redirectArray[$postbackIndex];
+                $redirectUrl = $this->interpretParam($redirect['url'], $context);
+            }
+        }
+
+        // Change order status
+        $this->order_status_id = OrderStatus::NOT_SENT;
+        if ($status == 'success') {
+            $this->order_status_id = OrderStatus::WAITING;
+        } elseif ($status == 'double') {
+            $this->order_status_id = OrderStatus::DOUBLE;
+        } elseif ($status == 'error') {
+            $this->order_status_id = OrderStatus::NOT_SENT;
+        }
+        $this->save();
+
+        return [
+            'status' => $status,
+            'message' => $message,
+            'postback' => $postbackFlag,
+            'redirect' => $redirectFlag,
+            'redirect_url' => $redirectUrl,
+            'response' => $response,
+        ];
+    }
+
+    private function interpretParams(array $params, array $context) {
+        $interpretedParams = [];
+        foreach ($params as $key => $value) {
+            $interpretedParams[$key] = $this->interpretParam($value, $context);
+        }
+        return $interpretedParams;
+    }
+
+    private function interpretParam(string $param, array $context) {
+        $interpreted = '';
+
+        $matches = [];
+        preg_match_all("/{(.*?)}/", $param, $matches);
+
+        $lookupTable = [];
+        for ($i = 0; $i < count($matches[1]); $i++) {
+            $query = $matches[1][$i];
+
+            $obj = explode('.', $query)[0];
+            $field = explode('.', $query)[1];
+
+            $value = '';
+            if (isset($context[$obj][$field])) {
+                $value = $context[$obj][$field];
+            }
+            $lookupTable[$matches[0][$i]] = $value;
+        }
+
+        $interpreted = $param;
+        foreach ($lookupTable as $key => $value) {
+            $interpreted = str_replace($key, $value, $interpreted);
+        }
+        return $interpreted;
+    }
+
+    public function sendToNetworkOld($network_data, $network_params) {
         $server_output = [];
 
         $api_call_url = $network_params['api_call_url'];

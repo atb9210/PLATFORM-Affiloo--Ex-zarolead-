@@ -34,9 +34,7 @@ class FormResource extends JsonResource
                 'name' => $this->product->name,
             ],
             'quantity' => $this->quantity,
-            'price' => $this->price,
-            'commission' => $this->commission,
-            'sub_commission' => $this->sub_commission,
+            'upsell' => $this->upsell,
             'total_commission' => $this->total_commission,
             'traffic_source' => [
                 'id' => $this->traffic_source->id,

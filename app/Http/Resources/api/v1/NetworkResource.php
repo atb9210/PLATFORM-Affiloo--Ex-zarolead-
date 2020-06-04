@@ -17,6 +17,7 @@ class NetworkResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'api' => $this->api,
         ];
     }
 }

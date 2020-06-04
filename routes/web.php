@@ -23,6 +23,9 @@ Route::get('/form_test', function () {
     return view('form_test');
 })->name('form_test');
 
+Route::get('/test', 'TestController@test')->name('test');
+Route::post('/test', 'TestController@post')->name('test');
+
 /*
 Route::get('/mobile-form', function () {
 	return view('mobile-form');
@@ -206,6 +209,14 @@ Route::get('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoi
 Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoices');
 
 */
+Route::get('/forms/{id}/get', function($id) {
+    $form = App\Form::findOrFail($id);
+    return view('form_get')->with([
+        'form_id' => $form->id,
+    ]);
+})->name('forms.get');
+
 Route::get('/{any}', function() {
     return view('application');
 })->where('any', '.*');
+

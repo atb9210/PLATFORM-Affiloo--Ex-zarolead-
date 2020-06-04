@@ -84,15 +84,10 @@ class OrderController extends Controller
     /**
      * Create a new order.
      *
-     * @bodyParam user_id int required Order's user id
      * @bodyParam name string required Customer's name
      * @bodyParam phone string required Customer's phone number
      * @bodyParam address string required Customer's address
-     * @bodyParam product_id int required Order's product id
      * @bodyParam quantity string required Quantity
-     * @bodyParam commission float required Commission
-     * @bodyParam sub_commission float required Sub commission
-     * @bodyParam network_id int required Order's network id
      *
      * @response 201 {
      *  "message": "Order created",
@@ -103,15 +98,10 @@ class OrderController extends Controller
     {
         // Params validation
         $params = $request->validate([
-            'user_id' => 'required|integer|min:1|exists:users,id',
             'name' => 'required|string|min:3',
             'phone' => 'required|string|min:3',
             'address' => 'required|string|min:3',
-            'product_id' => 'required|integer|min:1|exists:products,id',
             'quantity' => 'required|string|min:1',
-            'commission' => 'required|numeric|min:1',
-            'sub_commission' => 'required|numeric|min:0',
-            'network_id' => 'required|integer|min:1|exists:networks,id',
 
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
@@ -122,7 +112,12 @@ class OrderController extends Controller
         $network_params = json_decode(json_encode($form->network_params), TRUE);
 
         // Create order
+        $params['user_id'] = $form->user_id;
+        $params['network_id'] = $form->network_id;
+        $params['product_id'] = $form->product_id;
         $params['order_status_id'] = OrderStatus::NOT_SENT;
+        $params['commission'] = $form->commission;
+        $params['sub_commission'] = $form->sub_commission;
         $order = Order::create($params);
 
         // Send order to the network

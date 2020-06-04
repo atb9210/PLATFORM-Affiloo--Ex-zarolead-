@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 use App\Network as Network;
 use App\Http\Resources\api\v1\NetworkResource;
@@ -129,6 +130,40 @@ class NetworkController extends Controller
 
         return response([
             'message' => 'Network has been archived'
+        ]);
+    }
+
+    /**
+     * Network validate params.
+     *
+     * @urlParam id int required Network's id
+     *
+     * @bodyParam network_params json required Network's params to validate
+     *
+     * @response {
+     *  "data": true,
+     * }
+     */
+    public function validateParams($id, Request $request)
+    {
+        $network = Network::findOrFail($id);
+
+        // Params validation
+        $params = $request->validate([
+            'network_params' => 'required|json',
+        ]);
+        $params['network_params'] = json_decode($params['network_params'], TRUE);
+
+        $rules = $network->getApi('form.validation.params');
+        $validator = Validator::make($params['network_params'], $rules);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
+        return response([
+            'data' => true
         ]);
     }
 }

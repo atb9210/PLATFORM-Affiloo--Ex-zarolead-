@@ -12,7 +12,10 @@
     <vx-card title="Forms" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')">Create new</vs-button> 
+            <!--<vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')">Create new</vs-button>-->
+            <RouterLink to="/dashboard/forms/builder">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus">Create new</vs-button> 
+            </RouterLink>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button> 
         </p>
 
@@ -773,7 +776,7 @@ export default {
       }
       data.network_params = JSON.stringify(data.network_params)
 
-      // Retrieve forms
+      // Create form
       this.$http.post('/api/v1/forms', data, { headers: headers })
         .then((response) => {
           this.$vs.loading.close()

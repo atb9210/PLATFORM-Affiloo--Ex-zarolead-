@@ -25,4 +25,16 @@ class Network extends Model {
     public function forms() {
         return $this->hasMany('App\Form');
     }
+
+    public function getApi($key) {
+        $keys = explode('.', $key);
+        $api = $this->api;
+        for ($i = 0; $i < count($keys); $i++) {
+            if (!isset($api[$keys[$i]])) {
+                return '';
+            }
+            $api = $api[$keys[$i]];
+        }
+        return $api;
+    }
 }

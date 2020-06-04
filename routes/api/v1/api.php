@@ -35,8 +35,7 @@ Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->mi
 Route::apiResource('orders', 'api\v1\OrderController')->except([
     'create', 'edit', 'store',
 ])->middleware('auth:api');
-Route::post('orders', 'api\v1\OrderController@store')->middleware('cors')
-    ->name('orders.store');
+Route::post('orders', 'api\v1\OrderController@store')->name('orders.store');
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
@@ -67,14 +66,15 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
-Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->middleware('cors')
-    ->name('forms.visited');
+Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
 Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
     ->name('forms.code');
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')
     ->name('forms.stats');
 Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware('auth:api')
     ->name('forms.stats.update');
+Route::get('forms/{id}/initialize', 'api\v1\FormController@initialize')->name('forms.initialize');
+Route::post('forms/{id}/input/validate', 'api\v1\FormController@validateInput')->name('forms.input.validate');
 
 /* Invoices routes */
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
@@ -91,6 +91,8 @@ Route::post('invoices/download-summary', 'api\v1\InvoiceController@downloadSumma
 Route::apiResource('networks', 'api\v1\NetworkController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('networks/{id}/params/validate', 'api\v1\NetworkController@validateParams')->middleware('auth:api')
+    ->name('networks.params.validate');
 
 /* Campaigns routes */
 Route::apiResource('campaigns', 'api\v1\CampaignController')->except([

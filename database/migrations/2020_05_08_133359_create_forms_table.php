@@ -20,14 +20,13 @@ class CreateFormsTable extends Migration
             $table->bigInteger('campaign_id')->unsigned();
             $table->bigInteger('network_id')->unsigned();
             $table->bigInteger('product_id')->unsigned();
-            $table->string('quantity');
-            $table->decimal('price', 9, 2)->default(0.0);
-            $table->decimal('commission', 9, 2)->default(0.0);
-            $table->decimal('sub_commission', 9, 2)->default(0.0);
+            $table->json('quantity');
+            $table->json('upsell')->nullable();
             $table->decimal('total_commission', 9, 2)->default(0.0);
             $table->bigInteger('traffic_source_id')->unsigned();
             $table->json('info')->nullable();
             $table->json('network_params');
+            $table->json('plugins')->nullable();
             $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);
             $table->decimal('total_cost', 9, 2)->default(0.0);

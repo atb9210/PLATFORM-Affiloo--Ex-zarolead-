@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Form;
-use App\FormStats;
+use App\Order;
 
 class TestController extends Controller {
     public function test() {
+        $order = Order::findOrFail(1);
+        $res = $order->sendToNetwork();
+        echo "<pre>" . var_export($res, true) . "</pre>";
         exit();
     }
 
