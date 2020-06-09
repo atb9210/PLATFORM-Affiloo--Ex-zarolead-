@@ -31,6 +31,7 @@ class Form {
         // Variables initialization
         var api_url = 'http://';
         if (this.BETA) {
+            api_url = 'https://';
             api_url += 'beta2.';
         }
         if (this.DEBUG) {
