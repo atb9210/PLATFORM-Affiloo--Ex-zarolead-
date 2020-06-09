@@ -136,7 +136,7 @@ body {
 @endforeach
 <?php
 $plugins = json_encode($plugins);
-$debug = env('APP_DEBUG', 'false') ? 'true' : 'false';
+$debug = env('APP_LOCAL', 'false') ? 'true' : 'false';
 $beta = env('APP_BETA', 'false') ? 'true' : 'false';
 ?>
 <script id="form-js" src="{{ asset('js/form.js') }}" data-form-id="{{ $form_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-beta="{{ $beta }}"></script>
