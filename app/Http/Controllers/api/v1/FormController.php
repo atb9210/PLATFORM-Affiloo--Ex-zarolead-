@@ -63,6 +63,7 @@ class FormController extends Controller
      * @bodyParam upsell json required Product's quantity JSON
      * @bodyParam traffic_source_id int required Form's traffic source id
      * @bodyParam network_params json required Form params depending on the network
+     * @bodyParam plugins json Form plugins
      *
      * @response 201 {
      *  "message": "Form created",
@@ -83,11 +84,15 @@ class FormController extends Controller
             'upsell' => 'required|json',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
             'network_params' => 'required|json',
+            'plugins' => 'json',
         ]);
         $params['user_id'] = Auth::user()->id;
         $params['quantity'] = json_decode($params['quantity'], TRUE);
         $params['upsell'] = json_decode($params['upsell'], TRUE);
         $params['network_params'] = json_decode($params['network_params'], TRUE);
+        if (isset($params['plugins'])) {
+            $params['plugins'] = json_decode($params['plugins'], TRUE);
+        }
 
         // Validate quantity JSON
         $validator = Validator::make($params['quantity'], [
@@ -154,6 +159,7 @@ class FormController extends Controller
      * @bodyParam upsell json Product's quantity JSON
      * @bodyParam traffic_source_id int Form's traffic source id
      * @bodyParam network_params json Form params depending on the network
+     * @bodyParam plugins json Form plugins
      *
      * @response {
      *  "data": form,
@@ -179,6 +185,7 @@ class FormController extends Controller
             'upsell' => 'json',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'network_params' => 'json',
+            'plugins' => 'json',
         ]);
         if (isset($params['quantity'])) {
             $params['quantity'] = json_decode($params['quantity'], TRUE);
@@ -188,6 +195,9 @@ class FormController extends Controller
         }
         if (isset($params['network_params'])) {
             $params['network_params'] = json_decode($params['network_params'], TRUE);
+        }
+        if (isset($params['plugins'])) {
+            $params['plugins'] = json_decode($params['plugins'], TRUE);
         }
 
         // Validate quantity JSON

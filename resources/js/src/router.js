@@ -1387,6 +1387,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/forms/editor/:form_id',
+          name: 'form-editor',
+          component: () => import('./views/FormEditor.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Form Editor', active: true }
+            ],
+            pageTitle: 'Form Editor',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/forms/builder',
           name: 'form-builder',
           component: () => import('./views/FormBuilder.vue'),

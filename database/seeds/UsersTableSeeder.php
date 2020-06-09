@@ -18,9 +18,9 @@ class UsersTableSeeder extends Seeder
         ]);
         \App\User::create([
             'name' => 'ZaroLead Admin',
-            'email' => 'admin@test.com',
+            'email' => 'admin@zarolead.com',
             'password' => bcrypt('admin123'),
         ]);
-        factory(App\User::class, 50)->create();
+        factory(App\User::class, 5)->create();
     }
 }

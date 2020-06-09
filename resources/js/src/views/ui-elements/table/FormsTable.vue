@@ -93,7 +93,7 @@
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="showFormCode(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                            <vs-button @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -979,6 +979,9 @@ export default {
     },
     showFormStats(id) {
       this.$router.push({name: 'form-stats', params: {form_id: id}})
+    },
+    goToFormEditor(id) {
+      this.$router.push({name: 'form-editor', params: {form_id: id}})
     },
     onCodeCopied() {
       this.$vs.notify({

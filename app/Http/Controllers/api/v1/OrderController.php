@@ -111,13 +111,25 @@ class OrderController extends Controller
         $network_data = json_decode($params['network_data'], TRUE);
         $network_params = json_decode(json_encode($form->network_params), TRUE);
 
-        // Create order
         $params['user_id'] = $form->user_id;
         $params['network_id'] = $form->network_id;
         $params['product_id'] = $form->product_id;
         $params['order_status_id'] = OrderStatus::NOT_SENT;
-        $params['commission'] = $form->commission;
-        $params['sub_commission'] = $form->sub_commission;
+
+        $commission = 0.0;
+        if (isset($form->quantity['options'][$params['quantity']]['commission'])) {
+            $commission = $form->quantity['options'][$params['quantity']]['commission'];
+        }
+        $sub_commission = 0.0;
+        if (isset($form->quantity['options'][$params['quantity']]['sub_commission'])) {
+            $sub_commission = $form->quantity['options'][$params['quantity']]['sub_commission'];
+        }
+        $params['commission'] = $commission;
+        $params['sub_commission'] = $sub_commission;
+
+        $params['network_data'] = $network_data;
+
+        // Create order
         $order = Order::create($params);
 
         // Send order to the network

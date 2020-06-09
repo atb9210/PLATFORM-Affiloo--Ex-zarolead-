@@ -26,6 +26,27 @@ class FormController extends Controller {
         return (!$redirect);
 	}
 
+    public function getForm($id) {
+        $form = Form::findOrFail($id);
+
+        $form_plugins = [];
+        if (isset($form->plugins)) {
+            $form_plugins = $form->plugins;
+        }
+
+        $plugins = [];
+        foreach($form_plugins as $key => $value) {
+            if ($value['enabled']) {
+                $plugins[$key] = $value;
+            }
+        }
+
+        return view('form_get')->with([
+            'form_id' => $form->id,
+            'plugins' => $plugins,
+        ]);
+    }
+
     public function calculateFormsReport(Request $request, $admin = false) {
 		if(!Auth::check()) {
 			return redirect()->route('login');

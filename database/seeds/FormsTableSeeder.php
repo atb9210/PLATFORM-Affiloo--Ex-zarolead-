@@ -49,5 +49,6 @@ class FormsTableSeeder extends Seeder
                 'aff_sub2' => '',
             ],
         ]);
+        */
     }
 }

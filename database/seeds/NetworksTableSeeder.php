@@ -43,7 +43,7 @@ class NetworksTableSeeder extends Seeder
                                 'name' => 'required|min:3',
                                 'phone' => 'required|min:8',
                                 'address' => 'required|min:4',
-                                'quantity' => 'required|min:1',
+                                'quantity' => 'required',
                                 'doubleCheck' => 'in:0,1',
                             ],
                         ],
@@ -141,43 +141,42 @@ class NetworksTableSeeder extends Seeder
                         'method' => 'post',
                         'type' => 'json',
                         'bodyParams' => [
-                            'token' => 'HReYRJSUJ77XSm8Aga2bkezMm4udCB',
-                            'publisher_id' => '8469',
-                            'company_id' => '5',
-                            'source' => 'achraf',
-                            'name' => '{input.name}',
+                            'token' => 'HReYRJSUJ77XSm8Aga2bkezMm4udCB', //@TODO
+                            'publisher_id' => '8469', //@TODO
+                            'company_id' => '5', //@TODO
+                            'source' => 'achraf', //@TODO
                             'phone' => '{input.phone}',
-                            'address' => '{input.address}',
+                            'name' => '{input.name}',
                             'quantity' => '{input.quantity}',
                             'price' => '{input.price}',
-                            'payment_type' => '{form.payment_type}',
+                            'payment_type' => 'c', //@TODO
                             'city' => '',
                             'state' => '',
                             'zip' => '',
-                            'country' => 'IT',
+                            'address' => '{input.address}',
+                            'country' => 'IT', //@TODO
                             'external_notes' => '',
                             'product_reference' => '{form.product_reference}',
-                            'product_name' => '{form.product_id}',
-                            'ip_address' => '127.0.0.1',
+                            'product_name' => '{form.product_name}',
+                            'ip_address' => '',
                         ],
                         'validation' => [
                             'urlParams' => [
-                                'api_key' => 'required|min:1',
                             ],
                             'bodyParams' => [
-                                'token' => 'required|string|min:1',
-                                'publisher_id' => 'required|string|min:1',
+                                'token' => 'required|string',
+                                'publisher_id' => 'required|string',
                                 'company_id' => 'required|numeric|min:1',
                                 'source' => 'required|string',
-                                'name' => 'required|string|min:3',
                                 'phone' => 'required|string|min:8',
-                                'address' => 'required|string|min:4',
-                                'quantity' => 'required|string|min:1',
+                                'name' => 'required|string|min:3',
+                                'quantity' => 'required',
                                 'price' => 'required|numeric',
-                                'payment_type' => '{form.payment_type}', // @TODO:
+                                'payment_type' => 'required|in:c,p',
                                 'city' => 'string',
                                 'state' => 'string',
                                 'zip' => 'string',
+                                'address' => 'required|string|min:4',
                                 'country' => 'string',
                                 'external_notes' => 'string',
                                 'product_reference' => 'required|string',
@@ -191,12 +190,12 @@ class NetworksTableSeeder extends Seeder
                         'status' => [
                             'success' => [
                                 'validation' => [
-                                    'error' => 'required|boolean|in:false',
+                                    'error' => 'required|boolean|is_false',
                                 ],
                             ],
                             'error' => [
                                 'validation' => [
-                                    'error' => 'required|boolean|in:true',
+                                    'error' => 'required|boolean|is_true',
                                 ],
                             ],
                             'default' => 'error',
@@ -209,19 +208,48 @@ class NetworksTableSeeder extends Seeder
                             'method' => 'get',
                             'urlParams' => [
                                 'cid' => '{input.sub_id}',
-                                'payout' => '{form.commission}',
+                                'payout' => '{order.commission}',
                             ],
                         ],
                     ],
                 ],
                 'form' => [
+                    'input' => [
+                        'name' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Nome e cognome',
+                        ],
+                        'phone' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Telefono (meglio cellulare)',
+                        ],
+                        'address' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Città e indirizzo di consegna'
+                        ],
+                    ],
+                    'params' => [
+                        'product_reference' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'product_name' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
                     'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:8',
+                            'address' => 'required|string|min:4',
+                        ],
                         'params' => [
-                            'api_key' => 'required|string|min:1',
-                            'source_id' => 'required|string|min:1',
-                            'aff_sub1' => 'string',
-                            'aff_sub2' => 'string',
-                            'api_call_url' => 'required|string',
+                            'product_reference' => 'required|string|min:1',
+                            'product_name' => 'required|string|min:1',
                         ],
                     ],
                 ],
@@ -230,9 +258,112 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Affiliation Park',
             'api' => [
-                'success_response' => [
-                    'status' => true,
-                    'response' => 'Order added'
+                'store' => [
+                    'request' => [
+                        'url' => 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php', // TODO: string after public/
+                        'method' => 'get',
+                        'type' => 'json',
+                        'urlParams' => [
+                            'user' => 'asrafatb9210@gmail.com', // @TODO
+                            'password' => '1vrdNLMOjwQJIbB8Eqt0AcUgyDmp2hsC', // @TODO
+                            'offer' => '{form.offer}',
+                            'phone' => '{input.phone}',
+                            'nome' => '{input.name}',
+                            'surname' => '{input.surname}',
+                            'quantity' => '{input.quantity}',
+                            'price' => '{input.price}',
+                            'address' => '{input.address}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                                'user' => 'required|email',
+                                'password' => 'required',
+                                'offer' => 'required',
+                                'phone' => 'required|string|min:8',
+                                'nome' => 'required|string|min:3',
+                                'surname' => 'required|string|min:3',
+                                'quantity' => 'required',
+                                'price' => 'required|numeric',
+                                'address' => 'required|string|min:4',
+                            ],
+                            'bodyParams' => [
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'status' => 'required|boolean|is_true',
+                                    'response' => 'required|string|in:Order added',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                    'postback' => [
+                        [
+                            'on' => 'success',
+                            'url' => 'http://ztrk37.com/postback',
+                            'method' => 'get',
+                            'urlParams' => [
+                                'cid' => '{input.sub_id}',
+                                'payout' => '{order.commission}',
+                            ],
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        'name' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Nome',
+                        ],
+                        'surname' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Cognome',
+                        ],
+                        'phone' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Telefono (meglio cellulare)',
+                        ],
+                        'address' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Città e indirizzo di consegna'
+                        ],
+                    ],
+                    'params' => [
+                        'user' => [
+                            'type' => 'email',
+                            'required' => '',
+                        ],
+                        'password' => [
+                            'type' => 'password',
+                            'required' => '',
+                        ],
+                        'offer' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'surname' => 'required|string|min:4',
+                            'phone' => 'required|string|min:8',
+                            'address' => 'required|string|min:4',
+                        ],
+                        'params' => [
+                            'user' => 'required|email',
+                            'password' => 'required|string|min:6',
+                            'offer' => 'required|string',
+                        ],
+                    ],
                 ],
             ],
         ]);

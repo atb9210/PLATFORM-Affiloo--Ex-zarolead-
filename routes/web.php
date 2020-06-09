@@ -209,12 +209,7 @@ Route::get('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoi
 Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invoices');
 
 */
-Route::get('/forms/{id}/get', function($id) {
-    $form = App\Form::findOrFail($id);
-    return view('form_get')->with([
-        'form_id' => $form->id,
-    ]);
-})->name('forms.get');
+Route::get('/forms/{id}/get', 'FormController@getForm')->name('forms.get');
 
 Route::get('/{any}', function() {
     return view('application');

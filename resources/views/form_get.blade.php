@@ -128,4 +128,15 @@ body {
 <!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>-->
 
 <!-- Custom script -->
-<script id="form-js" src="{{ asset('js/form.js') }}" data-form-id="{{ $form_id }}" data-debug="true" data-beta="false"></script>
+<script id="plugin-js" src="{{ asset('js/plugins/plugin.js') }}"></script>
+@foreach($plugins as $plugin => $value)
+    @if(file_exists(public_path('js/plugins/' . $plugin . '.js')))
+        <script id="plugin-{{$plugin}}-js" src="{{ asset('js/plugins/' . $plugin . '.js') }}"></script>
+    @endif
+@endforeach
+<?php
+$plugins = json_encode($plugins);
+$debug = env('APP_DEBUG', 'false') ? 'true' : 'false';
+$beta = env('APP_BETA', 'false') ? 'true' : 'false';
+?>
+<script id="form-js" src="{{ asset('js/form.js') }}" data-form-id="{{ $form_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-beta="{{ $beta }}"></script>

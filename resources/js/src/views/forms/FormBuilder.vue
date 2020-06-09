@@ -119,7 +119,7 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="upsell"></vs-checkbox>
+                    <vs-checkbox v-model="plugins['facebook'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
@@ -131,11 +131,20 @@
               </vx-input-group>
             </div>
             <div class="vx-col w-full mt-5">
-              <label>Zeus Track</label>
-              <vs-switch v-model="plugins['zeustrack'].enabled">
-                <span slot="on">Enabled</span>
-                <span slot="off">Disabled</span>
-              </vs-switch>
+              <div class="mb-2">Zeus Track</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['zeustrack'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-at-sign" icon-no-border
+                  v-model="plugins['zeustrack'].sub_id"
+                  placeholder="Sub ID"
+                />
+              </vx-input-group>
             </div>
           </div>
           </form>
@@ -289,10 +298,12 @@ export default {
 
       plugins: {
         'facebook': {
+          enabled: false,
           pixel: '',
         },
         'zeustrack': {
           enabled: false,
+          sub_id: '',
         },
       },
 

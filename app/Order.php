@@ -17,7 +17,11 @@ class Order extends Model {
         'name', 'phone', 'address',
         'product_id', 'quantity',
         'commission', 'sub_commission',
-        'network_id',
+        'network_id', 'network_data',
+    ];
+
+    protected $casts = [
+        'network_data' => 'array',
     ];
     
     public function status() {
@@ -99,8 +103,10 @@ class Order extends Model {
         $responseStatuses = $this->network->getApi('store.response.status');
         $status = (isset($responseStatuses['default'])) ? $responseStatuses['default'] : 'error';
         foreach ($responseStatuses as $key => $value) {
-            if (isset($responseStatuses[$key]['validation']) &&
-                Validator::make($response, $responseStatuses[$key]['validation'])->passes()) {
+            if ($key == 'default') continue;
+            $validator = Validator::make($response, $responseStatuses[$key]['validation']);
+            if (isset($value['validation']) &&
+                $validator->passes()) {
                 $status = $key;
             }
         }

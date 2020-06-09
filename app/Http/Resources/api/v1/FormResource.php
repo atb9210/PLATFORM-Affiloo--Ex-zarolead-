@@ -33,7 +33,7 @@ class FormResource extends JsonResource
                 'id' => $this->product->id,
                 'name' => $this->product->name,
             ],
-            'quantity' => $this->quantity,
+            'quantity' => json_decode(json_encode($this->quantity), false),
             'upsell' => $this->upsell,
             'total_commission' => $this->total_commission,
             'traffic_source' => [
@@ -42,6 +42,7 @@ class FormResource extends JsonResource
             ],
             'info' => $this->info,
             'network_params' => $this->network_params,
+            'plugins' => $this->plugins,
             'visits' => $this->visits,
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,

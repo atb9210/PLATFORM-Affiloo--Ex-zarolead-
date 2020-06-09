@@ -31,7 +31,7 @@ class Network extends Model {
         $api = $this->api;
         for ($i = 0; $i < count($keys); $i++) {
             if (!isset($api[$keys[$i]])) {
-                return '';
+                return [];
             }
             $api = $api[$keys[$i]];
         }
