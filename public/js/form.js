@@ -29,12 +29,12 @@ class Form {
 
     initialize() {
         // Variables initialization
-        var api_url = 'http://';
+        var api_url = 'https://';
         if (this.BETA) {
-            api_url = 'https://';
             api_url += 'beta2.';
         }
         if (this.DEBUG) {
+            api_url = 'http://';
             api_url += '127.0.0.1:8000/';
         } else {
             api_url += 'zarolead.com/';
