@@ -44,13 +44,22 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="user.id">User ID</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="campaign.name">Campaign</vs-th>
                 <vs-th sort-key="network.name">Network</vs-th>
                 <vs-th sort-key="product.name">Product</vs-th>
                 <vs-th sort-key="traffic_source.name">Traffic Source</vs-th>
-                <vs-th sort-key="price">Price</vs-th>
-                <vs-th sort-key="commission">Commission</vs-th>
+                <vs-th sort-key="visits">Visits</vs-th>
+                <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="total_cost">Cost</vs-th>
+                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="profit">Profit</vs-th>
+                <vs-th sort-key="roi">ROI</vs-th>
+                <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="cpv">CPV</vs-th>
+                <vs-th sort-key="epv">EPV</vs-th>
+                <vs-th sort-key="cpl">CPL</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
@@ -59,6 +68,10 @@
 
                     <vs-td :data="data[indextr].id">
                         {{data[indextr].id}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].user.id">
+                        {{data[indextr].user.id}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
@@ -81,12 +94,44 @@
                         {{data[indextr].traffic_source.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].price">
-                        {{data[indextr].price}}
+                    <vs-td :data="data[indextr].visits">
+                        {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission">
-                        {{data[indextr].commission}}
+                    <vs-td :data="data[indextr].leads">
+                        {{data[indextr].leads}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].total_cost">
+                        <span>€ {{data[indextr].total_cost}}</span>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].total_commission">
+                        € {{data[indextr].total_commission}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].profit">
+                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit}}</vs-chip>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].roi">
+                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi}} %</vs-chip>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr}} %
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpv">
+                        {{data[indextr].cpv}} %
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].epv">
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">{{data[indextr].epv}} %</vs-chip>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpl">
+                        {{data[indextr].cpl}} %
                     </vs-td>
 
                     <vs-td>
@@ -992,6 +1037,45 @@ export default {
         color: 'success'
       })
     },
+  },
+  calculateStats() {
+    for (var i = 0; i < this.objects.length; i++) {
+      let obj = this.objects[i]
+
+      let profit = obj.total_commission - obj.total_cost
+      let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
+      let cr = 0.0
+      if (obj.leads == 0) cr = 0.0
+      else if (obj.visits == 0) cr = 100.0
+      else cr = parseFloat((obj.leads/obj.visits)*100.0)
+      let cpv = parseFloat((obj.visits == 0) ? obj.total_cost : obj.total_cost/obj.visits)
+      let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
+      let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
+
+      /*
+      console.log(profit)
+      console.log(roi)
+      console.log(cr)
+      console.log(cpv)
+      console.log(epv)
+      console.log(cpl)
+      */
+
+      // Format calculated stats
+      profit = profit.toFixed(2)
+      roi = roi.toFixed(2)
+      cr = cr.toFixed(2)
+      cpv = cpv.toFixed(2)
+      epv = epv.toFixed(2)
+      cpl = cpl.toFixed(2)
+
+      this.objects[i].profit = profit
+      this.objects[i].roi = roi
+      this.objects[i].cr = cr
+      this.objects[i].cpv = cpv
+      this.objects[i].epv = epv
+      this.objects[i].cpl = cpl
+    }
   },
   created() {
     this.retrieveObjects()

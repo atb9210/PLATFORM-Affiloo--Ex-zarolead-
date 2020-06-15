@@ -30,8 +30,6 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', 'App\Invoice');
-
         // Param validation
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
@@ -47,6 +45,9 @@ class InvoiceController extends Controller
         // Query invoices (applying filters)
         $invoices = Invoice::query();
         $invoices = $invoices->where('archived', 0);
+        if (!Auth::user()->can('viewAny', 'App\Invoice')) {
+            $invoices = $invoices->where('user_id', Auth::user()->id);
+        }
         if (isset($params['filter_date_from'])) {
             $invoices = $invoices->where('invoice_date', '>=', $params['filter_date_from']);
         }

@@ -3336,7 +3336,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var VxTour = function VxTour() {
-  return __webpack_require__.e(/*! import() */ 106).then(__webpack_require__.bind(null, /*! @/components/VxTour.vue */ "./resources/js/src/components/VxTour.vue"));
+  return __webpack_require__.e(/*! import() */ 107).then(__webpack_require__.bind(null, /*! @/components/VxTour.vue */ "./resources/js/src/components/VxTour.vue"));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = ({

@@ -275,6 +275,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {
@@ -351,7 +353,8 @@ __webpack_require__.r(__webpack_exports__);
       invoiceTypeColor: {
         'normal': 'primary',
         'auto': 'warning'
-      }
+      },
+      total_amount: 0.0
     };
   },
   computed: {
@@ -394,6 +397,11 @@ __webpack_require__.r(__webpack_exports__);
         headers: headers
       }).then(function (response) {
         _this.objects = response.data.data;
+        total_amount = 0.0;
+
+        _this.objects.forEach(function (obj) {
+          total_amount += obj.amount;
+        });
 
         _this.$vs.loading.close();
 
@@ -1404,7 +1412,11 @@ var render = function() {
                     _vm._s(_vm.objects.length)
                 )
               ]),
-              _vm._v(" "),
+              _vm._v(
+                "\n            (total: € " +
+                  _vm._s(_vm.total_amount) +
+                  ") \n            "
+              ),
               _c("feather-icon", {
                 attrs: { icon: "ChevronDownIcon", svgClasses: "h-4 w-4" }
               })

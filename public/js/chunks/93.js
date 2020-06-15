@@ -1,15 +1,15 @@
 (window["webpackJsonp"] = window["webpackJsonp"] || []).push([[93],{
 
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Landings.vue?vue&type=script&lang=js&":
-/*!******************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/Landings.vue?vue&type=script&lang=js& ***!
-  \******************************************************************************************************************************************************************/
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Forms.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/Forms.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _ui_elements_table_LandingsTable_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ui-elements/table/LandingsTable.vue */ "./resources/js/src/views/ui-elements/table/LandingsTable.vue");
+/* harmony import */ var _ui_elements_table_FormsTable_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ui-elements/table/FormsTable.vue */ "./resources/js/src/views/ui-elements/table/FormsTable.vue");
 //
 //
 //
@@ -29,7 +29,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {
-    LandingsTable: _ui_elements_table_LandingsTable_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+    FormsTable: _ui_elements_table_FormsTable_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
   data: function data() {
     return {};
@@ -40,10 +40,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js&":
-/*!*****************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js& ***!
-  \*****************************************************************************************************************************************************************************************/
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js&":
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js& ***!
+  \**************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -51,6 +51,307 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue_select__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-select */ "./node_modules/vue-select/dist/vue-select.js");
 /* harmony import */ var vue_select__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue_select__WEBPACK_IMPORTED_MODULE_0__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -292,29 +593,58 @@ __webpack_require__.r(__webpack_exports__);
       editingObject: -1,
       showPopup: {
         'create': false,
-        'edit': false
+        'edit': false,
+        'code': false
       },
       newObject: {
         'create': {
           name: '',
           campaign: '',
-          form: '',
-          tag: '',
-          url: '',
-          country: ''
+          network: '',
+          product: '',
+          quantity: '',
+          price: 0,
+          commission: 0,
+          sub_commission: 0,
+          traffic_source: '',
+          fb_pixel: '',
+          sub_id: '',
+          api_call_url: '',
+          // Worldfilia
+          api_key: '',
+          source_id: '',
+          // Amsped
+          product_reference: '',
+          // Affiliation Park
+          offer_id: ''
         },
         'edit': {
           name: '',
           campaign: '',
-          form: '',
-          tag: '',
-          url: '',
-          country: ''
+          network: '',
+          product: '',
+          quantity: '',
+          price: 0,
+          commission: 0,
+          sub_commission: 0,
+          traffic_source: '',
+          fb_pixel: '',
+          sub_id: '',
+          api_call_url: '',
+          // Worldfilia
+          api_key: '',
+          source_id: '',
+          // Amsped
+          product_reference: '',
+          // Affiliation Park
+          offer_id: ''
         }
       },
-      tags: [],
+      formCode: '',
       campaigns: [],
-      forms: []
+      networks: [],
+      products: [],
+      traffic_sources: []
     };
   },
   computed: {
@@ -351,9 +681,9 @@ __webpack_require__.r(__webpack_exports__);
       this.$vs.loading();
       var headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }; // Retrieve landings
+      }; // Retrieve forms
 
-      this.$http.get('/api/v1/landings', {
+      this.$http.get('/api/v1/forms', {
         headers: headers
       }).then(function (response) {
         _this.objects = response.data.data;
@@ -385,11 +715,11 @@ __webpack_require__.r(__webpack_exports__);
       var headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       };
-      this.selected.forEach(function (landing) {
-        _this2.$http["delete"]('/api/v1/landings/' + landing.id, {
+      this.selected.forEach(function (form) {
+        _this2.$http["delete"]('/api/v1/forms/' + form.id, {
           headers: headers
         }).then(function (response) {
-          _this2.deleted.push(landing.id);
+          _this2.deleted.push(form.id);
 
           if (_this2.deleted.length == _this2.selected.length) {
             _this2.$vs.loading.close();
@@ -398,7 +728,7 @@ __webpack_require__.r(__webpack_exports__);
 
             _this2.$vs.notify({
               title: 'Success',
-              text: _this2.deleted.length + ' Landing(s) deleted',
+              text: _this2.deleted.length + ' Form(s) deleted',
               iconPack: 'feather',
               icon: 'icon-alert-circle',
               color: 'success'
@@ -429,18 +759,59 @@ __webpack_require__.r(__webpack_exports__);
       this.newObject[type] = {
         name: '',
         campaign: '',
-        form: '',
-        tag: '',
-        url: '',
-        country: ''
+        network: '',
+        product: '',
+        quantity: '',
+        price: 0,
+        commission: 0,
+        sub_commission: 0,
+        traffic_source: '',
+        fb_pixel: '',
+        sub_id: '',
+        api_call_url: '',
+        // Worldfilia
+        api_key: '',
+        source_id: '',
+        // Amsped
+        product_reference: '',
+        // Affiliation Park
+        offer_id: ''
       };
     },
     isValidForm: function isValidForm(type) {
       var obj = this.newObject[type];
-      return obj.name.length > 0 && obj.campaign != '' && obj.campaign.id >= 1 && obj.form != '' && obj.form.id >= 1 && obj.tag != '' && obj.tag.id >= 1 && obj.url.length > 0;
+      return obj.name.length > 0 && obj.campaign != '' && obj.campaign.id >= 1 && obj.network != '' && obj.network.id >= 1 && obj.product != '' && obj.product.id >= 1 && obj.quantity.length > 0 && obj.traffic_source != '' && obj.traffic_source.id >= 1;
+    },
+    showFormCode: function showFormCode(id) {
+      var _this3 = this;
+
+      this.$vs.loading();
+      var headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }; // Retrieve form code
+
+      this.$http.get('/api/v1/forms/' + id + '/code', {
+        headers: headers
+      }).then(function (response) {
+        _this3.formCode = response.data.data;
+
+        _this3.$vs.loading.close();
+
+        _this3.showPopup['code'] = true;
+      })["catch"](function (error) {
+        _this3.$vs.loading.close();
+
+        _this3.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        });
+      });
     },
     createObject: function createObject() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.$vs.loading();
       var headers = {
@@ -449,34 +820,66 @@ __webpack_require__.r(__webpack_exports__);
       var data = {
         name: this.newObject['create'].name,
         campaign_id: this.newObject['create'].campaign.id,
-        form_id: this.newObject['create'].form.id,
-        tag_id: this.newObject['create'].tag.id,
-        url: this.newObject['create'].url,
-        country: this.newObject['create'].country
-      }; // Retrieve landings
+        network_id: this.newObject['create'].network.id,
+        product_id: this.newObject['create'].product.id,
+        quantity: this.newObject['create'].quantity,
+        price: this.newObject['create'].price,
+        commission: this.newObject['create'].commission,
+        sub_commission: this.newObject['create'].sub_commission,
+        traffic_source_id: this.newObject['create'].traffic_source.id,
+        network_params: {}
+      };
 
-      this.$http.post('/api/v1/landings', data, {
+      if (this.newObject['create'].network.label == 'Worldfilia') {
+        data.network_params = {
+          fb_pixel: this.newObject['create'].fb_pixel,
+          api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'POST',
+          api_key: this.newObject['create'].api_key,
+          source_id: this.newObject['create'].source_id
+        };
+      } else if (this.newObject['create'].network.label == 'Amsped') {
+        data.network_params = {
+          fb_pixel: this.newObject['create'].fb_pixel,
+          api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'POST',
+          sub_id: this.newObject['create'].sub_id,
+          product_reference: this.newObject['create'].product_reference
+        };
+      } else if (this.newObject['create'].network.label == 'Affiliation Park') {
+        data.network_params = {
+          fb_pixel: this.newObject['create'].fb_pixel,
+          api_call_url: this.newObject['create'].api_call_url,
+          api_call_method: 'GET',
+          sub_id: this.newObject['create'].sub_id,
+          offer_id: this.newObject['create'].offer_id
+        };
+      }
+
+      data.network_params = JSON.stringify(data.network_params); // Create form
+
+      this.$http.post('/api/v1/forms', data, {
         headers: headers
       }).then(function (response) {
-        _this3.$vs.loading.close();
+        _this4.$vs.loading.close();
 
-        _this3.$vs.notify({
+        _this4.$vs.notify({
           title: 'Success',
-          text: 'Landing created',
+          text: 'Form created',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'success'
         });
 
-        _this3.clearForm('create');
+        _this4.clearForm('create');
 
-        _this3.showPopup['create'] = false;
+        _this4.showPopup['create'] = false;
 
-        _this3.retrieveObjects();
+        _this4.retrieveObjects();
       })["catch"](function (error) {
-        _this3.$vs.loading.close();
+        _this4.$vs.loading.close();
 
-        _this3.$vs.notify({
+        _this4.$vs.notify({
           title: 'Error',
           text: error.message,
           iconPack: 'feather',
@@ -493,22 +896,75 @@ __webpack_require__.r(__webpack_exports__);
           id: obj.campaign.id,
           label: obj.campaign.name
         },
-        form: {
-          id: obj.form.id,
-          label: obj.form.name
+        network: {
+          id: obj.network.id,
+          label: obj.network.name
         },
-        tag: {
-          id: obj.tag.id,
-          label: obj.tag.name
+        product: {
+          id: obj.product.id,
+          label: obj.product.name
         },
-        url: obj.url,
-        country: obj.country
+        quantity: obj.quantity,
+        price: obj.price,
+        commission: obj.commission,
+        sub_commission: obj.sub_commission,
+        traffic_source: {
+          id: obj.traffic_source.id,
+          label: obj.traffic_source.name
+        },
+        fb_pixel: '',
+        api_call_url: '',
+        sub_id: '',
+        // Worldfilia
+        api_key: '',
+        source_id: '',
+        // Amsped
+        product_reference: '',
+        // Affiliation Park
+        offer_id: ''
       };
+
+      if (obj.hasOwnProperty('network_params')) {
+        if (obj.network_params.hasOwnProperty('fb_pixel')) {
+          this.newObject['edit'].fb_pixel = obj.network_params.fb_pixel;
+        }
+
+        if (obj.network_params.hasOwnProperty('api_call_url')) {
+          this.newObject['edit'].api_call_url = obj.network_params.api_call_url;
+        }
+
+        if (obj.network.name == 'Worldfilia') {
+          if (obj.network_params.hasOwnProperty('api_key')) {
+            this.newObject['edit'].api_key = obj.network_params.api_key;
+          }
+
+          if (obj.network_params.hasOwnProperty('source_id')) {
+            this.newObject['edit'].source_id = obj.network_params.source_id;
+          }
+        } else if (obj.network.name == 'Amsped') {
+          if (obj.network_params.hasOwnProperty('sub_id')) {
+            this.newObject['edit'].sub_id = obj.network_params.sub_id;
+          }
+
+          if (obj.network_params.hasOwnProperty('product_reference')) {
+            this.newObject['edit'].product_reference = obj.network_params.product_reference;
+          }
+        } else if (obj.network.name == 'Affiliation Park') {
+          if (obj.network_params.hasOwnProperty('sub_id')) {
+            this.newObject['edit'].sub_id = obj.network_params.sub_id;
+          }
+
+          if (obj.network_params.hasOwnProperty('offer_id')) {
+            this.newObject['edit'].offer_id = obj.network_params.offer_id;
+          }
+        }
+      }
+
       this.editingObject = obj.id;
       this.showForm('edit');
     },
     updateObject: function updateObject() {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this.editingObject <= 0) return;
       var id = this.editingObject;
@@ -519,54 +975,50 @@ __webpack_require__.r(__webpack_exports__);
       var data = {
         name: this.newObject['edit'].name,
         campaign_id: this.newObject['edit'].campaign.id,
-        form_id: this.newObject['edit'].form.id,
-        tag_id: this.newObject['edit'].tag.id,
-        url: this.newObject['edit'].url,
-        country: this.newObject['edit'].country
+        network_id: this.newObject['edit'].network.id,
+        product_id: this.newObject['edit'].product.id,
+        quantity: this.newObject['edit'].quantity,
+        price: this.newObject['edit'].price,
+        commission: this.newObject['edit'].commission,
+        sub_commission: this.newObject['edit'].sub_commission,
+        traffic_source_id: this.newObject['edit'].traffic_source.id
       };
-      this.$http.put('/api/v1/landings/' + id, data, {
-        headers: headers
-      }).then(function (response) {
-        _this4.$vs.loading.close();
 
-        _this4.$vs.notify({
-          title: 'Success',
-          text: 'Landing updated',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'success'
-        });
+      if (this.newObject['edit'].network.label == 'Worldfilia') {
+        data.network_params = {
+          fb_pixel: this.newObject['edit'].fb_pixel,
+          api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'POST',
+          api_key: this.newObject['edit'].api_key,
+          source_id: this.newObject['edit'].source_id
+        };
+      } else if (this.newObject['edit'].network.label == 'Amsped') {
+        data.network_params = {
+          fb_pixel: this.newObject['edit'].fb_pixel,
+          api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'POST',
+          sub_id: this.newObject['edit'].sub_id,
+          product_reference: this.newObject['edit'].product_reference
+        };
+      } else if (this.newObject['edit'].network.label == 'Affiliation Park') {
+        data.network_params = {
+          fb_pixel: this.newObject['edit'].fb_pixel,
+          api_call_url: this.newObject['edit'].api_call_url,
+          api_call_method: 'GET',
+          sub_id: this.newObject['edit'].sub_id,
+          offer_id: this.newObject['edit'].offer_id
+        };
+      }
 
-        _this4.retrieveObjects();
-      })["catch"](function (error) {
-        _this4.$vs.loading.close();
-
-        _this4.$vs.notify({
-          title: 'Error',
-          text: error.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        });
-      });
-      this.showPopup['edit'] = false;
-      this.editingObject = -1;
-    },
-    deleteObject: function deleteObject(id) {
-      var _this5 = this;
-
-      this.$vs.loading();
-      var headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      };
-      this.$http["delete"]('/api/v1/landings/' + id, {
+      data.network_params = JSON.stringify(data.network_params);
+      this.$http.put('/api/v1/forms/' + id, data, {
         headers: headers
       }).then(function (response) {
         _this5.$vs.loading.close();
 
         _this5.$vs.notify({
           title: 'Success',
-          text: 'Landing deleted',
+          text: 'Form updated',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'success'
@@ -584,65 +1036,193 @@ __webpack_require__.r(__webpack_exports__);
           color: 'danger'
         });
       });
+      this.showPopup['edit'] = false;
+      this.editingObject = -1;
+    },
+    deleteObject: function deleteObject(id) {
+      var _this6 = this;
+
+      this.$vs.loading();
+      var headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      };
+      this.$http["delete"]('/api/v1/forms/' + id, {
+        headers: headers
+      }).then(function (response) {
+        _this6.$vs.loading.close();
+
+        _this6.$vs.notify({
+          title: 'Success',
+          text: 'Form deleted',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        });
+
+        _this6.retrieveObjects();
+      })["catch"](function (error) {
+        _this6.$vs.loading.close();
+
+        _this6.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        });
+      });
+    },
+    showFormStats: function showFormStats(id) {
+      this.$router.push({
+        name: 'form-stats',
+        params: {
+          form_id: id
+        }
+      });
+    },
+    goToFormEditor: function goToFormEditor(id) {
+      this.$router.push({
+        name: 'form-editor',
+        params: {
+          form_id: id
+        }
+      });
+    },
+    onCodeCopied: function onCodeCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Form code copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      });
+    }
+  },
+  calculateStats: function calculateStats() {
+    for (var i = 0; i < this.objects.length; i++) {
+      var obj = this.objects[i];
+      var profit = obj.total_commission - obj.total_cost;
+      var roi = parseFloat(obj.total_commission > 0 && obj.total_cost == 0 ? 9999 : profit / obj.total_cost * 100);
+      var cr = 0.0;
+      if (obj.leads == 0) cr = 0.0;else if (obj.visits == 0) cr = 100.0;else cr = parseFloat(obj.leads / obj.visits * 100.0);
+      var cpv = parseFloat(obj.visits == 0 ? obj.total_cost : obj.total_cost / obj.visits);
+      var epv = parseFloat(obj.visits == 0 ? obj.total_commission : obj.total_commission / obj.visits);
+      var cpl = parseFloat(obj.leads == 0 ? obj.total_cost : obj.total_cost / obj.leads);
+      /*
+      console.log(profit)
+      console.log(roi)
+      console.log(cr)
+      console.log(cpv)
+      console.log(epv)
+      console.log(cpl)
+      */
+      // Format calculated stats
+
+      profit = profit.toFixed(2);
+      roi = roi.toFixed(2);
+      cr = cr.toFixed(2);
+      cpv = cpv.toFixed(2);
+      epv = epv.toFixed(2);
+      cpl = cpl.toFixed(2);
+      this.objects[i].profit = profit;
+      this.objects[i].roi = roi;
+      this.objects[i].cr = cr;
+      this.objects[i].cpv = cpv;
+      this.objects[i].epv = epv;
+      this.objects[i].cpl = cpl;
     }
   },
   created: function created() {
-    var _this6 = this;
+    var _this7 = this;
 
     this.retrieveObjects();
     var headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-    }; // Retrieve tags
+    }; // Retrieve traffic sources
 
     this.$vs.loading();
-    this.$http.get('/api/v1/tags/', {
+    this.$http.get('/api/v1/traffic-sources/', {
       headers: headers
     }).then(function (response) {
-      _this6.tags = [];
-      response.data.data.forEach(function (tag) {
-        _this6.tags.push({
-          id: tag.id,
-          label: tag.name
+      _this7.traffic_sources = [];
+      response.data.data.forEach(function (traffic_source) {
+        _this7.traffic_sources.push({
+          id: traffic_source.id,
+          label: traffic_source.name
         });
       });
 
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
     })["catch"](function (error) {
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
+    }); // Retrieve products
+
+    this.$vs.loading();
+    this.$http.get('/api/v1/products/', {
+      headers: headers
+    }).then(function (response) {
+      _this7.products = [];
+      response.data.data.forEach(function (product) {
+        _this7.products.push({
+          id: product.id,
+          label: product.name
+        });
+      });
+
+      _this7.$vs.loading.close();
+    })["catch"](function (error) {
+      _this7.$vs.loading.close();
+    }); // Retrieve networks
+
+    this.$vs.loading();
+    this.$http.get('/api/v1/networks/', {
+      headers: headers
+    }).then(function (response) {
+      _this7.networks = [];
+      response.data.data.forEach(function (network) {
+        _this7.networks.push({
+          id: network.id,
+          label: network.name
+        });
+      });
+
+      _this7.$vs.loading.close();
+    })["catch"](function (error) {
+      _this7.$vs.loading.close();
     }); // Retrieve campaigns
 
     this.$vs.loading();
     this.$http.get('/api/v1/campaigns/', {
       headers: headers
     }).then(function (response) {
-      _this6.campaigns = [];
+      _this7.campaigns = [];
       response.data.data.forEach(function (campaign) {
-        _this6.campaigns.push({
+        _this7.campaigns.push({
           id: campaign.id,
           label: campaign.name
         });
       });
 
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
     })["catch"](function (error) {
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
     }); // Retrieve forms
 
     this.$vs.loading();
     this.$http.get('/api/v1/forms/', {
       headers: headers
     }).then(function (response) {
-      _this6.forms = [];
+      _this7.forms = [];
       response.data.data.forEach(function (form) {
-        _this6.forms.push({
+        _this7.forms.push({
           id: form.id,
           label: form.name
         });
       });
 
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
     })["catch"](function (error) {
-      _this6.$vs.loading.close();
+      _this7.$vs.loading.close();
     });
   },
   mounted: function mounted() {}
@@ -650,10 +1230,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334&":
-/*!**********************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334& ***!
-  \**********************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Forms.vue?vue&type=template&id=40791016&":
+/*!*******************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/Forms.vue?vue&type=template&id=40791016& ***!
+  \*******************************************************************************************************************************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -665,7 +1245,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { attrs: { id: "table-demo" } }, [_c("landings-table")], 1)
+  return _c("div", { attrs: { id: "table-demo" } }, [_c("forms-table")], 1)
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -674,10 +1254,10 @@ render._withStripped = true
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890&":
-/*!*********************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890& ***!
-  \*********************************************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89&":
+/*!******************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89& ***!
+  \******************************************************************************************************************************************************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -691,29 +1271,31 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "vx-card",
-    { attrs: { title: "Landings", "code-toggler": "" } },
+    { attrs: { title: "Forms", "code-toggler": "" } },
     [
       _c(
         "p",
         { staticClass: "flex items-center mb-4" },
         [
           _c(
-            "vs-button",
-            {
-              staticClass: "mr-2",
-              attrs: {
-                color: "primary",
-                type: "filled",
-                "icon-pack": "feather",
-                icon: "icon-plus"
-              },
-              on: {
-                click: function($event) {
-                  return _vm.showForm("create")
-                }
-              }
-            },
-            [_vm._v("Create new")]
+            "RouterLink",
+            { attrs: { to: "/dashboard/forms/builder" } },
+            [
+              _c(
+                "vs-button",
+                {
+                  staticClass: "mr-2",
+                  attrs: {
+                    color: "primary",
+                    type: "filled",
+                    "icon-pack": "feather",
+                    icon: "icon-plus"
+                  }
+                },
+                [_vm._v("Create new")]
+              )
+            ],
+            1
           ),
           _vm._v(" "),
           _c(
@@ -853,6 +1435,14 @@ var render = function() {
                         )
                       ]),
                       _vm._v(" "),
+                      _c("vs-td", { attrs: { data: data[indextr].user.id } }, [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(data[indextr].user.id) +
+                            "\n                "
+                        )
+                      ]),
+                      _vm._v(" "),
                       _c("vs-td", { attrs: { data: data[indextr].name } }, [
                         _vm._v(
                           "\n                    " +
@@ -875,35 +1465,158 @@ var render = function() {
                       _vm._v(" "),
                       _c(
                         "vs-td",
-                        { attrs: { data: data[indextr].form.name } },
+                        { attrs: { data: data[indextr].network.name } },
                         [
                           _vm._v(
                             "\n                    " +
-                              _vm._s(data[indextr].form.name) +
+                              _vm._s(data[indextr].network.name) +
                               "\n                "
                           )
                         ]
                       ),
                       _vm._v(" "),
-                      _c("vs-td", { attrs: { data: data[indextr].tag.name } }, [
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].product.name } },
+                        [
+                          _vm._v(
+                            "\n                    " +
+                              _vm._s(data[indextr].product.name) +
+                              "\n                "
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].traffic_source.name } },
+                        [
+                          _vm._v(
+                            "\n                    " +
+                              _vm._s(data[indextr].traffic_source.name) +
+                              "\n                "
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c("vs-td", { attrs: { data: data[indextr].visits } }, [
                         _vm._v(
                           "\n                    " +
-                            _vm._s(data[indextr].tag.name) +
+                            _vm._s(data[indextr].visits) +
                             "\n                "
                         )
                       ]),
                       _vm._v(" "),
-                      _c("vs-td", { attrs: { data: data[indextr].url } }, [
-                        _c("a", { attrs: { href: data[indextr].url } }, [
-                          _vm._v(_vm._s(data[indextr].url))
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("vs-td", { attrs: { data: data[indextr].country } }, [
+                      _c("vs-td", { attrs: { data: data[indextr].leads } }, [
                         _vm._v(
                           "\n                    " +
-                            _vm._s(data[indextr].country) +
+                            _vm._s(data[indextr].leads) +
                             "\n                "
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].total_cost } },
+                        [
+                          _c("span", [
+                            _vm._v("€ " + _vm._s(data[indextr].total_cost))
+                          ])
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].total_commission } },
+                        [
+                          _vm._v(
+                            "\n                    € " +
+                              _vm._s(data[indextr].total_commission) +
+                              "\n                "
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].profit } },
+                        [
+                          _c(
+                            "vs-chip",
+                            {
+                              attrs: {
+                                transparent: "",
+                                color:
+                                  data[indextr].profit > 0
+                                    ? "success"
+                                    : "danger"
+                              }
+                            },
+                            [_vm._v("€ " + _vm._s(data[indextr].profit))]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].roi } },
+                        [
+                          _c(
+                            "vs-chip",
+                            {
+                              attrs: {
+                                transparent: "",
+                                color:
+                                  data[indextr].roi > 0 ? "success" : "danger"
+                              }
+                            },
+                            [_vm._v(_vm._s(data[indextr].roi) + " %")]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c("vs-td", { attrs: { data: data[indextr].cr } }, [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(data[indextr].cr) +
+                            " %\n                "
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("vs-td", { attrs: { data: data[indextr].cpv } }, [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(data[indextr].cpv) +
+                            " %\n                "
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "vs-td",
+                        { attrs: { data: data[indextr].epv } },
+                        [
+                          _c(
+                            "vs-chip",
+                            {
+                              attrs: {
+                                transparent: "",
+                                color:
+                                  data[indextr].epv > 0 ? "success" : "danger"
+                              }
+                            },
+                            [_vm._v(_vm._s(data[indextr].epv) + " %")]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c("vs-td", { attrs: { data: data[indextr].cpl } }, [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(data[indextr].cpl) +
+                            " %\n                "
                         )
                       ]),
                       _vm._v(" "),
@@ -918,11 +1631,41 @@ var render = function() {
                                 color: "primary",
                                 type: "filled",
                                 "icon-pack": "feather",
+                                icon: "icon-activity"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.showFormStats(data[indextr].id)
+                                }
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c("vs-button", {
+                              staticClass: "mr-2",
+                              attrs: {
+                                color: "primary",
+                                type: "filled",
+                                "icon-pack": "feather",
+                                icon: "icon-code"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.showFormCode(data[indextr].id)
+                                }
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c("vs-button", {
+                              staticClass: "mr-2",
+                              attrs: {
+                                color: "primary",
+                                type: "filled",
+                                "icon-pack": "feather",
                                 icon: "icon-edit"
                               },
                               on: {
                                 click: function($event) {
-                                  return _vm.editForm(data[indextr].id)
+                                  return _vm.goToFormEditor(data[indextr].id)
                                 }
                               }
                             }),
@@ -967,25 +1710,57 @@ var render = function() {
             [
               _c("vs-th", { attrs: { "sort-key": "id" } }, [_vm._v("Id")]),
               _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "user.id" } }, [
+                _vm._v("User ID")
+              ]),
+              _vm._v(" "),
               _c("vs-th", { attrs: { "sort-key": "name" } }, [_vm._v("Name")]),
               _vm._v(" "),
               _c("vs-th", { attrs: { "sort-key": "campaign.name" } }, [
                 _vm._v("Campaign")
               ]),
               _vm._v(" "),
-              _c("vs-th", { attrs: { "sort-key": "form.name" } }, [
-                _vm._v("Form")
+              _c("vs-th", { attrs: { "sort-key": "network.name" } }, [
+                _vm._v("Network")
               ]),
               _vm._v(" "),
-              _c("vs-th", { attrs: { "sort-key": "tag.name" } }, [
-                _vm._v("Tag")
+              _c("vs-th", { attrs: { "sort-key": "product.name" } }, [
+                _vm._v("Product")
               ]),
               _vm._v(" "),
-              _c("vs-th", { attrs: { "sort-key": "url" } }, [_vm._v("URL")]),
-              _vm._v(" "),
-              _c("vs-th", { attrs: { "sort-key": "country" } }, [
-                _vm._v("Country")
+              _c("vs-th", { attrs: { "sort-key": "traffic_source.name" } }, [
+                _vm._v("Traffic Source")
               ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "visits" } }, [
+                _vm._v("Visits")
+              ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "leads" } }, [
+                _vm._v("Leads")
+              ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "total_cost" } }, [
+                _vm._v("Cost")
+              ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "total_commission" } }, [
+                _vm._v("Commission")
+              ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "profit" } }, [
+                _vm._v("Profit")
+              ]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "roi" } }, [_vm._v("ROI")]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "cr" } }, [_vm._v("CR")]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "cpv" } }, [_vm._v("CPV")]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "epv" } }, [_vm._v("EPV")]),
+              _vm._v(" "),
+              _c("vs-th", { attrs: { "sort-key": "cpl" } }, [_vm._v("CPL")]),
               _vm._v(" "),
               _c("vs-th", [_vm._v("Actions")])
             ],
@@ -998,7 +1773,69 @@ var render = function() {
       _c(
         "vs-popup",
         {
-          attrs: { title: "Create Landing", active: _vm.showPopup["create"] },
+          attrs: { title: "Form code", active: _vm.showPopup["code"] },
+          on: {
+            "update:active": function($event) {
+              return _vm.$set(_vm.showPopup, "code", $event)
+            }
+          }
+        },
+        [
+          _c("vs-textarea", {
+            attrs: { disabled: "", height: "10rem" },
+            model: {
+              value: _vm.formCode,
+              callback: function($$v) {
+                _vm.formCode = $$v
+              },
+              expression: "formCode"
+            }
+          }),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "vx-row mt-6" },
+            [
+              _c(
+                "vs-button",
+                {
+                  directives: [
+                    {
+                      name: "clipboard",
+                      rawName: "v-clipboard:copy",
+                      value: _vm.formCode,
+                      expression: "formCode",
+                      arg: "copy"
+                    },
+                    {
+                      name: "clipboard",
+                      rawName: "v-clipboard:success",
+                      value: _vm.onCodeCopied,
+                      expression: "onCodeCopied",
+                      arg: "success"
+                    }
+                  ],
+                  staticClass: "mr-auto ml-auto",
+                  attrs: {
+                    color: "primary",
+                    type: "filled",
+                    "icon-pack": "feather",
+                    icon: "icon-copy"
+                  }
+                },
+                [_vm._v("Copy to clipboard")]
+              )
+            ],
+            1
+          )
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "vs-popup",
+        {
+          attrs: { title: "Create Form", active: _vm.showPopup["create"] },
           on: {
             "update:active": function($event) {
               return _vm.$set(_vm.showPopup, "create", $event)
@@ -1074,7 +1911,7 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Form")])
+              _c("span", [_vm._v("Network")])
             ]),
             _vm._v(" "),
             _c(
@@ -1082,13 +1919,13 @@ var render = function() {
               { staticClass: "vx-col sm:w-2/3 w-full" },
               [
                 _c("v-select", {
-                  attrs: { options: _vm.forms },
+                  attrs: { options: _vm.networks },
                   model: {
-                    value: _vm.newObject["create"].form,
+                    value: _vm.newObject["create"].network,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["create"], "form", $$v)
+                      _vm.$set(_vm.newObject["create"], "network", $$v)
                     },
-                    expression: "newObject['create'].form"
+                    expression: "newObject['create'].network"
                   }
                 })
               ],
@@ -1098,7 +1935,7 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Tag")])
+              _c("span", [_vm._v("Product")])
             ]),
             _vm._v(" "),
             _c(
@@ -1106,13 +1943,13 @@ var render = function() {
               { staticClass: "vx-col sm:w-2/3 w-full" },
               [
                 _c("v-select", {
-                  attrs: { options: _vm.tags },
+                  attrs: { options: _vm.products },
                   model: {
-                    value: _vm.newObject["create"].tag,
+                    value: _vm.newObject["create"].product,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["create"], "tag", $$v)
+                      _vm.$set(_vm.newObject["create"], "product", $$v)
                     },
-                    expression: "newObject['create'].tag"
+                    expression: "newObject['create'].product"
                   }
                 })
               ],
@@ -1122,7 +1959,103 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("URL")])
+              _c("span", [_vm._v("Price")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["create"].price,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["create"], "price", $$v)
+                    },
+                    expression: "newObject['create'].price"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Commission")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["create"].commission,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["create"], "commission", $$v)
+                    },
+                    expression: "newObject['create'].commission"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Sub commission")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["create"].sub_commission,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["create"], "sub_commission", $$v)
+                    },
+                    expression: "newObject['create'].sub_commission"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Quantity")])
             ]),
             _vm._v(" "),
             _c(
@@ -1133,15 +2066,15 @@ var render = function() {
                   staticClass: "w-full",
                   attrs: {
                     "icon-pack": "feather",
-                    icon: "icon-link",
+                    icon: "icon-hash",
                     "icon-no-border": ""
                   },
                   model: {
-                    value: _vm.newObject["create"].url,
+                    value: _vm.newObject["create"].quantity,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["create"], "url", $$v)
+                      _vm.$set(_vm.newObject["create"], "quantity", $$v)
                     },
-                    expression: "newObject['create'].url"
+                    expression: "newObject['create'].quantity"
                   }
                 })
               ],
@@ -1151,7 +2084,33 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Country")])
+              _c("span", [_vm._v("Traffic Source")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("v-select", {
+                  attrs: { options: _vm.traffic_sources },
+                  model: {
+                    value: _vm.newObject["create"].traffic_source,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["create"], "traffic_source", $$v)
+                    },
+                    expression: "newObject['create'].traffic_source"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("hr", { staticClass: "mt-3 mb-3" }),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Facebook Pixel")])
             ]),
             _vm._v(" "),
             _c(
@@ -1162,21 +2121,304 @@ var render = function() {
                   staticClass: "w-full",
                   attrs: {
                     "icon-pack": "feather",
-                    icon: "icon-globe",
+                    icon: "icon-facebook",
                     "icon-no-border": ""
                   },
                   model: {
-                    value: _vm.newObject["create"].country,
+                    value: _vm.newObject["create"].fb_pixel,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["create"], "country", $$v)
+                      _vm.$set(_vm.newObject["create"], "fb_pixel", $$v)
                     },
-                    expression: "newObject['create'].country"
+                    expression: "newObject['create'].fb_pixel"
                   }
                 })
               ],
               1
             )
           ]),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Key")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].api_key,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "api_key", $$v)
+                        },
+                        expression: "newObject['create'].api_key"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Source ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].source_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "source_id", $$v)
+                        },
+                        expression: "newObject['create'].source_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['create'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Product Reference")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].product_reference,
+                        callback: function($$v) {
+                          _vm.$set(
+                            _vm.newObject["create"],
+                            "product_reference",
+                            $$v
+                          )
+                        },
+                        expression: "newObject['create'].product_reference"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Sub ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].sub_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "sub_id", $$v)
+                        },
+                        expression: "newObject['create'].sub_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['create'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Offer ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].offer_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "offer_id", $$v)
+                        },
+                        expression: "newObject['create'].offer_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Sub ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].sub_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "sub_id", $$v)
+                        },
+                        expression: "newObject['create'].sub_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["create"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["create"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["create"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['create'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
           _vm._v(" "),
           _c(
             "div",
@@ -1204,7 +2446,7 @@ var render = function() {
       _c(
         "vs-popup",
         {
-          attrs: { title: "Edit Landing", active: _vm.showPopup["edit"] },
+          attrs: { title: "Edit Form", active: _vm.showPopup["edit"] },
           on: {
             "update:active": function($event) {
               return _vm.$set(_vm.showPopup, "edit", $event)
@@ -1280,7 +2522,7 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Form")])
+              _c("span", [_vm._v("Network")])
             ]),
             _vm._v(" "),
             _c(
@@ -1288,13 +2530,13 @@ var render = function() {
               { staticClass: "vx-col sm:w-2/3 w-full" },
               [
                 _c("v-select", {
-                  attrs: { options: _vm.forms },
+                  attrs: { options: _vm.networks },
                   model: {
-                    value: _vm.newObject["edit"].form,
+                    value: _vm.newObject["edit"].network,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["edit"], "form", $$v)
+                      _vm.$set(_vm.newObject["edit"], "network", $$v)
                     },
-                    expression: "newObject['edit'].form"
+                    expression: "newObject['edit'].network"
                   }
                 })
               ],
@@ -1304,7 +2546,7 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Tag")])
+              _c("span", [_vm._v("Product")])
             ]),
             _vm._v(" "),
             _c(
@@ -1312,13 +2554,13 @@ var render = function() {
               { staticClass: "vx-col sm:w-2/3 w-full" },
               [
                 _c("v-select", {
-                  attrs: { options: _vm.tags },
+                  attrs: { options: _vm.products },
                   model: {
-                    value: _vm.newObject["edit"].tag,
+                    value: _vm.newObject["edit"].product,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["edit"], "tag", $$v)
+                      _vm.$set(_vm.newObject["edit"], "product", $$v)
                     },
-                    expression: "newObject['edit'].tag"
+                    expression: "newObject['edit'].product"
                   }
                 })
               ],
@@ -1328,7 +2570,103 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("URL")])
+              _c("span", [_vm._v("Price")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["edit"].price,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["edit"], "price", $$v)
+                    },
+                    expression: "newObject['edit'].price"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Commission")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["edit"].commission,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["edit"], "commission", $$v)
+                    },
+                    expression: "newObject['edit'].commission"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Sub commission")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("vs-input", {
+                  staticClass: "w-full",
+                  attrs: {
+                    type: "number",
+                    step: "0.01",
+                    min: "0",
+                    "icon-pack": "feather",
+                    icon: "icon-dollar-sign",
+                    "icon-no-border": ""
+                  },
+                  model: {
+                    value: _vm.newObject["edit"].sub_commission,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["edit"], "sub_commission", $$v)
+                    },
+                    expression: "newObject['edit'].sub_commission"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Quantity")])
             ]),
             _vm._v(" "),
             _c(
@@ -1339,15 +2677,15 @@ var render = function() {
                   staticClass: "w-full",
                   attrs: {
                     "icon-pack": "feather",
-                    icon: "icon-link",
+                    icon: "icon-hash",
                     "icon-no-border": ""
                   },
                   model: {
-                    value: _vm.newObject["edit"].url,
+                    value: _vm.newObject["edit"].quantity,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["edit"], "url", $$v)
+                      _vm.$set(_vm.newObject["edit"], "quantity", $$v)
                     },
-                    expression: "newObject['edit'].url"
+                    expression: "newObject['edit'].quantity"
                   }
                 })
               ],
@@ -1357,7 +2695,33 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "vx-row mb-6" }, [
             _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
-              _c("span", [_vm._v("Country")])
+              _c("span", [_vm._v("Traffic Source")])
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "vx-col sm:w-2/3 w-full" },
+              [
+                _c("v-select", {
+                  attrs: { options: _vm.traffic_sources },
+                  model: {
+                    value: _vm.newObject["edit"].traffic_source,
+                    callback: function($$v) {
+                      _vm.$set(_vm.newObject["edit"], "traffic_source", $$v)
+                    },
+                    expression: "newObject['edit'].traffic_source"
+                  }
+                })
+              ],
+              1
+            )
+          ]),
+          _vm._v(" "),
+          _c("hr", { staticClass: "mt-3 mb-3" }),
+          _vm._v(" "),
+          _c("div", { staticClass: "vx-row mb-6" }, [
+            _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+              _c("span", [_vm._v("Facebook Pixel")])
             ]),
             _vm._v(" "),
             _c(
@@ -1368,21 +2732,304 @@ var render = function() {
                   staticClass: "w-full",
                   attrs: {
                     "icon-pack": "feather",
-                    icon: "icon-globe",
+                    icon: "icon-facebook",
                     "icon-no-border": ""
                   },
                   model: {
-                    value: _vm.newObject["edit"].country,
+                    value: _vm.newObject["edit"].fb_pixel,
                     callback: function($$v) {
-                      _vm.$set(_vm.newObject["edit"], "country", $$v)
+                      _vm.$set(_vm.newObject["edit"], "fb_pixel", $$v)
                     },
-                    expression: "newObject['edit'].country"
+                    expression: "newObject['edit'].fb_pixel"
                   }
                 })
               ],
               1
             )
           ]),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Key")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].api_key,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "api_key", $$v)
+                        },
+                        expression: "newObject['edit'].api_key"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Source ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].source_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "source_id", $$v)
+                        },
+                        expression: "newObject['edit'].source_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Worldfilia"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['edit'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Product Reference")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].product_reference,
+                        callback: function($$v) {
+                          _vm.$set(
+                            _vm.newObject["edit"],
+                            "product_reference",
+                            $$v
+                          )
+                        },
+                        expression: "newObject['edit'].product_reference"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Sub ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].sub_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "sub_id", $$v)
+                        },
+                        expression: "newObject['edit'].sub_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Amsped"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['edit'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Offer ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].offer_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "offer_id", $$v)
+                        },
+                        expression: "newObject['edit'].offer_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("Sub ID")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-user",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].sub_id,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "sub_id", $$v)
+                        },
+                        expression: "newObject['edit'].sub_id"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.newObject["edit"].network.label == "Affiliation Park"
+            ? _c("div", { staticClass: "vx-row mb-6" }, [
+                _c("div", { staticClass: "vx-col sm:w-1/3 w-full" }, [
+                  _c("span", [_vm._v("API Json URL")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "vx-col sm:w-2/3 w-full" },
+                  [
+                    _c("vs-input", {
+                      staticClass: "w-full",
+                      attrs: {
+                        "icon-pack": "feather",
+                        icon: "icon-link-2",
+                        "icon-no-border": ""
+                      },
+                      model: {
+                        value: _vm.newObject["edit"].api_call_url,
+                        callback: function($$v) {
+                          _vm.$set(_vm.newObject["edit"], "api_call_url", $$v)
+                        },
+                        expression: "newObject['edit'].api_call_url"
+                      }
+                    })
+                  ],
+                  1
+                )
+              ])
+            : _vm._e(),
           _vm._v(" "),
           _c(
             "div",
@@ -1417,17 +3064,17 @@ render._withStripped = true
 
 /***/ }),
 
-/***/ "./resources/js/src/views/Landings.vue":
-/*!*********************************************!*\
-  !*** ./resources/js/src/views/Landings.vue ***!
-  \*********************************************/
+/***/ "./resources/js/src/views/Forms.vue":
+/*!******************************************!*\
+  !*** ./resources/js/src/views/Forms.vue ***!
+  \******************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Landings.vue?vue&type=template&id=a2142334& */ "./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334&");
-/* harmony import */ var _Landings_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Landings.vue?vue&type=script&lang=js& */ "./resources/js/src/views/Landings.vue?vue&type=script&lang=js&");
+/* harmony import */ var _Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Forms.vue?vue&type=template&id=40791016& */ "./resources/js/src/views/Forms.vue?vue&type=template&id=40791016&");
+/* harmony import */ var _Forms_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Forms.vue?vue&type=script&lang=js& */ "./resources/js/src/views/Forms.vue?vue&type=script&lang=js&");
 /* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
@@ -1437,9 +3084,9 @@ __webpack_require__.r(__webpack_exports__);
 /* normalize component */
 
 var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _Landings_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  _Forms_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
   null,
   null,
@@ -1449,54 +3096,54 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 
 /* hot reload */
 if (false) { var api; }
-component.options.__file = "resources/js/src/views/Landings.vue"
+component.options.__file = "resources/js/src/views/Forms.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
 
-/***/ "./resources/js/src/views/Landings.vue?vue&type=script&lang=js&":
-/*!**********************************************************************!*\
-  !*** ./resources/js/src/views/Landings.vue?vue&type=script&lang=js& ***!
-  \**********************************************************************/
+/***/ "./resources/js/src/views/Forms.vue?vue&type=script&lang=js&":
+/*!*******************************************************************!*\
+  !*** ./resources/js/src/views/Forms.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Landings_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./Landings.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Landings.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Landings_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Forms_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./Forms.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Forms.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Forms_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
-/***/ "./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334&":
-/*!****************************************************************************!*\
-  !*** ./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334& ***!
-  \****************************************************************************/
+/***/ "./resources/js/src/views/Forms.vue?vue&type=template&id=40791016&":
+/*!*************************************************************************!*\
+  !*** ./resources/js/src/views/Forms.vue?vue&type=template&id=40791016& ***!
+  \*************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./Landings.vue?vue&type=template&id=a2142334& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Landings.vue?vue&type=template&id=a2142334&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./Forms.vue?vue&type=template&id=40791016& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/Forms.vue?vue&type=template&id=40791016&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Landings_vue_vue_type_template_id_a2142334___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_Forms_vue_vue_type_template_id_40791016___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 
 /***/ }),
 
-/***/ "./resources/js/src/views/ui-elements/table/LandingsTable.vue":
-/*!********************************************************************!*\
-  !*** ./resources/js/src/views/ui-elements/table/LandingsTable.vue ***!
-  \********************************************************************/
+/***/ "./resources/js/src/views/ui-elements/table/FormsTable.vue":
+/*!*****************************************************************!*\
+  !*** ./resources/js/src/views/ui-elements/table/FormsTable.vue ***!
+  \*****************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./LandingsTable.vue?vue&type=template&id=ab0eb890& */ "./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890&");
-/* harmony import */ var _LandingsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LandingsTable.vue?vue&type=script&lang=js& */ "./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js&");
+/* harmony import */ var _FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FormsTable.vue?vue&type=template&id=0be07c89& */ "./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89&");
+/* harmony import */ var _FormsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FormsTable.vue?vue&type=script&lang=js& */ "./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js&");
 /* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
@@ -1506,9 +3153,9 @@ __webpack_require__.r(__webpack_exports__);
 /* normalize component */
 
 var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _LandingsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  _FormsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
   null,
   null,
@@ -1518,38 +3165,38 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 
 /* hot reload */
 if (false) { var api; }
-component.options.__file = "resources/js/src/views/ui-elements/table/LandingsTable.vue"
+component.options.__file = "resources/js/src/views/ui-elements/table/FormsTable.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
 
-/***/ "./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js&":
-/*!*********************************************************************************************!*\
-  !*** ./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js& ***!
-  \*********************************************************************************************/
+/***/ "./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************!*\
+  !*** ./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_LandingsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./LandingsTable.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_LandingsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_FormsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./FormsTable.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_FormsTable_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
-/***/ "./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890&":
-/*!***************************************************************************************************!*\
-  !*** ./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890& ***!
-  \***************************************************************************************************/
+/***/ "./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89&":
+/*!************************************************************************************************!*\
+  !*** ./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89& ***!
+  \************************************************************************************************/
 /*! exports provided: render, staticRenderFns */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./LandingsTable.vue?vue&type=template&id=ab0eb890& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/LandingsTable.vue?vue&type=template&id=ab0eb890&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./FormsTable.vue?vue&type=template&id=0be07c89& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/src/views/ui-elements/table/FormsTable.vue?vue&type=template&id=0be07c89&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_LandingsTable_vue_vue_type_template_id_ab0eb890___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FormsTable_vue_vue_type_template_id_0be07c89___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

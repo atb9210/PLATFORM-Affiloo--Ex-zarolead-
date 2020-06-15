@@ -10,6 +10,7 @@ use App\Order as Order;
 use App\Http\Resources\api\v1\OrderResource;
 use App\OrderStatus;
 use App\Form;
+use App\FormStats;
 
 class OrderController extends Controller
 {
@@ -116,6 +117,10 @@ class OrderController extends Controller
         $params['product_id'] = $form->product_id;
         $params['order_status_id'] = OrderStatus::NOT_SENT;
 
+        $price = 0.0;
+        if (isset($form->quantity['options'][$params['quantity']]['price'])) {
+            $price = $form->quantity['options'][$params['quantity']]['price'];
+        }
         $commission = 0.0;
         if (isset($form->quantity['options'][$params['quantity']]['commission'])) {
             $commission = $form->quantity['options'][$params['quantity']]['commission'];
@@ -124,13 +129,39 @@ class OrderController extends Controller
         if (isset($form->quantity['options'][$params['quantity']]['sub_commission'])) {
             $sub_commission = $form->quantity['options'][$params['quantity']]['sub_commission'];
         }
+        $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
 
-        $params['network_data'] = $network_data;
+        $network_data['price'] = $price;
+        $network_data['commission'] = $price;
+        $network_data['sub_commission'] = $price;
 
         // Create order
         $order = Order::create($params);
+
+        // Increase form leads and commission
+        $formStats = FormStats::getObject($form->id, date('Y-m-d'));
+        $formStats->leads += 1;
+        $formStats->total_commission += $order->commission;
+        $formStatsInfo = $formStats->info;
+        if (!isset($formStatsInfo['total_sub_commission'])) {
+            $formStatsInfo['total_sub_commission'] = 0.0;
+        }
+        $formStatsInfo['total_sub_commission'] += $sub_commission;
+        $formStats->info = $formStatsInfo;
+        $formStats->save();
+
+        // Total
+        $form->leads += 1;
+        $form->total_commission += $order->commission;
+        $formInfo = $form->info;
+        if (!isset($formInfo['total_sub_commission'])) {
+            $formInfo['total_sub_commission'] = 0.0;
+        }
+        $formInfo['total_sub_commission'] += $sub_commission;
+        $form->info = $formInfo;
+        $form->save();
 
         // Send order to the network
         $api_call = $order->sendToNetwork($network_data, $network_params);

@@ -262,13 +262,6 @@ export default {
         let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
         let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
 
-        console.log(profit)
-        console.log(roi)
-        console.log(cr)
-        console.log(cpv)
-        console.log(epv)
-        console.log(cpl)
-
         // Format calculated stats
         profit = profit.toFixed(2)
         roi = roi.toFixed(2)

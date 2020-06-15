@@ -86,6 +86,7 @@
                 <vs-th sort-key="commission">Commission</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="network">Network</vs-th>
+                <vs-th sort-key="network">Info</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -128,6 +129,9 @@
 
                     <vs-td :data="data[indextr].network">
                         {{data[indextr].network}}
+                    </vs-td>
+
+                    <vs-td>
                     </vs-td>
 
                 </vs-tr>

@@ -24,9 +24,13 @@ class FormController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', 'App\Form');
+        $forms = Form::query();
+        $forms = $forms->where('archived', 0);
+        if (!Auth::user()->can('viewAny', 'App\Form')) {
+            $forms = $forms->where('user_id', Auth::user()->id);
+        }
 
-        return FormResource::collection(Form::where('archived', 0)->get());
+        return FormResource::collection($forms->get());
     }
 
     /**
@@ -125,7 +129,7 @@ class FormController extends Controller
         $params['network'] = $form->network->name;
         //$output = Form::generateHTML($params);
         $output = [
-            'form_html' => '<iframe src="' . route('forms.get', ['id' => $form->id]) . '"></iframe>',
+            'form_html' => '<iframe width="100%" height="500px" src="' . route('forms.get', ['id' => $form->id]) . '"></iframe>',
         ];
 
         /*
@@ -336,7 +340,7 @@ class FormController extends Controller
         $this->authorize('view', $form);
 
         return response([
-            'data' => '<iframe src="' . route('forms.get', ['id' => $id]) . '"></iframe>'
+            'data' => '<iframe width="100%" height="500px" src="' . route('forms.get', ['id' => $id]) . '"></iframe>'
         ]);
 
         // @TODO: to delete
