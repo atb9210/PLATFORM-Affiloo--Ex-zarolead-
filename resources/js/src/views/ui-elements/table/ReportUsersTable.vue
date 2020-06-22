@@ -18,6 +18,21 @@
         <div v-if="showFilters" class="mb-12">
 
             <div class="vx-row mb-2">
+                <div class="vx-col w-3-12">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                </div>
+                <div class="vx-col w-3-12">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                </div>
+                <div class="vx-col w-3-12">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                </div>
+                <div class="vx-col w-3-12">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>From</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
@@ -237,6 +252,52 @@ export default {
     applyFilters() {
       this.retrieveObjects()
     },
+    filterDatesShortcut(period) {
+      let invalidPeriod = false;
+
+      switch (period) {
+        case 'today': {
+          let today = new Date();
+          this.filters.date_from = this.formatDate(today);
+          this.filters.date_to = this.formatDate(today);
+        } break;
+        case 'yesterday': {
+          let dateObj = new Date();
+          dateObj.setDate(dateObj.getDate() - 1);
+          this.filters.date_from = this.formatDate(dateObj);
+          this.filters.date_to = this.formatDate(dateObj);
+        } break;
+        case 'this_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        case 'last_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        default: {
+          invalidPeriod = true;
+        } break;
+      }
+
+      if(!invalidPeriod) {
+        this.applyFilters();
+      }
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0');
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = dateObj.getFullYear();
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd;
+      return formattedDate;
+    }
   },
   created() {
     this.retrieveObjects()

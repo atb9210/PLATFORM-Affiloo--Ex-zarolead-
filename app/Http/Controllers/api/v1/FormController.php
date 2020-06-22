@@ -319,7 +319,13 @@ class FormController extends Controller
         ]);
 
         $stats = FormStats::findOrFail($params['form_stats_id']);
+
+        // Update total cost
+        $prev_total_cost = $stats->total_cost;
         $stats->total_cost = $params['total_cost'];
+        $form->total_cost += $stats->total_cost - $prev_total_cost;
+
+        $form->save();
         $stats->save();
 
         return new FormStatsResource($stats);

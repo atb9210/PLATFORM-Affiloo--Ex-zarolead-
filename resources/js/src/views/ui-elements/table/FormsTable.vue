@@ -123,15 +123,15 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].cpv">
-                        {{data[indextr].cpv}} %
+                        € {{data[indextr].cpv}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].epv">
-                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">{{data[indextr].epv}} %</vs-chip>
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].cpl">
-                        {{data[indextr].cpl}} %
+                        € {{data[indextr].cpl}}
                     </vs-td>
 
                     <vs-td>
@@ -144,6 +144,48 @@
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>
+                    {{total_stats.visits}}
+                </vs-td>
+                <vs-td>
+                    {{total_stats.leads}}
+                </vs-td>
+                <vs-td>
+                    € {{total_stats.total_cost}}
+                </vs-td>
+                <vs-td>
+                    € {{total_stats.total_commission}}</vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi}} %</vs-chip>
+                </vs-td>
+                <vs-td>
+                    {{total_stats.cr}} %
+                </vs-td>
+                <vs-td>
+                    € {{total_stats.cpv}}
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
+                </vs-td>
+                <vs-td>
+                    € {{total_stats.cpl}}
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -606,6 +648,19 @@ export default {
       networks: [],
       products: [],
       traffic_sources: [],
+
+      total_stats: {
+        visits: 0,
+        leads: 0,
+        total_cost: 0,
+        total_commission: 0,
+        profit: 0,
+        roi: 0,
+        cr: 0,
+        cpv: 0,
+        epv: 0,
+        cpl: 0,
+      },
     }
   },
   computed: {
@@ -652,6 +707,7 @@ export default {
           this.objects = response.data.data
           this.$vs.loading.close()
           console.log(this.objects)
+          this.calculateStats();
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -1037,10 +1093,56 @@ export default {
         color: 'success'
       })
     },
-  },
-  calculateStats() {
-    for (var i = 0; i < this.objects.length; i++) {
-      let obj = this.objects[i]
+    calculateStats() {
+      this.total_stats = {
+        visits: 0,
+        leads: 0,
+        total_cost: 0,
+        total_commission: 0,
+        profit: 0,
+        roi: 0,
+        cr: 0,
+        cpv: 0,
+        epv: 0,
+        cpl: 0,
+      }
+
+      for (var i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+
+        let profit = parseFloat(obj.total_commission) - parseFloat(obj.total_cost)
+        let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
+        let cr = 0.0
+        if (obj.leads == 0) cr = 0.0
+        else if (obj.visits == 0) cr = 100.0
+        else cr = parseFloat((obj.leads/obj.visits)*100.0)
+        let cpv = parseFloat((obj.visits == 0) ? obj.total_cost : obj.total_cost/obj.visits)
+        let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
+        let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
+
+        this.total_stats.visits += obj.visits
+        this.total_stats.leads += obj.leads
+        this.total_stats.total_cost += parseFloat(obj.total_cost),
+        this.total_stats.total_commission += parseFloat(obj.total_commission),
+
+        // Format calculated stats
+        profit = profit.toFixed(2)
+        roi = roi.toFixed(2)
+        cr = cr.toFixed(2)
+        cpv = cpv.toFixed(2)
+        epv = epv.toFixed(2)
+        cpl = cpl.toFixed(2)
+
+        this.objects[i].profit = profit
+        this.objects[i].roi = roi
+        this.objects[i].cr = cr
+        this.objects[i].cpv = cpv
+        this.objects[i].epv = epv
+        this.objects[i].cpl = cpl
+      }
+
+      // Total stats
+      let obj = this.total_stats
 
       let profit = obj.total_commission - obj.total_cost
       let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
@@ -1052,15 +1154,6 @@ export default {
       let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
       let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
 
-      /*
-      console.log(profit)
-      console.log(roi)
-      console.log(cr)
-      console.log(cpv)
-      console.log(epv)
-      console.log(cpl)
-      */
-
       // Format calculated stats
       profit = profit.toFixed(2)
       roi = roi.toFixed(2)
@@ -1069,13 +1162,13 @@ export default {
       epv = epv.toFixed(2)
       cpl = cpl.toFixed(2)
 
-      this.objects[i].profit = profit
-      this.objects[i].roi = roi
-      this.objects[i].cr = cr
-      this.objects[i].cpv = cpv
-      this.objects[i].epv = epv
-      this.objects[i].cpl = cpl
-    }
+      this.total_stats.profit = profit
+      this.total_stats.roi = roi
+      this.total_stats.cr = cr
+      this.total_stats.cpv = cpv
+      this.total_stats.epv = epv
+      this.total_stats.cpl = cpl
+    },
   },
   created() {
     this.retrieveObjects()
