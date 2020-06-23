@@ -12,18 +12,29 @@ use App\Http\Resources\api\v1\FormResource;
 use App\FormStats as FormStats;
 use App\Http\Resources\api\v1\FormStatsResource;
 use App\Network as Network;
+use App\Landing as Landing;
+use App\LandingStats as LandingStats;
 
 class FormController extends Controller
 {
     /**
      * Get all forms list.
      *
+     * @urlParam filter_date_from string From date (Y-m-d format)
+     * @urlParam filter_date_to string To date (Y-m-d format)
+     *
      * @response {
      *  "data": [forms],
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+        ]);
+
         $forms = Form::query();
         $forms = $forms->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Form')) {
@@ -385,19 +396,37 @@ class FormController extends Controller
      *
      * @urlParam id int required Form's id
      *
+     * @bodyParam landing_id int Landing id
+     *
      * @response {
      *  "data": "",
      * }
      */
-    public function visited($id)
+    public function visited($id, Request $request)
     {
+        // Params validation
+        $params = $request->validate([
+            'landing_id' => 'integer|exists:landings,id',
+        ]);
+
         $form = Form::findOrFail($id);
         $form->visits += 1;
         $form->save();
 
-        $formStats = FormStats::getObject($id, date('Y-m-d'));
+        $today = date('Y-m-d');
+
+        $formStats = FormStats::getObject($id, $today);
         $formStats->visits += 1;
         $formStats->save();
+
+        if (isset($params['landing_id'])) {
+            $landing = Landing::find($params['landing_id']);
+            if($landing != null && $landing->form_id == $form->id) {
+                $landingStats = LandingStats::getObject($id, $today);
+                $landingStats->visits += 1;
+                $landingStats->save();
+            }
+        }
     }
 
     /**

@@ -11,6 +11,8 @@ use App\Http\Resources\api\v1\OrderResource;
 use App\OrderStatus;
 use App\Form;
 use App\FormStats;
+use App\Landing as Landing;
+use App\LandingStats as LandingStats;
 
 class OrderController extends Controller
 {
@@ -89,6 +91,9 @@ class OrderController extends Controller
      * @bodyParam phone string required Customer's phone number
      * @bodyParam address string required Customer's address
      * @bodyParam quantity string required Quantity
+     * @bodyParam form_id integer required Form's id
+     * @bodyParam network_data json required Network Data in json format
+     * @bodyParam landing_id integer Landing's id
      *
      * @response 201 {
      *  "message": "Order created",
@@ -106,6 +111,8 @@ class OrderController extends Controller
 
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
+
+            'landing_id' => 'integer|exists:landings,id',
         ]);
 
         $form = Form::findOrFail($params['form_id']);
@@ -147,8 +154,10 @@ class OrderController extends Controller
             $order->order_status_id != OrderStatus::DOUBLE &&
             $order->order_status_id != OrderStatus::REFUSED) {
 
+            $today = date('Y-m-d');
+
             // Increase form leads and commission
-            $formStats = FormStats::getObject($form->id, date('Y-m-d'));
+            $formStats = FormStats::getObject($form->id, $today);
             $formStats->leads += 1;
             $formStats->total_commission += $order->commission;
             $formStatsInfo = $formStats->info;
@@ -158,6 +167,23 @@ class OrderController extends Controller
             $formStatsInfo['total_sub_commission'] += $sub_commission;
             $formStats->info = $formStatsInfo;
             $formStats->save();
+
+            // Landing stats
+            if (isset($params['landing_id'])) {
+                $landing = Landing::find($params['landing_id']);
+                if($landing != null && $landing->form_id == $form->id) {
+                    $stats = LandingStats::getObject($form->id, $today);
+                    $stats->leads += 1;
+                    $stats->total_commission += $order->commission;
+                    $statsInfo = $stats->info;
+                    if (!isset($statsInfo['total_sub_commission'])) {
+                        $statsInfo['total_sub_commission'] = 0.0;
+                    }
+                    $statsInfo['total_sub_commission'] += $sub_commission;
+                    $stats->info = $statsInfo;
+                    $stats->save();
+                }
+            }
 
             // Total
             $form->leads += 1;

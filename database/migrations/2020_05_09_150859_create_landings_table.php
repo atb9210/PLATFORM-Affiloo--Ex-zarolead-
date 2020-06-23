@@ -15,6 +15,7 @@ class CreateLandingsTable extends Migration
     {
         Schema::create('landings', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned();
             $table->string('name');
             $table->bigInteger('campaign_id')->unsigned();
             $table->bigInteger('form_id')->unsigned();
@@ -24,6 +25,7 @@ class CreateLandingsTable extends Migration
             $table->timestamps();
             $table->boolean('archived')->default(0);
 
+			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('campaign_id')->references('id')->on('campaigns');
 			$table->foreign('form_id')->references('id')->on('forms');
 			$table->foreign('tag_id')->references('id')->on('tags');

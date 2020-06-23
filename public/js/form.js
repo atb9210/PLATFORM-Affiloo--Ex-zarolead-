@@ -1,3 +1,11 @@
+class Utils {
+    static getUrlParams(param) {
+        var url_string = window.location.href
+        var url = new URL(url_string);
+        return url.searchParams.get(param);
+    }
+}
+
 class Form {
     DEBUG = true;
     BETA = false;
@@ -16,6 +24,8 @@ class Form {
     networkData = {};
 
     pluginManager = null;
+
+    landing_id = 0;
 
     constructor(id, debug = false, beta = false) {
         console.log("[i] FORM " + id + " CONSTRUCTED");
@@ -41,6 +51,11 @@ class Form {
         }
         api_url += 'api/v1/';
         this.API_URL = api_url;
+
+        let landing_id = Utils.getUrlParams('landing'); 
+        if (landing_id !== null) {
+            this.landing_id = parseInt(landing_id);
+        }
 
         // Initialize inputs
         this.initializeInput();
@@ -83,10 +98,19 @@ class Form {
     }
 
     formVisited() {
+        let data = {};
+        if (this.landing_id > 0) {
+            console.log("Landing id: " + this.landing_id);
+            data.landing_id = this.landing_id;
+        }
+        console.log("DATA");
+        console.log(data);
+
         // Submit
         $.ajax({
             url: this.API_URL + 'forms/' + this.FORM_ID + '/visited',
             method: 'GET',
+            data: data,
             success: function(data) {
                 console.log('[i] FORM VISITED');
             }.bind(this),
@@ -262,6 +286,9 @@ class Form {
             if ($("#surname").length) {
                 data["name"] += " " + data["surname"];
                 delete data["surname"];
+            }
+            if (this.landing_id > 0) {
+                data["landing_id"] = this.landing_id;
             }
             console.log(data);
 

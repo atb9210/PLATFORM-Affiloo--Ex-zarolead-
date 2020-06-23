@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Form extends Model {
     /**
@@ -65,6 +66,7 @@ class Form extends Model {
         return $this->hasMany('App\FormStats');
     }
 
+    // TODO: This should be deprecated (new version is getStats())
     public function getTotalStats($fromDate = '', $toDate = '', $admin = false) {
         $stats = array(
             'visits' => 0,
@@ -111,6 +113,39 @@ class Form extends Model {
         }
 
         return $stats;
+    }
+
+    /*
+     * Dates in format YYYY-mm-dd
+     */
+    public function getStats($from_date = '', $to_date = '')
+    {
+        // TODO: Check dates format
+
+        $stats = DB::table('form_stats')->where('form_id', $this->id);
+        if ($from_date != '') {
+            $stats = $stats->where('day', '>=', $from_date);
+        }
+        if ($to_date != '') {
+            $stats = $stats->where('day', '<=', $to_date);
+        }
+
+        $visits = 0;
+        $leads = 0;
+        $total_cost = 0;
+        $total_commission = 0;
+        if($stats->get()->count() > 0) {
+            $visits = $stats->sum('visits');
+            $leads = $stats->sum('leads');
+            $total_cost = $stats->sum('total_cost');
+            $total_commission = $stats->sum('total_commission');
+        }
+        return [
+            'visits' => $visits,
+            'leads' => $leads,
+            'total_cost' => $total_cost,
+            'total_commission' => $total_commission,
+        ];
     }
 
     public static function generateHTML($data) {

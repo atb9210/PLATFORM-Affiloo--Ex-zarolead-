@@ -14,6 +14,21 @@ class FormResource extends JsonResource
      */
     public function toArray($request)
     {
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to' =>   'nullable|date|date_format:Y-m-d',
+        ]);
+
+        $date_from = '';
+        $date_to = '';
+        if (isset($params['filter_date_from'])) {
+            $date_from = $params['filter_date_from'];
+        }
+        if (isset($params['filter_date_to'])) {
+            $date_to = $params['filter_date_to'];
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -46,6 +61,7 @@ class FormResource extends JsonResource
             'visits' => $this->visits,
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
+            'stats' => $this->getStats($date_from, $date_to),
             'created_at' => $this->created_at,
         ];
     }

@@ -5,7 +5,8 @@ namespace App;
 use App\Form;
 use Illuminate\Database\Eloquent\Model;
 
-class FormStats extends Model {
+class FormStats extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -32,19 +33,19 @@ class FormStats extends Model {
     }
 
     public static function getObject($form_id, $date) {
-    	$formStats = FormStats::where('form_id', '=', $form_id)
+    	$stats = FormStats::where('form_id', '=', $form_id)
     		->where('day', '=', $date);
 
-    	if ($formStats->count() == 0) {
-    		$formStats = FormStats::create([
+    	if ($stats->count() == 0) {
+    		$stats = FormStats::create([
     			'form_id' => $form_id,
     			'day' => $date
     		]);
     	} else {
-    		$formStats = $formStats->first();
+    		$stats = $stats->first();
     	}
 
-    	return $formStats;
+    	return $stats;
     }
 
 }

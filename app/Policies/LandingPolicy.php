@@ -30,7 +30,7 @@ class LandingPolicy
      */
     public function view(User $user, Landing $landing)
     {
-        return $user->hasPermission('landing', 'viewAny');
+        return $user->hasPermission('landing', 'viewAny') || ($user->id === $landing->id && !$landing->archived);
     }
 
     /**
@@ -53,7 +53,7 @@ class LandingPolicy
      */
     public function update(User $user, Landing $landing)
     {
-        return $user->hasPermission('landing', 'update');
+        return $user->hasPermission('landing', 'update') || ($user->id === $landing->id && !$landing->archived);
     }
 
     /**
@@ -65,7 +65,7 @@ class LandingPolicy
      */
     public function delete(User $user, Landing $landing)
     {
-        return $user->hasPermission('landing', 'delete');
+        return $user->hasPermission('landing', 'delete') || ($user->id === $landing->id && !$landing->archived);
     }
 
     /**
