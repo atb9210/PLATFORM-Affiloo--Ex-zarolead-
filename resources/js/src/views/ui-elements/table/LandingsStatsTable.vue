@@ -329,8 +329,8 @@ export default {
         else cr = parseFloat((obj.leads/obj.visits)*100.0)
         let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
 
-        this.total_stats.visits += obj.visits
-        this.total_stats.leads += obj.leads
+        this.total_stats.visits += parseInt(obj.visits)
+        this.total_stats.leads += parseInt(obj.leads)
         this.total_stats.total_commission += parseFloat(obj.total_commission),
 
         // Format calculated stats

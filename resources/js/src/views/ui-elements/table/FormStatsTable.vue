@@ -373,8 +373,8 @@ export default {
         let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
         let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
 
-        this.total_stats.visits += obj.visits
-        this.total_stats.leads += obj.leads
+        this.total_stats.visits += parseInt(obj.visits)
+        this.total_stats.leads += parseInt(obj.leads)
         this.total_stats.total_cost += parseFloat(obj.total_cost),
         this.total_stats.total_commission += parseFloat(obj.total_commission),
 
