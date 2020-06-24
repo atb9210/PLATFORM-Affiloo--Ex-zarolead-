@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 use App\Form as Form;
@@ -340,6 +341,64 @@ class FormController extends Controller
         $stats->save();
 
         return new FormStatsResource($stats);
+    }
+
+    /**
+     * Get landings stats (of this form)
+     *
+     * @urlParam id int required Form's id
+     *
+     * @urlParam filter_date_from string From date (Y-m-d format)
+     * @urlParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function landingsStats($id, Request $request)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('view', $form);
+
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+        ]);
+
+        $data = [];
+        foreach($form->landings as $landing) {
+            $stats = DB::table('landing_stats')->where('landing_id', $landing->id);
+            if (isset($params['filter_date_from'])) {
+                $stats = $stats->where('day', '>=', $params['filter_date_from']);
+            }
+            if (isset($params['filter_date_to'])) {
+                $stats = $stats->where('day', '<=', $params['filter_date_to']);
+            }
+
+            $visits = 0;
+            $leads = 0;
+            $total_cost = 0;
+            $total_commission = 0;
+            if($stats->get()->count() > 0) {
+                $visits = $stats->sum('visits');
+                $leads = $stats->sum('leads');
+                $total_cost = $stats->sum('total_cost');
+                $total_commission = $stats->sum('total_commission');
+            }
+            array_push($data, [
+                'id' => $landing->id,
+                'name' => $landing->name,
+                'visits' => $visits,
+                'leads' => $leads,
+                'total_cost' => $total_cost,
+                'total_commission' => $total_commission,
+            ]);
+        }
+
+        return response([
+            'data' => $data
+        ], 200);
     }
 
     /**

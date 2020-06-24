@@ -1430,6 +1430,21 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/landings-stats/:form_id',
+          name: 'landings-stats',
+          component: () => import('./views/LandingsStats.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Forms', url: '/dashboard/forms' },
+              { title: 'Landings Stats', active: true }
+            ],
+            pageTitle: 'Landings Stats',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/landings',
           name: 'landings',
           component: () => import('./views/Landings.vue'),

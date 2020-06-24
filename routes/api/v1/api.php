@@ -61,6 +61,8 @@ Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except(
 Route::apiResource('landings', 'api\v1\LandingController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware('auth:api')
+    ->name('landings.stats');
 
 /* Forms routes */
 Route::apiResource('forms', 'api\v1\FormController')->except([
@@ -71,6 +73,8 @@ Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:ap
     ->name('forms.code');
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')
     ->name('forms.stats');
+Route::get('forms/{id}/landings/stats', 'api\v1\FormController@landingsStats')->middleware('auth:api')
+    ->name('forms.landings.stats');
 Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware('auth:api')
     ->name('forms.stats.update');
 Route::get('forms/{id}/initialize', 'api\v1\FormController@initialize')->name('forms.initialize');
