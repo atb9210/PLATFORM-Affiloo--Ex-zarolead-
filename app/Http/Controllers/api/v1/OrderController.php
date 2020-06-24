@@ -172,7 +172,7 @@ class OrderController extends Controller
             if (isset($params['landing_id'])) {
                 $landing = Landing::find($params['landing_id']);
                 if($landing != null && $landing->form_id == $form->id) {
-                    $stats = LandingStats::getObject($form->id, $today);
+                    $stats = LandingStats::getObject($landing->id, $today);
                     $stats->leads += 1;
                     $stats->total_commission += $order->commission;
                     $statsInfo = $stats->info;

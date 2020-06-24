@@ -481,7 +481,7 @@ class FormController extends Controller
         if (isset($params['landing_id'])) {
             $landing = Landing::find($params['landing_id']);
             if($landing != null && $landing->form_id == $form->id) {
-                $landingStats = LandingStats::getObject($id, $today);
+                $landingStats = LandingStats::getObject($landing->id, $today);
                 $landingStats->visits += 1;
                 $landingStats->save();
             }
