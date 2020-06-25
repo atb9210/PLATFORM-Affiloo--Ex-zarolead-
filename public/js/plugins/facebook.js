@@ -1,7 +1,19 @@
+// TODO: This is a clone of getUrlParameter, this types of functions should be in a utils.js file
+function FacebookPlugin_getUrlParams(param) {
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    return url.searchParams.get(param);
+}
+
 function FacebookPlugin(data) {
     Plugin.call(this, data);
 
     this.pixel = this.data.pixel;
+
+    if (FacebookPlugin_getUrlParams('pi') != '') {
+        this.pixel = FacebookPlugin_getUrlParams('pi');
+    }
+
     // TODO: Check if this is still useful
     $(".addtocart-button").each(function() {
         this.fbAddToCart();
