@@ -145,7 +145,7 @@ body {
 	</div>
 	<div id="thankyou-page" style="display: none; height: 100%;">
 		<div style="text-align: center; padding: 15px;">
-			<img class="img" src="http://future-gadget.com/wp-content/uploads/2019/12/Package-accept.png" style="width: 50%;">
+			<img class="img" src="{{ asset('images/order-confirmed.svg') }}" style="width: 50%;">
 		</div>
 		<div style="background-color: #23a455; padding: 10px;">
 			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 24px; margin-bottom: 0px;">
