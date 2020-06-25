@@ -262,6 +262,7 @@ export default [
       */
     ]
   },
+  /*
   {
     header: 'UI',
     icon: 'LayersIcon',
@@ -968,5 +969,6 @@ export default [
       }
     ]
   }
+  */
 ]
 

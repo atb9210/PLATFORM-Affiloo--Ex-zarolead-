@@ -23,16 +23,55 @@ body {
   box-sizing: border-box;
 }
 .span-error {
-	color: white;
 	display: none;
-	background-color: #eaac00;
+
+	/*color: white;*/
+	/*background-color: #eaac00;*/
+	color: #9c0000;
+	background-color: white;
+
 	padding: 0.5em;
 	margin-bottom: 1em;
 }
+
+#formContainer {
+    width: 100%;
+
+    /*
+    color: white;
+    background-color: #FE4444;
+    */
+    color: black;
+    background-color: white;
+}
+
+#mainForm {
+   padding: 15px;
+   height: 100%;
+}
+
+#submit-button {
+    margin-bottom: 3em;
+    border: 1px solid #e0e0e0;
+    font-size: 25px;
+    padding: 10px;
+    width: 90%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
+    float: none;
+    font-family: "Arial",Sans-serif;
+    ont-weight: 600;
+    text-transform: none;
+    color: #fff;
+    background-color: #eaac00;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
+}
 </style>
 
-<div id="formContainer" style="background-color: #FE4444; width: 100%; color: white;">
-	<form id="mainForm" method="post" target="dummyframe" action="" accept-charset="utf-8" role="form" style="padding: 15px; height: 100%;">
+<div id="formContainer">
+	<form id="mainForm" method="post" target="dummyframe" action="" accept-charset="utf-8" role="form">
    
 		<!-- Backend -->
 		<input type="hidden" id="form_id" name="form_id" value="{{ $form_id }}">
@@ -64,7 +103,7 @@ body {
             </div>
             -->
         </div>
-		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-bottom: 3em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'>Conferma l'Ordine</button>
+		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form">Conferma l'Ordine</button>
 	</form>
 	<div id="mainForm2" style="display: none; padding-bottom: 15px; height: 100%;">
 		<div style="background-color: black; padding: 10px;">

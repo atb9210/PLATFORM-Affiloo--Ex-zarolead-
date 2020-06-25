@@ -27,6 +27,9 @@ class Form {
 
     landing_id = 0;
 
+    notValidatedInput = {};
+    validatedInput = {};
+
     constructor(id, debug = false, beta = false) {
         console.log("[i] FORM " + id + " CONSTRUCTED");
 
@@ -64,7 +67,6 @@ class Form {
         $('#mainForm').submit(false);
 
         $("#submit-button").on('click', function() {
-            console.log("submit button clicked");
             this.onSubmit(1);
         }.bind(this));
 
@@ -160,10 +162,12 @@ class Form {
         }).appendTo($('#form-inputs'));
 
         // Create label
-        var l = $('<label>' + params['label'] + '</label>', {
-            class: "font-form",
-            style: "line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;",
-        }).appendTo(d);
+        if (params['type'] != 'hidden') {
+            var l = $('<label>' + params['label'] + '</label>', {
+                class: "font-form",
+                style: "line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;",
+            }).appendTo(d);
+        }
 
         // Create input
         var inputData = {
@@ -178,22 +182,50 @@ class Form {
         $('<input>', inputData).appendTo(d);
 
         // Create error span
-        $('<span>', {
-            id: name + 'Error',
-            class: 'span-error',
-        }).appendTo(d);
+        if (params['type'] != 'hidden') {
+            $('<span>', {
+                id: name + 'Error',
+                class: 'span-error',
+            }).appendTo(d);
+        }
     }
 
     validateInput() {
         // Form validation
         $("#submit-button").attr("disabled", true);
 
-        var input = {};
+        this.notValidatedInput = {};
+
         for (var i in this.input) {
-            input[i] = $('#' + i).val();
+            console.log(i);
+            // TODO:
+            // Generalize this
+            // NOTE: This supposes that surname field is always after name. If name is after then
+            // the this.notValidatedInput['name'] will be overwritten.
+            if (i === 'surname') {
+                let n = $('#name').val(); // Name
+                let s = $('#name').val(); // Surname
+                let ns = n.split(' ');
+                if(ns.length > 1) {
+                    n = ns[0];
+                    s = '';
+                    for(var index = 1; index < ns.length; index++) {
+                        if (index > 1) {
+                            s += ' ';
+                        }
+                        s += ns[index];
+                    }
+                }
+                $('#surname').val(s);
+                this.notValidatedInput['name'] = n;
+                this.notValidatedInput['surname'] = s;
+            } else {
+                this.notValidatedInput[i] = $('#' + i).val();
+            }
         }
+
         var data = {
-            input: JSON.stringify(input)
+            input: JSON.stringify(this.notValidatedInput)
         };
         $.ajax({
             url: this.API_URL + 'forms/' + this.FORM_ID + '/input/validate',
@@ -202,6 +234,7 @@ class Form {
             success: function(data) {
                 console.log('[i] INPUT VALIDATED');
 
+                this.validatedInput = this.notValidatedInput;
                 this.onSubmit(2);
                 $("#submit-button").attr("disabled", false);
             }.bind(this),
@@ -229,7 +262,11 @@ class Form {
 
     inputSetErrors() {
         for (var error in this.errors) {
-            this.inputSetError(error, this.errors[error][0]);
+            if (error === 'surname') {
+                this.inputSetError('name', this.errors[error][0]);
+            } else {
+                this.inputSetError(error, this.errors[error][0]);
+            }
         }
     }
 
@@ -270,27 +307,19 @@ class Form {
         } else if (step == 2) {
             // Upsell & submission
 
-            for (var i in this.input) {
-                this.networkData[i] = $('#' + i).val();
-            }
+            this.networkData = this.validatedInput;
             this.networkData["quantity"] = $("#quantity").val();
 
             // Submit
             $('#network_data').val(JSON.stringify(this.networkData));
-            console.log($('#network_data').val());
 
             var data = {};
             $.each($('#mainForm').serializeArray(), function(_, kv) {
                 data[kv.name] = kv.value;
             });
-            if ($("#surname").length) {
-                data["name"] += " " + data["surname"];
-                delete data["surname"];
-            }
             if (this.landing_id > 0) {
                 data["landing_id"] = this.landing_id;
             }
-            console.log(data);
 
             $.ajax({
                 url: this.API_URL + 'orders',
@@ -302,6 +331,7 @@ class Form {
 
                     console.log(data);
 
+                    // TODO: Maybe this should be before ajax call?
                     this.pluginManager.onSubmit();
 
                     // Show thank you page
@@ -315,7 +345,6 @@ class Form {
                         $('#mainForm').css('display', 'none');
                         $('#mainForm2').css('display', 'none');
                         $('#thankyou-page').css('display', 'block');
-                        
                     }
                 }.bind(this),
                 error: function(data) {

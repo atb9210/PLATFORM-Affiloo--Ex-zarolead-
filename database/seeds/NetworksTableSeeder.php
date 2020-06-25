@@ -70,12 +70,25 @@ class NetworksTableSeeder extends Seeder
                             'default' => 'error',
                         ],
                     ],
+                    'postback' => [
+                        [
+                            'on' => 'success',
+                            'url' => 'http://ztrk37.com/postback',
+                            'method' => 'get',
+                            'urlParams' => [
+                                'cid' => '{input.sub_id}',
+                                'payout' => '{order.commission}',
+                            ],
+                        ],
+                    ],
+                    /*
                     'redirect' => [
                         [
                             'on' => 'double',
                             'url' => '{response.check_url}',
                         ],
                     ],
+                    */
                 ],
                 'form' => [
                     'input' => [
@@ -264,8 +277,8 @@ class NetworksTableSeeder extends Seeder
                         'method' => 'get',
                         'type' => 'json',
                         'urlParams' => [
-                            'user' => 'asrafatb9210@gmail.com', // @TODO
-                            'password' => '1vrdNLMOjwQJIbB8Eqt0AcUgyDmp2hsC', // @TODO
+                            'user' => '{form.user}',
+                            'password' => '{form.user}',
                             'offer' => '{form.offer}',
                             'phone' => '{input.phone}',
                             'nome' => '{input.name}',
@@ -319,12 +332,7 @@ class NetworksTableSeeder extends Seeder
                         'name' => [
                             'type' => 'text',
                             'required' => '',
-                            'label' => 'Nome',
-                        ],
-                        'surname' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Cognome',
+                            'label' => 'Nome e cognome',
                         ],
                         'phone' => [
                             'type' => 'text',
@@ -335,6 +343,9 @@ class NetworksTableSeeder extends Seeder
                             'type' => 'text',
                             'required' => '',
                             'label' => 'Città e indirizzo di consegna'
+                        ],
+                        'surname' => [
+                            'type' => 'hidden',
                         ],
                     ],
                     'params' => [

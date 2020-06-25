@@ -87,13 +87,7 @@
         <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="user.id">User ID</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="campaign.name">Campaign</vs-th>
-                <vs-th sort-key="network.name">Network</vs-th>
-                <vs-th sort-key="product.name">Product</vs-th>
-                <vs-th sort-key="traffic_source.name">Traffic Source</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_cost">Cost</vs-th>
@@ -110,72 +104,48 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].id">
-                        {{data[indextr].id}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].user.id">
-                        {{data[indextr].user.id}}
-                    </vs-td>
-
                     <vs-td :data="data[indextr].name">
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].campaign.name">
-                        {{data[indextr].campaign.name}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].network.name">
-                        {{data[indextr].network.name}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].product.name">
-                        {{data[indextr].product.name}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].traffic_source.name">
-                        {{data[indextr].traffic_source.name}}
-                    </vs-td>
-
                     <vs-td :data="data[indextr].visits">
-                        {{data[indextr].visits}}
+                        {{data[indextr].stats.visits}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].leads">
-                        {{data[indextr].leads}}
+                        {{data[indextr].stats.leads}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].total_cost">
-                        <span>€ {{data[indextr].total_cost}}</span>
+                        <span>€ {{data[indextr].stats.total_cost}}</span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].total_commission">
-                        € {{data[indextr].total_commission}}
+                        € {{data[indextr].stats.total_commission}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit">
-                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit}}</vs-chip>
+                    <vs-td :data="data[indextr].stats.profit">
+                        <vs-chip transparent :color="(data[indextr].stats.profit > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.profit}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roi">
-                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi}} %</vs-chip>
+                    <vs-td :data="data[indextr].stats.roi">
+                        <vs-chip transparent :color="(data[indextr].stats.roi > 0) ? 'success' : 'danger'">{{data[indextr].stats.roi}} %</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
-                        {{data[indextr].cr}} %
+                    <vs-td :data="data[indextr].stats.cr">
+                        {{data[indextr].stats.cr}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpv">
-                        € {{data[indextr].cpv}}
+                    <vs-td :data="data[indextr].stats.cpv">
+                        € {{data[indextr].stats.cpv}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].epv">
-                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
+                    <vs-td :data="data[indextr].stats.epv">
+                        <vs-chip transparent :color="(data[indextr].stats.epv > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.epv}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpl">
-                        € {{data[indextr].cpl}}
+                    <vs-td :data="data[indextr].stats.cpl">
+                        € {{data[indextr].stats.cpl}}
                     </vs-td>
 
                     <vs-td>
@@ -191,12 +161,6 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td>
@@ -752,15 +716,8 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-        // TODO: to delete
-        // HERE
-      let data = {
-          'filter_date_from': '2020-06-23',
-          'filter_date_to':   '2020-06-23',
-      }
-
       // Retrieve forms
-      this.$http.get('/api/v1/forms', { headers, params: data })
+      this.$http.get('/api/v1/forms', { headers })
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()
@@ -1194,12 +1151,12 @@ export default {
         epv = epv.toFixed(2)
         cpl = cpl.toFixed(2)
 
-        this.objects[i].profit = profit
-        this.objects[i].roi = roi
-        this.objects[i].cr = cr
-        this.objects[i].cpv = cpv
-        this.objects[i].epv = epv
-        this.objects[i].cpl = cpl
+        this.objects[i].stats.profit = profit
+        this.objects[i].stats.roi = roi
+        this.objects[i].stats.cr = cr
+        this.objects[i].stats.cpv = cpv
+        this.objects[i].stats.epv = epv
+        this.objects[i].stats.cpl = cpl
       }
 
       // Total stats
