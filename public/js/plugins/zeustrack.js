@@ -1,62 +1,54 @@
-class ZeusTrackPlugin extends Plugin {
-    data = {};
+function ZeusTrackPlugin(data) {
+    Plugin.call(this, data);
 
-    sub_id = '';
-    iframe_id = 'trackerClick';
-    iframe_style = 'position:absolute;width:1px;height:1px;left:0;right:0;';
-    zeustrack_code = '';
+    this.sub_id = this.data.sub_id;
 
-    constructor(data) {
-        super(data);
-
-        this.data = data;
-        this.sub_id = this.data.sub_id;
-
-        this.zeustrack_code = `
+    this.iframe_id = 'trackerClick';
+    this.iframe_style = 'position:absolute;width:1px;height:1px;left:0;right:0;';
+    this.zeustrack_code = `
 <!-- Zeus Track -->
 <iframe src="" id="trackerClick"></iframe>
-    <style>
-        #trackerClick {
-            position:absolute;
-            width: 1px;
-            height: 1px;
-            left: 0;
-            right: 0;
-        }
-    </style>
+<style>
+    #trackerClick {
+        position:absolute;
+        width: 1px;
+        height: 1px;
+        left: 0;
+        right: 0;
+    }
+</style>
 <script>
 
 var offer_url = "{snippet:offer_url}";
-    
+
 </script>
 <script>
- var offer_url = "{snippet:offer_url}";
- $(document).ready(function(){
-       $("a:link").click(function(e) {
-          e.preventDefault();
-          $('html, body').animate({scrollTop: $('#mainForm').offset().top}, 600);
-            setTimeout(function(){
-                $('#inputName').focus();
-            }, 600)
-       });
-    });
- 
- </script>
-    	`;
-        $(document.body).append(this.zeustrack_code);
-    }
+var offer_url = "{snippet:offer_url}";
+$(document).ready(function(){
+   $("a:link").click(function(e) {
+      e.preventDefault();
+      $('html, body').animate({scrollTop: $('#mainForm').offset().top}, 600);
+        setTimeout(function(){
+            $('#inputName').focus();
+        }, 600)
+   });
+});
 
-    onVisit() {
-        console.log("ZeusTrackPlugin onVisit");
-    }
+</script>
+    `;
+    $(document.body).append(this.zeustrack_code);
+}
 
-    onSubmit() {
-        console.log("ZeusTrackPlugin onSubmit");
+ZeusTrackPlugin.prototype.onVisit = function() {
+    console.log("ZeusTrackPlugin onVisit");
+}
 
-        $("#trackerClick").attr("src", offer_url);
-    }
+ZeusTrackPlugin.prototype.onSubmit = function() {
+    console.log("ZeusTrackPlugin onSubmit");
 
-    onRedirect() {
-        console.log("ZeusTrackPlugin onRedirect");
-    }
+    $("#trackerClick").attr("src", offer_url);
+}
+
+ZeusTrackPlugin.prototype.onRedirect = function() {
+    console.log("ZeusTrackPlugin onRedirect");
 }

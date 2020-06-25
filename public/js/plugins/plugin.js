@@ -1,49 +1,46 @@
-class Plugin {
-    data = {};
+function Plugin(data) {
+    this.data = {};
+    this.data = data;
+}
 
-    constructor(data) {
-        this.data = data;
-    }
+Plugin.prototype.onVisit = function() {
+    console.log("Plugin onVisit");
+}
 
-    onVisit() {
-        console.log("Plugin onVisit");
-    }
+Plugin.prototype.onSubmit = function() {
+    console.log("Plugin onSubmit");
+}
 
-    onSubmit() {
-        console.log("Plugin onSubmit");
-    }
+Plugin.prototype.onRedirect = function() {
+    console.log("Plugin onRedirect");
+}
 
-    onRedirect() {
-        console.log("Plugin onRedirect");
+function PluginManager() {
+    this.plugins = [];
+}
+
+PluginManager.prototype.add = function(plugin, data) {
+    if(plugin == "facebook") {
+        this.plugins.push(new FacebookPlugin(data));
+    } else if(plugin == "zeustrack") {
+        this.plugins.push(new ZeusTrackPlugin(data));
     }
 }
 
-class PluginManager {
-    plugins = [];
-
-    add(plugin, data) {
-        if(plugin == "facebook") {
-            this.plugins.push(new FacebookPlugin(data));
-        } else if(plugin == "zeustrack") {
-            this.plugins.push(new ZeusTrackPlugin(data));
-        }
+PluginManager.prototype.onVisit = function() {
+    for (var i = 0; i < this.plugins.length; i++) {
+        this.plugins[i].onVisit();
     }
+}
 
-    onVisit() {
-        for (var i = 0; i < this.plugins.length; i++) {
-            this.plugins[i].onVisit();
-        }
+PluginManager.prototype.onSubmit = function() {
+    for (var i = 0; i < this.plugins.length; i++) {
+        this.plugins[i].onSubmit();
     }
+}
 
-    onSubmit() {
-        for (var i = 0; i < this.plugins.length; i++) {
-            this.plugins[i].onSubmit();
-        }
-    }
-
-    onRedirect() {
-        for (var i = 0; i < this.plugins.length; i++) {
-            this.plugins[i].onRedirect();
-        }
+PluginManager.prototype.onRedirect = function() {
+    for (var i = 0; i < this.plugins.length; i++) {
+        this.plugins[i].onRedirect();
     }
 }

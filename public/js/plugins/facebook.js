@@ -1,43 +1,35 @@
-class FacebookPlugin extends Plugin {
-    data = {};
+function FacebookPlugin(data) {
+    Plugin.call(this, data);
 
-    pixel = '';
+    this.pixel = this.data.pixel;
+    // TODO: Check if this is still useful
+    $(".addtocart-button").each(function() {
+        this.fbAddToCart();
+    }.bind(this));
+}
 
-    constructor(data) {
-        super(data);
+FacebookPlugin.prototype.onVisit = function() {
+    fbq('init', this.pixel);
+    fbq('track', 'ViewContent');
 
-        this.data = data;
-        this.pixel = this.data.pixel;
+    console.log("FacebookPlugin onVisit");
+}
 
-        // TODO: Check if this is still useful
-        $(".addtocart-button").each(function() {
-            this.fbAddToCart();
-        }.bind(this));
-    }
+FacebookPlugin.prototype.onSubmit = function() {
+    console.log("FacebookPlugin onSubmit");
+    this.fbPurchase();
+}
 
-    onVisit() {
-        fbq('init', this.pixel);
-        fbq('track', 'ViewContent');
+FacebookPlugin.prototype.onRedirect = function() {
+}
 
-        console.log("FacebookPlugin onVisit");
-    }
+FacebookPlugin.prototype.fbAddToCart = function() {
+    // Grab those link clickers!!
+    fbq('track', 'AddToCart');
+}
 
-    onSubmit() {
-        console.log("FacebookPlugin onSubmit");
-        this.fbPurchase();
-    }
-
-    onRedirect() {
-    }
-
-    fbAddToCart() {
-        // Grab those link clickers!!
-        fbq('track', 'AddToCart');
-    }
-
-    fbPurchase() {
-        fbq('track', 'Purchase');
-    }
+FacebookPlugin.prototype.fbPurchase = function() {
+    fbq('track', 'Purchase');
 }
 
 // Facebook stuff
