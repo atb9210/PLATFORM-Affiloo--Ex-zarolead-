@@ -278,7 +278,7 @@ class NetworksTableSeeder extends Seeder
                         'type' => 'json',
                         'urlParams' => [
                             'user' => '{form.user}',
-                            'password' => '{form.user}',
+                            'password' => '{form.password}',
                             'offer' => '{form.offer}',
                             'phone' => '{input.phone}',
                             'nome' => '{input.name}',
