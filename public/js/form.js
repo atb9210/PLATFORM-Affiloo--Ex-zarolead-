@@ -11,6 +11,7 @@ function Form(id, debug = false, beta = false) {
     this.FORM_ID = 0;
     this.API_URL = '';
 
+    this.sendingForm = false;
     this.input = [];
     this.quantity = {};
     this.currentQuantity = '';
@@ -27,7 +28,6 @@ function Form(id, debug = false, beta = false) {
 
     this.notValidatedInput = {};
     this.validatedInput = {};
-
 
     console.log("[i] FORM " + id + " CONSTRUCTED");
 
@@ -80,19 +80,6 @@ Form.prototype.initialize = function() {
         }.bind(this));
     }
 
-    // This is now into FacebookPlugin
-    //$(".addtocart-button").each(function() {
-    //    this.fbAddToCart();
-    //}.bind(this));
-
-    // TODO: We cannot do this anymore
-    // Default pixel is in fb_pixel input
-    //var pixel = this.getUrlParameter('pi');
-    //if (pixel == '') {
-    //    pixel = $('#fb_pixel').val();
-    //}
-    //$('#fb_pixel').val(pixel);
-
     // Input values
     $('#form_id').val(this.FORM_ID);
 }
@@ -100,11 +87,8 @@ Form.prototype.initialize = function() {
 Form.prototype.formVisited = function() {
     var data = {};
     if (this.landing_id > 0) {
-        console.log("Landing id: " + this.landing_id);
         data.landing_id = this.landing_id;
     }
-    console.log("DATA");
-    console.log(data);
 
     // Submit
     $.ajax({
@@ -151,9 +135,6 @@ Form.prototype.initializeInput = function() {
 }
 
 Form.prototype.createInput = function(name, params) {
-    console.log("Creating input " + name);
-    console.log(params);
-
     // Create group
     var d = $('<div>', {
         class: 'form-group',
@@ -190,12 +171,11 @@ Form.prototype.createInput = function(name, params) {
 
 Form.prototype.validateInput = function() {
     // Form validation
-    $("#submit-button").attr("disabled", true);
+    $("#submit-button").prop("disabled", true);
 
     this.notValidatedInput = {};
 
     for (var i in this.input) {
-        console.log(i);
         // TODO:
         // Generalize this
         // NOTE: This supposes that surname field is always after name. If name is after then
@@ -234,14 +214,14 @@ Form.prototype.validateInput = function() {
 
             this.validatedInput = this.notValidatedInput;
             this.onSubmit(2);
-            $("#submit-button").attr("disabled", false);
+            $("#submit-button").removeAttr("disabled");
         }.bind(this),
         error: function(response) {
             console.log('[!] INPUT NOT VALIDATED');
 
             this.errors = response.responseJSON.errors;
             this.inputSetErrors();
-            $("#submit-button").attr("disabled", false);
+            $("#submit-button").removeAttr("disabled");
         }.bind(this)
     });
 }
@@ -276,7 +256,7 @@ Form.prototype.inputSetError = function(input, message) {
 }
 
 Form.prototype.resetForm = function() {
-    $("#submit-button").attr("disabled", false);
+    $("#submit-button").removeAttr("disabled");
     $('#mainForm').css('display', 'block');
     $('#mainForm2').css('display', 'none');
 }
@@ -286,13 +266,18 @@ Form.prototype.resetForm = function() {
  * Step 2 => upsell & submission
  */
 Form.prototype.onSubmit = function(step) {
+    if (this.sendingForm) return;
+
+    this.sendingForm = true;
+
     // Form validation
-    $("#submit-button").attr("disabled", true);
+    $("#submit-button").removeAttr("disabled");
 
     this.inputClearErrors();
 
     if (step == 1) {
         this.validateInput();
+        this.sendingForm = false;
         return;
 
         // @TODO: Upsell system
@@ -304,6 +289,7 @@ Form.prototype.onSubmit = function(step) {
         }
     } else if (step == 2) {
         // Upsell & submission
+        $("#submit-button").prop("disabled", true);
 
         this.networkData = this.validatedInput;
         this.networkData["quantity"] = $("#quantity").val();
@@ -344,12 +330,15 @@ Form.prototype.onSubmit = function(step) {
                     $('#mainForm2').css('display', 'none');
                     $('#thankyou-page').css('display', 'block');
                 }
+                this.sendingForm = false;
             }.bind(this),
             error: function(data) {
                 console.log("[!] ERROR: NOT STORED IN TRACKED DATABASE");
                 console.log(data);
+                $("#submit-button").removeAttr("disabled");
                 alert("Errore ordine!");
                 this.resetForm();
+                this.sendingForm = false;
             }.bind(this)
         });
     }
