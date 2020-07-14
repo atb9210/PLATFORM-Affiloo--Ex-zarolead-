@@ -271,7 +271,7 @@ Form.prototype.onSubmit = function(step) {
     this.sendingForm = true;
 
     // Form validation
-    $("#submit-button").removeAttr("disabled");
+    $("#submit-button").prop("disabled", true);
 
     this.inputClearErrors();
 
