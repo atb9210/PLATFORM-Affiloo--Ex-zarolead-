@@ -37,7 +37,7 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="email">Id</vs-th>

@@ -114,7 +114,7 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vs-table multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="invoice_date">Date</vs-th>
@@ -896,13 +896,3 @@ export default {
 }
 
 </script>
-
-<style>
-/*
-.con-input-upload {
-    margin-right: auto !important;
-    margin-left: auto !important;
-    float: none !important;
-}
-*/
-</style>
