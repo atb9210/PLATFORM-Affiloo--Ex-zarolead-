@@ -13,7 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders">Delete</vs-button> 
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -80,6 +80,7 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
+                <vs-th></vs-th>
                 <vs-th sort-key="day">Day</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
@@ -95,6 +96,10 @@
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td>
+                        <vs-button radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                    </vs-td>
 
                     <vs-td :data="data[indextr].day">
                         {{data[indextr].day}}
@@ -118,11 +123,11 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].profit">
-                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit}}</vs-chip>
+                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].roi">
-                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi}} %</vs-chip>
+                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].cr">
@@ -134,7 +139,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].epv">
-                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].cpl">
@@ -144,6 +149,7 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
+                <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td>
