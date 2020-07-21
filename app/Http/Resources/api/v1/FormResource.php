@@ -62,6 +62,7 @@ class FormResource extends JsonResource
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
             'stats' => $this->getStats($date_from, $date_to),
+            'notes' => $this->notes,
             'created_at' => $this->created_at,
         ];
     }

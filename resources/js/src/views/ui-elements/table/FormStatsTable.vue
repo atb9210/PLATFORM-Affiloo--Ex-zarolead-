@@ -14,6 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showNotes">Notes</vs-button> 
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -184,6 +185,42 @@
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
+
+        <!-- Notes popup -->
+        <vs-popup title="Notes" :active.sync="showNotesPopup">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3 note" v-for="(note, index) in form.notes">
+                    <div class="vx-col w-full">
+                        <div style="text-align: right;">{{ formatDateTime(new Date(note.created_at)) }}</div>
+
+                        <div v-if="isEditingNote && editingNoteId == note.id">
+                            <vs-textarea v-model="editingNoteBody"></vs-textarea>
+                            <div class="flex" style="float: right;">
+                                <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="editNote"></vs-button>
+                                <vs-button color="dark" type="filled" icon-pack="feather" icon="icon-x" @click="editNoteCancel"></vs-button>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div style="white-space: pre;">{{ note.body }}</div>
+                            <div class="flex" style="float: right;">
+                                <vs-button color="dark" type="flat" icon-pack="feather" icon="icon-edit-2" @click="showEditNoteInput(index)"></vs-button>
+                                <vs-button color="dark" type="flat" icon-pack="feather" icon="icon-trash-2" @click="deleteNote(note.id)"></vs-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <h3>Create New Note</h3>
+                        <vs-textarea v-model="creatingNoteBody"></vs-textarea>
+                        <div class="flex" style="float: right;">
+                            <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="createNote"></vs-button>
+                            <vs-button color="dark" type="filled" icon-pack="feather" icon="icon-x" @click="createNoteCancel"></vs-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
     </vx-card>
 </template>
 
@@ -199,6 +236,7 @@ export default {
   },
   data () {
     return {
+      form: {},
       objects: [],
       selected: [],
       deleted: [],
@@ -288,6 +326,12 @@ export default {
         date_to: '',
       },
       showFilters: false,
+      showNotesPopup: false,
+      isEditingNote: false,
+      editingNoteId: -1,
+      editingNoteIndex: -1,
+      editingNoteBody: '',
+      creatingNoteBody: '',
     }
   },
   watch: {
@@ -316,7 +360,7 @@ export default {
   },
   methods: {
     getObjectIndexById(id) {
-      var index = -1;
+      var index = -1
       this.objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
@@ -332,6 +376,23 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+
+      // Retrieve form info
+      this.$http.get('/api/v1/forms/' + this.form_id, { headers })
+        .then((response) => {
+          this.form = response.data.data
+          this.$vs.loading.close()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
 
       // Retrieve form stats
       this.$http.get('/api/v1/forms/' + this.form_id + '/stats', { headers })
@@ -833,50 +894,174 @@ export default {
         })
     },
     filterDatesShortcut(period) {
-      let invalidPeriod = false;
+      let invalidPeriod = false
 
       switch (period) {
         case 'today': {
-          let today = new Date();
-          this.filters.date_from = this.formatDate(today);
-          this.filters.date_to = this.formatDate(today);
-        } break;
+          let today = new Date()
+          this.filters.date_from = this.formatDate(today)
+          this.filters.date_to = this.formatDate(today)
+        } break
         case 'yesterday': {
-          let dateObj = new Date();
-          dateObj.setDate(dateObj.getDate() - 1);
-          this.filters.date_from = this.formatDate(dateObj);
-          this.filters.date_to = this.formatDate(dateObj);
-        } break;
+          let dateObj = new Date()
+          dateObj.setDate(dateObj.getDate() - 1)
+          this.filters.date_from = this.formatDate(dateObj)
+          this.filters.date_to = this.formatDate(dateObj)
+        } break
         case 'this_month': {
-          let dateObj = new Date();
-          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
-          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
-          this.filters.date_from = this.formatDate(fromObj);
-          this.filters.date_to = this.formatDate(toObj);
-        } break;
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
         case 'last_month': {
-          let dateObj = new Date();
-          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1);
-          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0);
-          this.filters.date_from = this.formatDate(fromObj);
-          this.filters.date_to = this.formatDate(toObj);
-        } break;
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
         default: {
-          invalidPeriod = true;
-        } break;
+          invalidPeriod = true
+        } break
       }
 
       if(!invalidPeriod) {
-        this.applyFilters();
+        this.applyFilters()
       }
     },
     formatDate(dateObj) {
-      let dd = String(dateObj.getDate()).padStart(2, '0');
-      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
-      let yyyy = dateObj.getFullYear();
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0') //January is 0!
+      let yyyy = dateObj.getFullYear()
       
-      let formattedDate = yyyy + '-' + mm + '-' + dd;
-      return formattedDate;
+      let formattedDate = yyyy + '-' + mm + '-' + dd
+      return formattedDate
+    },
+    formatDateTime(dateObj) {
+      let formattedDate = this.formatDate(dateObj)
+
+      let hh = String(dateObj.getHours()).padStart(2, '0')
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      let ss = String(dateObj.getSeconds()).padStart(2, '0')
+
+      let formattedTime = hh + ':' + ii + ':' + ss
+      return formattedDate + ' ' + formattedTime
+    },
+    showNotes() {
+      this.showNotesPopup = true
+    },
+    showEditNoteInput(index) {
+      this.isEditingNote = true
+      this.editingNoteBody = this.form.notes[index].body
+      this.editingNoteId = this.form.notes[index].id
+      this.editingNoteIndex = index
+    },
+    createNote() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        body: this.creatingNoteBody,
+      }
+      this.$http.post('/api/v1/forms/' + this.form.id + '/notes', data, { headers })
+        .then((response) => {
+          this.creatingNoteBody = ''
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Note created',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.retrieveObjects()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    createNoteCancel() {
+      this.creatingNoteBody = ''
+    },
+    editNote() {
+      this.$vs.loading()
+
+      let index = this.editingNoteIndex
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        body: this.editingNoteBody,
+      }
+      this.$http.put('/api/v1/forms/notes/' + this.editingNoteId, data, { headers })
+        .then((response) => {
+          this.form.notes[index].body = this.editingNoteBody
+          this.isEditingNote = false
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Note updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    editNoteCancel() {
+      this.isEditingNote = false
+    },
+    deleteNote(note_id) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve form info
+      this.$http.delete('/api/v1/forms/notes/' + note_id, { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Notes successfully deleted',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.retrieveObjects()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
   },
   created() {
@@ -887,3 +1072,11 @@ export default {
 }
 
 </script>
+
+<style>
+.note {
+    border: 1px solid gray;
+    background-color: #eaeaea;
+    border-radius: 0.5rem;
+}
+</style>

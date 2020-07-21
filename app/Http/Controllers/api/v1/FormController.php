@@ -12,6 +12,7 @@ use App\Form as Form;
 use App\Http\Resources\api\v1\FormResource;
 use App\FormStats as FormStats;
 use App\Http\Resources\api\v1\FormStatsResource;
+use App\FormNote as FormNote;
 use App\Network as Network;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
@@ -542,6 +543,98 @@ class FormController extends Controller
                 'quantity' => $form->quantity,
                 'upsell' => $form->upsell,
             ],
+        ]);
+    }
+
+    /**
+     * Create a note for the specified form
+     *
+     * @urlParam id int required Form's id
+     *
+     * @bodyParam body string required Note's body
+     *
+     * @response 201 {
+     *  "message": "Form's note created",
+     *  "data": [form],
+     * }
+     */
+    public function createNote($id, Request $request)
+    {
+        $this->authorize('create', 'App\FormNote');
+        $form = Form::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'body' => 'required|string|min:1',
+        ]);
+        $params['user_id'] = Auth::user()->id;
+        $params['form_id'] = $form->id;
+
+        $note = FormNote::create($params);
+
+        return response([
+            "message" => "Form's note created",
+            "data" => new FormResource($form),
+        ], 201);
+    }
+
+    /**
+     * Edit a note
+     *
+     * @urlParam id int required Note's id
+     *
+     * @bodyParam body string Note's body
+     *
+     * @response {
+     *  "data": [form],
+     * }
+     */
+    public function editNote($id, Request $request)
+    {
+        $note = FormNote::findOrFail($id);
+        $this->authorize('update', $note);
+
+        if ($note->form->archived) {
+            return response([
+                "message" => "That form is archived"
+            ], 403);
+        }
+
+        // Param validation
+        $params = $request->validate([
+            'body' => 'string|min:1',
+        ]);
+
+        $note->update($params);
+
+        return new FormResource($note->form);
+    }
+
+    /**
+     * Delete a note
+     *
+     * @urlParam id int required Note's id
+     *
+     * @response {
+     *  "message": "Form's note has been deleted",
+     * }
+     */
+    public function deleteNote($id)
+    {
+        $note = FormNote::findOrFail($id);
+
+        $this->authorize('delete', $note);
+
+        if ($note->form->archived) {
+            return response([
+                "message" => "That form is archived"
+            ], 403);
+        }
+
+        $note->delete();
+
+        return response([
+            'message' => 'Form\'s note has been deleted'
         ]);
     }
 }

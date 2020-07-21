@@ -77,6 +77,12 @@ Route::get('forms/{id}/landings/stats', 'api\v1\FormController@landingsStats')->
     ->name('forms.landings.stats');
 Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware('auth:api')
     ->name('forms.stats.update');
+Route::post('forms/{id}/notes', 'api\v1\FormController@createNote')->middleware('auth:api')
+    ->name('forms.notes.store');
+Route::put('forms/notes/{id}', 'api\v1\FormController@editNote')->middleware('auth:api')
+    ->name('forms.notes.update');
+Route::delete('forms/notes/{id}', 'api\v1\FormController@deleteNote')->middleware('auth:api')
+    ->name('forms.notes.destroy');
 Route::get('forms/{id}/initialize', 'api\v1\FormController@initialize')->name('forms.initialize');
 Route::post('forms/{id}/input/validate', 'api\v1\FormController@validateInput')->name('forms.input.validate');
 

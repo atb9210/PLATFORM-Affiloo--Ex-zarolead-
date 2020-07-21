@@ -66,6 +66,10 @@ class Form extends Model {
         return $this->hasMany('App\FormStats');
     }
 
+    public function notes() {
+        return $this->hasMany('App\FormNote');
+    }
+
     // TODO: This should be deprecated (new version is getStats())
     public function getTotalStats($fromDate = '', $toDate = '', $admin = false) {
         $stats = array(
