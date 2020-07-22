@@ -24,8 +24,6 @@ class FormController extends Controller
      *
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
-     * @urlParam filter_tag integer Tag's id
-     * @urlParam filter_status integer Forms's status (active, traffic, archived, all)
      *
      * @response {
      *  "data": [forms],
@@ -37,19 +35,11 @@ class FormController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
-            'filter_tag' => 'integer|exists:tags,id',
-            'filter_status' => 'string|in:active,traffic,archived,all',
         ]);
 
         $forms = Form::query();
         if (!Auth::user()->can('viewAny', 'App\Form')) {
             $forms = $forms->where('user_id', Auth::user()->id);
-        }
-
-        if(isset($params['filter_tag'])) {
-            $forms = $forms->whereHas('product', function ($query) use ($params) {
-                $query->where('tag_id', $params['filter_tag']);
-            });
         }
 
         return FormResource::collection($forms->get());

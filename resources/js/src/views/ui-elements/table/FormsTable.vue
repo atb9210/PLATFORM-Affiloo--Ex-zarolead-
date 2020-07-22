@@ -1266,9 +1266,6 @@ export default {
       if (this.filters.date_to != '') {
         data['filter_date_to'] = this.filters.date_to
       }
-      if (this.filters.tag != '') {
-        data['filter_tag'] = this.filters.tag.id
-      }
 
       // Retrieve forms
       this.$http.get('/api/v1/forms', { headers, params: data })
@@ -1293,6 +1290,11 @@ export default {
                 flag = true
                 break
             }
+
+            if (this.filters.tag != '') {
+              flag = flag && (obj.product.tag.id == this.filters.tag.id)
+            }
+
             if (flag) {
               this.objects.push(obj)
             }
