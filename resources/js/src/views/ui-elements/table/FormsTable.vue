@@ -55,7 +55,13 @@
             <div class="vx-row mb-2">
                 <div class="vx-col w-full">
                     <label>Tag</label>
-                    <v-select :options="tagsOptions" v-model="filters.tag" />
+                    <v-select :options="tagOptions" v-model="filters.tag" />
+                </div>
+            </div>
+            <div class="vx-row mb-2">
+                <div class="vx-col w-full">
+                    <label>Status</label>
+                    <v-select :options="statusOptions" v-model="filters.status" />
                 </div>
             </div>
             <div class="vx-row mb-6">
@@ -599,6 +605,7 @@ export default {
   },
   data () {
     return {
+      allObjects: [],
       objects: [],
       selected: [],
       deleted: [],
@@ -689,8 +696,12 @@ export default {
         date_from: '',
         date_to: '',
         tag: '',
+        status: 'active',
       },
-      tagsOptions: [],
+      tagOptions: [],
+      statusOptions: [
+        'active', 'traffic', 'archived', 'all',
+      ],
 
       showChart: false,
       maxChartLines: 10,
@@ -742,7 +753,7 @@ export default {
   methods: {
     getObjectIndexById(id) {
       var index = -1;
-      this.objects.forEach((obj, i) => {
+      this.allObjects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
           return
@@ -761,9 +772,9 @@ export default {
       // Retrieve products list
       this.$http.get('/api/v1/tags', { headers })
         .then((response) => {
-          this.tagsOptions = []
+          this.tagOptions = []
           response.data.data.forEach((tag) => {
-            this.tagsOptions.push({
+            this.tagOptions.push({
               id: tag.id,
               label: tag.name,
             })
@@ -965,7 +976,7 @@ export default {
         })
     },
     editForm(id) {
-      let obj = this.objects[this.getObjectIndexById(id)]
+      let obj = this.allObjects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
         campaign: {
@@ -1238,6 +1249,7 @@ export default {
         date_from: '',
         date_to: '',
         tag: '',
+        status: 'active',
       }
       this.filterDatesShortcut('this_month')
     },
@@ -1258,14 +1270,37 @@ export default {
         data['filter_tag'] = this.filters.tag.id
       }
 
-      // Retrieve form stats
+      // Retrieve forms
       this.$http.get('/api/v1/forms', { headers, params: data })
         .then((response) => {
-          this.objects = response.data.data
+          this.allObjects = response.data.data
+
+          this.objects = []
+          this.allObjects.forEach((obj) => {
+            let flag = false
+            switch (this.filters.status) {
+              case 'active':
+                flag = (obj.archived != 1)
+                break
+              case 'traffic':
+                flag = (obj.stats.visits > 0)
+                break
+              case 'archived':
+                flag = (obj.archived == 1)
+                break
+              case 'all':
+              default:
+                flag = true
+                break
+            }
+            if (flag) {
+              this.objects.push(obj)
+            }
+          })
+
           this.calculateStats()
           this.loadChart()
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -1325,6 +1360,11 @@ export default {
       return formattedDate;
     },
     loadChart() {
+      let maxNum = Math.min(this.maxChartLines, this.objects.length)
+      if (maxNum == 0) {
+        return
+      }
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
@@ -1367,8 +1407,7 @@ export default {
         },
       }
 
-      // Retrieve last month forms' stats and set chart Y axis
-      let maxNum = Math.min(this.maxChartLines, this.objects.length)
+      // Retrieve forms' stats and set chart Y axis
 
       // TODO: to delete
       console.log("maxNum", maxNum)

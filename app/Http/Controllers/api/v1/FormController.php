@@ -20,11 +20,12 @@ use App\LandingStats as LandingStats;
 class FormController extends Controller
 {
     /**
-     * Get all forms list.
+     * Get all forms list (also the archived ones).
      *
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_tag integer Tag's id
+     * @urlParam filter_status integer Forms's status (active, traffic, archived, all)
      *
      * @response {
      *  "data": [forms],
@@ -37,10 +38,10 @@ class FormController extends Controller
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
             'filter_tag' => 'integer|exists:tags,id',
+            'filter_status' => 'string|in:active,traffic,archived,all',
         ]);
 
         $forms = Form::query();
-        $forms = $forms->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Form')) {
             $forms = $forms->where('user_id', Auth::user()->id);
         }

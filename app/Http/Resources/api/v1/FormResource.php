@@ -68,6 +68,7 @@ class FormResource extends JsonResource
             'stats' => $this->getStats($date_from, $date_to),
             'notes' => $this->notes,
             'created_at' => $this->created_at,
+            'archived' => $this->archived,
         ];
     }
 }
