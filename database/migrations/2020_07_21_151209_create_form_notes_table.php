@@ -17,7 +17,7 @@ class CreateFormNotesTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('form_id')->unsigned();
-            $table->mediumText('body')->default('');
+            $table->mediumText('body')->nullable();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
