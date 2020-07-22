@@ -47,6 +47,10 @@ class FormResource extends JsonResource
             'product' => [
                 'id' => $this->product->id,
                 'name' => $this->product->name,
+                'tag' => [
+                    'id' => $this->product->tag->id,
+                    'name' => $this->product->tag->name,
+                ],
             ],
             'quantity' => json_decode(json_encode($this->quantity), false),
             'upsell' => $this->upsell,

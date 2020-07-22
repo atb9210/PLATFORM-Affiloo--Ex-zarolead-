@@ -15,6 +15,7 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showNotes">Notes</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshFormStats">Refresh</vs-button> 
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -959,6 +960,10 @@ export default {
       this.editingNoteIndex = index
     },
     createNote() {
+      if(this.creatingNoteBody == '') {
+        return
+      }
+
       this.$vs.loading()
 
       let headers = {
@@ -1051,6 +1056,32 @@ export default {
             color: 'success'
           })
           this.retrieveObjects()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    refreshFormStats() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve form stats
+      this.$http.get('/api/v1/forms/' + this.form_id + '/stats', { headers })
+        .then((response) => {
+          this.objects = response.data.data
+          this.calculateStats()
+          this.$vs.loading.close()
+          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
