@@ -761,37 +761,6 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
-      this.selected = []
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      // Retrieve products list
-      this.$http.get('/api/v1/tags', { headers })
-        .then((response) => {
-          this.tagOptions = []
-          response.data.data.forEach((tag) => {
-            this.tagOptions.push({
-              id: tag.id,
-              label: tag.name,
-            })
-          })
-          this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
     onPageChanged(val) {
       this.currentPage = val
     },
@@ -1273,7 +1242,9 @@ export default {
           this.allObjects = response.data.data
 
           this.objects = []
-          this.allObjects.forEach((obj) => {
+          for(let i = 0; i < this.allObjects.length; i++ ) {
+            let obj = this.allObjects[i]
+
             let flag = false
             switch (this.filters.status) {
               case 'active':
@@ -1298,7 +1269,7 @@ export default {
             if (flag) {
               this.objects.push(obj)
             }
-          })
+          }
 
           this.calculateStats()
           this.loadChart()
@@ -1371,8 +1342,6 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.$vs.loading()
-
       // Chart X axis
       let dateObj = new Date()
       let startDay = new Date(this.filters.date_from)
@@ -1410,74 +1379,49 @@ export default {
       }
 
       // Retrieve forms' stats and set chart Y axis
-
-      // TODO: to delete
-      console.log("maxNum", maxNum)
-      console.log(this.lineAreaChartSpline.chartOptions.xaxis.categories)
-
       this.lineAreaChartSpline.series = []
+      let series = []
+
       for(let i = 0; i < maxNum; i++) {
         let form = this.objects[i]
 
-        let data = {}
-        data['filter_date_form'] = this.formatDate(startDay)
-        data['filter_date_to'] = this.formatDate(endDay)
-        this.$http.get('/api/v1/forms/' + form.id + '/stats', { headers, params: data })
-          .then((response) => {
-            let stats = response.data.data
+        let stats = form.daily_stats
 
-            // Calculate CPV and EPV
-            let values = []
-            for(let j = 0; j < numDots; j++) {
-              values.push(0)
-            }
-            stats.forEach((stat) => {
-              let cpv = 0
-              let epv = 0
-              let ratio = 0
-
-              cpv = parseFloat((stat.visits == 0) ? stat.total_cost : stat.total_cost/stat.visits)
-              epv = parseFloat((stat.visits == 0) ? stat.total_commission : stat.total_commission/stat.visits)
-
-              ratio = ((cpv == 0) ? epv : epv / cpv)
-
-              //let index = this.lineAreaChartSpline.chartOptions.xaxis.categories.indexOf(stat.day)
-              let index = categories.indexOf(stat.day)
-
-              // TODO: to delete
-              console.log("Stat day:", stat.day)
-              console.log("index:", index)
-
-              if (index >= 0) {
-                values[index] = ratio
-              }
-            })
-
-            this.lineAreaChartSpline.series.push({
-              name: form.name,
-              data: values,
-            })
-
-            if (i == maxNum - 1) {
-              this.$vs.loading.close()
-            }
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Error',
-              text: error.message,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'danger'
-            })
-          })
+        // Calculate CPV and EPV
+        let values = []
+        for(let j = 0; j < numDots; j++) {
+          values.push(0)
         }
+        for(let j = 0; j < stats.length; j++) {
+          let stat = stats[j]
+
+          let cpv = 0
+          let epv = 0
+          let ratio = 0
+
+          cpv = parseFloat((stat.visits == 0) ? stat.total_cost : stat.total_cost/stat.visits)
+          epv = parseFloat((stat.visits == 0) ? stat.total_commission : stat.total_commission/stat.visits)
+
+          ratio = ((cpv == 0) ? epv : epv / cpv)
+
+          let index = categories.indexOf(stat.day)
+
+          if (index >= 0) {
+            values[index] = ratio
+          }
+
+        }
+
+        series.push({
+          name: form.name,
+          data: values,
+        })
+      }
+      this.lineAreaChartSpline.series = series
     },
   },
   created() {
     this.resetFilters()
-    this.retrieveObjects()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
@@ -1500,6 +1444,22 @@ export default {
         this.$vs.loading.close()
       })
 
+    // Retrieve tags
+    this.$vs.loading()
+    this.$http.get('/api/v1/tags', { headers })
+      .then((response) => {
+        this.tagOptions = []
+        response.data.data.forEach((tag) => {
+          this.tagOptions.push({
+            id: tag.id,
+            label: tag.name,
+          })
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
 
     // Retrieve products
     this.$vs.loading()
@@ -1544,23 +1504,6 @@ export default {
           this.campaigns.push({
             id: campaign.id,
             label: campaign.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve forms
-    this.$vs.loading()
-    this.$http.get('/api/v1/forms/', { headers })
-      .then((response) => {
-        this.forms = []
-        response.data.data.forEach((form) => {
-          this.forms.push({
-            id: form.id,
-            label: form.name,
           })
         })
         this.$vs.loading.close()

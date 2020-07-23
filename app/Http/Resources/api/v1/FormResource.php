@@ -4,6 +4,8 @@ namespace App\Http\Resources\api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use App\FormStats as FormStats;
+
 class FormResource extends JsonResource
 {
     /**
@@ -22,12 +24,16 @@ class FormResource extends JsonResource
 
         $date_from = '';
         $date_to = '';
+        $stats = FormStats::where('form_id', $this->id);
         if (isset($params['filter_date_from'])) {
             $date_from = $params['filter_date_from'];
+            $stats = $stats->where('day', '>=', $params['filter_date_from']);
         }
         if (isset($params['filter_date_to'])) {
             $date_to = $params['filter_date_to'];
+            $stats = $stats->where('day', '<=', $params['filter_date_to']);
         }
+        $stats = $stats->orderBy('day', 'desc');
 
         return [
             'id' => $this->id,
@@ -66,6 +72,7 @@ class FormResource extends JsonResource
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
             'stats' => $this->getStats($date_from, $date_to),
+            'daily_stats' => $stats->get(),
             'notes' => $this->notes,
             'created_at' => $this->created_at,
             'archived' => $this->archived,
