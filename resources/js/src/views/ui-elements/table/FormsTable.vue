@@ -1225,6 +1225,8 @@ export default {
     applyFilters() {
       this.$vs.loading()
 
+      this.selected = []
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
@@ -1336,10 +1338,6 @@ export default {
       let maxNum = Math.min(this.maxChartLines, this.objects.length)
       if (maxNum == 0) {
         return
-      }
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
       // Chart X axis

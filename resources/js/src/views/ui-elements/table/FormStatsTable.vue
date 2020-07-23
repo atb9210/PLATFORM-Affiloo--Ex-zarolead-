@@ -16,6 +16,7 @@
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showNotes">Notes</vs-button> 
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshFormStats">Refresh</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart">Chart</vs-button> 
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -56,6 +57,10 @@
                     <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
                 </div>
             </div>
+        </div>
+
+        <div v-if="showChart">
+            <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
         </div>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -227,10 +232,12 @@
 
 <script>
 import vSelect from 'vue-select'
+import VueApexCharts from 'vue-apexcharts'
 
 export default {
   components: {
     'v-select': vSelect,
+    VueApexCharts,
   },
   props: {
     form_id: Number,
@@ -333,6 +340,33 @@ export default {
       editingNoteIndex: -1,
       editingNoteBody: '',
       creatingNoteBody: '',
+
+      showChart: false,
+      maxChartLines: 10,
+      themeColors: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+      lineAreaChartSpline: {
+        series: [],
+        chartOptions: {
+          chart: {
+            type: 'line',
+          },
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            curve: 'smooth'
+          },
+          colors: this.themeColors,
+          xaxis: {
+            categories: [],
+          },
+          tooltip: {
+            x: {
+              format: 'yyyy-MM-dd'
+            }
+          },
+        }
+      },
     }
   },
   watch: {
@@ -383,25 +417,6 @@ export default {
         .then((response) => {
           this.form = response.data.data
           this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-
-      // Retrieve form stats
-      this.$http.get('/api/v1/forms/' + this.form_id + '/stats', { headers })
-        .then((response) => {
-          this.objects = response.data.data
-          this.calculateStats()
-          this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -859,14 +874,17 @@ export default {
         date_from: '',
         date_to: '',
       }
-      this.applyFilters()
+      this.filterDatesShortcut('this_month')
     },
     applyFilters() {
       this.$vs.loading()
 
+      this.selected = []
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+
       let data = {}
       if (this.filters.date_from != '') {
         data['filter_date_from'] = this.filters.date_from
@@ -880,8 +898,12 @@ export default {
         .then((response) => {
           this.objects = response.data.data
           this.calculateStats()
+
+          // TODO: to delete
+          console.log("loading chart...")
+
+          this.loadChart()
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -1069,34 +1091,90 @@ export default {
         })
     },
     refreshFormStats() {
-      this.$vs.loading()
+      this.applyFilters()
+    },
+    loadChart() {
+      // Chart X axis
+      let dateObj = new Date()
+      let startDay = new Date(this.filters.date_from)
+      let endDay = new Date(this.filters.date_to)
 
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      let diffTime = Math.abs(endDay - startDay);
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      let numDots = diffDays + 1
+
+      let currentDay = new Date(this.filters.date_from)
+      let categories = []
+      for(let i = 0; i < numDots; i++) {
+        categories.push(this.formatDate(currentDay))
+        currentDay.setDate(currentDay.getDate() + 1)
+      }
+      this.lineAreaChartSpline.chartOptions = {
+        chart: {
+          type: 'line',
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        colors: this.themeColors,
+        xaxis: {
+          categories: categories,
+        },
+        tooltip: {
+          x: {
+            format: 'yyyy-MM-dd'
+          }
+        },
       }
 
-      // Retrieve form stats
-      this.$http.get('/api/v1/forms/' + this.form_id + '/stats', { headers })
-        .then((response) => {
-          this.objects = response.data.data
-          this.calculateStats()
-          this.$vs.loading.close()
-          console.log(this.objects)
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      // Retrieve forms' stats and set chart Y axis
+      this.lineAreaChartSpline.series = []
+      let series = []
+
+      let stats = this.objects
+
+      // Calculate CPV and EPV
+      let cpv_values = []
+      let epv_values = []
+      for(let j = 0; j < numDots; j++) {
+        cpv_values.push(0)
+        epv_values.push(0)
+      }
+      for(let j = 0; j < stats.length; j++) {
+        let stat = stats[j]
+
+        let cpv = 0
+        let epv = 0
+        let ratio = 0
+
+        cpv = parseFloat((stat.visits == 0) ? stat.total_cost : stat.total_cost/stat.visits)
+        epv = parseFloat((stat.visits == 0) ? stat.total_commission : stat.total_commission/stat.visits)
+
+        let index = categories.indexOf(stat.day)
+
+        if (index >= 0) {
+          cpv_values[index] = cpv
+          epv_values[index] = epv
+        }
+      }
+
+      series.push({
+        name: "cpv",
+        data: cpv_values,
+      })
+      series.push({
+        name: "epv",
+        data: epv_values,
+      })
+      this.lineAreaChartSpline.series = series
     },
   },
   created() {
     this.retrieveObjects()
+    this.resetFilters()
   },
   mounted () {
   }
