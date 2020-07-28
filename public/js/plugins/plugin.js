@@ -20,7 +20,9 @@ function PluginManager() {
 }
 
 PluginManager.prototype.add = function(plugin, data) {
-    if(plugin == "facebook") {
+    if(plugin == "thankyou_redirect") {
+        this.plugins.push(new ThankyouRedirectPlugin(data));
+    } else if(plugin == "facebook") {
         this.plugins.push(new FacebookPlugin(data));
     } else if(plugin == "zeustrack") {
         this.plugins.push(new ZeusTrackPlugin(data));
@@ -36,6 +38,12 @@ PluginManager.prototype.onVisit = function() {
 PluginManager.prototype.onSubmit = function() {
     for (var i = 0; i < this.plugins.length; i++) {
         this.plugins[i].onSubmit();
+    }
+}
+
+PluginManager.prototype.afterSubmit = function() {
+    for (var i = 0; i < this.plugins.length; i++) {
+        this.plugins[i].afterSubmit();
     }
 }
 

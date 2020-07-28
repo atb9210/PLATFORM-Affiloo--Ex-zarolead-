@@ -115,6 +115,23 @@
           <form data-vv-scope="step-4">
           <div class="vx-row">
             <div class="vx-col w-full mt-5">
+              <div class="mb-2">Thank You Page URL Redirect</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['thankyou_redirect'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  type="url"
+                  class="w-full"
+                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  v-model="plugins['thankyou_redirect'].url"
+                  placeholder="http://..."
+                />
+              </vx-input-group>
+            </div>
+            <div class="vx-col w-full mt-5">
               <div class="mb-2">Facebook Pixel</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
@@ -297,6 +314,10 @@ export default {
       upsellQuantity: '1',
 
       plugins: {
+        'thankyou_redirect': {
+          enabled: false,
+          url: '',
+        },
         'facebook': {
           enabled: false,
           pixel: '',

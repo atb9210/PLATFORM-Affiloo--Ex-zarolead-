@@ -49,6 +49,10 @@ ZeusTrackPlugin.prototype.onSubmit = function() {
     $("#trackerClick").attr("src", offer_url);
 }
 
+ZeusTrackPlugin.prototype.afterSubmit = function() {
+    console.log("ZeusTrackPlugin afterSubmit");
+}
+
 ZeusTrackPlugin.prototype.onRedirect = function() {
     console.log("ZeusTrackPlugin onRedirect");
 }

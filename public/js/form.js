@@ -318,6 +318,12 @@ Form.prototype.onSubmit = function(step) {
                 // TODO: Maybe this should be before ajax call?
                 this.pluginManager.onSubmit();
 
+                // TODO:
+                // NOTE: I put this here because I needed the thankyou_redirect plugin to be last
+                // one called, because it will redirect to a thankyou page after all the other plugins
+                // have been called
+                this.pluginManager.afterSubmit();
+
                 // Show thank you page
                 //var thankyou_page = $('#thankyou_page').val();
                 //window.location.replace(thankyou_page);

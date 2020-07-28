@@ -32,6 +32,10 @@ FacebookPlugin.prototype.onSubmit = function() {
     this.fbPurchase();
 }
 
+FacebookPlugin.prototype.afterSubmit = function() {
+    console.log("FacebookPlugin afterSubmit");
+}
+
 FacebookPlugin.prototype.onRedirect = function() {
 }
 
