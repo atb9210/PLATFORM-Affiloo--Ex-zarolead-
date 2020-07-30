@@ -212,6 +212,7 @@ class OrderController extends Controller
      * @bodyParam name string Customer's name
      * @bodyParam phone string Customer's phone number
      * @bodyParam address string Customer's address
+     * @bodyParam address string Customer's email
      * @bodyParam product_id int Order's product id
      * @bodyParam quantity string Quantity
      * @bodyParam commission float Commission
@@ -226,14 +227,13 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
 
-        $this->authorize('update', $order);
-
         // Params validation
         $params = $request->validate([
             'order_status_id' => 'nullable|int|min:1|exists:order_statuses,id',
             'name' => 'nullable|string|min:3',
             'phone' => 'nullable|string|min:3',
             'address' => 'nullable|string|min:3',
+            'email' => 'nullable|email|min:3',
             'product_id' => 'nullable|integer|min:1|exists:products,id',
             'quantity' => 'nullable|string|min:1',
             'commission' => 'nullable|numeric|min:1',

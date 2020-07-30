@@ -19,6 +19,8 @@ class CreateOrdersTable extends Migration
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
+            $table->string('email')->nullable();
+            $table->json('info')->nullable();
             $table->bigInteger('product_id')->unsigned();
             $table->string('quantity')->nullable();
 			$table->decimal('commission', 9, 2)->default(0.0);

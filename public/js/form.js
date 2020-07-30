@@ -11,6 +11,8 @@ function Form(id, debug = false, beta = false) {
     this.FORM_ID = 0;
     this.API_URL = '';
 
+    this.order = {};
+
     this.sendingForm = false;
     this.input = [];
     this.quantity = {};
@@ -79,6 +81,10 @@ Form.prototype.initialize = function() {
             this.onSubmit(2);
         }.bind(this));
     }
+
+    $("#submit-button3").on('click', function() {
+        this.signupNewsletter();
+    }.bind(this));
 
     // Input values
     $('#form_id').val(this.FORM_ID);
@@ -312,8 +318,11 @@ Form.prototype.onSubmit = function(step) {
             data: data,
             success: function(data) {
                 console.log("[+] STORED IN TRACKER DATABASE");
-
                 console.log(data);
+
+                // Store the order's info
+                this.order = data.data;
+
 
                 // TODO: Maybe this should be before ajax call?
                 this.pluginManager.onSubmit();
@@ -339,7 +348,7 @@ Form.prototype.onSubmit = function(step) {
                 this.sendingForm = false;
             }.bind(this),
             error: function(data) {
-                console.log("[!] ERROR: NOT STORED IN TRACKED DATABASE");
+                console.log("[!] ERROR: NOT STORED IN TRACKER DATABASE");
                 console.log(data);
                 $("#submit-button").removeAttr("disabled");
                 alert("Errore ordine!");
@@ -367,6 +376,35 @@ Form.prototype.getUrlParameter = function(sParam) {
 Form.prototype.attachPluginManager = function(pluginManager) {
     this.pluginManager = pluginManager;
     console.log("[i] PLUGIN MANAGER ATTACHED");
+}
+
+Form.prototype.signupNewsletter = function() {
+    this.inputClearErrors('newsletterEmail');
+
+    var data = {
+        email: $("#newsletter-email").val()
+    };
+    $.ajax({
+        url: this.API_URL + 'orders/' + this.order.id,
+        method: "PUT",
+        dataType: "json",
+        data: data,
+        success: function(data) {
+            console.log("[+] CUSTOMER'S EMAIL STORED");
+            console.log(data);
+
+            $("#type-email").css("display", "none");
+            $("#email-success").css("display", "block");
+        }.bind(this),
+        error: function(data) {
+            console.log("[!] ERROR: CUSTOMER'S EMAIL NOT STORED");
+            console.log(data);
+
+            data = data.responseJSON;
+
+            this.inputSetError('newsletterEmail', data.errors.email);
+        }.bind(this)
+    });
 }
 
 var this_js_script = $('#form-js');

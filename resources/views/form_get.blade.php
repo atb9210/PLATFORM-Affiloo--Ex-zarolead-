@@ -71,6 +71,8 @@ body {
 </style>
 
 <div id="formContainer">
+
+    <!-- Order form page -->
 	<form id="mainForm" method="post" target="dummyframe" action="" accept-charset="utf-8" role="form">
    
 		<!-- Backend -->
@@ -105,6 +107,8 @@ body {
         </div>
 		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form">Conferma l'Ordine</button>
 	</form>
+
+    <!-- Upsell page -->
 	<div id="mainForm2" style="display: none; padding-bottom: 15px; height: 100%;">
 		<div style="background-color: black; padding: 10px;">
 			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px;">
@@ -143,6 +147,8 @@ body {
 		<button id="submit-button2-ok" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-top: 1em; margin-bottom: 1em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;Ricevi offerta</button>
 		<button id="submit-button2-no" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-bottom: 3em; border: 1px solid #e0e0e0; font-size: 20px; padding: 10px; width: 80%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #888888; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;No grazie</button>
 	</div>
+
+    <!-- Thankyou page -->
 	<div id="thankyou-page" style="display: none; height: 100%;">
 		<div style="text-align: center; padding: 15px;">
 			<img class="img" src="{{ asset('images/order-confirmed.jpg') }}" style="width: 50%;">
@@ -156,8 +162,27 @@ body {
 			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px; margin-bottom: 0px;">
 				<strong>Il Tuo Ordine è Stato Inviato Correttamente</strong>
 			</p>
+        </div>
+        <div>
+            <div id="type-email">
+                <p>Inserisci la tua email per ricevere informazioni riguardo al tuo ordine ed offerte speciali</p>
+                <div class="form-group">
+                    <label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Email</label>
+                    <input type="email" id="newsletter-email" placeholder="example@email.com" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="name" placeholder="" required="required"/>
+                    <span class="span-error" id="newsletterEmailError"></span>
+                </div>
+                <button id="submit-button3" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-top: 1em; margin-bottom: 1em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;Ricevi informazioni</button>
+            </div>
+            <div id="email-success" style="display: none;">
+                <div style="background-color: #3e9165; padding: 10px;">
+                    <p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px; margin-bottom: 0px;">
+                        <strong>Riceverai informazioni riguardo al tuo ordine per email</strong>
+                    </p>
+                </div>
+            </div>
 		</div>
 	</div>
+
 </div>
 
 <!-- jQuery -->

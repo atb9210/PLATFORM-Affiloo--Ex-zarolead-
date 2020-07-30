@@ -33,9 +33,10 @@ Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->mi
 
 /* Orders routes */
 Route::apiResource('orders', 'api\v1\OrderController')->except([
-    'create', 'edit', 'store',
+    'create', 'edit', 'store', 'update',
 ])->middleware('auth:api');
 Route::post('orders', 'api\v1\OrderController@store')->name('orders.store');
+Route::put('orders/{id}', 'api\v1\OrderController@update')->name('orders.update');
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
