@@ -30,7 +30,7 @@ class ProductPolicy
      */
     public function view(User $user, Product $product)
     {
-        return $user->hasPermission('product', 'viewAny');
+        return $user->hasPermission('product', 'viewAny') || ($user->id === $product->id && !$product->archived);
     }
 
     /**

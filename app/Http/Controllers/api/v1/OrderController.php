@@ -13,6 +13,7 @@ use App\Form;
 use App\FormStats;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
+use App\UserReport as UserReport;
 
 class OrderController extends Controller
 {
@@ -195,6 +196,13 @@ class OrderController extends Controller
             $formInfo['total_sub_commission'] += $sub_commission;
             $form->info = $formInfo;
             $form->save();
+
+            // Update user's report stats
+            $report = UserReport::getObject($form->user->id, $today);
+            $report->leads += 1;
+            $report->commission += $order->commission;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+            $report->save();
         }
 
         return response([

@@ -30,6 +30,10 @@ Route::apiResource('users', 'api\v1\UserController')->except([
 ])->middleware('auth:api');
 Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api')
     ->name('users.change-roles');
+Route::get('my-reports', 'api\v1\UserController@getReports')->middleware('auth:api')
+    ->name('users.reports.index');
+Route::put('my-reports', 'api\v1\UserController@updateReport')->middleware('auth:api')
+    ->name('users.reports.update');
 
 /* Orders routes */
 Route::apiResource('orders', 'api\v1\OrderController')->except([

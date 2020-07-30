@@ -70,6 +70,10 @@ class User extends Authenticatable {
         return $this->hasMany('App\Form');
     }
 
+    public function reports() {
+        return $this->hasMany('App\UserReport');
+    }
+
     public function roles() {
         return $this->belongsToMany('App\Role', 'role_user');
     }

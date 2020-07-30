@@ -30,8 +30,6 @@ class LandingController extends Controller
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
         ]);
 
-        $this->authorize('viewAny', 'App\Landing');
-
         $landings = Landing::query();
         $landings = $landings->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Landing')) {

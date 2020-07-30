@@ -15,6 +15,7 @@ class CreateProductsTable extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned();
             $table->string('name');
             $table->bigInteger('tag_id')->unsigned();
             $table->bigInteger('advertiser_id')->unsigned();
@@ -22,6 +23,7 @@ class CreateProductsTable extends Migration
             $table->timestamps();
             $table->boolean('archived')->default(0);
 
+			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('tag_id')->references('id')->on('tags');
 			$table->foreign('advertiser_id')->references('id')->on('advertisers');
         });

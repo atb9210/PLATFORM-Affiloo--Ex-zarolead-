@@ -1460,6 +1460,24 @@ const router = new Router({
         },
 
         // =============================================================================
+        // USER REPORTS ROUTES
+        // =============================================================================
+        {
+          path: '/dashboard/my-reports',
+          name: 'my-reports',
+          component: () => import('./views/UserReports.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'My Reports', active: true }
+            ],
+            pageTitle: 'My Reports',
+            rule: 'editor'
+          }
+        },
+
+        // =============================================================================
         // REPORTS ROUTES
         // =============================================================================
         {

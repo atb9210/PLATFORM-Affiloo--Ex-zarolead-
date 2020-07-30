@@ -125,6 +125,13 @@ export default [
         i18n: 'Landings'
       },
       {
+        url: '/dashboard/my-reports',
+        name: 'My Reports',
+        slug: 'my-reports',
+        icon: 'PieChartIcon',
+        i18n: 'My Reports'
+      },
+      {
         url: null,
         name: 'Reports',
         icon: 'BarChart2Icon',

@@ -11,7 +11,7 @@ class Product extends Model {
      * @var array
      */
     protected $fillable = [
-        'name', 'tag_id', 'advertiser_id', 'country',
+        'user_id', 'name', 'tag_id', 'advertiser_id', 'country',
     ];
 
 	public function advertiser() {

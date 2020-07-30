@@ -16,6 +16,7 @@ use App\FormNote as FormNote;
 use App\Network as Network;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
+use App\UserReport as UserReport;
 
 class FormController extends Controller
 {
@@ -339,6 +340,12 @@ class FormController extends Controller
 
         $form->save();
         $stats->save();
+
+        // Update user's report stats
+        $report = UserReport::getObject($form->user->id, $stats->day);
+        $report->cost = $stats->total_cost;
+        $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+        $report->save();
 
         return new FormStatsResource($stats);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use App\Product as Product;
 use App\Http\Resources\api\v1\ProductResource;
@@ -19,7 +20,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', 'App\Product');
+        $products = Product::query();
+        if (!Auth::user()->can('viewAny', 'App\Product')) {
+            $products = $products->where('user_id', Auth::user()->id);
+        }
 
         return ProductResource::collection(Product::where('archived', 0)->get());
     }
@@ -71,6 +75,7 @@ class ProductController extends Controller
             'advertiser_id' => 'required|integer|exists:advertisers,id',
             'country' => 'string|min:1',
         ]);
+        $params['user_id'] = Auth::user()->id;
 
         $product = Product::create($params);
 
