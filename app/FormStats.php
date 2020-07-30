@@ -47,5 +47,4 @@ class FormStats extends Model
 
     	return $stats;
     }
-
 }

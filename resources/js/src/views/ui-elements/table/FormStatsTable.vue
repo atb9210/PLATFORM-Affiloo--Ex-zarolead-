@@ -169,7 +169,8 @@
                     € {{total_stats.total_cost}}
                 </vs-td>
                 <vs-td>
-                    € {{total_stats.total_commission}}</vs-td>
+                    € {{total_stats.total_commission}}
+                </vs-td>
                 <vs-td>
                     <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
                 </vs-td>

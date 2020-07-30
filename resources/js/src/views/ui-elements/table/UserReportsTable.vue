@@ -108,11 +108,12 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].extra_cost">
-                        {{data[indextr].extra_cost}} €
+                        <vs-input v-if="isEditingCost && editingObjectId == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <span v-else>{{data[indextr].extra_cost}} € <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].profit">
-                        {{data[indextr].profit}} €
+                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
                     <vs-td>
@@ -162,6 +163,8 @@ export default {
       editingObjectId: -1,
       editingObject: null,
       notes: '',
+      isEditingCost: false,
+      editingCostValue: 0,
     }
   },
   computed: {
@@ -313,7 +316,7 @@ export default {
       this.$http.put('/api/v1/my-reports', data, { headers })
         .then((response) => {
           let index = this.getObjectIndexById(this.editingObjectId)
-          this.objects[index] = response.data.data
+          this.objects[index].notes = this.notes
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Success',
@@ -336,6 +339,51 @@ export default {
     },
     editNoteCancel() {
       this.notes = this.editingObject.notes
+    },
+    showEditCostInput(id) {
+      let index = this.getObjectIndexById(id)
+
+      this.isEditingCost = true
+      this.editingCostValue = this.objects[index].extra_cost
+      this.editingObjectId = id
+      this.editingObject = this.objects[index]
+    },
+    editCost() {
+      this.$vs.loading()
+
+      let index = this.getObjectIndexById(this.editingObjectId)
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        day: this.editingObject.day,
+        extra_cost: this.editingCostValue,
+      }
+      this.$http.put('/api/v1/my-reports', data, { headers })
+        .then((response) => {
+          this.objects[index].extra_cost = this.editingCostValue
+          this.objects[index].profit = response.data.data.profit
+          this.isEditingCost = false
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Total cost updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
   },
   created() {

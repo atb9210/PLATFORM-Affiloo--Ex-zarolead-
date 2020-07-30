@@ -206,6 +206,10 @@ class UserController extends Controller
         $report = UserReport::getObject(Auth::user()->id, $data['day']);
         $report->update($data);
 
+        // Update report stats
+        $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+        $report->save();
+
         return new UserReportResource($report);
     }
 }

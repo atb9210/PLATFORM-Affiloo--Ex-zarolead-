@@ -143,6 +143,12 @@ export default [
             slug: 'report-users',
             i18n: 'Users'
           },
+          {
+            url: '/dashboard/reports/mediabuyers',
+            name: 'Mediabuyers',
+            slug: 'report-mediabuyers',
+            i18n: 'Mediabuyers'
+          },
           /*
           {
             url: '/dashboard/reports/affiliates',
@@ -155,12 +161,6 @@ export default [
             name: 'Advertisers',
             slug: 'report-advertisers',
             i18n: 'Advertisers'
-          },
-          {
-            url: '/dashboard/reports/mediabuyers',
-            name: 'Mediabuyers',
-            slug: 'report-mediabuyers',
-            i18n: 'Mediabuyers'
           },
           */
           {

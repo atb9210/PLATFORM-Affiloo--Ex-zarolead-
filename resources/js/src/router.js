@@ -1460,7 +1460,7 @@ const router = new Router({
         },
 
         // =============================================================================
-        // USER REPORTS ROUTES
+        // MY REPORTS
         // =============================================================================
         {
           path: '/dashboard/my-reports',
@@ -1494,6 +1494,20 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/reports/mediabuyers',
+          name: 'report-mediabuyers',
+          component: () => import('./views/ReportMediabuyers.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Mediabuyers', active: true }
+            ],
+            pageTitle: 'Report Mediabuyers',
+            rule: 'editor'
+          }
+        },
         /*
         {
           path: '/dashboard/reports/affiliates',
@@ -1520,20 +1534,6 @@ const router = new Router({
               { title: 'Report Advertisers', active: true }
             ],
             pageTitle: 'Report Advertisers',
-            rule: 'editor'
-          }
-        },
-        {
-          path: '/dashboard/reports/mediabuyers',
-          name: 'report-mediabuyers',
-          component: () => import('./views/ReportMediabuyers.vue'),
-          meta: {
-            authRequired: true,
-            breadcrumb: [
-              { title: 'Home', url: '/' },
-              { title: 'Report Mediabuyers', active: true }
-            ],
-            pageTitle: 'Report Mediabuyers',
             rule: 'editor'
           }
         },

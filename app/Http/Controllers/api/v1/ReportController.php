@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Order as Order;
 use App\User as User;
+use App\UserReport as UserReport;
+use App\Http\Resources\api\v1\UserReportResource;
 
 class ReportController extends Controller
 {
@@ -39,6 +41,7 @@ class ReportController extends Controller
             'filter_role' => 'integer|exists:roles,id',
         ]);
 
+        /*
         // Retrieve orders
         $orders = Order::query();
         $orders = $orders->where('archived', 0);
@@ -87,6 +90,61 @@ class ReportController extends Controller
 
         return response([
             'data' => $reports
+        ]);
+        */
+
+        $reports = UserReport::query();
+        if (isset($params['filter_date_from'])) {
+            $reports = $reports->where('day', '>=', $params['filter_date_from']);
+        }
+        if (isset($params['filter_date_to'])) {
+            $reports = $reports->where('day', '<=', $params['filter_date_to']);
+        }
+        if (isset($params['filter_user'])) {
+            $reports = $reports->where('user_id', $params['filter_user']);
+        }
+        if (isset($params['filter_role'])) {
+            $reports = $reports->join('role_user', 'role_user.user_id', '=', 'user_reports.user_id')
+                ->where('role_user.role_id', $params['filter_role']);
+        }
+
+        // Calculate report for each user
+        $toReturn = [];
+        $lookupTable = []; // Email => toReturn array index
+        foreach ($reports->get() as $report) {
+            $user = $report->user;
+            if (!array_key_exists($user->email, $lookupTable)) {
+                $lookupTable[$user->email] = count($toReturn);
+                $toReturn[] = [
+                    'user' => [
+                        'id' => $user->id,
+                        'email' => $user->email,
+                    ],
+                    'leads' => 0,
+                    'commission' => 0.0,
+                    'cost' => 0.0,
+                    'extra_cost' => 0.0,
+                    'profit' => 0.0,
+                ];
+            }
+            $index = $lookupTable[$user->email];
+            $toReturn[$index]['leads'] += $report->leads;
+            $toReturn[$index]['commission'] += (float)$report->commission;
+            $toReturn[$index]['cost'] += (float)$report->cost;
+            $toReturn[$index]['extra_cost'] += (float)$report->extra_cost;
+            $toReturn[$index]['profit'] += (float)$report->profit;
+        }
+
+        // Format currencies (2 decimal digits)
+        for ($i = 0; $i < count($toReturn); $i++) {
+            $toReturn[$i]['commission'] = round($toReturn[$i]['commission'], 2);
+            $toReturn[$i]['cost'] = round($toReturn[$i]['cost'], 2);
+            $toReturn[$i]['extra_cost'] = round($toReturn[$i]['extra_cost'], 2);
+            $toReturn[$i]['profit'] = round($toReturn[$i]['profit'], 2);
+        }
+
+        return response([
+            'data' => $toReturn
         ]);
     }
 
