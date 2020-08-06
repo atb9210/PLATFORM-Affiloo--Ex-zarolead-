@@ -1157,8 +1157,8 @@ export default {
         let index = categories.indexOf(stat.day)
 
         if (index >= 0) {
-          cpv_values[index] = cpv
-          epv_values[index] = epv
+          cpv_values[index] = cpv.toFixed(2)
+          epv_values[index] = epv.toFixed(2)
         }
       }
 

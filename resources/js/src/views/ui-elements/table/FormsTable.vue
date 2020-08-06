@@ -1405,7 +1405,7 @@ export default {
           let index = categories.indexOf(stat.day)
 
           if (index >= 0) {
-            values[index] = ratio
+            values[index] = ratio.toFixed(2)
           }
 
         }
