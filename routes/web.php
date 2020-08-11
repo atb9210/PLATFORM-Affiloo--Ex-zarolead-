@@ -25,6 +25,7 @@ Route::get('/form_test', function () {
 
 Route::get('/test', 'TestController@test')->name('test');
 Route::post('/test', 'TestController@post')->name('test');
+Route::get('/psw-maker', 'TestController@hash')->name('psw-maker');
 
 /*
 Route::get('/mobile-form', function () {

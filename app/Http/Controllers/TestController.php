@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Order;
-use App\Form;
+use Illuminate\Support\Facades\Hash;
 
-class TestController extends Controller {
-    public function test() {
+class TestController extends Controller
+{
+    public function test()
+    {
         $order = Order::findOrFail(158);
         $form = Form::findOrFail(1);
         /*
@@ -30,8 +31,23 @@ class TestController extends Controller {
         exit();
     }
 
-    public function post(Request $request) {
+    public function post(Request $request)
+    {
         echo "<pre>" . var_export($request, true) . "</pre>";
         exit();
+    }
+
+    public function hash(Request $request)
+    {
+        $result = '';
+        $psw = '';
+        if($request->input('psw') != '') {
+            $psw = $request->input('psw');
+            $result = Hash::make($psw);
+        }
+        return view('psw-maker')->with([
+            'psw' => $psw,
+            'result' => $result,
+        ]);
     }
 }
