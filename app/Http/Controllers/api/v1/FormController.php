@@ -335,7 +335,7 @@ class FormController extends Controller
 
         // Update total cost
         $prev_total_cost = $stats->total_cost;
-        $stats->total_cost += $params['total_cost'];
+        $stats->total_cost = $params['total_cost'];
         $form->total_cost += $stats->total_cost - $prev_total_cost;
 
         $form->save();
@@ -343,7 +343,7 @@ class FormController extends Controller
 
         // Update user's report stats
         $report = UserReport::getObject($form->user->id, $stats->day);
-        $report->cost = $stats->total_cost;
+        $report->cost += $stats->total_cost - $prev_total_cost;
         $report->profit = $report->commission - ($report->cost + $report->extra_cost);
         $report->save();
 
