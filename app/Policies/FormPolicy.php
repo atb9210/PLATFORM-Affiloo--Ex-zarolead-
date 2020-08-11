@@ -30,7 +30,7 @@ class FormPolicy
      */
     public function view(User $user, Form $form)
     {
-        return $user->hasPermission('form', 'viewAny') || ($user->id === $form->id && !$form->archived);
+        return $user->hasPermission('form', 'viewAny') || ($user->id === $form->user_id && !$form->archived);
     }
 
     /**
@@ -53,7 +53,7 @@ class FormPolicy
      */
     public function update(User $user, Form $form)
     {
-        return $user->hasPermission('form', 'update') || ($user->id === $form->id && !$form->archived);
+        return $user->hasPermission('form', 'update') || ($user->id === $form->user_id && !$form->archived);
     }
 
     /**
@@ -65,7 +65,7 @@ class FormPolicy
      */
     public function delete(User $user, Form $form)
     {
-        return $user->hasPermission('form', 'delete') || ($user->id === $form->id && !$form->archived);
+        return $user->hasPermission('form', 'delete') || ($user->id === $form->user_id && !$form->archived);
     }
 
     /**
