@@ -36,26 +36,38 @@ class CreateRolesTable extends Migration
             [
                 "name" => "mediabuyer",
                 "permissions" => [
-                    "orders" => [
+                    "order" => [
                         "*" => true,
                     ],
-                    "products" => [
+                    "product" => [
                         "viewAny" => false,
                         "create" => true,
                         "update" => true,
                         "delete" => true,
                     ],
-                    "forms" => [
+                    "form" => [
                         "viewAny" => false,
                         "create" => true,
                         "update" => true,
                         "delete" => true,
                     ],
-                    "landings" => [
+                    "landing" => [
                         "viewAny" => false,
                         "create" => true,
                         "update" => true,
                         "delete" => true,
+                    ],
+                    "tag" => [
+                        "viewAny" => true,
+                    ],
+                    "traffic_source" => [
+                        "viewAny" => true,
+                    ],
+                    "campaign" => [
+                        "viewAny" => true,
+                    ],
+                    "network" => [
+                        "viewAny" => true,
                     ],
                 ],
             ],
