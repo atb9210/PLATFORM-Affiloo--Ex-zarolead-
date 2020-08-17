@@ -11,19 +11,11 @@ class Landing extends Model {
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'campaign_id', 'form_id', 'tag_id', 'url', 'country'
+        'user_id', 'name', 'form_id', 'url', 'country'
     ];
-
-    public function campaign() {
-        return $this->belongsTo('App\Campaign', 'campaign_id');
-    }
 
 	public function form() {
 		return $this->belongsTo('App\Form', 'form_id');
-	}
-
-    public function tag() {
-		return $this->belongsTo('App\Tag', 'tag_id');
 	}
 
     public function stats() {

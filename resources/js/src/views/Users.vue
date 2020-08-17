@@ -54,7 +54,6 @@ export default{
         u.updated_at = user.updated_at
         this.usersAdjusted.push(u)
       })
-      console.log(this.usersAdjusted)
     },
   },
   created() {
@@ -68,7 +67,6 @@ export default{
       })
       .catch((error) => {
         this.$vs.loading.close()
-        console.log(error);
       })
   }
 }

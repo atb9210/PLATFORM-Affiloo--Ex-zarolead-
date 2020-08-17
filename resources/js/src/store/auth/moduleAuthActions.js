@@ -365,8 +365,6 @@ export default {
           localStorage.setItem('accessToken', response.data.token.access_token)
           localStorage.setItem('tokenExpiry', expDate)
           localStorage.setItem('loggedIn', 'true')
-          console.log('asd: ' + localStorage.getItem('tokenExpiry'))
-          console.log('asd: ' + localStorage.getItem('loggedIn'))
 
           // Update user details
           commit('UPDATE_USER_INFO', response.data.user, {root: true})

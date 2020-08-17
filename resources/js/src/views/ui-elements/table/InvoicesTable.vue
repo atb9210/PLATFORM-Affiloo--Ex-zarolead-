@@ -12,10 +12,10 @@
     <vx-card title="Invoices" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
-            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-upload-cloud" @click="showForm('create')">Upload invoices</vs-button> 
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" :disabled="selected.length == 0" @click="downloadInvoicesZip">Download invoices (ZIP)</vs-button> 
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="">Delete</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button>
+            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-upload-cloud" @click="showForm('create')">Upload invoices</vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" :disabled="selected.length == 0" @click="downloadInvoicesZip">Download invoices (ZIP)</vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="">Delete</vs-button>
         </p>
 
         <p class="flex items-center mb-4">

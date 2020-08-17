@@ -140,20 +140,27 @@ class FormController extends Controller
         // Generate HTML
         $params['form_id'] = $form->id;
         $params['network'] = $form->network->name;
-        //$output = Form::generateHTML($params);
+
+        $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . route('forms.get', ['id' => $form->id]) . '"></iframe>' . PHP_EOL;
+        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
+        $form_html .= "document.addEventListener(\"DOMContentLoaded\", function(event) {" . PHP_EOL;
+        $form_html .= "var loc = window.location.toString(), params = '', iframe_id = 'buy-frame';" . PHP_EOL;
+        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "params = loc.split('?')[1]," . PHP_EOL;
+        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
+        $form_html .= "iframe_src_url = iframe.src;" . PHP_EOL;
+        $form_html .= "separator = '?';" . PHP_EOL;
+        $form_html .= "if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "separator = '&';" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "iframe.src = iframe_src_url + separator + params;" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "});" . PHP_EOL;
+        $form_html .= "</script>" . PHP_EOL;
+
         $output = [
-            'form_html' => '<iframe width="100%" height="500px" src="' . route('forms.get', ['id' => $form->id]) . '"></iframe>',
+            'form_html' => $form_html,
         ];
-
-        /*
-        if (!$output['error']) {
-            $form->info = $output['info'];
-
-            $form->save();
-        } else {
-            $form->delete();
-        }
-        */
 
         return response([
             "message" => "Form created",
@@ -161,8 +168,6 @@ class FormController extends Controller
             "html" => $output['form_html'],
         ], 201);
     }
-
-
 
     /**
      * Update the form's fields.
@@ -413,48 +418,50 @@ class FormController extends Controller
      *
      * @urlParam id int required Form's id
      *
+     * @bodyParam landing_id int Landing id
+     *
      * @response {
      *  "data": code
      * }
      */
-    public function code($id)
+    public function code($id, Request $request)
     {
         $form = Form::findOrFail($id);
         $this->authorize('view', $form);
 
-        return response([
-            'data' => '<iframe width="100%" height="500px" src="' . route('forms.get', ['id' => $id]) . '"></iframe>'
+        // Param validation
+        $params = $request->validate([
+            'landing_id' => 'integer|exists:landings,id',
         ]);
 
-        // @TODO: to delete
-        /*
-        $params = [
-            'name' => $form->name,
-            'campaign_id' => $form->campaign_id,
-            'network_id' => $form->network_id,
-            'product_id' => $form->product_id,
-            'quantity' => $form->quantity,
-            'price' => $form->price,
-            'commission' => $form->commission,
-            'sub_commission' => $form->sub_commission,
-            'traffic_source_id' => $form->traffic_source_id,
-            'network_params' => json_decode(json_encode($form->network_params), TRUE),
-            'user_id' => $form->user_id,
-            'form_id' => $form->id,
-            'network' => $form->network->name,
-        ];
-
-        $output = $form->generateHTML($params);
-        if ($output['error']) {
-            return response([
-                "message" => "Unexpected error in generating form code"
-            ], 500);
+        $form_url = route('forms.get', ['id' => $form->id]);
+        if (isset($params['landing_id'])) {
+            $landing = Landing::findOrFail($params['landing_id']);
+            if ($landing->form_id === $form->id) {
+                $form_url .= '?landing=' . $landing->id;
+            }
         }
 
+        $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . $form_url . '"></iframe>' . PHP_EOL;
+        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
+        $form_html .= "document.addEventListener(\"DOMContentLoaded\", function(event) {" . PHP_EOL;
+        $form_html .= "var loc = window.location.toString(), params = '', iframe_id = 'buy-frame';" . PHP_EOL;
+        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "params = loc.split('?')[1]," . PHP_EOL;
+        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
+        $form_html .= "iframe_src_url = iframe.src;" . PHP_EOL;
+        $form_html .= "separator = '?';" . PHP_EOL;
+        $form_html .= "if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "separator = '&';" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "iframe.src = iframe_src_url + separator + params;" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "});" . PHP_EOL;
+        $form_html .= "</script>" . PHP_EOL;
+
         return response([
-            'data' => $output['form_html']
+            'data' => $form_html,
         ]);
-        */
     }
 
     /**
@@ -642,5 +649,58 @@ class FormController extends Controller
         return response([
             'message' => 'Form\'s note has been deleted'
         ]);
+    }
+
+    /**
+     * Clone a form.
+     *
+     * @urlParam form_id integer required Form's name
+     *
+     * @response 201 {
+     *  "message": "Form created",
+     *  "data": [form],
+     * }
+     */
+    public function clone(Request $request)
+    {
+        $this->authorize('create', 'App\Form');
+
+        // Params validation
+        $params = $request->validate([
+            'form_id' => 'required|integer|exists:forms,id',
+        ]);
+
+        $form = Form::findOrFail($params['form_id']);
+        $this->authorize('view', $form);
+
+        $newForm = $form->replicate();
+        $newForm->push();
+
+        $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . route('forms.get', ['id' => $newForm->id]) . '"></iframe>' . PHP_EOL;
+        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
+        $form_html .= "document.addEventListener(\"DOMContentLoaded\", function(event) {" . PHP_EOL;
+        $form_html .= "var loc = window.location.toString(), params = '', iframe_id = 'buy-frame';" . PHP_EOL;
+        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "params = loc.split('?')[1]," . PHP_EOL;
+        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
+        $form_html .= "iframe_src_url = iframe.src;" . PHP_EOL;
+        $form_html .= "separator = '?';" . PHP_EOL;
+        $form_html .= "if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "separator = '&';" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "iframe.src = iframe_src_url + separator + params;" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "});" . PHP_EOL;
+        $form_html .= "</script>" . PHP_EOL;
+
+        $output = [
+            'form_html' => $form_html,
+        ];
+
+        return response([
+            "message" => "Form created",
+            "data" => new FormResource($newForm),
+            "html" => $output['form_html'],
+        ], 201);
     }
 }

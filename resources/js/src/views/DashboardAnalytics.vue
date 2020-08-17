@@ -313,7 +313,6 @@ export default {
   },
   created () {
     // Fetch orders
-    console.log("Token: " + localStorage.getItem('accessToken'))
     this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
       .then((response) => { this.orders = response.data })
 

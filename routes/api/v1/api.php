@@ -73,6 +73,8 @@ Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware(
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('forms/{id}/clone', 'api\v1\FormController@clone')->middleware('auth:api')
+    ->name('forms.clone');
 Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
 Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
     ->name('forms.code');

@@ -9,10 +9,7 @@
 
 
 <template>
-  <vx-card title="Form wizard with validation" code-toggler>
-
-    <p>Build a form the easiest way. You can see all your forms in the Forms page</p>
-
+  <vx-card title="" code-toggler>
     <div class="mt-5">
       <form-wizard color="rgba(var(--vs-primary), 1)" errorColor="rgba(var(--vs-danger), 1)" :title="null" :subtitle="null" finishButtonText="Apply Changes">
         <!-- tab 1 content -->

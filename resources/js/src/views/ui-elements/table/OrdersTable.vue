@@ -12,8 +12,8 @@
     <vx-card title="Orders" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters">Filters</vs-button> 
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders">Delete</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -33,34 +33,26 @@
             </div>
 
             <div class="vx-row mb-2">
-                <div class="vx-col w-full">
+                <div class="vx-col w-1/2">
                     <label>From</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
                 </div>
-            </div>
-            <div class="vx-row mb-2">
-                <div class="vx-col w-full">
+                <div class="vx-col w-1/2">
                     <label>To</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
             </div>
             <div class="vx-row mb-2">
-                <div class="vx-col w-full">
+                <div class="vx-col w-1/2">
                     <label>Status</label>
                     <v-select :options="orderStatuses" v-model="filters.status" />
                 </div>
-            </div>
-            <div class="vx-row mb-2">
-                <div class="vx-col w-full">
+                <div class="vx-col w-1/2">
                     <label>Product</label>
                     <v-select :options="orderProducts" v-model="filters.product" />
                 </div>
             </div>
-            <div class="vx-row mb-6">
-                <div class="vx-col w-full">
-                </div>
-            </div>
-            <div class="vx-row">
+            <div class="vx-row mt-6">
                 <div class="vx-col w-full">
                     <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
                     <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>

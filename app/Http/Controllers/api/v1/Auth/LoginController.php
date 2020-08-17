@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Client;
 
 use App\User;
+use App\Http\Resources\api\v1\UserResource;
 
 class LoginController extends Controller
 {
@@ -64,7 +65,7 @@ class LoginController extends Controller
 
         // Generate access token
         return response([
-            'user' => Auth::user(),
+            'user' => new UserResource(Auth::user()),
             'token' => json_decode($result->getContent()),
         ]);
     }

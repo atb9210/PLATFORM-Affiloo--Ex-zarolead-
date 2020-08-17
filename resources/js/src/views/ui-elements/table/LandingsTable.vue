@@ -12,8 +12,8 @@
     <vx-card title="Landings" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')">Create new</vs-button> 
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected">Delete</vs-button> 
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -109,28 +109,10 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaign</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="campaigns" v-model="newObject['create'].campaign" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
                     <span>Form</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="forms" v-model="newObject['create'].form" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Tag</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="tags" v-model="newObject['create'].tag" />
                 </div>
             </div>
 
@@ -174,28 +156,10 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaign</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="campaigns" v-model="newObject['edit'].campaign" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
                     <span>Form</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="forms" v-model="newObject['edit'].form" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Tag</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="tags" v-model="newObject['edit'].tag" />
                 </div>
             </div>
 
@@ -249,17 +213,13 @@ export default {
       newObject: {
         'create': {
           name: '',
-          campaign: '',
           form: '',
-          tag: '',
           url: '',
           country: '',
         },
         'edit': {
           name: '',
-          campaign: '',
           form: '',
-          tag: '',
           url: '',
           country: '',
         },
@@ -377,9 +337,7 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
-        campaign: '',
         form: '',
-        tag: '',
         url: '',
         country: '',
       }
@@ -387,9 +345,7 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
-        && obj.campaign != '' && obj.campaign.id >= 1
         && obj.form != '' && obj.form.id >= 1
-        && obj.tag != '' && obj.tag.id >= 1
         && obj.url.length > 0)
     },
     createObject() {
@@ -401,9 +357,7 @@ export default {
 
       let data = {
         name: this.newObject['create'].name,
-        campaign_id: this.newObject['create'].campaign.id,
         form_id: this.newObject['create'].form.id,
-        tag_id: this.newObject['create'].tag.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
       }
@@ -438,17 +392,9 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
-        campaign: {
-          id: obj.campaign.id,
-          label: obj.campaign.name,
-        },
         form: {
           id: obj.form.id,
           label: obj.form.name,
-        },
-        tag: {
-          id: obj.tag.id,
-          label: obj.tag.name,
         },
         url: obj.url,
         country: obj.country,
@@ -468,9 +414,7 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
-        campaign_id: this.newObject['edit'].campaign.id,
         form_id: this.newObject['edit'].form.id,
-        tag_id: this.newObject['edit'].tag.id,
         url: this.newObject['edit'].url,
         country: this.newObject['edit'].country,
       }

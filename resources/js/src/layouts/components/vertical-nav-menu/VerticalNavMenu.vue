@@ -65,7 +65,7 @@
           <template v-for="(item, index) in menuItemsUpdated">
 
             <!-- Group Header -->
-            <span v-if="item.header && !verticalNavMenuItemsMin" class="navigation-header truncate" :key="`header-${index}`">
+            <span v-if="item.header && !verticalNavMenuItemsMin && hasRole(item)" class="navigation-header truncate" :key="`header-${index}`">
               {{ $t(item.i18n) || item.header }}
             </span>
             <!-- /Group Header -->
@@ -74,7 +74,7 @@
 
               <!-- Nav-Item -->
               <v-nav-menu-item
-                v-if="!item.submenu"
+                v-if="!item.submenu && hasRole(item)"
                 :key="`item-${index}`"
                 :index="index"
                 :to="item.slug !== 'external' ? item.url : null"
@@ -87,7 +87,7 @@
               </v-nav-menu-item>
 
               <!-- Nav-Group -->
-              <template v-else>
+              <template v-else-if="hasRole(item)">
                 <v-nav-menu-group
                   :key="`group-${index}`"
                   :openHover="openGroupHover"
@@ -332,7 +332,27 @@ export default {
     toggleReduce (val) {
       this.reduceButton = val
       this.setVerticalNavMenuWidth()
-    }
+    },
+    hasRole(item) {
+      let result = false
+      let userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      let userRoles = []
+      if (userInfo.hasOwnProperty('roles')) {
+        userRoles = userInfo.roles
+      }
+      let itemRoles = []
+      if (item.hasOwnProperty('roles')) {
+        itemRoles = item.roles
+      }
+
+      for (let i = 0; i < userRoles.length; i++) {
+        if (itemRoles.includes(userRoles[i])) {
+          result = true
+          break
+        }
+      }
+      return result
+    },
   },
   mounted () {
     this.setVerticalNavMenuWidth()

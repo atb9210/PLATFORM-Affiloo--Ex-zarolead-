@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
+use App\Form as Form;
 use App\Http\Resources\api\v1\LandingResource;
 
 class LandingController extends Controller
@@ -66,9 +67,7 @@ class LandingController extends Controller
      * Create a new landing.
      *
      * @bodyParam name string required Landing's name
-     * @bodyParam campaign_id int required Landing's campaign id
      * @bodyParam form_id int required Landing's form id
-     * @bodyParam tag_id int required Landing's tag id
      * @bodyParam url string required Landing's URL
      * @bodyParam country string Country
      *
@@ -84,9 +83,7 @@ class LandingController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
-            'campaign_id' => 'required|integer|exists:campaigns,id',
             'form_id' => 'required|integer|exists:forms,id',
-            'tag_id' => 'required|integer|exists:tags,id',
             'url' => 'required|url',
             'country' => 'string|min:1',
         ]);
@@ -106,9 +103,7 @@ class LandingController extends Controller
      * @urlParam id int required Landing's id
      *
      * @bodyParam name string Landing's name
-     * @bodyParam campaign_id int Landing's campaign id
      * @bodyParam form_id int Landing's form id
-     * @bodyParam tag_id int Landing's tag id
      * @bodyParam url string Landing's URL
      * @bodyParam country string Country
      *
@@ -130,9 +125,7 @@ class LandingController extends Controller
         // Param validation
         $params = $request->validate([
             'name' => 'string|min:3',
-            'campaign_id' => 'integer|exists:campaigns,id',
             'form_id' => 'integer|exists:forms,id',
-            'tag_id' => 'integer|exists:tags,id',
             'url' => 'url',
             'country' => 'string|min:1',
         ]);
