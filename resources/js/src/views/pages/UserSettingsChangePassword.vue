@@ -2,15 +2,15 @@
   <vx-card no-shadow>
 
     <div class="vx-col md:w-full w-full mt-base">
-        <vs-input class="w-full" label-placeholder="Old Password" v-model="old_password"></vs-input>
+        <vs-input type="password" class="w-full" label-placeholder="Old Password" v-model="old_password"></vs-input>
         <span class="text-danger">{{ errors.first('old_password') }}</span>
     </div>
     <div class="vx-col md:w-full w-full mt-base">
-        <vs-input class="w-full" label-placeholder="New Password" v-model="password"></vs-input>
+        <vs-input type="password" class="w-full" label-placeholder="New Password" v-model="password"></vs-input>
         <span class="text-danger">{{ errors.first('password') }}</span>
     </div>
     <div class="vx-col md:w-full w-full mt-base">
-        <vs-input class="w-full" label-placeholder="Confirm Password" v-model="password_confirmation"></vs-input>
+        <vs-input type="password" class="w-full" label-placeholder="Confirm Password" v-model="password_confirmation"></vs-input>
         <span class="text-danger">{{ errors.first('password_confirmation') }}</span>
     </div>
 
