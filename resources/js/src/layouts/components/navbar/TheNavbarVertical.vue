@@ -23,11 +23,13 @@
 
         <vs-spacer />
 
-        <i18n />
+        <i18n class="mr-3" />
 
+        <!--
         <search-bar />
 
         <cart-drop-down />
+        -->
 
         <notification-drop-down />
 

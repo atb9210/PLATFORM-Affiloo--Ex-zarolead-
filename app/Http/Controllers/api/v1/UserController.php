@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 use App\User as User;
 use App\UserReport as UserReport;
@@ -52,6 +53,7 @@ class UserController extends Controller
      *
      * @bodyParam name string User's new name
      * @bodyParam email string User's new email
+     * @bodyParam info json User's new info
      *
      * @response {
      *  "data": user,
@@ -64,12 +66,16 @@ class UserController extends Controller
         $this->authorize('update', $user);
 
         // Param validation
-        $data = $request->validate([
+        $params = $request->validate([
             'name' => 'string|min:3|max:255',
             'email' => 'email|min:4|max:255',
+            'info' => 'json',
         ]);
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], TRUE);
+        }
 
-        $user->update($data);
+        $user->update($params);
 
         return new UserResource($user);
     }
@@ -97,6 +103,49 @@ class UserController extends Controller
             'message' => 'User archived'
         ]);
     }
+
+    /**
+     * Change user's password.
+     *
+     * @urlParam id int required User's id
+     *
+     * @bodyParam old_password string required User's old password
+     * @bodyParam password string required User's new password
+     * @bodyParam password_confirmation string required Repeat user's new password
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function changePassword(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $this->authorize('update', $user);
+
+        // Param validation
+        $params = $request->validate([
+            'old_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if (!Hash::check($params['old_password'], $user->password)) {
+            return response([
+                "errors" => [
+                    "old_password" => ["Current password is wrong"],
+                ],
+            ], 403);
+        }
+
+        $user->password = Hash::make($params['password']);
+        $user->save();
+
+        if ($user->id === Auth::user()->id) {
+            Auth::user()->refresh();
+        }
+
+        return new UserResource($user);
+    } 
 
     /**
      * Change user's roles.

@@ -17,11 +17,18 @@ class UserResource extends JsonResource {
             array_push($roles, $role->name);
         }
 
+        $info = [];
+        if (isset($this->info)) {
+            $info = $this->info;
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'roles' => $roles,
+            'info' => $info,
+            'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

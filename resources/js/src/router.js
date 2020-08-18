@@ -66,7 +66,6 @@ const router = new Router({
           }
         },
 
-
         // =============================================================================
         // Application Routes
         // =============================================================================
@@ -1568,6 +1567,31 @@ const router = new Router({
         },
       ]
     },
+
+    // =============================================================================
+    // USER ROUTES
+    // =============================================================================
+    {
+      path: '',
+      component: () => import('./layouts/main/Main.vue'),
+      children: [
+        {
+          path: '/user/settings',
+          name: 'user-settings',
+          component: () => import('@/views/pages/UserSettings.vue'),
+          meta: {
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'User' },
+              { title: 'Settings', active: true }
+            ],
+            pageTitle: 'Settings',
+            rule: 'editor'
+          }
+        },
+      ],
+    },
+
     // =============================================================================
     // FULL PAGE LAYOUTS
     // =============================================================================

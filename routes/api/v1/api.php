@@ -28,6 +28,8 @@ Route::post('/register', 'api\v1\Auth\RegisterController@register')->name('auth.
 Route::apiResource('users', 'api\v1\UserController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('/users/{id}/change-password', 'api\v1\UserController@changePassword')->middleware('auth:api')
+    ->name('users.change-password');
 Route::post('/users/{id}/change-roles', 'api\v1\UserController@changeRoles')->middleware('auth:api')
     ->name('users.change-roles');
 Route::get('my-reports', 'api\v1\UserController@getReports')->middleware('auth:api')

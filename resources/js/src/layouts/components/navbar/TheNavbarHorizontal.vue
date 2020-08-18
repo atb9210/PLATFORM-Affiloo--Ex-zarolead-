@@ -23,9 +23,11 @@
 
       <i18n />
 
+      <!--
       <search-bar />
 
       <cart-drop-down />
+      -->
 
       <notification-drop-down />
 

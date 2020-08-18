@@ -107,6 +107,9 @@ const mutations = {
 
         // Update key in localStorage
         userInfo[property] = payload[property]
+      } else {
+        state.AppActiveUser[property] = ''
+        userInfo[property] = ''
       }
 
 
