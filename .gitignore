@@ -5,6 +5,7 @@
 /public/js/app.js
 /public/css
 /public/fonts
+/public/flo/*/
 /storage/*.key
 /vendor
 /.idea
