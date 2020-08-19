@@ -151,7 +151,7 @@ class FlowController extends Controller
 
         // Check if path name already exists
         if (isset($params['path_name'])) {
-            if (file_exists(Flow::buildFullPathname($params['path_name']))) {
+            if ($flow->path_name != $params['path_name'] && file_exists(Flow::buildFullPathname($params['path_name']))) {
                 return response([
                     'message' => 'The given path name already exists.',
                     'errors' => [
