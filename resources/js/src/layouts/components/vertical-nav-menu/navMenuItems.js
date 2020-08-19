@@ -105,7 +105,7 @@ export default [
         slug: 'products',
         icon: 'CodesandboxIcon',
         i18n: 'Products',
-        roles: ['developer', 'admin'],
+        roles: ['developer', 'admin', 'mediabuyer'],
       },
       {
         url: '/dashboard/traffic-sources',
