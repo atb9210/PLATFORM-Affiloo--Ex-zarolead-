@@ -1,5 +1,7 @@
 <?php
 
+$flow_id = {{flow_id}};
+
 $requestUrl = '';
 $redirectUrl = '';
 
@@ -9,7 +11,7 @@ if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
 }
 $prefix .= '://';
 
-$requestUrl = $_SERVER['HTTP_HOST'] . '/api/v1/flows/5/landings/get';
+$requestUrl = $prefix . $_SERVER['HTTP_HOST'] . '/api/v1/flows/' . $flow_id . '/landings/get';
 
 $curlSES = curl_init(); 
 curl_setopt($curlSES, CURLOPT_URL, $requestUrl);
@@ -24,4 +26,5 @@ if ($httpcode == 200) {
     $redirectUrl = $responseObj['data'];
 }
 
-header('Location: ' . $redirectUrl);
+echo '<META HTTP-EQUIV="refresh" content="0;URL=' . $redirectUrl . '">';
+echo "<script type='text/javascript'>document.location.href='{$redirectUrl}';</script>";

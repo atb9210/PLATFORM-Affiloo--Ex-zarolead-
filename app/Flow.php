@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 use App\Landing;
 
@@ -26,7 +26,7 @@ class Flow extends Model
 
     public static function buildFullPathname($path_name)
     {
-        return public_path(self::$directory . '/' . $path_name);
+        return Storage::disk('flows')->path($path_name);
     }
 
     public function getFullPathname()
@@ -93,17 +93,29 @@ class Flow extends Model
     public function createFileScript($oldPathName = '')
     {
         if ($oldPathName != '') {
-            File::delete(self::buildFullPathname($oldPathName));
+            Storage::disk('flows')->delete($oldPathName);
+
+            $path = pathinfo($oldPathName);
+            $dir = $path['dirname'];
+            Storage::disk('flows')->deleteDirectory($dir);
         }
 
-        $src = self::buildFullPathname('redirect.php');
+        $src = 'redirect.php';
         if ($this->type == 'redirect') {
-            $src = self::buildFullPathname('redirect.php');
+            $src = 'redirect.php';
         } elseif ($this->type == 'hotload') {
-            $src = self::buildFullPathname('hotload.php');
+            $src = 'hotload.php';
         }
-        $dest = self::buildFullPathname($this->path_name);
-        File::copy($src, $dest);
+
+        $path = pathinfo($this->path_name);
+        $dir = $path['dirname'];
+        Storage::disk('flows')->makeDirectory($dir);
+
+        $contents = Storage::disk('flows')->get($src);
+        $contents = str_replace('{{flow_id}}', $this->id, $contents);
+
+        $dest = $this->path_name;
+        Storage::disk('flows')->put($dest, $contents);
 
         return true;
     }

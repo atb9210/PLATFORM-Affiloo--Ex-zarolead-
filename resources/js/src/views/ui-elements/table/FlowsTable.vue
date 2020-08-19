@@ -469,12 +469,14 @@ export default {
         .catch((error) => {
           this.$vs.loading.close()
           this.errors.clear()
-          for (const [key, value] of Object.entries(error.response.data.errors)) {
-            for (let i = 0; i < value.length; i++) {
-              this.errors.add({
-                field: key,
-                msg: value[i]
-              })
+          if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
+            for (const [key, value] of Object.entries(error.response.data.errors)) {
+              for (let i = 0; i < value.length; i++) {
+                this.errors.add({
+                  field: key,
+                  msg: value[i]
+                })
+              }
             }
           }
         })
@@ -559,12 +561,14 @@ export default {
         })
         .catch((error) => {
           this.$vs.loading.close()
-          for (const [key, value] of Object.entries(error.response.data.errors)) {
-            for (let i = 0; i < value.length; i++) {
-              this.errors.add({
-                field: key,
-                msg: value[i]
-              })
+          if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
+            for (const [key, value] of Object.entries(error.response.data.errors)) {
+              for (let i = 0; i < value.length; i++) {
+                this.errors.add({
+                  field: key,
+                  msg: value[i]
+                })
+              }
             }
           }
         })

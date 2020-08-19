@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 use App\Landing;
 
@@ -12,67 +13,20 @@ class TestController extends Controller
 {
     public function test()
     {
-        $rules = [
-            'landings' => [
-                [
-                    'id' => 1,
-                    'weight' => 5,
-                ],
-                [
-                    'id' => 2,
-                    'weight' => 11,
-                ],
-            ],
-        ];
-
-        $result = '';
-
-        if (isset($rules['landings'])) {
-            $landings = $rules['landings'];
-            if(is_array($landings) && count($landings) > 0) {
-                $totalWeight = 0;
-                $intervals = [];
-                $intervalsCount = 0;
-                foreach ($landings as $landing) {
-                    if (isset($landing['weight']) && is_numeric($landing['weight'])) {
-                        $intervals[] = [
-                            'from' => $totalWeight + 1,
-                            'to' => $totalWeight + $landing['weight'],
-                        ];
-                        $totalWeight += $landing['weight'];
-                    } else {
-                        $intervals[] = [
-                            'from' => 0,
-                            'to' => 0,
-                        ];
-                    }
-                }
-
-                if ($totalWeight > 0) {
-                    $randomNumber = mt_rand(1, $totalWeight);
-                }
-
-                $winner = -1;
-                for ($i = 0; $i < count($intervals); $i += 1) {
-                    if ($randomNumber >= $intervals[$i]['from'] && $randomNumber <= $intervals[$i]['to']) {
-                        $winner = $i;
-                        break;
-                    }
-                }
-
-                if ($winner >= 0 && isset($landings[$winner]['id'])) {
-                    $landingId = $landings[$winner]['id'];
-
-                    // TODO: Get landing url
-                    $landingObj = Landing::find($landingId);
-                    if ($landingObj != null) {
-                        $result = $landingObj->url;
-                    }
-                }
-            }
-        }
-
-        echo "Result: " . $result;
+        $p = public_path("robots.txt");
+        $p = "test/index.php";
+        /*
+        $p2 = "test/index2.php";
+        $contents = Storage::disk('flows')->get($p);
+        $contents2 = str_replace('{{flow_id}}', 10, $contents);
+        Storage::disk('flows')->put($p2, $contents2);
+        */
+        var_dump(Storage::disk('flows')->url($p));
+        $pathname = 'bau/ciao/yaoming/miao/ciao.php';
+        $path = pathinfo($pathname);
+        $dir = $path['dirname'];
+        var_dump($dir);
+        //Storage::disk('flows')->makeDirectory($dir);
     }
 
     public function post(Request $request)

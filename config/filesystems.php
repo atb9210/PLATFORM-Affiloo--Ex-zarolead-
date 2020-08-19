@@ -69,6 +69,13 @@ return [
             'authorization_token' => env('DROPBOX_AUTH_TOKEN'),
         ],
 
+        'flows' => [
+            'driver' => 'local',
+            'root' => public_path('flo'),
+            'url' => env('APP_URL').'/flo',
+            'visibility' => 'public',
+        ],
+
     ],
 
 ];

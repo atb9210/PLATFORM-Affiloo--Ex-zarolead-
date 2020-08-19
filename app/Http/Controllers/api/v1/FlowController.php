@@ -162,11 +162,12 @@ class FlowController extends Controller
         }
 
         $oldPathName = $flow->path_name;
+        $oldType = $flow->type;
         $flow->update($params);
 
         // Create file script and delete the old one when the path name or the type has changed
-        if ((isset($params['path_name']) && $params['path_name'] != $flow->path_name) ||
-            (isset($params['type']) && $params['type'] != $flow->type)) {
+        if ((isset($params['path_name']) && $params['path_name'] != $oldPathName) ||
+            (isset($params['type']) && $params['type'] != $oldType)) {
             $flow->createFileScript($oldPathName);
         }
 
