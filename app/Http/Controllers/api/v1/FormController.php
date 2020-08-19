@@ -84,7 +84,7 @@ class FormController extends Controller
      *
      * @response 201 {
      *  "message": "Form created",
-     *  "data": [form],
+     *  "data": form,
      * }
      */
     public function store(Request $request)

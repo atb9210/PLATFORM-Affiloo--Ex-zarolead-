@@ -140,6 +140,14 @@ export default [
         roles: ['developer', 'admin', 'mediabuyer'],
       },
       {
+        url: '/dashboard/flows',
+        name: 'Flows',
+        slug: 'flows',
+        icon: 'GitBranchIcon',
+        i18n: 'Flows',
+        roles: ['developer', 'admin', 'mediabuyer'],
+      },
+      {
         url: '/dashboard/my-reports',
         name: 'My Reports',
         slug: 'my-reports',

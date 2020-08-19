@@ -153,12 +153,7 @@
 </template>
 
 <script>
-import vSelect from 'vue-select'
-
 export default {
-  components: {
-    'v-select': vSelect,
-  },
   data () {
     return {
       objects: [],
@@ -240,7 +235,6 @@ export default {
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()

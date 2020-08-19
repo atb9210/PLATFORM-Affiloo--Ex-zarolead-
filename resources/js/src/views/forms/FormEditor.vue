@@ -791,8 +791,6 @@ export default {
       .catch((error) => {
         this.$vs.loading.close()
       })
-
-
   },
 }
 </script>

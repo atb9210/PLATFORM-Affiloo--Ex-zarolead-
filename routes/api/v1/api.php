@@ -71,6 +71,12 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware('auth:api')
     ->name('landings.stats');
 
+/* Flows routes */
+Route::apiResource('flows', 'api\v1\FlowController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+Route::get('flows/{id}/landings/get', 'api\v1\FlowController@getLandingUrl')->name('flows.landings.get');
+
 /* Forms routes */
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',

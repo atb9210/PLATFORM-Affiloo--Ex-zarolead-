@@ -1457,6 +1457,20 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/flows',
+          name: 'flows',
+          component: () => import('./views/Flows.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Flows', active: true }
+            ],
+            pageTitle: 'Flows',
+            rule: 'editor'
+          }
+        },
 
         // =============================================================================
         // MY REPORTS

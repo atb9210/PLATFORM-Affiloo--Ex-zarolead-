@@ -40,7 +40,6 @@ export default {
           msg: 'Passwords should match',
         })
       }
-      
 
       this.$vs.loading()
       let headers = {

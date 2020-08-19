@@ -66,6 +66,10 @@ class User extends Authenticatable {
         return $this->hasMany('App\Campaign');
     }
 
+    public function flows() {
+        return $this->hasMany('App\Flows');
+    }
+
     public function forms() {
         return $this->hasMany('App\Form');
     }
