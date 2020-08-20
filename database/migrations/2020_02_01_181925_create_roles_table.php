@@ -45,6 +45,12 @@ class CreateRolesTable extends Migration
                         "update" => true,
                         "delete" => true,
                     ],
+                    "flows" => [
+                        "viewAny" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
+                    ],
                     "form" => [
                         "viewAny" => false,
                         "create" => true,
