@@ -13,20 +13,17 @@ class TestController extends Controller
 {
     public function test()
     {
+        include('http://www.google.com/');
+        exit();
+        /*
         $p = public_path("robots.txt");
         $p = "test/index.php";
-        /*
-        $p2 = "test/index2.php";
-        $contents = Storage::disk('flows')->get($p);
-        $contents2 = str_replace('{{flow_id}}', 10, $contents);
-        Storage::disk('flows')->put($p2, $contents2);
-        */
         var_dump(Storage::disk('flows')->url($p));
         $pathname = 'bau/ciao/yaoming/miao/ciao.php';
         $path = pathinfo($pathname);
         $dir = $path['dirname'];
         var_dump($dir);
-        //Storage::disk('flows')->makeDirectory($dir);
+        */
     }
 
     public function post(Request $request)
