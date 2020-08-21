@@ -30,7 +30,7 @@ $separator = '&';
 if (strpos($redirectUrl, '?') === false) {
     $separator = '?';
 }
-$redirectUrl .= $separator . http_build_quey($_GET);
+$redirectUrl .= $separator . http_build_query($_GET);
 
 echo '<META HTTP-EQUIV="refresh" content="0;URL=' . $redirectUrl . '">';
 echo "<script type='text/javascript'>document.location.href='{$redirectUrl}';</script>";
