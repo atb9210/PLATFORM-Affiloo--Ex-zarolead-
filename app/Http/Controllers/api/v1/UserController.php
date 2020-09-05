@@ -175,6 +175,7 @@ class UserController extends Controller
             'affiliate' => 'boolean',
             'advertiser' => 'boolean',
             'accountant' => 'boolean',
+            'buyer' => 'boolean',
         ]);
 
         // User cannot remove himself admin role

@@ -29,7 +29,7 @@ export default{
   },
   methods: {
     adjustUsersArray() {
-      var roles = [ 'admin', 'mediabuyer', 'affiliate', 'advertiser', 'accountant' ]
+      var roles = [ 'admin', 'mediabuyer', 'affiliate', 'advertiser', 'accountant', 'buyer' ]
       this.users.forEach((user) => {
         var u = {
             id: 0,

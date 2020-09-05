@@ -27,7 +27,21 @@ const getters = {
 
   scrollbarTag: state => {
     return state.is_touch_device ? 'div' : 'VuePerfectScrollbar'
-  }
+  },
+
+  userHasRole: (state) => (role) => {
+      let hasRole = false
+
+      let userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      let userRoles = []
+      if (userInfo.hasOwnProperty('roles')) {
+        userRoles = userInfo.roles
+      }
+     
+      hasRole = userRoles.includes(role)
+
+      return hasRole
+  },
 }
 
 export default getters

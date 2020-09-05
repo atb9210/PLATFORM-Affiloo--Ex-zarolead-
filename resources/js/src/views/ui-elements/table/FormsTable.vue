@@ -100,12 +100,12 @@
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_cost">Cost</vs-th>
-                <vs-th sort-key="total_commission">Commission</vs-th>
-                <vs-th sort-key="profit">Profit</vs-th>
-                <vs-th sort-key="roi">ROI</vs-th>
+                <vs-th v-if="canViewStats" sort-key="total_commission">Commission</vs-th>
+                <vs-th v-if="canViewStats" sort-key="profit">Profit</vs-th>
+                <vs-th v-if="canViewStats" sort-key="roi">ROI</vs-th>
                 <vs-th sort-key="cr">CR</vs-th>
-                <vs-th sort-key="cpv">CPV</vs-th>
-                <vs-th sort-key="epv">EPV</vs-th>
+                <vs-th v-if="canViewStats" sort-key="cpv">CPV</vs-th>
+                <vs-th v-if="canViewStats" sort-key="epv">EPV</vs-th>
                 <vs-th sort-key="cpl">CPL</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
@@ -129,15 +129,15 @@
                         <span>€ {{data[indextr].stats.total_cost}}</span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission">
+                    <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
                         € {{data[indextr].stats.total_commission}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.profit">
+                    <vs-td :data="data[indextr].stats.profit" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].stats.profit > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.profit}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.roi">
+                    <vs-td :data="data[indextr].stats.roi" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].stats.roi > 0) ? 'success' : 'danger'">{{data[indextr].stats.roi}} %</vs-chip>
                     </vs-td>
 
@@ -145,11 +145,11 @@
                         {{data[indextr].stats.cr}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.cpv">
+                    <vs-td :data="data[indextr].stats.cpv" v-if="canViewStats">
                         € {{data[indextr].stats.cpv}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.epv">
+                    <vs-td :data="data[indextr].stats.epv" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].stats.epv > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.epv}}</vs-chip>
                     </vs-td>
 
@@ -181,21 +181,22 @@
                 <vs-td>
                     € {{total_stats.total_cost}}
                 </vs-td>
-                <vs-td>
-                    € {{total_stats.total_commission}}</vs-td>
-                <vs-td>
+                <vs-td v-if="canViewStats">
+                    € {{total_stats.total_commission}}
+                </vs-td>
+                <vs-td v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
                 </vs-td>
-                <vs-td>
+                <vs-td v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi}} %</vs-chip>
                 </vs-td>
                 <vs-td>
                     {{total_stats.cr}} %
                 </vs-td>
-                <vs-td>
+                <vs-td v-if="canViewStats">
                     € {{total_stats.cpv}}
                 </vs-td>
-                <vs-td>
+                <vs-td v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
                 </vs-td>
                 <vs-td>
@@ -757,7 +758,11 @@ export default {
       },
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
-      }
+      },
+    },
+    canViewStats() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('mediabuyer'))
     },
   },
   methods: {

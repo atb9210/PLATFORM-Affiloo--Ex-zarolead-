@@ -83,9 +83,9 @@
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>
                 <vs-th sort-key="cr">CR</vs-th>
-                <vs-th sort-key="epv">EPV</vs-th>
+                <vs-th sort-key="epv" v-if="canViewStats">EPV</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -107,7 +107,7 @@
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission">
+                    <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
                         € {{data[indextr].total_commission}}
                     </vs-td>
 
@@ -115,7 +115,7 @@
                         {{data[indextr].cr}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].epv">
+                    <vs-td :data="data[indextr].epv" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
                     </vs-td>
 
@@ -131,12 +131,13 @@
                 <vs-td>
                     {{total_stats.leads}}
                 </vs-td>
-                <vs-td>
-                    € {{total_stats.total_commission}}</vs-td>
+                <vs-td v-if="canViewStats">
+                    € {{total_stats.total_commission}}
+                </vs-td>
                 <vs-td>
                     {{total_stats.cr}} %
                 </vs-td>
-                <vs-td>
+                <vs-td v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -270,6 +271,10 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    canViewStats() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('mediabuyer'))
     },
   },
   methods: {

@@ -95,6 +95,50 @@ class CreateRolesTable extends Migration
                 "permissions" => [
                 ],
             ],
+            [
+                "name" => "buyer",
+                "permissions" => [
+                    "order" => [
+                        "*" => false,
+                    ],
+                    "product" => [
+                        "*" => false,
+                    ],
+                    "flows" => [
+                        "viewAny" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
+                    ],
+                    "form" => [
+                        "viewAny" => false,
+                        "create" => false,
+                        "update" => false,
+                        "delete" => false,
+                    ],
+                    "landing" => [
+                        "viewAny" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
+                    ],
+                    "tag" => [
+                        "viewAny" => true,
+                    ],
+                    "advertiser" => [
+                        "viewAny" => true,
+                    ],
+                    "traffic_source" => [
+                        "viewAny" => true,
+                    ],
+                    "campaign" => [
+                        "viewAny" => true,
+                    ],
+                    "network" => [
+                        "viewAny" => true,
+                    ],
+                ],
+            ],
         ];
 
         foreach($roles as $role) {

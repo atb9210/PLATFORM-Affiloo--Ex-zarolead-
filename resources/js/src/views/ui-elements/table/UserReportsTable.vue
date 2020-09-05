@@ -77,10 +77,10 @@
             <template slot="thead">
                 <vs-th sort-key="day">Date</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="commission">Commission</vs-th>
+                <vs-th sort-key="commission" v-if="canViewStats">Commission</vs-th>
                 <vs-th sort-key="cost">Cost</vs-th>
-                <vs-th sort-key="extra_cost">Extra Cost</vs-th>
-                <vs-th sort-key="profit">Profit</vs-th>
+                <vs-th sort-key="extra_cost" v-if="canViewStats">Extra Cost</vs-th>
+                <vs-th sort-key="profit" v-if="canViewStats">Profit</vs-th>
                 <vs-th></vs-th>
             </template>
 
@@ -95,7 +95,7 @@
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission">
+                    <vs-td :data="data[indextr].commission" v-if="canViewStats">
                         {{data[indextr].commission}} €
                     </vs-td>
 
@@ -103,12 +103,12 @@
                         {{data[indextr].cost}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].extra_cost">
+                    <vs-td :data="data[indextr].extra_cost" v-if="canViewStats">
                         <vs-input v-if="isEditingCost && editingObjectId == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>{{data[indextr].extra_cost}} € <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit">
+                    <vs-td :data="data[indextr].profit" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
@@ -180,6 +180,10 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    canViewStats() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('mediabuyer'))
     },
   },
   methods: {

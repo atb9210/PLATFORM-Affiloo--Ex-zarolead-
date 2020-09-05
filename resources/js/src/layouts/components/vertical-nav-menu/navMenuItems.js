@@ -34,10 +34,10 @@ export default [
     tagColor: 'warning',
     icon: 'HomeIcon',
     i18n: 'Dashboard',
-    roles: ['developer', 'admin', 'mediabuyer'],
+    roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
     submenu: [
       {
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
         url: '/dashboard/analytics',
         name: 'Analytics',
         slug: 'dashboard-analytics',
@@ -57,7 +57,7 @@ export default [
     header: 'Apps',
     icon: 'PackageIcon',
     i18n: 'Apps',
-    roles: ['developer', 'admin', 'mediabuyer'],
+    roles: ['developer', 'admin'],
     items: [
       {
         url: '/dashboard/users',
@@ -129,7 +129,7 @@ export default [
         slug: 'forms',
         icon: 'ClipboardIcon',
         i18n: 'Forms',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/landings',
@@ -137,7 +137,7 @@ export default [
         slug: 'landings',
         icon: 'LayoutIcon',
         i18n: 'Landings',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/flows',
@@ -145,7 +145,7 @@ export default [
         slug: 'flows',
         icon: 'GitBranchIcon',
         i18n: 'Flows',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/my-reports',
@@ -153,7 +153,7 @@ export default [
         slug: 'my-reports',
         icon: 'PieChartIcon',
         i18n: 'My Reports',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: null,

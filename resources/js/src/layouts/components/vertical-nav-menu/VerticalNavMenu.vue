@@ -31,19 +31,25 @@
 
           <!-- Logo -->
           <router-link tag="div" class="vx-logo cursor-pointer flex items-center" to="/">
-            <logo class="w-10 mr-4 fill-current text-primary" />
-            <span class="vx-logo-text text-primary" v-show="isMouseEnter || !reduce" v-if="title">{{ title }}</span>
+            <img class="logo" src="/images/full_logo.jpeg" style="width: 100%;">
+            <!--<logo class="w-10 mr-4 fill-current text-primary" />-->
+            <!--<span class="vx-logo-text text-primary" v-show="isMouseEnter || !reduce" v-if="title">{{ title }}</span>-->
           </router-link>
           <!-- /Logo -->
 
           <!-- Menu Buttons -->
+          <!--
           <div>
+          -->
             <!-- Close Button -->
+            <!--
             <template v-if="showCloseButton">
               <feather-icon icon="XIcon" class="m-0 cursor-pointer" @click="$store.commit('TOGGLE_IS_VERTICAL_NAV_MENU_ACTIVE', false)" />
             </template>
+            -->
 
             <!-- Toggle Buttons -->
+            <!--
             <template v-else-if="!showCloseButton && !verticalNavMenuItemsMin">
               <feather-icon
                 id="btnVNavMenuMinToggler"
@@ -53,7 +59,9 @@
                 @click="toggleReduce(!reduce)" />
             </template>
           </div>
+          -->
           <!-- /Menu Toggle Buttons -->
+
         </div>
         <!-- /Header -->
 
@@ -360,7 +368,6 @@ export default {
 }
 
 </script>
-
 
 <style lang="scss">
 @import "@sass/vuexy/components/verticalNavMenu.scss"
