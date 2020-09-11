@@ -14,7 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart"></vs-button>
-            <RouterLink to="/dashboard/forms/builder">
+            <RouterLink to="/dashboard/forms/builder" v-if="canCreateAndEdit">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
             </RouterLink>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
@@ -161,8 +161,8 @@
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
-                            <vs-button @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
+                            <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                            <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                             <!--<vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>-->
                         </div>
                     </vs-td>
@@ -764,6 +764,9 @@ export default {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
               this.$store.getters.userHasRole('mediabuyer'))
     },
+    canCreateAndEdit() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    }
   },
   methods: {
     getObjectIndexById(id) {

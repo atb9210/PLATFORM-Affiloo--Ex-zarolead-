@@ -43,7 +43,13 @@
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
-            </div> 
+            </div>
+            <div class="vx-col w-full mt-5" v-if="canChangeUser">
+              <vs-select v-model="user" class="w-full select-large" label="User" v-validate="'required'">
+                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in users" class="w-full" />
+              </vs-select>
+              <span class="text-danger">{{ errors.first('step-1.user') }}</span>
+            </div>
           </div>
           </form>
         </tab-content>
@@ -255,6 +261,9 @@ import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 import { Validator } from 'vee-validate'
 const dict = {
   custom: {
+    user: {
+      required: 'User is required',
+    },
     name: {
       required: 'Name is required',
     },
@@ -282,6 +291,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
+      users: [],
       campaigns: [],
       networks: [],
       products: [],
@@ -291,6 +301,7 @@ export default {
       network_params: [],
       network_params_values: [],
 
+      user: '',
       name: '',
       campaign: '',
       network: '',
@@ -373,6 +384,11 @@ export default {
         { text: 'Boston', value: 'boston' }
       ]
     }
+  },
+  computed: {
+    canChangeUser() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
   },
   methods: {
     getObjectIndexById(id, arr) {
@@ -478,6 +494,16 @@ export default {
       return new Promise((resolve, reject) => {
         this.$validator.validateAll('step-1').then(result => {
           let selectionResult = true
+          if (this.canChangeUser) {
+            if (this.user === '' || this.user <= 0) {
+              selectionResult = false
+              this.errors.add({
+                scope: 'step-1',
+                field: 'user',
+                msg: 'User is required (if it doesn\'t exist just create one)'
+              })
+            }
+          }
           if (this.campaign === '' || this.campaign <= 0) {
             selectionResult = false
             this.errors.add({
@@ -602,6 +628,11 @@ export default {
           network_params: {},
           plugins: {},
         }
+        if (this.canChangeUser) {
+          if (!(this.user === '' || this.user <= 0)) {
+            data.user_id = this.user
+          }
+        }
         this.quantityOptions.forEach((opt) => {
           data.quantity['options'][opt.quantity] = {
             price: opt.price,
@@ -659,6 +690,24 @@ export default {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
+    // Retrieve users
+    this.$vs.loading()
+    this.$http.get('/api/v1/users/', { headers })
+      .then((response) => {
+        this.traffic_sources = []
+        response.data.data.forEach((user) => {
+          this.users.push({
+            id: user.id,
+            label: user.email,
+          })
+          this.user = user.id;
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+
     // Retrieve traffic sources
     this.$vs.loading()
     this.$http.get('/api/v1/traffic-sources/', { headers })
@@ -676,7 +725,6 @@ export default {
       .catch((error) => {
         this.$vs.loading.close()
       })
-
 
     // Retrieve products
     this.$vs.loading()

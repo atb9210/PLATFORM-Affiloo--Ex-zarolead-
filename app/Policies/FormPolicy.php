@@ -91,4 +91,15 @@ class FormPolicy
     {
         //
     }
+
+    /**
+     * Determine whether the user can create models.
+     *
+     * @param  \App\User  $user
+     * @return mixed
+     */
+    public function changeUser(User $user)
+    {
+        return $user->hasPermission('form', 'changeUser');
+    }
 }

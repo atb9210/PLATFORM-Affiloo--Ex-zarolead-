@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Form as Form;
 use App\Http\Resources\api\v1\FormResource;
 use App\FormStats as FormStats;
+use App\User as User;
 use App\Http\Resources\api\v1\FormStatsResource;
 use App\FormNote as FormNote;
 use App\Network as Network;
@@ -73,6 +74,7 @@ class FormController extends Controller
      * Create a new form.
      *
      * @bodyParam name string required Form's name
+     * @bodyParam user_id int Form's user id
      * @bodyParam campaign_id int required Form's campaign id
      * @bodyParam network_id int required Form's network id
      * @bodyParam product_id int required Form's product id
@@ -94,6 +96,7 @@ class FormController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
+            'user_id' => 'integer|exists:users,id',
             'campaign_id' => 'required|integer|exists:campaigns,id',
             'network_id' => 'required|integer|exists:networks,id',
             'product_id' => 'required|integer|exists:products,id',
@@ -103,7 +106,11 @@ class FormController extends Controller
             'network_params' => 'required|json',
             'plugins' => 'json',
         ]);
-        $params['user_id'] = Auth::user()->id;
+
+        if ((!Auth::user()->can('changeUser', 'App\Form')) || !isset($params['user_id'])) {
+            $params['user_id'] = Auth::user()->id;
+        }
+
         $params['quantity'] = json_decode($params['quantity'], TRUE);
         $params['upsell'] = json_decode($params['upsell'], TRUE);
         $params['network_params'] = json_decode($params['network_params'], TRUE);
@@ -175,6 +182,7 @@ class FormController extends Controller
      * @urlParam id int required Form's id
      *
      * @bodyParam name string Form's name
+     * @bodyParam user_id int Form's user id
      * @bodyParam network_id int Form's network id
      * @bodyParam product_id int Form's product id
      * @bodyParam quantity json Product's quantity JSON
@@ -201,6 +209,7 @@ class FormController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'string|min:3',
+            'user_id' => 'integer|exists:users,id',
             'network_id' => 'integer|exists:networks,id',
             'product_id' => 'integer|exists:products,id',
             'quantity' => 'json',
@@ -209,6 +218,9 @@ class FormController extends Controller
             'network_params' => 'json',
             'plugins' => 'json',
         ]);
+        if (isset($params['user_id']) && !Auth::user()->can('changeUser', 'App\Form')) {
+            unset($params['user_id']);
+        }
         if (isset($params['quantity'])) {
             $params['quantity'] = json_decode($params['quantity'], TRUE);
         }
