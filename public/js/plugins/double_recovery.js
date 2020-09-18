@@ -30,7 +30,7 @@ DoubleRecoveryPlugin.prototype.afterSubmit = function(response) {
         };
 
         $.ajax({
-            url: this.API_URL + 'orders/double-recovery',
+            url: form.API_URL + 'orders/double-recovery',
             method: "POST",
             dataType: "json",
             data: data,
