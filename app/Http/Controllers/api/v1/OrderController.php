@@ -305,5 +305,9 @@ class OrderController extends Controller
 
         $network = $form->network;
         $api_call = Order::doubleRecovery($network_data, $network_params, $network);
+
+        return response([
+            "message" => "Double order recovered",
+        ]);
     }
 }
