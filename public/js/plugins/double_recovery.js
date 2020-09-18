@@ -26,7 +26,7 @@ DoubleRecoveryPlugin.prototype.afterSubmit = function(response) {
         var networkData = form.networkData;
         var data = {
             form_id: this.form_id,
-            networkData: JSON.stringify(networkData)
+            network_data: JSON.stringify(networkData)
         };
 
         $.ajax({
