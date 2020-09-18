@@ -26,7 +26,10 @@ PluginManager.prototype.add = function(plugin, data) {
         this.plugins.push(new FacebookPlugin(data));
     } else if(plugin == "zeustrack") {
         this.plugins.push(new ZeusTrackPlugin(data));
+    } else if(plugin == "double_recovery") {
+        this.plugins.push(new DoubleRecoveryPlugin(data));
     }
+
 }
 
 PluginManager.prototype.onVisit = function() {
@@ -41,9 +44,9 @@ PluginManager.prototype.onSubmit = function() {
     }
 }
 
-PluginManager.prototype.afterSubmit = function() {
+PluginManager.prototype.afterSubmit = function(response) {
     for (var i = 0; i < this.plugins.length; i++) {
-        this.plugins[i].afterSubmit();
+        this.plugins[i].afterSubmit(response);
     }
 }
 

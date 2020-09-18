@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
+use App\Network;
 
 class Order extends Model {
     /**
@@ -40,7 +41,7 @@ class Order extends Model {
         return $this->belongsTo('App\Network', 'network_id');
     }
 
-    public function sendToNetwork(array $input, array $form) {
+    public function sendToNetwork(array $input, array $form, Network $network) {
         // Variables to return
         $status = 'error';
         $postbackFlag = false;
@@ -56,19 +57,19 @@ class Order extends Model {
 
         // Params validation
         // @TODO:
-        $urlParamsValidation = $this->network->getApi('store.redirect.validation.urlParams');
-        $bodyParamsValidation = $this->network->getApi('store.redirect.validation.bodyParams');
+        $urlParamsValidation =  $network->getApi('store.redirect.validation.urlParams');
+        $bodyParamsValidation = $network->getApi('store.redirect.validation.bodyParams');
 
         // Form params validation
         // @TODO:
 
         // Make API call
-        $apiRequestUrl = $this->interpretParam($this->network->getApi('store.request.url'), $context);
-        $apiRequestMethod = $this->interpretParam($this->network->getApi('store.request.method'), $context);
-        $apiRequestType = $this->interpretParam($this->network->getApi('store.request.type'), $context);
+        $apiRequestUrl = self::interpretParam($network->getApi('store.request.url'), $context);
+        $apiRequestMethod = self::interpretParam($network->getApi('store.request.method'), $context);
+        $apiRequestType = self::interpretParam($network->getApi('store.request.type'), $context);
 
-        $urlParams = $this->interpretParams($this->network->getApi('store.request.urlParams'), $context);
-        $bodyParams = $this->interpretParams($this->network->getApi('store.request.bodyParams'), $context);
+        $urlParams = self::interpretParams($network->getApi('store.request.urlParams'), $context);
+        $bodyParams = self::interpretParams($network->getApi('store.request.bodyParams'), $context);
 
         $url = $apiRequestUrl;
         $token = (strpos($apiRequestUrl, '?') === false) ? '?' : '&';
@@ -89,7 +90,7 @@ class Order extends Model {
             $server_output = curl_exec($ch);
             curl_close($ch);
 
-            if (strtolower($this->interpretParam($this->network->getApi('store.response.type'), $context)) == "json") {
+            if (strtolower(self::interpretParam($network->getApi('store.response.type'), $context)) == "json") {
                 $response = json_decode($server_output, true);
             } else {
                 $response = $server_output;
@@ -100,7 +101,7 @@ class Order extends Model {
         $context['response'] = $response;
 
         // Get status
-        $responseStatuses = $this->network->getApi('store.response.status');
+        $responseStatuses = $network->getApi('store.response.status');
         $status = (isset($responseStatuses['default'])) ? $responseStatuses['default'] : 'error';
         foreach ($responseStatuses as $key => $value) {
             if ($key == 'default') continue;
@@ -114,11 +115,11 @@ class Order extends Model {
         // Postback
         $postbackFlag = false;
         $postback_response = "";
-        $postbackArray = $this->network->getApi('store.postback');
+        $postbackArray = $network->getApi('store.postback');
         if (!empty($postbackArray)) {
             $postbackIndex = -1;
             for ($i = 0; $i < count($postbackArray); $i++) {
-                $on = explode('|', $this->interpretParam($postbackArray[$i]['on'], $context));
+                $on = explode('|', self::interpretParam($postbackArray[$i]['on'], $context));
                 if (in_array($status, $on)) {
                     $postbackIndex = $i;
                     break;
@@ -130,20 +131,20 @@ class Order extends Model {
 
                 $postback = $postbackArray[$postbackIndex];
 
-                $postbackUrl = $this->interpretParam($postback['url'], $context);
-                $postbackMethod = $this->interpretParam($postback['method'], $context);
+                $postbackUrl = self::interpretParam($postback['url'], $context);
+                $postbackMethod = self::interpretParam($postback['method'], $context);
                 $postbackType = '';
                 if (isset($postback['type'])) {
-                    $postbackType = $this->interpretParam($postback['type'], $context);
+                    $postbackType = self::interpretParam($postback['type'], $context);
                 }
 
                 $postbackUrlParams = [];
                 $postbackBodyParams = [];
                 if (isset($postback['urlParams'])) {
-                    $postbackUrlParams = $this->interpretParams($postback['urlParams'], $context);
+                    $postbackUrlParams = self::interpretParams($postback['urlParams'], $context);
                 }
                 if (isset($postback['bodyParams'])) {
-                    $postbackBodyParams = $this->interpretParams($postback['bodyParams'], $context);
+                    $postbackBodyParams = self::interpretParams($postback['bodyParams'], $context);
                 }
 
                 $token = (strpos($postbackUrl, '?') === false) ? '?' : '&';
@@ -170,13 +171,13 @@ class Order extends Model {
         }
 
         // Redirect
-        $redirectArray = $this->network->getApi('store.redirect');
+        $redirectArray = $network->getApi('store.redirect');
         $redirectFlag = false;
         $redirectUrl = '';
         if (!empty($redirectArray)) {
             $redirectIndex = -1;
             for ($i = 0; $i < count($redirectArray); $i++) {
-                $on = explode('|', $this->interpretParam($redirectArray[$i]['on'], $context));
+                $on = explode('|', self::interpretParam($redirectArray[$i]['on'], $context));
                 if (in_array($status, $on)) {
                     $redirectIndex = $i;
                     break;
@@ -186,7 +187,7 @@ class Order extends Model {
             if ($redirectIndex >= 0) {
                 $redirectFlag = true;
                 $redirect = $redirectArray[$postbackIndex];
-                $redirectUrl = $this->interpretParam($redirect['url'], $context);
+                $redirectUrl = self::interpretParam($redirect['url'], $context);
             }
         }
 
@@ -211,15 +212,65 @@ class Order extends Model {
         ];
     }
 
-    private function interpretParams(array $params, array $context) {
+    public static function doubleRecovery(array $input, array $form, Network $network) {
+        // Define context
+        $context = [
+            'input' => $input,
+            'form' => $form,
+        ];
+
+        // Params validation
+        // @TODO:
+        $urlParamsValidation =  $network->getApi('store.redirect.validation.urlParams');
+        $bodyParamsValidation = $network->getApi('store.redirect.validation.bodyParams');
+
+        // Form params validation
+        // @TODO:
+
+        // Make API call
+        $apiRequestUrl = self::interpretParam($network->getApi('store.request.url'), $context);
+        $apiRequestMethod = self::interpretParam($network->getApi('store.request.method'), $context);
+        $apiRequestType = self::interpretParam($network->getApi('store.request.type'), $context);
+
+        $urlParams = self::interpretParams($network->getApi('store.request.urlParams'), $context);
+        $bodyParams = self::interpretParams($network->getApi('store.request.bodyParams'), $context);
+
+        $url = $apiRequestUrl;
+        $token = (strpos($apiRequestUrl, '?') === false) ? '?' : '&';
+        $url .= $token . http_build_query($urlParams);
+
+        $response = [];
+        if ($apiRequestUrl != '' && $apiRequestMethod != '') {
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            if (strtolower($apiRequestMethod) == "post") {
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+            }
+
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            $server_output = curl_exec($ch);
+            curl_close($ch);
+
+            if (strtolower(self::interpretParam($network->getApi('store.response.type'), $context)) == "json") {
+                $response = json_decode($server_output, true);
+            } else {
+                $response = $server_output;
+            }
+        }
+    }
+
+    public static function interpretParams(array $params, array $context) {
         $interpretedParams = [];
         foreach ($params as $key => $value) {
-            $interpretedParams[$key] = $this->interpretParam($value, $context);
+            $interpretedParams[$key] = self::interpretParam($value, $context);
         }
         return $interpretedParams;
     }
 
-    private function interpretParam(string $param, array $context) {
+    public static function interpretParam(string $param, array $context) {
         $interpreted = '';
 
         $matches = [];
@@ -262,9 +313,9 @@ class Order extends Model {
                 $requestMethod = strtolower($api_call_method);
             }
 
-            if ($this->network->name == "Worldfilia") {
+            if ($network->name == "Worldfilia") {
                 $api_call_url .= '?' . http_build_query(['api_key' => $network_params['api_key']]);
-            } elseif ($this->network->name == "Affiliation Park") {
+            } elseif ($network->name == "Affiliation Park") {
                 $network_data["user"] = "asrafatb9210@gmail.com";
                 $network_data["password"] = "1vrdNLMOjwQJIbB8Eqt0AcUgyDmp2hsC";
             }

@@ -46,10 +46,10 @@ class OrderController extends Controller
             $orders = $orders->where('user_id', Auth::user()->id);
         }
         if (isset($params['filter_date_from'])) {
-            $orders = $orders->where('created_at', '>=', $params['filter_date_from']);
+            $orders = $orders->where('created_at', '>=', $params['filter_date_from'] . " 00:00:00");
         }
         if (isset($params['filter_date_to'])) {
-            $orders = $orders->where('created_at', '<=', $params['filter_date_to']);
+            $orders = $orders->where('created_at', '<=', $params['filter_date_to'] . " 23:59:59");
         }
         if (isset($params['filter_status'])) {
             $orders = $orders->where('order_status_id', $params['filter_status']);
@@ -149,7 +149,8 @@ class OrderController extends Controller
         $order = Order::create($params);
 
         // Send order to the network
-        $api_call = $order->sendToNetwork($network_data, $network_params);
+        $network = $order->network;
+        $api_call = $order->sendToNetwork($network_data, $network_params, $network);
 
         if( $order->order_status_id != OrderStatus::NOT_SENT &&
             $order->order_status_id != OrderStatus::DOUBLE &&
@@ -277,5 +278,32 @@ class OrderController extends Controller
         return response([
             "message" => "Order has been archived"
         ]);
+    }
+
+    /**
+     * Double order recovery (pick network data from a double order and send
+     * them to another network using network_api's values of a specified form).
+     *
+     * @bodyParam form_id integer required Form's id
+     * @bodyParam network_data json required Network Data in json format
+     *
+     * @response 200 {
+     *  "message": "Double order recovered",
+     * }
+     */
+    public function doubleRecovery(Request $request)
+    {
+        // Params validation
+        $params = $request->validate([
+            'form_id' => 'required|integer|min:1|exists:forms,id',
+            'network_data' => 'required|json',
+        ]);
+
+        $form = Form::findOrFail($params['form_id']);
+        $network_data = json_decode($params['network_data'], TRUE);
+        $network_params = json_decode(json_encode($form->network_params), TRUE);
+
+        $network = $form->network;
+        $api_call = Order::doubleRecovery($network_data, $network_params, $network);
     }
 }

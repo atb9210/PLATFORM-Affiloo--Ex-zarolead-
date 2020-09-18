@@ -262,7 +262,7 @@ export default {
         status: '',
         product: '',
       }
-      this.applyFilters()
+      this.filterDatesShortcut('last_7_days')
     },
     applyFilters() {
       this.$vs.loading()
@@ -358,6 +358,13 @@ export default {
           this.filters.date_from = this.formatDate(dateObj);
           this.filters.date_to = this.formatDate(dateObj);
         } break;
+        case 'last_7_days': {
+          let dateObjTo = new Date();
+          let dateObjFrom = new Date();
+          dateObjFrom.setDate(dateObjTo.getDate() - 6)
+          this.filters.date_from = this.formatDate(dateObjFrom);
+          this.filters.date_to = this.formatDate(dateObjTo);
+        } break;
         case 'this_month': {
           let dateObj = new Date();
           let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
@@ -391,13 +398,14 @@ export default {
     },
   },
   created() {
-    this.$vs.loading()
+    this.resetFilters()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
     // Retrieve products list
+    this.$vs.loading()
     this.$http.get('/api/v1/products', { headers })
       .then((response) => {
         this.orderProducts = []
@@ -419,9 +427,6 @@ export default {
           color: 'danger'
         })
       })
-
-    // Retrieve orders
-    this.retrieveObjects()
   },
 }
 

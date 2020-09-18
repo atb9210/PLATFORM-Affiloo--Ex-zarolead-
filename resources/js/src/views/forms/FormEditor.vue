@@ -166,6 +166,19 @@
                 />
               </vx-input-group>
             </div>
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Double Recovery</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['double_recovery'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-select v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'" @change="changeNetwork">
+                  <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in formsOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
           </div>
           </form>
         </tab-content>
@@ -299,10 +312,12 @@ export default {
       users: [],
       campaigns: [],
       networks: [],
+      forms: [],
       products: [],
       traffic_sources: [],
 
       networksOptions: [],
+      formsOptions: [],
       network_params: [],
       network_params_values: [],
 
@@ -340,6 +355,10 @@ export default {
         'zeustrack': {
           enabled: false,
           sub_id: '',
+        },
+        'double_recovery': {
+          enabled: false,
+          form_id: 0,
         },
       },
 
@@ -835,6 +854,28 @@ export default {
             label: campaign.name,
           })
           this.campaign = campaign.id;
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+
+    // Retrieve forms
+    this.$vs.loading()
+    this.$http.get('/api/v1/forms/', { headers })
+      .then((response) => {
+        this.forms = response.data.data
+        this.forms.forEach((form) => {
+          this.formsOptions.push({
+            id: form.id,
+            label: form.name + " - ID: " + form.id,
+          })
+          // TODO: HERE
+          if (this.form.plugins.hasOwnProperty('double_recovery') && 
+              form.id == this.form.plugins.double_recovery.form_id) {
+            this.plugins['double_recovery'].form_id = form.id;
+          }
         })
         this.$vs.loading.close()
       })

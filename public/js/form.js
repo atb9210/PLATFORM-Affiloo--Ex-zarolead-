@@ -323,7 +323,6 @@ Form.prototype.onSubmit = function(step) {
                 // Store the order's info
                 this.order = data.data;
 
-
                 // TODO: Maybe this should be before ajax call?
                 this.pluginManager.onSubmit();
 
@@ -331,7 +330,7 @@ Form.prototype.onSubmit = function(step) {
                 // NOTE: I put this here because I needed the thankyou_redirect plugin to be last
                 // one called, because it will redirect to a thankyou page after all the other plugins
                 // have been called
-                this.pluginManager.afterSubmit();
+                this.pluginManager.afterSubmit(data);
 
                 // Show thank you page
                 //var thankyou_page = $('#thankyou_page').val();

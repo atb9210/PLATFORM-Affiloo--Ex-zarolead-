@@ -32,7 +32,7 @@ FacebookPlugin.prototype.onSubmit = function() {
     this.fbPurchase();
 }
 
-FacebookPlugin.prototype.afterSubmit = function() {
+FacebookPlugin.prototype.afterSubmit = function(response) {
     console.log("FacebookPlugin afterSubmit");
 }
 

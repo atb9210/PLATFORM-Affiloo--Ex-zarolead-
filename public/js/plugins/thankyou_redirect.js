@@ -17,7 +17,7 @@ ThankyouRedirectPlugin.prototype.onVisit = function() {
 ThankyouRedirectPlugin.prototype.onSubmit = function() {
 }
 
-ThankyouRedirectPlugin.prototype.afterSubmit = function() {
+ThankyouRedirectPlugin.prototype.afterSubmit = function(response) {
     // TODO: This is custom code, this should not be here because this is
     // a general thankyou redirect plugin
     if (this.redirect_url.includes("?")) {

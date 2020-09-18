@@ -43,6 +43,7 @@ Route::apiResource('orders', 'api\v1\OrderController')->except([
 ])->middleware('auth:api');
 Route::post('orders', 'api\v1\OrderController@store')->name('orders.store');
 Route::put('orders/{id}', 'api\v1\OrderController@update')->name('orders.update');
+Route::post('orders/double-recovery', 'api\v1\OrderController@doubleRecovery')->name('orders.double.recovery');
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
