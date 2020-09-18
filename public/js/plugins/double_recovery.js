@@ -29,9 +29,6 @@ DoubleRecoveryPlugin.prototype.afterSubmit = function(response) {
             networkData: JSON.stringify(networkData)
         };
 
-        // TODO: to delete
-        console.log(data);
-
         $.ajax({
             url: this.API_URL + 'orders/double-recovery',
             method: "POST",
@@ -42,12 +39,6 @@ DoubleRecoveryPlugin.prototype.afterSubmit = function(response) {
                 console.log(response);
             }.bind(this),
             error: function(data) {
-                console.log("[!] ERROR: NOT STORED IN TRACKER DATABASE");
-                console.log(data);
-                $("#submit-button").removeAttr("disabled");
-                alert("Errore ordine!");
-                this.resetForm();
-                this.sendingForm = false;
             }.bind(this)
         });
     }
