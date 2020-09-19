@@ -308,6 +308,7 @@ class OrderController extends Controller
 
         return response([
             "message" => "Double order recovered",
+            "api_call" => $api_call,
         ]);
     }
 }

@@ -260,6 +260,8 @@ class Order extends Model {
                 $response = $server_output;
             }
         }
+
+        return $response;
     }
 
     public static function interpretParams(array $params, array $context) {
