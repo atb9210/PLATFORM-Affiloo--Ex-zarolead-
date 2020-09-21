@@ -64,6 +64,8 @@ Route::apiResource('advertisers', 'api\v1\AdvertiserController')->except([
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('traffic-sources/{id}/ad-model/validate', 'api\v1\TrafficSourceController@validateAdModel')->middleware('auth:api')
+    ->name('traffic-sources.ad-model.validate');
 
 /* Landings routes */
 Route::apiResource('landings', 'api\v1\LandingController')->except([
@@ -124,6 +126,15 @@ Route::post('networks/{id}/params/validate', 'api\v1\NetworkController@validateP
 Route::apiResource('campaigns', 'api\v1\CampaignController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+/* Ads routes */
+Route::apiResource('ads', 'api\v1\AdController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+Route::get('ads/{id}/file', 'api\v1\AdController@getAdFile')
+    ->name('ads.file');
+Route::get('ads/{id}/file-preview', 'api\v1\AdController@getAdFilePreview')
+    ->name('ads.file-preview');
 
 /* Reports routes */
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {

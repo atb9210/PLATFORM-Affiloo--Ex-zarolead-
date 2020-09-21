@@ -202,6 +202,14 @@ export default [
         ]
       },
       {
+        url: '/dashboard/ads',
+        name: 'Ads',
+        slug: 'ads',
+        icon: 'ImageIcon',
+        i18n: 'Ads',
+        roles: ['developer', 'admin', 'mediabuyer'],
+      },
+      {
         url: '/dashboard/invoices',
         name: 'Invoices',
         slug: 'invoices',

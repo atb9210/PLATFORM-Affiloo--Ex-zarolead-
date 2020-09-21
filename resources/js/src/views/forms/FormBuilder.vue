@@ -174,7 +174,7 @@
                     <vs-checkbox v-model="plugins['double_recovery'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'" @change="changeNetwork">
+                <vs-select v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'">
                   <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in formsOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -374,34 +374,6 @@ export default {
         },
       },
       editingQuantityOptionIndex: -1,
-
-      firstName: '',
-      lastName: '',
-      email: '',
-      city: 'new-york',
-      proposalTitle: '',
-      jobTitle: '',
-      textarea: '',
-      eventName: '',
-      eventLocation: 'san-francisco',
-      status: 'plannning',
-      cityOptions: [
-        { text: 'New York', value: 'new-york' },
-        { text: 'Chicago', value: 'chicago' },
-        { text: 'San Francisco', value: 'san-francisco' },
-        { text: 'Boston', value: 'boston' }
-      ],
-      statusOptions: [
-        { text: 'Plannning', value: 'plannning' },
-        { text: 'In Progress', value: 'in progress' },
-        { text: 'Finished', value: 'finished' }
-      ],
-      LocationOptions: [
-        { text: 'New York', value: 'new-york' },
-        { text: 'Chicago', value: 'chicago' },
-        { text: 'San Francisco', value: 'san-francisco' },
-        { text: 'Boston', value: 'boston' }
-      ]
     }
   },
   computed: {
@@ -425,7 +397,6 @@ export default {
       this.network_params_values = []
       if (this.network != '' && this.network > 0) {
         let index = this.getObjectIndexById(this.network, this.networks)
-        console.log("INDEX: " + index)
         if (index != -1 && this.networks[index].api.hasOwnProperty('form')
             && this.networks[index].api.form.hasOwnProperty('params')) {
           for (const [key, value] of Object.entries(this.networks[index].api.form.params)) {
@@ -434,16 +405,9 @@ export default {
             this.network_params[this.network_params.length - 1].validation = this.networks[index].api.form.validation.params[key];
             this.network_params_values.push('')
             this.network_params[this.network_params.length - 1].value = ''
-            console.log(this.network_params[this.network_params.length - 1])
           }
         }
       }
-    },
-    changeNetworkParam(index, newVal) {
-        console.log(this.network_params)
-        console.log("CALL INDEX: " + index + " val: " + newVal)
-        console.log(this.$refs['network_param_api_key'])
-      this.network_params[index].value = newVal
     },
     showForm(type) {
       this.showPopup[type] = true

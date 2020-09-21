@@ -1471,6 +1471,34 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/ads',
+          name: 'ads',
+          component: () => import('./views/Ads.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ads', active: true }
+            ],
+            pageTitle: 'Ads',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/ads/builder',
+          name: 'ad-builder',
+          component: () => import('./views/AdBuilder.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ad Builder', active: true }
+            ],
+            pageTitle: 'Ad Builder',
+            rule: 'editor'
+          }
+        },
 
         // =============================================================================
         // MY REPORTS

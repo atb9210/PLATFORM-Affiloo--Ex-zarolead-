@@ -70,6 +70,10 @@ class Form extends Model {
         return $this->hasMany('App\FormNote');
     }
 
+    public function ads() {
+        return $this->hasMany('App\Ad');
+    }
+
     // TODO: This should be deprecated (new version is getStats())
     public function getTotalStats($fromDate = '', $toDate = '', $admin = false) {
         $stats = array(

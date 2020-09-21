@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 use App\TrafficSource as TrafficSource;
 use App\Http\Resources\api\v1\TrafficSourceResource;
@@ -143,6 +144,40 @@ class TrafficSourceController extends Controller
 
         return response([
             'message' => 'Traffic source has been archived'
+        ]);
+    }
+
+    /**
+     * Traffic source validate params.
+     *
+     * @urlParam id int required Traffic source's id
+     *
+     * @bodyParam params json required Traffic source's params to validate
+     *
+     * @response {
+     *  "data": true,
+     * }
+     */
+    public function validateAdModel($id, Request $request)
+    {
+        $traffic_source = TrafficSource::findOrFail($id);
+
+        // Params validation
+        $params = $request->validate([
+            'params' => 'required|json',
+        ]);
+        $params['params'] = json_decode($params['params'], TRUE);
+
+        $rules = $traffic_source->getAdModel('validation.params');
+        $validator = Validator::make($params['params'], $rules);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
+        return response([
+            'data' => true
         ]);
     }
 }

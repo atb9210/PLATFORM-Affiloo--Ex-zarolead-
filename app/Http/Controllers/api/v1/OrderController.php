@@ -36,7 +36,7 @@ class OrderController extends Controller
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
             'filter_status' => 'nullable|integer|min:0',
-            'filter_product' => 'nullable|integer|min:0',
+            'filter_product' => 'nullable|integer|exists:products,id',
         ]);
 
         // Query orders (applying filters)

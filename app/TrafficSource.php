@@ -11,7 +11,7 @@ class TrafficSource extends Model {
      * @var array
      */
     protected $fillable = [
-        'name', 'custom_params',
+        'name', 'custom_params', 'ad_model',
     ];
 
     /**
@@ -23,10 +23,25 @@ class TrafficSource extends Model {
     ];
 
     protected $casts = [
-        'custom_params' => 'array'
+        'custom_params' => 'array',
+        'ad_model' => 'array'
     ];
 
-    public function forms() {
+    public function forms()
+    {
         return $this->hasMany('App\Form');
+    }
+
+    public function getAdModel($key)
+    {
+        $keys = explode('.', $key);
+        $ad_model = $this->ad_model;
+        for ($i = 0; $i < count($keys); $i++) {
+            if (!isset($ad_model[$keys[$i]])) {
+                return [];
+            }
+            $ad_model = $ad_model[$keys[$i]];
+        }
+        return $ad_model;
     }
 }

@@ -17,6 +17,7 @@ class CreateTrafficSourcesTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->json('custom_params')->nullable();
+            $table->json('ad_model')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });

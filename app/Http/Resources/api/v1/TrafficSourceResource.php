@@ -18,6 +18,7 @@ class TrafficSourceResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'custom_params' => $this->custom_params,
+            'ad_model' => $this->ad_model,
         ];
     }
 }
