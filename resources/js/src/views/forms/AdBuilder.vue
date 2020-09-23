@@ -490,10 +490,6 @@ export default {
 
       isValid = isValid && this.isValidUpload()
 
-      // TODO: to delete
-      console.log("isValid",isValid)
-      console.log("errors", this.errors)
-
       if(!isValid) {
         return new Promise((resolve, reject) => {
           reject('correct all values')

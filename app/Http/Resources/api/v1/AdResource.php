@@ -34,8 +34,8 @@ class AdResource extends JsonResource
                 'name' => $this->traffic_source->name,
             ],
             'form' => [
-                'id' => $this->traffic_source->id,
-                'name' => $this->traffic_source->name,
+                'id' => $this->form->id,
+                'name' => $this->form->name,
             ],
             'ctr' => $this->ctr,
             'cpc' => $this->cpc,

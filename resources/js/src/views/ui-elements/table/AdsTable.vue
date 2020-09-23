@@ -66,7 +66,7 @@
 
         <div v-if="showImagesGrid" class="images-grid w-full">
           <vs-images>
-            <vs-image :src="object.file_url_preview" :key="index" v-for="(object, index) in objects" />
+            <vs-image :src="object.file_url_preview" :key="index" v-for="(object, index) in objects" @click.native="showAdPopup(object.id)" />
           </vs-images>
         </div>
 
@@ -129,7 +129,7 @@
                         <div class="flex items-center">
                             <vs-button @click="showAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToAdEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button @click="downloadAd(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button>
+                            <a :href="data[indextr].file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
                             <!--<vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>-->
                         </div>
                     </vs-td>
@@ -155,17 +155,34 @@
             </template>
         </vs-table>
 
-        <!-- Form code popup -->
-        <vs-popup title="Form code" :active.sync="showPopup['code']">
-            <div class="vx-row mb-2">
-                <div class="vx-col w-1/3">
-                </div>
-                <div class="vx-col w-1/3">
-                    <label>Landing</label>
-                </div>
-                <div class="vx-col w-1/3">
-                </div>
+        <!-- Ad popup -->
+        <vs-popup title="Ad details" :active.sync="showPopup">
+          <div class="vx-row mb-2">
+            <div class="vx-col w-1/5">
             </div>
+            <div class="vx-col w-3/5">
+              <div class="w-full" v-if="canCreateAndEdit" >
+                <RouterLink class="mr-auto ml-auto mb-2" :to="'/dashboard/ads/editor/' + editingObject.id" v-if="canCreateAndEdit" @click="showPopup = false">
+                  <vs-button class="mr-auto ml-auto mb-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit" @click="showPopup = false"></vs-button>
+                </RouterLink>
+              </div>
+              <vs-textarea :label="item" disabled="true" :data="adModel" :key="index" v-for="(item, index) in adModel" v-model="adModelValues[item]"/>
+              <div>
+                  Type: <span>{{editingObject.type}}</span>
+              </div>
+              <div>
+                Main: <a :href="editingObject.file_url">Download</a>
+              </div>
+              <div>
+                Preview: <a :href="editingObject.file_url_preview">Download</a>
+              </div>
+              <div class="w-full">
+                <img class="w-full" :src="editingObject.file_url_preview" style="border: 1px solid gray" />
+              </div>
+            </div>
+            <div class="vx-col w-1/5">
+            </div>
+          </div>
         </vs-popup>
 
     </vx-card>
@@ -182,7 +199,6 @@ export default {
   },
   data () {
     return {
-      allObjects: [],
       objects: [],
       selected: [],
       deleted: [],
@@ -191,14 +207,6 @@ export default {
       images: [],
 
       maxItems: 20,
-
-      editingObject: -1,
-
-      showPopup: {
-        'create': false,
-        'edit': false,
-        'code': false,
-      },
 
       total_stats: {
         ctr: 0.0,
@@ -219,6 +227,16 @@ export default {
       formOptions: [],
 
       showImagesGrid: false,
+
+      showPopup: false,
+      adModel: [],
+      adModelValues: {},
+      editingObject: {
+        id: -1,
+        type: '',
+        file_url: '',
+        file_url_preview: '',
+      },
     }
   },
   computed: {
@@ -246,7 +264,7 @@ export default {
   methods: {
     getObjectIndexById(id) {
       var index = -1;
-      this.allObjects.forEach((obj, i) => {
+      this.objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
           return
@@ -298,255 +316,6 @@ export default {
             })
           })
       })
-    },
-    showForm(type) {
-      this.showPopup[type] = true
-    },
-    clearForm(type) {
-      this.newObject[type] = {
-        name: '',
-        campaign: '',
-        network: '',
-        product: '',
-        quantity: '',
-        price: 0,
-        commission: 0,
-        sub_commission: 0,
-        traffic_source: '',
-
-        fb_pixel: '',
-        sub_id: '',
-        api_call_url: '',
-
-        // Worldfilia
-        api_key: '',
-        source_id: '',
-
-        // Amsped
-        product_reference: '',
-
-        // Affiliation Park
-        offer_id: '',
-      }
-    },
-    createObject() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let data = {
-        name: this.newObject['create'].name,
-        campaign_id: this.newObject['create'].campaign.id,
-        network_id: this.newObject['create'].network.id,
-        product_id: this.newObject['create'].product.id,
-        quantity: this.newObject['create'].quantity,
-        price: this.newObject['create'].price,
-        commission: this.newObject['create'].commission,
-        sub_commission: this.newObject['create'].sub_commission,
-        traffic_source_id: this.newObject['create'].traffic_source.id,
-        
-        network_params: {
-        }
-      }
-      if (this.newObject['create'].network.label == 'Worldfilia') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          api_call_method: 'POST',
-          api_key: this.newObject['create'].api_key,
-          source_id: this.newObject['create'].source_id,
-        }
-      } else if (this.newObject['create'].network.label == 'Amsped') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          api_call_method: 'POST',
-          sub_id: this.newObject['create'].sub_id,
-          product_reference: this.newObject['create'].product_reference,
-        }
-      } else if (this.newObject['create'].network.label == 'Affiliation Park') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          api_call_method: 'GET',
-          sub_id: this.newObject['create'].sub_id,
-          offer_id: this.newObject['create'].offer_id,
-        }
-      }
-      data.network_params = JSON.stringify(data.network_params)
-
-      // Create form
-      this.$http.post('/api/v1/forms', data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Form created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.clearForm('create')
-          this.showPopup['create'] = false
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
-    editForm(id) {
-      let obj = this.allObjects[this.getObjectIndexById(id)]
-      this.newObject['edit'] = {
-        name: obj.name,
-        campaign: {
-          id: obj.campaign.id,
-          label: obj.campaign.name,
-        },
-        network: {
-          id: obj.network.id,
-          label: obj.network.name,
-        },
-        product: {
-          id: obj.product.id,
-          label: obj.product.name,
-        },
-        quantity: obj.quantity,
-        price: obj.price,
-        commission: obj.commission,
-        sub_commission: obj.sub_commission,
-        traffic_source: {
-          id: obj.traffic_source.id,
-          label: obj.traffic_source.name,
-        },
-
-        fb_pixel: '',
-        api_call_url: '',
-        sub_id: '',
-
-        // Worldfilia
-        api_key: '',
-        source_id: '',
-
-        // Amsped
-        product_reference: '',
-
-        // Affiliation Park
-        offer_id: '',
-      }
-      if (obj.hasOwnProperty('network_params')) {
-        if (obj.network_params.hasOwnProperty('fb_pixel')) {
-          this.newObject['edit'].fb_pixel = obj.network_params.fb_pixel
-        }
-        if (obj.network_params.hasOwnProperty('api_call_url')) {
-          this.newObject['edit'].api_call_url = obj.network_params.api_call_url
-        }
-        if (obj.network.name == 'Worldfilia') {
-          if (obj.network_params.hasOwnProperty('api_key')) {
-            this.newObject['edit'].api_key = obj.network_params.api_key
-          }
-          if (obj.network_params.hasOwnProperty('source_id')) {
-            this.newObject['edit'].source_id = obj.network_params.source_id
-          }
-        } else if (obj.network.name == 'Amsped') {
-          if (obj.network_params.hasOwnProperty('sub_id')) {
-            this.newObject['edit'].sub_id = obj.network_params.sub_id
-          }
-          if (obj.network_params.hasOwnProperty('product_reference')) {
-            this.newObject['edit'].product_reference = obj.network_params.product_reference
-          }
-        } else if (obj.network.name == 'Affiliation Park') {
-          if (obj.network_params.hasOwnProperty('sub_id')) {
-            this.newObject['edit'].sub_id = obj.network_params.sub_id
-          }
-          if (obj.network_params.hasOwnProperty('offer_id')) {
-            this.newObject['edit'].offer_id = obj.network_params.offer_id
-          }
-        }
-      }
-      this.editingObject = obj.id
-      this.showForm('edit')
-    },
-    updateObject() {
-      if (this.editingObject <= 0) return
-
-      let id = this.editingObject
-
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let data = {
-        name: this.newObject['edit'].name,
-        campaign_id: this.newObject['edit'].campaign.id,
-        network_id: this.newObject['edit'].network.id,
-        product_id: this.newObject['edit'].product.id,
-        quantity: this.newObject['edit'].quantity,
-        price: this.newObject['edit'].price,
-        commission: this.newObject['edit'].commission,
-        sub_commission: this.newObject['edit'].sub_commission,
-        traffic_source_id: this.newObject['edit'].traffic_source.id,
-      }
-      if (this.newObject['edit'].network.label == 'Worldfilia') {
-        data.network_params = {
-          fb_pixel: this.newObject['edit'].fb_pixel,
-          api_call_url: this.newObject['edit'].api_call_url,
-          api_call_method: 'POST',
-          api_key: this.newObject['edit'].api_key,
-          source_id: this.newObject['edit'].source_id,
-        }
-      } else if (this.newObject['edit'].network.label == 'Amsped') {
-        data.network_params = {
-          fb_pixel: this.newObject['edit'].fb_pixel,
-          api_call_url: this.newObject['edit'].api_call_url,
-          api_call_method: 'POST',
-          sub_id: this.newObject['edit'].sub_id,
-          product_reference: this.newObject['edit'].product_reference,
-        }
-      } else if (this.newObject['edit'].network.label == 'Affiliation Park') {
-        data.network_params = {
-          fb_pixel: this.newObject['edit'].fb_pixel,
-          api_call_url: this.newObject['edit'].api_call_url,
-          api_call_method: 'GET',
-          sub_id: this.newObject['edit'].sub_id,
-          offer_id: this.newObject['edit'].offer_id,
-        }
-      }
-      data.network_params = JSON.stringify(data.network_params)
-
-      this.$http.put('/api/v1/forms/' + id, data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Form updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-      this.showPopup['edit'] = false
-      this.editingObject = -1
     },
     deleteObject(id) {
       this.$vs.loading()
@@ -647,9 +416,7 @@ export default {
       // Retrieve forms
       this.$http.get('/api/v1/ads', { headers, params: data })
         .then((response) => {
-          this.allObjects = response.data.data
-
-          this.objects = this.allObjects
+          this.objects = response.data.data
 
           this.calculateStats()
           this.$vs.loading.close()
@@ -713,9 +480,21 @@ export default {
     },
     showAdPopup(id) {
       this.showAdId = id
-      // TODO: 
-    },
-    downloadAd(id) {
+      let objIndex = this.getObjectIndexById(id)
+      if (objIndex < 0) {
+        return
+      }
+      let obj = this.objects[objIndex]
+      this.editingObject = obj
+
+      this.adModel = []
+      this.adModelValues = {}
+      for (const [key, value] of Object.entries(obj.info)) {
+        this.adModel.push(key)
+        this.adModelValues[key] = value
+      }
+
+      this.showPopup = true
     },
   },
   created() {

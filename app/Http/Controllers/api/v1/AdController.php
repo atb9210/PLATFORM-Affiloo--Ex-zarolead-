@@ -152,6 +152,88 @@ class AdController extends Controller
     }
 
     /**
+     * Update the ad's fields.
+     *
+     * @urlParam id int required Form's id
+     *
+     * @bodyParam form_id int Ad's form id
+     * @bodyParam traffic_source_id int Ad's traffic source id
+     * @bodyParam ctr float Ad's CTR
+     * @bodyParam cpc float Ad's CPC
+     * @bodyParam cpa float Ad's CPA
+     * @bodyParam info json Ad's info (title and text for example...)
+     * @bodyParam type string Ad's type (image, video)
+     * @bodyParam file file Ad's image or video
+     * @bodyParam file_preview file Ad's preview
+     *
+     * @response {
+     *  "data": ad,
+     * }
+     */
+    public function update(Request $request, $id)
+    {
+        $ad = Ad::findOrFail($id);
+        $this->authorize('update', $ad);
+
+        // Params validation
+        $params = $request->validate([
+            'traffic_source_id' => 'integer|exists:traffic_sources,id',
+            'form_id' => 'integer|exists:forms,id',
+            'ctr' => 'numeric|min:0',
+            'cpc' => 'numeric|min:0',
+            'cpa' => 'numeric|min:0',
+            'info' => 'json',
+            'type' => 'in:image,video',
+            'file' => 'mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
+            'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
+        ]);
+
+        // Validate info JSON
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], TRUE);
+            $traffic_source = TrafficSource::findOrFail($params['traffic_source_id']);
+            $rules = $traffic_source->getAdModel('validation');
+            $validator = Validator::make($params['info'], $rules);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the info JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
+
+        // File(s) check
+        $file_uploaded = false;
+        $file_preview_uploaded = false;
+        $file = '';
+        if ($request->hasFile('file')) {
+            $file_uploaded = true;
+        }
+        if ($request->hasFile('file_preview')) {
+            $file_preview_uploaded = true;
+        }
+
+        // Delete old file(s) and upload new ones
+        if ($file_uploaded) {
+            $file = $request->file('file');
+            Storage::disk('dropbox')->delete($ad->getStoragePathname());
+            $path = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file, $ad->getFilename());
+            $params['original_file_name'] = $file->getClientOriginalName();
+            $params['pathname'] = $path;
+        }
+        if ($file_preview_uploaded) {
+            $file_preview = $request->file('file_preview');
+            Storage::disk('dropbox')->delete($ad->getStoragePathname('preview'));
+            $path_preview = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file_preview, $ad->getFilename('preview'));
+            $params['original_file_name_preview'] = $request->file('file_preview')->getClientOriginalName();
+            $params['pathname_preview'] = $path_preview;
+        }
+        $ad->update($params);
+
+        return response(new AdResource($ad));
+    }
+
+    /**
      * Get ad's image/video.
      *
      * @urlParam id int required Ad's id

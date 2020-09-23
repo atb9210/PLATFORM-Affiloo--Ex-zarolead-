@@ -1499,6 +1499,20 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/ads/editor/:ad_id',
+          name: 'ad-editor',
+          component: () => import('./views/AdEditor.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ad Editor', active: true }
+            ],
+            pageTitle: 'Ad Editor',
+            rule: 'editor'
+          }
+        },
 
         // =============================================================================
         // MY REPORTS

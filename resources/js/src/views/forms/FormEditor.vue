@@ -681,7 +681,7 @@ export default {
 
         console.log(data)
 
-        // Create form
+        // Edit form
         this.$http.put('/api/v1/forms/' + this.form_id, data, { headers: headers })
           .then((response) => {
             this.$vs.loading.close()
@@ -722,7 +722,6 @@ export default {
     this.$vs.loading()
     this.$http.get('/api/v1/forms/' + this.form_id, { headers })
       .then((response) => {
-        console.log(response.data.data)
         this.form = response.data.data
 
         // Fetch general info

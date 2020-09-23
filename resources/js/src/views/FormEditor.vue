@@ -22,9 +22,9 @@ export default{
     FormEditor
   },
   data() {
-      return {
-        form_id: 0,
-      }
+    return {
+      form_id: 0,
+    }
   },
   methods: {
   },

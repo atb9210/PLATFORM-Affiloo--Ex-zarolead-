@@ -129,8 +129,10 @@ Route::apiResource('campaigns', 'api\v1\CampaignController')->except([
 
 /* Ads routes */
 Route::apiResource('ads', 'api\v1\AdController')->except([
-    'create', 'edit',
+    'create', 'edit', 'update',
 ])->middleware('auth:api');
+Route::post('ads/{id}/update', 'api\v1\AdController@update')->middleware('auth:api')
+    ->name('ads.update');
 Route::get('ads/{id}/file', 'api\v1\AdController@getAdFile')
     ->name('ads.file');
 Route::get('ads/{id}/file-preview', 'api\v1\AdController@getAdFilePreview')
