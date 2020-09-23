@@ -546,7 +546,7 @@ export default {
             if (this.filePreviewToUpload != '') {
               formData.append('file_preview', this.filePreviewToUpload)
             }
-            this.$http.post('/api/v1/ads/', formData, config)
+            this.$http.post('/api/v1/ads', formData, config)
               .then((response) => {
                 this.$vs.loading.close()
                 this.$vs.notify({
