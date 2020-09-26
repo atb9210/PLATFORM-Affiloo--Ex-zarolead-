@@ -17,7 +17,7 @@
             <RouterLink to="/dashboard/forms/builder" v-if="canCreateAndEdit">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
             </RouterLink>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
