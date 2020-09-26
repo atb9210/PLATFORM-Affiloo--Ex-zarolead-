@@ -234,52 +234,28 @@ class AdController extends Controller
     }
 
     /**
-     * Get ad's image/video.
+     * Delete the specified ad.
      *
      * @urlParam id int required Ad's id
      *
      * @response {
-     *  image/video,
+     *  "message": "Ad has been deleted",
      * }
      */
-    public function getAdFile($id)
+    public function destroy($id)
     {
         $ad = Ad::findOrFail($id);
-		if(!Storage::disk('dropbox')->exists($ad->pathname)) {
-            return response([
-                'error' => 'File not found in storage!',
-            ], 404);
-        }
-        $contents = Storage::disk('dropbox')->get($ad->pathname);
-        return response($contents)
-            ->header('Content-Type', Storage::disk('dropbox')->mimeType($ad->pathname));
-    }
 
-    /**
-     * Get ad's preview image.
-     *
-     * @urlParam id int required Ad's id
-     *
-     * @response {
-     *  image,
-     * }
-     */
-    public function getAdFilePreview($id)
-    {
-        $ad = Ad::findOrFail($id);
-        $pathname = '';
-        if ($ad->type == 'image') {
-            $pathname = $ad->pathname;
-        } elseif ($ad->type == 'video' && $ad->pathname_preview != '') {
-            $pathname = $ad->pathname_preview;
-        }
-		if($pathname == '' || !Storage::disk('dropbox')->exists($pathname)) {
-            return response([
-                'error' => 'File not found in storage!',
-            ], 404);
-        }
-        $file = Storage::disk('dropbox')->get($pathname);
-        return response($file)
-            ->header('Content-Type', Storage::disk('dropbox')->mimeType($pathname));
+        $this->authorize('delete', $ad);
+
+        // Delete the ad image/video (and preview)
+        Storage::disk('dropbox')->deleteDirectory($ad->getStoragePath());
+
+        // Delete the ad record
+        $ad->delete();
+
+        return response([
+            'message' => 'Ad has been deleted'
+        ]);
     }
 }

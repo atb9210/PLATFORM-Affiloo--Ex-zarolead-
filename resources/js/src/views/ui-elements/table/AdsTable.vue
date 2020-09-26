@@ -17,7 +17,7 @@
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
             </RouterLink>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(showImagesGrid) ? 'icon-list' : 'icon-grid'" @click="showImagesGrid = !showImagesGrid"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -130,7 +130,7 @@
                             <vs-button @click="showAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToAdEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <a :href="data[indextr].file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
-                            <!--<vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>-->
+                            <vs-button v-if="canCreateAndEdit" @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
 
@@ -258,7 +258,8 @@ export default {
       },
     },
     canCreateAndEdit() {
-      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+        this.$store.getters.userHasRole('mediabuyer') || this.$store.getters.userHasRole('buyer'))
     }
   },
   methods: {
@@ -286,16 +287,16 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.selected.forEach((form) => {
-        this.$http.delete('/api/v1/forms/' + form.id, { headers })
+      this.selected.forEach((ad) => {
+        this.$http.delete('/api/v1/ads/' + ad.id, { headers })
           .then((response) => {
-            this.deleted.push(form.id)
+            this.deleted.push(ad.id)
             if (this.deleted.length == this.selected.length) {
               this.$vs.loading.close()
               this.selected = []
               this.$vs.notify({
                 title: 'Success',
-                text: this.deleted.length + ' Form(s) deleted',
+                text: this.deleted.length + ' Ad(s) deleted',
                 iconPack: 'feather',
                 icon: 'icon-alert-circle',
                 color: 'success'
@@ -324,12 +325,12 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.$http.delete('/api/v1/forms/' + id, { headers })
+      this.$http.delete('/api/v1/ads/' + id, { headers })
         .then((response) => {
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Success',
-            text: 'Form deleted',
+            text: 'Ad deleted',
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'success'

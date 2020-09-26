@@ -207,7 +207,7 @@ export default [
         slug: 'ads',
         icon: 'ImageIcon',
         i18n: 'Ads',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/invoices',

@@ -132,11 +132,8 @@ Route::apiResource('ads', 'api\v1\AdController')->except([
     'create', 'edit', 'update',
 ])->middleware('auth:api');
 Route::post('ads/{id}/update', 'api\v1\AdController@update')->middleware('auth:api')
-    ->name('ads.update');
-Route::get('ads/{id}/file', 'api\v1\AdController@getAdFile')
-    ->name('ads.file');
-Route::get('ads/{id}/file-preview', 'api\v1\AdController@getAdFilePreview')
-    ->name('ads.file-preview');
+    ->name('ads.update'); // This must be declared this way because the put method
+                          // has some problems when uploading a file
 
 /* Reports routes */
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
