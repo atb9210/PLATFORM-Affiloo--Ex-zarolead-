@@ -29,8 +29,6 @@ class AdController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', 'App\Ad');
-
         // Param validation
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
@@ -40,6 +38,9 @@ class AdController extends Controller
         ]);
 
         $ads = Ad::query();
+        if(!Auth::user()->can('viewAny', 'App\Ad')) {
+            $ads = $ads->where('user_id', Auth::user()->id);
+        }
         if (isset($params['filter_date_from'])) {
             $ads = $ads->where('created_at', '>=', $params['filter_date_from'] . " 00:00:00");
         }
@@ -106,6 +107,7 @@ class AdController extends Controller
             'file' => 'required|mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
             'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
         ]);
+        $params['user_id'] = Auth::user()->id;
 
         // Validate info JSON
         $params['info'] = json_decode($params['info'], TRUE);

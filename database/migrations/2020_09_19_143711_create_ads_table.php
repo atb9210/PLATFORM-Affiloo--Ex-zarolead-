@@ -15,6 +15,7 @@ class CreateAdsTable extends Migration
     {
         Schema::create('ads', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('traffic_source_id')->unsigned();
             $table->bigInteger('form_id')->unsigned();
             $table->decimal('ctr', 9, 2)->default(0.0);
@@ -28,6 +29,7 @@ class CreateAdsTable extends Migration
             $table->string('original_file_name_preview')->nullable();
             $table->timestamps();
 
+			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
 			$table->foreign('form_id')->references('id')->on('forms');
         });

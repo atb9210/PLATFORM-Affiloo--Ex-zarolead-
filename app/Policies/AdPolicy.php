@@ -30,7 +30,7 @@ class AdPolicy
      */
     public function view(User $user, Ad $ad)
     {
-        return $user->hasPermission('ad', 'viewAny');
+        return $user->hasPermission('ad', 'viewAny') || ($user->id === $ad->user_id);
     }
 
     /**
@@ -53,7 +53,7 @@ class AdPolicy
      */
     public function update(User $user, Ad $ad)
     {
-        return $user->hasPermission('ad', 'update');
+        return $user->hasPermission('ad', 'update') || ($user->id === $ad->user_id);
     }
 
     /**
@@ -65,7 +65,7 @@ class AdPolicy
      */
     public function delete(User $user, Ad $ad)
     {
-        return $user->hasPermission('ad', 'delete');
+        return $user->hasPermission('ad', 'delete') || ($user->id === $ad->user_id);
     }
 
     /**

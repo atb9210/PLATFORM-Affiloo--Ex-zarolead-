@@ -12,6 +12,7 @@ class Ad extends Model
      * @var array
      */
     protected $fillable = [
+        'user_id',
         'traffic_source_id', 'form_id',
         'ctr', 'cpc', 'cpa',
         'info', 'type',
@@ -29,6 +30,11 @@ class Ad extends Model
     protected $casts = [
         'info' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo('App\User', 'user_id');
+    }
 
     public function traffic_source()
     {
