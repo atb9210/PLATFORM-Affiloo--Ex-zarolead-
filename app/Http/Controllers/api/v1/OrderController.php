@@ -304,6 +304,37 @@ class OrderController extends Controller
         $network_data = json_decode($params['network_data'], TRUE);
         $network_params = json_decode(json_encode($form->network_params), TRUE);
 
+        $price = 0.0;
+        $commission = 0.0;
+        $sub_commission = 0.0;
+        if (isset($form->quantity['options']) && count($form->quantity['options']) >= 1) {
+            $k = '';
+            if (isset($network_data['quantity'])) {
+                $k = $network_data['quantity'];
+            }
+            if ($k == '' || !isset($form->quantity['options'][$k])) {
+                if (count($form->quantity['options']) >= 1) {
+                    $k = key($form->quantity['options']);
+                }
+            }
+            if ($k != '') {
+                if (isset($form->quantity['options'][$k]['price'])) {
+                    $price = $form->quantity['options'][$k]['price'];
+                }
+                if (isset($form->quantity['options'][$k]['commission'])) {
+                    $commission = $form->quantity['options'][$k]['commission'];
+                }
+                if (isset($form->quantity['options'][$k]['sub_commission'])) {
+                    $sub_commission = $form->quantity['options'][$k]['sub_commission'];
+                }
+            }
+        }
+
+        $network_data['price'] = $price;
+        $network_data['commission'] = $price;
+        $network_data['sub_commission'] = $price;
+        $network_data['ip'] = $request->ip();
+
         $network = $form->network;
         $api_call = Order::doubleRecovery($network_data, $network_params, $network);
 
