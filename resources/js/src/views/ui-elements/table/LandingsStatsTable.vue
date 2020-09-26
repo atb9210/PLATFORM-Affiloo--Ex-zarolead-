@@ -362,7 +362,7 @@ export default {
       this.total_stats.cr = cr
       this.total_stats.epv = epv
 
-      this.total_stats.total_commission = this.total_commission.total_cost.toFixed(2)
+      this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
     },
     onPageChanged(val) {
       this.currentPage = val
