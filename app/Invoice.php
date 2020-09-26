@@ -8,7 +8,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
-class Invoice extends Model {
+class Invoice extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -98,11 +99,13 @@ class Invoice extends Model {
     private const TRANSACTION_AMOUNT_COL_NUMBER = 9;
     private const TRANSACTION_CURRENCY_COL_NUMBER = 10;
 
-    public function user() {
+    public function user()
+    {
 		return $this->belongsTo('App\User', 'user_id');
 	}
 
-    public function getStoragePath() {
+    public function getStoragePath()
+    {
         $pathname = env('DROPBOX_FOLDER') . '/invoices/';
         $formatted_date = \Carbon\Carbon::parse($this->invoice_date)->format('Y-m-d');
         $tmp = explode('-', $formatted_date);
@@ -110,15 +113,18 @@ class Invoice extends Model {
         return $pathname;
     }
 
-    public function getFilename() {
+    public function getFilename()
+    {
         return $this->transaction_id . '.pdf';
     }
 
-    public function getStoragePathname() {
+    public function getStoragePathname()
+    {
         return $this->getStoragePath() . '/' . $this->getFilename();
     }
 
-    private static function fetchRawData(UploadedFile $file) {
+    private static function fetchRawData(UploadedFile $file)
+    {
         $rawData = array(
     		'language' => '',
     		'invoice_date' => '',
@@ -191,7 +197,8 @@ class Invoice extends Model {
     	return $rawData;
     }
 
-    private static function processRawData(array $rawData) {
+    private static function processRawData(array $rawData)
+    {
         $invoiceData = array(
     		'language' => '',
     		'invoice_date' => '',
@@ -294,7 +301,8 @@ class Invoice extends Model {
     	return $invoiceData;
     }
 
-    public static function createFromFile(UploadedFile $file) {
+    public static function createFromFile(UploadedFile $file)
+    {
         $invoiceParams = self::processRawData(self::fetchRawData($file));
         $invoiceParams['original_file_name'] = $file->getClientOriginalName();
 

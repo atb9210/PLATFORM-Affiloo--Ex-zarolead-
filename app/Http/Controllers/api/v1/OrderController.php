@@ -144,6 +144,7 @@ class OrderController extends Controller
         $network_data['price'] = $price;
         $network_data['commission'] = $price;
         $network_data['sub_commission'] = $price;
+        $network_data['ip'] = $request->ip();
 
         // Create order
         $order = Order::create($params);

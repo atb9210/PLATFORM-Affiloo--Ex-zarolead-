@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use App\Network;
 
-class Order extends Model {
+class Order extends Model
+{
     /**
     * The attributes that are mass assignable.
     *
@@ -25,23 +26,28 @@ class Order extends Model {
         'network_data' => 'array',
     ];
     
-    public function status() {
+    public function status()
+    {
         return $this->belongsTo('App\OrderStatus', 'order_status_id');
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public function product() {
+    public function product()
+    {
         return $this->belongsTo('App\Product', 'product_id');
     }
 
-    public function network() {
+    public function network()
+    {
         return $this->belongsTo('App\Network', 'network_id');
     }
 
-    public function sendToNetwork(array $input, array $form, Network $network) {
+    public function sendToNetwork(array $input, array $form, Network $network)
+    {
         // Variables to return
         $status = 'error';
         $postbackFlag = false;
@@ -212,7 +218,8 @@ class Order extends Model {
         ];
     }
 
-    public static function doubleRecovery(array $input, array $form, Network $network) {
+    public static function doubleRecovery(array $input, array $form, Network $network)
+    {
         // Define context
         $context = [
             'input' => $input,
@@ -264,7 +271,8 @@ class Order extends Model {
         return $response;
     }
 
-    public static function interpretParams(array $params, array $context) {
+    public static function interpretParams(array $params, array $context)
+    {
         $interpretedParams = [];
         foreach ($params as $key => $value) {
             $interpretedParams[$key] = self::interpretParam($value, $context);
@@ -272,7 +280,8 @@ class Order extends Model {
         return $interpretedParams;
     }
 
-    public static function interpretParam(string $param, array $context) {
+    public static function interpretParam(string $param, array $context)
+    {
         $interpreted = '';
 
         $matches = [];
@@ -299,7 +308,8 @@ class Order extends Model {
         return $interpreted;
     }
 
-    public function sendToNetworkOld($network_data, $network_params) {
+    public function sendToNetworkOld($network_data, $network_params)
+    {
         $server_output = [];
 
         $api_call_url = $network_params['api_call_url'];

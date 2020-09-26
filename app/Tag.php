@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Tag extends Model {
+class Tag extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -18,15 +19,18 @@ class Tag extends Model {
         'info' => 'array'
     ];
 
-    public function forms() {
+    public function forms()
+    {
         return $this->hasMany('App\Form');
     }
 
-    public function products() {
+    public function products()
+    {
         return $this->hasMany('App\Product');
     }
 
-    public function landings() {
+    public function landings()
+    {
         return $this->hasMany('App\Landing');
     }
 }

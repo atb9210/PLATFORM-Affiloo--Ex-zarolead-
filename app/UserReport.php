@@ -17,11 +17,13 @@ class UserReport extends Model
         'notes',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public static function getObject($user_id, $date) {
+    public static function getObject($user_id, $date)
+    {
     	$report = UserReport::where('user_id', '=', $user_id)
     		->where('day', '=', $date);
 

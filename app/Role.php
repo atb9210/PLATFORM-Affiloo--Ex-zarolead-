@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model {
+class Role extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -18,11 +19,13 @@ class Role extends Model {
         'permissions' => 'array'
     ];
 
-    public function users() {
+    public function users()
+    {
         return $this->belongsToMany('App\User', 'role_user');
     }
 
-    public function hasPermission($object, $action) {
+    public function hasPermission($object, $action)
+    {
         if (isset($this->permissions["*"]) && $this->permissions["*"]) {
             return true;
         }

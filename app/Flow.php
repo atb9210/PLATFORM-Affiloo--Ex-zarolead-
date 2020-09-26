@@ -20,7 +20,8 @@ class Flow extends Model
 
     protected static $directory = 'flo';
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo('App\User', 'user_id');
     }
 

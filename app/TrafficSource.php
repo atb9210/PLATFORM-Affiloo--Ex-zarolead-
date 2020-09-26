@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TrafficSource extends Model {
+class TrafficSource extends Model
+{
     /**
      * The attributes that are mass assignable.
      *

@@ -171,7 +171,7 @@ class NetworksTableSeeder extends Seeder
                             'external_notes' => '',
                             'product_reference' => '{form.product_reference}',
                             'product_name' => '{form.product_name}',
-                            'ip_address' => '',
+                            'ip_address' => '{input.ip}',
                         ],
                         'validation' => [
                             'urlParams' => [
@@ -286,6 +286,7 @@ class NetworksTableSeeder extends Seeder
                             'quantity' => '{input.quantity}',
                             'price' => '{input.price}',
                             'address' => '{input.address}',
+                            'ip' => '{input.ip}',
                         ],
                         'validation' => [
                             'urlParams' => [

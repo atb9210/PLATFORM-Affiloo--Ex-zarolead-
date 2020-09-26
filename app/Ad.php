@@ -30,20 +30,24 @@ class Ad extends Model
         'info' => 'array',
     ];
 
-    public function traffic_source() {
+    public function traffic_source()
+    {
         return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
     }
 
-    public function form() {
+    public function form()
+    {
         return $this->belongsTo('App\Form', 'form_id');
     }
 
-    public function getStoragePath() {
+    public function getStoragePath()
+    {
         $pathname = env('DROPBOX_FOLDER') . '/ads/' . $this->id;
         return $pathname;
     }
 
-    public function getFilename($what = 'main') {
+    public function getFilename($what = 'main')
+    {
         $file_name = '';
         if ($what == 'preview') {
             $file_name = $this->original_file_name_preview;
@@ -56,7 +60,8 @@ class Ad extends Model
         return $what . '.' . $ext;
     }
 
-    public function getStoragePathname($what = 'main') {
+    public function getStoragePathname($what = 'main')
+    {
         return $this->getStoragePath() . '/' . $this->getFilename($what);
     }
 }

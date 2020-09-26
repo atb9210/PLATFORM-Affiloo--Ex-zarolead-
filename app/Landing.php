@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Landing extends Model {
+class Landing extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -14,11 +15,13 @@ class Landing extends Model {
         'user_id', 'name', 'form_id', 'url', 'country'
     ];
 
-	public function form() {
+	public function form()
+    {
 		return $this->belongsTo('App\Form', 'form_id');
 	}
 
-    public function stats() {
+    public function stats()
+    {
         return $this->hasMany('App\LandingStats');
     }
 

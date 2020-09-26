@@ -28,11 +28,13 @@ class LandingStats extends Model
         'info' => 'array'
     ];
 
-    public function landing() {
+    public function landing()
+    {
         return $this->belongsTo('App\Landing', 'landing_id');
     }
 
-    public static function getObject($landing_id, $date) {
+    public static function getObject($landing_id, $date)
+    {
     	$stats = LandingStats::where('landing_id', '=', $landing_id)
     		->where('day', '=', $date);
 

@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Form extends Model {
+class Form extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -34,48 +35,59 @@ class Form extends Model {
         'plugins' => 'array',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public function campaign() {
+    public function campaign()
+    {
         return $this->belongsTo('App\Campaign', 'campaign_id');
     }
 
-    public function landings() {
+    public function landings()
+    {
         return $this->hasMany('App\Landing');
     }
 
-    public function network() {
+    public function network()
+    {
         return $this->belongsTo('App\Network', 'network_id');
     }
 
-    public function product() {
+    public function product()
+    {
         return $this->belongsTo('App\Product', 'product_id');
     }
 
-    public function tag() {
+    public function tag()
+    {
         return $this->belongsTo('App\Tag', 'tag_id');
     }
 
-    public function traffic_source() {
+    public function traffic_source()
+    {
         return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
     }
 
-    public function stats() {
+    public function stats()
+    {
         return $this->hasMany('App\FormStats');
     }
 
-    public function notes() {
+    public function notes()
+    {
         return $this->hasMany('App\FormNote');
     }
 
-    public function ads() {
+    public function ads()
+    {
         return $this->hasMany('App\Ad');
     }
 
     // TODO: This should be deprecated (new version is getStats())
-    public function getTotalStats($fromDate = '', $toDate = '', $admin = false) {
+    public function getTotalStats($fromDate = '', $toDate = '', $admin = false)
+    {
         $stats = array(
             'visits' => 0,
             'leads' => 0,
@@ -156,7 +168,8 @@ class Form extends Model {
         ];
     }
 
-    public static function generateHTML($data) {
+    public static function generateHTML($data)
+    {
         $generated = true;
     	$form_html = 'Network non riconosciuto!' . $data['network'];
 

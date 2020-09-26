@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Advertiser extends Model {
+class Advertiser extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -14,7 +15,8 @@ class Advertiser extends Model {
         'name',
     ];
 
-    public function products() {
+    public function products()
+    {
         return $this->hasMany('App\Product');
     }
 }

@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderStatus extends Model {
+class OrderStatus extends Model
+{
     const WAITING = 1;
     const CONFIRMED = 2;
     const NOT_RESPONDING = 3;
@@ -43,7 +44,8 @@ class OrderStatus extends Model {
         'description',
     ];
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany('App\Order');
     }
 }

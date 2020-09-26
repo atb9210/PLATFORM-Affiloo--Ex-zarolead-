@@ -7,7 +7,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
 
-class User extends Authenticatable {
+class User extends Authenticatable
+{
     use HasApiTokens, Notifiable;
 
     /**
@@ -32,7 +33,8 @@ class User extends Authenticatable {
         'info' => 'array'
     ];
 
-    public function hasPermission($object, $permission) {
+    public function hasPermission($object, $permission)
+    {
         foreach ($this->roles as $role) {
             if ($role->hasPermission($object, $permission)) {
                 return true;
@@ -41,7 +43,8 @@ class User extends Authenticatable {
         return false;
     }
 
-    public function setPermission($permission, $value) {
+    public function setPermission($permission, $value)
+    {
         $data = array();
         if (isset($this->info) && is_array($this->info)) {
             $data = $this->info;
@@ -58,31 +61,38 @@ class User extends Authenticatable {
         $this->save();
     }
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany('App\Order');
     }
 
-    public function campaigns() {
+    public function campaigns()
+    {
         return $this->hasMany('App\Campaign');
     }
 
-    public function flows() {
+    public function flows()
+    {
         return $this->hasMany('App\Flows');
     }
 
-    public function forms() {
+    public function forms()
+    {
         return $this->hasMany('App\Form');
     }
 
-    public function reports() {
+    public function reports()
+    {
         return $this->hasMany('App\UserReport');
     }
 
-    public function roles() {
+    public function roles()
+    {
         return $this->belongsToMany('App\Role', 'role_user');
     }
 
-    public function invoices() {
+    public function invoices()
+    {
         return $this->hasMany('App\Invoice');
     }
 }

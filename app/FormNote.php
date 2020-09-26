@@ -10,7 +10,8 @@ class FormNote extends Model
         'user_id', 'form_id', 'body',
     ];
 
-	public function form() {
+	public function form()
+    {
 		return $this->belongsTo('App\Form', 'form_id');
 	}
 }

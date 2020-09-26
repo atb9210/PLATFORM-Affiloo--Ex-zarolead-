@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Network extends Model {
+class Network extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -18,15 +19,18 @@ class Network extends Model {
         'api' => 'array'
     ];
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany('App\Order');
     }
 
-    public function forms() {
+    public function forms()
+    {
         return $this->hasMany('App\Form');
     }
 
-    public function getApi($key) {
+    public function getApi($key)
+    {
         $keys = explode('.', $key);
         $api = $this->api;
         for ($i = 0; $i < count($keys); $i++) {
