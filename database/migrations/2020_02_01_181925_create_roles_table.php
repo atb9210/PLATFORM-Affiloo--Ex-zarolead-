@@ -53,9 +53,9 @@ class CreateRolesTable extends Migration
                     ],
                     "form" => [
                         "viewAny" => false,
-                        "create" => false,
-                        "update" => false,
-                        "delete" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
                     ],
                     "landing" => [
                         "viewAny" => false,
@@ -77,6 +77,9 @@ class CreateRolesTable extends Migration
                     ],
                     "network" => [
                         "viewAny" => true,
+                    ],
+                    "ad" => [
+                        "*" => true,
                     ],
                 ],
             ],
@@ -112,9 +115,9 @@ class CreateRolesTable extends Migration
                     ],
                     "form" => [
                         "viewAny" => false,
-                        "create" => false,
-                        "update" => false,
-                        "delete" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
                     ],
                     "landing" => [
                         "viewAny" => false,
@@ -136,6 +139,9 @@ class CreateRolesTable extends Migration
                     ],
                     "network" => [
                         "viewAny" => true,
+                    ],
+                    "ad" => [
+                        "*" => true,
                     ],
                 ],
             ],

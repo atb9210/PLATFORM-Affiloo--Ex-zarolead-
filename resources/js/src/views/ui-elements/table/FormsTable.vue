@@ -765,7 +765,8 @@ export default {
               this.$store.getters.userHasRole('mediabuyer'))
     },
     canCreateAndEdit() {
-      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('mediabuyer') || this.$store.getters.userHasRole('buyer'))
     }
   },
   methods: {
