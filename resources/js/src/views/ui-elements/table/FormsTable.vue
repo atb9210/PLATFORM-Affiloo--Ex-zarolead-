@@ -1252,6 +1252,9 @@ export default {
       this.total_stats.cpv = cpv
       this.total_stats.epv = epv
       this.total_stats.cpl = cpl
+
+      this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
+      this.total_stats.total_commission = this.total_commission.total_cost.toFixed(2)
     },
     resetFilters() {
       this.filters = {

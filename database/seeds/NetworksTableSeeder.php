@@ -286,7 +286,7 @@ class NetworksTableSeeder extends Seeder
                             'quantity' => '{input.quantity}',
                             'price' => '{input.price}',
                             'address' => '{input.address}',
-                            'ip' => '{input.ip}',
+                            'userip' => '{input.ip}',
                         ],
                         'validation' => [
                             'urlParams' => [

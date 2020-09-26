@@ -380,6 +380,11 @@ export default {
       roi = roi.toFixed(2)
 
       this.total_stats.roi = roi
+
+      this.total_stats.cost = this.total_stats.cost.toFixed(2)
+      this.total_stats.extra_cost = this.total_stats.extra_cost.toFixed(2)
+      this.total_stats.commission = this.commission.commission.toFixed(2)
+      this.total_stats.profit = this.commission.profit.toFixed(2)
     },
   },
   created() {
