@@ -15,6 +15,11 @@ class Landing extends Model
         'user_id', 'name', 'form_id', 'url', 'country'
     ];
 
+    public function user()
+    {
+		return $this->belongsTo('App\User', 'user_id');
+	}
+
 	public function form()
     {
 		return $this->belongsTo('App\Form', 'form_id');

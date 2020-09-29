@@ -76,6 +76,11 @@ class User extends Authenticatable
         return $this->hasMany('App\Flows');
     }
 
+    public function landings()
+    {
+        return $this->hasMany('App\Landing');
+    }
+
     public function forms()
     {
         return $this->hasMany('App\Form');

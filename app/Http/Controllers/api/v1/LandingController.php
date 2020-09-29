@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
@@ -16,25 +17,20 @@ class LandingController extends Controller
     /**
      * Get all landings list.
      *
-     * @urlParam filter_date_from string From date (Y-m-d format)
-     * @urlParam filter_date_to string To date (Y-m-d format)
-     *
      * @response {
      *  "data": [landings],
      * }
      */
     public function index(Request $request)
     {
-        // Param validation
-        $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
-        ]);
-
         $landings = Landing::query();
         $landings = $landings->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Landing')) {
-            $landings = $landings->where('user_id', Auth::user()->id);
+            $landings = $landings->whereIn('form_id', function($query) {
+                $query->select('id')->from('forms')
+                    ->where('user_id', Auth::user()->id);
+            });
+            $landings = $landings->orWhere('user_id', Auth::user()->id);
         }
 
         return LandingResource::collection($landings->get());
