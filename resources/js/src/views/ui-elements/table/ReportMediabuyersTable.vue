@@ -400,7 +400,7 @@ export default {
       .then((response) => {
         this.users = []
         response.data.data.forEach((user) => {
-          if (user.roles.includes("mediabuyer")) {
+          if (user.roles.includes("mediabuyer") || user.roles.includes("buyer")) {
             this.users.push({
               id: user.id,
               label: user.email,
