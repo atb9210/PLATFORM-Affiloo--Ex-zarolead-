@@ -11,6 +11,23 @@
 <template>
     <vx-card title="Form Stats" code-toggler>
 
+        <div class="vx-row mb-2">
+            <div class="vx-col w-1/3">
+            </div>
+            <div class="vx-col w-1/3 text-center">
+                <vs-select
+                    autocomplete
+                    @input="onFormSwitch"
+                    label="Switch Form"
+                    v-model="formSwitch"
+                    >
+                    <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in formSwitchOptions" />
+                </vs-select>
+            </div>
+            <div class="vx-col w-1/3">
+            </div>
+        </div>
+
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart"></vs-button>
@@ -251,61 +268,6 @@ export default {
 
       editingObject: -1,
 
-      showPopup: {
-        'create': false,
-        'edit': false,
-      },
-      newObject: {
-        'create': {
-          name: '',
-          campaign: '',
-          network: '',
-          product: '',
-          quantity: '',
-          price: 0,
-          commission: 0,
-          sub_commission: 0,
-          traffic_source: '',
-
-          fb_pixel: '',
-          sub_id: '',
-          api_call_url: '',
-
-          // Worldfilia
-          source_id: '',
-
-          // Amsped
-          product_reference: '',
-
-          // Affiliation Park
-          offer_id: '',
-        },
-        'edit': {
-          name: '',
-          campaign: '',
-          network: '',
-          product: '',
-          quantity: '',
-          price: 0,
-          commission: 0,
-          sub_commission: 0,
-          traffic_source: '',
-
-          fb_pixel: '',
-          sub_id: '',
-          api_call_url: '',
-
-          // Worldfilia
-          source_id: '',
-
-          // Amsped
-          product_reference: '',
-
-          // Affiliation Park
-          offer_id: '',
-        },
-      },
-
       campaigns: [],
       networks: [],
       products: [],
@@ -362,11 +324,15 @@ export default {
           },
         }
       },
+
+      formSwitchOptions: [],
+      formSwitch: 1,
     }
   },
   watch: {
     form_id: function(newVal, oldVal) {
       this.retrieveObjects()
+      this.applyFilters()
     }
   },
   computed: {
@@ -415,6 +381,31 @@ export default {
       this.$http.get('/api/v1/forms/' + this.form_id, { headers })
         .then((response) => {
           this.form = response.data.data
+          this.$vs.loading.close()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+
+      // Retrieve forms
+      this.$http.get('/api/v1/forms/', { headers })
+        .then((response) => {
+          let forms = response.data.data
+          this.formSwitchOptions = []
+          for (let i = 0; i < forms.length; i++) {
+            this.formSwitchOptions.push({
+              label: forms[i].name,
+              value: forms[i].id,
+            });
+            this.formSwitch = this.form_id
+          }
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -596,35 +587,6 @@ export default {
           })
       })
     },
-    showForm(type) {
-      this.showPopup[type] = true
-    },
-    clearForm(type) {
-      this.newObject[type] = {
-        name: '',
-        campaign: '',
-        network: '',
-        product: '',
-        quantity: '',
-        price: 0,
-        commission: 0,
-        sub_commission: 0,
-        traffic_source: '',
-
-        fb_pixel: '',
-        sub_id: '',
-        api_call_url: '',
-
-        // Worldfilia
-        source_id: '',
-
-        // Amsped
-        product_reference: '',
-
-        // Affiliation Park
-        offer_id: '',
-      }
-    },
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
@@ -689,8 +651,6 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
-          this.clearForm('create')
-          this.showPopup['create'] = false
           this.retrieveObjects()
         })
         .catch((error) => {
@@ -770,7 +730,6 @@ export default {
         }
       }
       this.editingObject = obj.id
-      this.showForm('edit')
     },
     updateObject() {
       if (this.editingObject <= 0) return
@@ -838,7 +797,6 @@ export default {
             color: 'danger'
           })
         })
-      this.showPopup['edit'] = false
       this.editingObject = -1
     },
     deleteObject(id) {
@@ -900,10 +858,6 @@ export default {
         .then((response) => {
           this.objects = response.data.data
           this.calculateStats()
-
-          // TODO: to delete
-          console.log("loading chart...")
-
           this.loadChart()
           this.$vs.loading.close()
         })
@@ -1175,6 +1129,11 @@ export default {
     },
     showLandingsStats(id) {
       this.$router.push({name: 'landings-stats', params: {form_id: id}})
+    },
+    onFormSwitch(value) {
+      this.$parent.switchForm(value)
+
+      //this.$router.push({name: 'form-stats', params: {form_id: value}})
     },
   },
   created() {

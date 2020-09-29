@@ -22,14 +22,22 @@ export default{
     FormStatsTable
   },
   data() {
-      return {
-        form_id: 0,
-      }
+    return {
+      form_id: 0,
+    }
   },
   methods: {
+    switchForm(value) {
+      if (value == '' || value <= 0 || value == this.form_id) {
+        return
+      }
+
+      this.$router.push({name: 'form-stats', params: {form_id: value}})
+      this.form_id = parseInt(this.$route.params.form_id)
+    }
   },
   created() {
     this.form_id = parseInt(this.$route.params.form_id)
-  }
+  },
 }
 </script>

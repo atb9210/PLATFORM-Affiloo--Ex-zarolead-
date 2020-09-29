@@ -1415,6 +1415,7 @@ const router = new Router({
         },
         {
           path: '/dashboard/forms/:form_id',
+          props: true,
           name: 'form-stats',
           component: () => import('./views/FormStats.vue'),
           meta: {
@@ -1430,6 +1431,7 @@ const router = new Router({
         },
         {
           path: '/dashboard/landings-stats/:form_id',
+          props: true,
           name: 'landings-stats',
           component: () => import('./views/LandingsStats.vue'),
           meta: {
