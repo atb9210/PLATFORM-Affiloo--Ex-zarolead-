@@ -10,11 +10,25 @@ function FacebookPlugin(data) {
 
     this.pixel = this.data.pixel;
 
-    if (FacebookPlugin_getUrlParams('pi') != '') {
+    if (FacebookPlugin_getUrlParams('pi') != '' && FacebookPlugin_getUrlParams('ev') != null) {
         this.pixel = FacebookPlugin_getUrlParams('pi');
     }
 
-    // TODO: Check if this is still useful
+    // Fetch event info
+    this.eventName = '';
+    this.eventValue = '';
+    this.eventCurrency = '';
+    if (this.data.hasOwnProperty('eventName')) {
+        this.eventName = this.data.eventName;
+    }
+    if (this.data.hasOwnProperty('eventValue')) {
+        this.eventValue = this.data.eventValue;
+    }
+    if (this.data.hasOwnProperty('eventCurrency')) {
+        this.eventCurrency = this.data.eventCurrency;
+    }
+
+    // NOTE: This is a custom code
     $(".addtocart-button").each(function() {
         this.fbAddToCart();
     }.bind(this));
@@ -29,11 +43,40 @@ FacebookPlugin.prototype.onVisit = function() {
 
 FacebookPlugin.prototype.onSubmit = function() {
     console.log("FacebookPlugin onSubmit");
-    this.fbPurchase();
 }
 
 FacebookPlugin.prototype.afterSubmit = function(response) {
     console.log("FacebookPlugin afterSubmit");
+    if (response.api_call.status === 'success') {
+        // Default event infos
+        var eventName = 'Purchase';
+        var eventValue = 0.0;
+        var eventCurrency = 'EUR';
+
+        // Fetch event name
+        if (FacebookPlugin_getUrlParams('ev') != '' && FacebookPlugin_getUrlParams('ev') != null) {
+            eventName = FacebookPlugin_getUrlParams('ev');
+        } else if (this.eventName != '') {
+            eventName = this.eventName;
+        }
+
+        // Fetch event value
+        if (this.eventValue != '') {
+            eventValue = this.eventValue;
+        } else {
+            var quantity = $('#quantity').val();
+            if (form.quantity.options.hasOwnProperty(quantity)) {
+                eventValue = form.quantity.options[quantity].commission;
+            }
+        }
+
+        // Fetch event currency
+        if (this.eventCurrency != '') {
+            eventCurrency = this.eventCurrency;
+        }
+
+        this.fbTriggerEvent(eventName, eventValue, eventCurrency);
+    }
 }
 
 FacebookPlugin.prototype.onRedirect = function() {
@@ -44,8 +87,8 @@ FacebookPlugin.prototype.fbAddToCart = function() {
     fbq('track', 'AddToCart');
 }
 
-FacebookPlugin.prototype.fbPurchase = function() {
-    fbq('track', 'Purchase');
+FacebookPlugin.prototype.fbTriggerEvent = function(eventName, value, currency) {
+    fbq('track', eventName, { value: value, currency: currency });
 }
 
 // Facebook stuff

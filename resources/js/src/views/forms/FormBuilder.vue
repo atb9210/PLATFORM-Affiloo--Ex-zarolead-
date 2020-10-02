@@ -128,7 +128,7 @@
                 <vs-input
                   type="url"
                   class="w-full"
-                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  icon-pack="feather" icon="icon-globe" icon-no-border
                   v-model="plugins['thankyou_redirect'].url"
                   placeholder="http://..."
                 />
@@ -148,6 +148,21 @@
                   v-model="plugins['facebook'].pixel"
                   name="fb_pixel" placeholder="Facebook pixel"
                 />
+                <vs-select v-model="plugins['facebook'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
+                </vs-select>
+                <vs-input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="w-full"
+                  icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                  v-model="plugins['facebook'].eventValue"
+                  name="fb_event_value" placeholder="Conversion event value (optional)"
+                />
+                <vs-select v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
+                </vs-select>
               </vx-input-group>
             </div>
             <div class="vx-col w-full mt-5">
@@ -344,6 +359,9 @@ export default {
         'facebook': {
           enabled: false,
           pixel: '',
+          eventName: 'Purchase',
+          eventValue: '',
+          eventCurrency: 'EUR',
         },
         'zeustrack': {
           enabled: false,
@@ -354,6 +372,8 @@ export default {
           form_id: 0,
         },
       },
+      facebookEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
+      facebookEventCurrencyOptions: ['EUR', 'USD'],
 
       showPopup: {
         'create': false,
@@ -464,7 +484,6 @@ export default {
       this.clearForm('create')
     },
     changeQuantityDefault() {
-        console.log(this.quantityDefaultIndex)
       for (let i = 0; i < this.quantityOptions.length; i++) {
         if (i == this.quantityDefaultIndex) {
           this.quantityOptions[i].default = true
@@ -633,8 +652,6 @@ export default {
         data.upsell = JSON.stringify(data.upsell)
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
-
-        console.log(data)
 
         // Create form
         this.$http.post('/api/v1/forms', data, { headers: headers })

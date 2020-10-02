@@ -311,6 +311,8 @@ Form.prototype.onSubmit = function(step) {
             data["landing_id"] = this.landing_id;
         }
 
+        this.pluginManager.onSubmit();
+
         $.ajax({
             url: this.API_URL + 'orders',
             method: "POST",
@@ -323,13 +325,7 @@ Form.prototype.onSubmit = function(step) {
                 // Store the order's info
                 this.order = data.data;
 
-                // TODO: Maybe this should be before ajax call?
-                this.pluginManager.onSubmit();
 
-                // TODO:
-                // NOTE: I put this here because I needed the thankyou_redirect plugin to be last
-                // one called, because it will redirect to a thankyou page after all the other plugins
-                // have been called
                 this.pluginManager.afterSubmit(data);
 
                 // Show thank you page

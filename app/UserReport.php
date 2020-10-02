@@ -13,7 +13,7 @@ class UserReport extends Model
      */
     protected $fillable = [
         'user_id', 'day',
-        'leads', 'commission', 'cost', 'extra_cost', 'profit',
+        'visits', 'leads', 'commission', 'cost', 'extra_cost', 'profit',
         'notes',
     ];
 

@@ -9,7 +9,7 @@
 
 
 <template>
-    <vx-card title="Mediabuyer report" code-toggler>
+    <vx-card title="Mediabuyers report" code-toggler>
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>

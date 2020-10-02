@@ -128,7 +128,7 @@
                 <vs-input
                   type="url"
                   class="w-full"
-                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  icon-pack="feather" icon="icon-globe" icon-no-border
                   v-model="plugins['thankyou_redirect'].url"
                   placeholder="http://..."
                 />
@@ -148,6 +148,21 @@
                   v-model="plugins['facebook'].pixel"
                   name="fb_pixel" placeholder="Facebook pixel"
                 />
+                <vs-select v-model="plugins['facebook'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
+                </vs-select>
+                <vs-input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="w-full"
+                  icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                  v-model="plugins['facebook'].eventValue"
+                  name="fb_event_value" placeholder="Conversion event value (optional)"
+                />
+                <vs-select v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
+                </vs-select>
               </vx-input-group>
             </div>
             <div class="vx-col w-full mt-5">
@@ -351,6 +366,9 @@ export default {
         'facebook': {
           enabled: false,
           pixel: '',
+          eventName: 'Purchase',
+          eventValue: '',
+          eventCurrency: 'EUR',
         },
         'zeustrack': {
           enabled: false,
@@ -361,6 +379,8 @@ export default {
           form_id: 0,
         },
       },
+      facebookEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
+      facebookEventCurrencyOptions: ['EUR', 'USD'],
 
       showPopup: {
         'create': false,
@@ -450,9 +470,6 @@ export default {
       }
     },
     changeNetworkParam(index, newVal) {
-        console.log(this.network_params)
-        console.log("CALL INDEX: " + index + " val: " + newVal)
-        console.log(this.$refs['network_param_api_key'])
       this.network_params[index].value = newVal
     },
     showForm(type) {
@@ -679,8 +696,6 @@ export default {
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
 
-        console.log(data)
-
         // Edit form
         this.$http.put('/api/v1/forms/' + this.form_id, data, { headers: headers })
           .then((response) => {
@@ -751,8 +766,12 @@ export default {
 
         // Fetch plugins
         for (const [key, value] of Object.entries(this.form.plugins)) {
-          if (this.form.plugins.hasOwnProperty(key)) {
+          if (!this.plugins.hasOwnProperty(key)) {
             this.plugins[key] = this.form.plugins[key]
+          } else {
+            for (const [key2, value2] of Object.entries(this.form.plugins[key])) {
+                this.plugins[key][key2] = this.form.plugins[key][key2]
+            }
           }
         }
 
@@ -870,7 +889,6 @@ export default {
             id: form.id,
             label: form.name + " - ID: " + form.id,
           })
-          // TODO: HERE
           if (this.form.plugins.hasOwnProperty('double_recovery') && 
               form.id == this.form.plugins.double_recovery.form_id) {
             this.plugins['double_recovery'].form_id = form.id;

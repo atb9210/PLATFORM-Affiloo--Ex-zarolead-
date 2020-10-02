@@ -17,6 +17,7 @@ class CreateUserReportsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->date('day');
+            $table->integer('visits')->unsigned()->default(0);
             $table->integer('leads')->unsigned()->default(0);
             $table->decimal('commission', 9, 2)->default(0.0);
             $table->decimal('cost', 9, 2)->default(0.0);

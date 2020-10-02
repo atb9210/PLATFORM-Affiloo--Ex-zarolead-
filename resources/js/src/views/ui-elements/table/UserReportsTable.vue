@@ -76,6 +76,7 @@
 
             <template slot="thead">
                 <vs-th sort-key="day">Date</vs-th>
+                <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="commission" v-if="canViewStats">Commission</vs-th>
                 <vs-th sort-key="cost">Cost</vs-th>
@@ -89,6 +90,10 @@
 
                     <vs-td :data="data[indextr].day">
                         {{data[indextr].day}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].visits">
+                        {{data[indextr].visits}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].leads">
@@ -225,7 +230,6 @@ export default {
           }
 
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
