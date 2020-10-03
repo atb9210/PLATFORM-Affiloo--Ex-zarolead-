@@ -10,7 +10,7 @@ function FacebookPlugin(data) {
 
     this.pixel = this.data.pixel;
 
-    if (FacebookPlugin_getUrlParams('pi') != '' && FacebookPlugin_getUrlParams('ev') != null) {
+    if (FacebookPlugin_getUrlParams('pi') != '' && FacebookPlugin_getUrlParams('pi') != null) {
         this.pixel = FacebookPlugin_getUrlParams('pi');
     }
 
