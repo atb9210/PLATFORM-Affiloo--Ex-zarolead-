@@ -154,6 +154,7 @@ class ReportController extends Controller
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_product int Product's id
+     * @urlParam filter_advertiser int Advertiser's id
      *
      * @response {
      *  "data": [report]
@@ -172,6 +173,7 @@ class ReportController extends Controller
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
             'filter_product' => 'integer|exists:products,id',
+            'filter_advertiser' => 'integer|exists:advertisers,id',
         ]);
 
         // Retrieve orders
@@ -185,6 +187,9 @@ class ReportController extends Controller
         }
         if (isset($params['filter_product'])) {
             $orders = $orders->where('product_id', $params['filter_product']);
+        }
+        if (isset($params['filter_advertiser'])) {
+            $orders = $orders->where('advertiser_id', $params['filter_advertiser']);
         }
 
         // Calculate report for each product

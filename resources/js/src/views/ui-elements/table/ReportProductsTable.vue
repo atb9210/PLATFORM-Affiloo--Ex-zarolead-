@@ -46,11 +46,16 @@
             </div>
 
             <div class="vx-row mb-2">
-                <div class="vx-col w-full">
+                <div class="vx-col w-full md:w-1/2">
                     <label>Product</label>
                     <v-select :options="products" v-model="filters.product" />
                 </div>
+                <div class="vx-col w-full md:w-1/2">
+                    <label>Advertiser</label>
+                    <v-select :options="advertisers" v-model="filters.advertiser" />
+                </div>
             </div>
+
             <div class="vx-row mt-6">
                 <div class="vx-col w-full">
                     <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
@@ -139,10 +144,12 @@ export default {
         date_from: '',
         date_to: '',
         product: '',
+        advertiser: '',
       },
       showFilters: false,
 
       products: [],
+      advertisers: [],
     }
   },
   computed: {
@@ -281,6 +288,7 @@ export default {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
+    // Retrieve products
     this.$http.get('/api/v1/products', { headers })
       .then((response) => {
         this.products = []
@@ -288,6 +296,22 @@ export default {
           this.products.push({
             id: product.id,
             label: product.name,
+          })
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+
+    // Retrieve advertisers
+    this.$http.get('/api/v1/advertisers', { headers })
+      .then((response) => {
+        this.advertisers = []
+        response.data.data.forEach((advertiser) => {
+          this.advertisers.push({
+            id: advertiser.id,
+            label: advertiser.name,
           })
         })
         this.$vs.loading.close()
