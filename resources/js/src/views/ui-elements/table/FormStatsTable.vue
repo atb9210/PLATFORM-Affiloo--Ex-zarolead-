@@ -107,6 +107,7 @@
                 <vs-th sort-key="profit" v-if="canViewStats">Profit</vs-th>
                 <vs-th sort-key="roi" v-if="canViewStats">ROI</vs-th>
                 <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="tq">TQ</vs-th>
                 <vs-th sort-key="cpv" v-if="canViewStats">CPV</vs-th>
                 <vs-th sort-key="epv" v-if="canViewStats">EPV</vs-th>
                 <vs-th sort-key="cpl">CPL</vs-th>
@@ -152,6 +153,10 @@
                         {{data[indextr].cr}} %
                     </vs-td>
 
+                    <vs-td :data="data[indextr].tq">
+                        {{data[indextr].tq}}
+                    </vs-td>
+
                     <vs-td :data="data[indextr].cpv" v-if="canViewStats">
                         € {{data[indextr].cpv}}
                     </vs-td>
@@ -190,6 +195,9 @@
                 </vs-td>
                 <vs-td>
                     {{total_stats.cr}} %
+                </vs-td>
+                <vs-td>
+                    {{total_stats.tq}}
                 </vs-td>
                 <vs-td v-if="canViewStats">
                     € {{total_stats.cpv}}
@@ -428,6 +436,7 @@ export default {
         profit: 0,
         roi: 0,
         cr: 0,
+        tq: 0,
         cpv: 0,
         epv: 0,
         cpl: 0,
@@ -448,8 +457,9 @@ export default {
 
         this.total_stats.visits += parseInt(obj.visits)
         this.total_stats.leads += parseInt(obj.leads)
-        this.total_stats.total_cost += parseFloat(obj.total_cost),
-        this.total_stats.total_commission += parseFloat(obj.total_commission),
+        this.total_stats.total_cost += parseFloat(obj.total_cost)
+        this.total_stats.total_commission += parseFloat(obj.total_commission)
+        this.total_stats.tq += parseInt(obj.tq)
 
         // Format calculated stats
         profit = profit.toFixed(2)
@@ -491,6 +501,7 @@ export default {
       this.total_stats.profit = profit
       this.total_stats.roi = roi
       this.total_stats.cr = cr
+      this.total_stats.tq = parseInt(this.total_stats.tq / this.objects.length)
       this.total_stats.cpv = cpv
       this.total_stats.epv = epv
       this.total_stats.cpl = cpl

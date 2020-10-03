@@ -78,6 +78,7 @@
                 <vs-th sort-key="day">Date</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="tq">TQ</vs-th>
                 <vs-th sort-key="commission" v-if="canViewStats">Commission</vs-th>
                 <vs-th sort-key="cost">Cost</vs-th>
                 <vs-th sort-key="extra_cost" v-if="canViewStats">Extra Cost</vs-th>
@@ -98,6 +99,10 @@
 
                     <vs-td :data="data[indextr].leads">
                         {{data[indextr].leads}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].tq">
+                        {{data[indextr].tq}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].commission" v-if="canViewStats">
