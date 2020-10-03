@@ -353,7 +353,7 @@ export default {
 
       let diffTime = Math.abs(endDay - startDay);
       let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      let numDots = diffDays
+      let numDots = diffDays + 1
 
       let currentDay = new Date(this.filters.date_from)
 
@@ -394,6 +394,12 @@ export default {
         cpaSeries.push(cpa)
 
         currentDay.setDate(currentDay.getDate() + 1)
+      }
+      if (numDots == 1) {
+        visitsSeries.push(visitsSeries[0])
+        leadsSeries.push(leadsSeries[0])
+        costSeries.push(costSeries[0])
+        cpaSeries.push(cpaSeries[0])
       }
 
       this.cpa = ((this.leads > 0) ? (this.cost / this.leads) : this.cost)
