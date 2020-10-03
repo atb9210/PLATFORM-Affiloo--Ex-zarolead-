@@ -182,6 +182,8 @@ export default {
   data () {
     return {
       objects: [],
+      objectsIds: [],
+
       selected: [],
       deleted: [],
 
@@ -264,13 +266,39 @@ export default {
       }
       data['filter_role'] = 3
 
-      // Retrieve report
+      // Retrieve mediabuyers' report
       this.$http.get('/api/v1/reports/users', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
-          this.calculateStats()
-          this.$vs.loading.close()
-          console.log(this.objects)
+          for (let i = 0; i < this.objects.length; i++) {
+            this.objectsIds.push(this.objects[0].user.id)
+          }
+
+          // Retrieve buyers' report
+          data['filter_role'] = 7
+          this.$http.get('/api/v1/reports/users', { headers, params: data })
+            .then((response) => {
+              let tempObjects = response.data.data
+              for (let i = 0; i < tempObjects.length; i++) {
+                if (this.objectsIds.includes(tempObjects[i].user.id)) {
+                  continue
+                }
+                this.objects.push(tempObjects[i])
+                this.objectsIds.push(tempObjects[0].user.id)
+              }
+              this.calculateStats()
+              this.$vs.loading.close()
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -396,6 +424,7 @@ export default {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
+    // Retrieve users
     this.$http.get('/api/v1/users', { headers })
       .then((response) => {
         this.users = []
