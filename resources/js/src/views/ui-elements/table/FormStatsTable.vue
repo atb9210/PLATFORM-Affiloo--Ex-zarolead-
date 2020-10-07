@@ -1106,25 +1106,29 @@ export default {
       // Calculate CPV and EPV
       let cpv_values = []
       let epv_values = []
+      let c_on_tq_values = []
       for(let j = 0; j < numDots; j++) {
         cpv_values.push(0)
         epv_values.push(0)
+        c_on_tq_values.push(0)
       }
       for(let j = 0; j < stats.length; j++) {
         let stat = stats[j]
 
         let cpv = 0
         let epv = 0
-        let ratio = 0
+        let c_on_tq = 0
 
         cpv = parseFloat((stat.visits == 0) ? stat.total_cost : stat.total_cost/stat.visits)
         epv = parseFloat((stat.visits == 0) ? stat.total_commission : stat.total_commission/stat.visits)
+        c_on_tq = parseFloat((stat.tq > 0) ? (stat.total_cost/stat.tq) : (0))
 
         let index = categories.indexOf(stat.day)
 
         if (index >= 0) {
           cpv_values[index] = cpv.toFixed(2)
           epv_values[index] = epv.toFixed(2)
+          c_on_tq_values[index] = c_on_tq.toFixed(2)
         }
       }
 
@@ -1132,10 +1136,17 @@ export default {
         name: "cpv",
         data: cpv_values,
       })
-      series.push({
-        name: "epv",
-        data: epv_values,
-      })
+      if (this.canViewStats) {
+        series.push({
+          name: "epv",
+          data: epv_values,
+        })
+      } else {
+        series.push({
+          name: "Cost / TQ",
+          data: c_on_tq_values,
+        })
+      }
       this.lineAreaChartSpline.series = series
     },
     showLandingsStats(id) {
