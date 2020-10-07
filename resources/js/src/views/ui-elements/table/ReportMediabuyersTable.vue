@@ -264,41 +264,14 @@ export default {
       if (this.filters.user != '') {
         data['filter_user'] = this.filters.user.id
       }
-      data['filter_role'] = 3
+      data['filter_roles'] = [3, 7]
 
       // Retrieve mediabuyers' report
       this.$http.get('/api/v1/reports/users', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
-          for (let i = 0; i < this.objects.length; i++) {
-            this.objectsIds.push(this.objects[0].user.id)
-          }
-
-          // Retrieve buyers' report
-          data['filter_role'] = 7
-          this.$http.get('/api/v1/reports/users', { headers, params: data })
-            .then((response) => {
-              let tempObjects = response.data.data
-              for (let i = 0; i < tempObjects.length; i++) {
-                if (this.objectsIds.includes(tempObjects[i].user.id)) {
-                  continue
-                }
-                this.objects.push(tempObjects[i])
-                this.objectsIds.push(tempObjects[0].user.id)
-              }
-              this.calculateStats()
-              this.$vs.loading.close()
-            })
-            .catch((error) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Error',
-                text: error.message,
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
-            })
+          this.calculateStats()
+          this.$vs.loading.close()
         })
         .catch((error) => {
           this.$vs.loading.close()

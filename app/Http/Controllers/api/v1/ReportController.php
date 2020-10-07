@@ -19,7 +19,7 @@ class ReportController extends Controller
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_user int User's id
-     * @urlParam filter_role int User's role
+     * @urlParam filter_roles int Users' roles
      *
      * @response {
      *  "data": [report]
@@ -38,7 +38,8 @@ class ReportController extends Controller
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' => 'nullable|date|date_format:Y-m-d',
             'filter_user' => 'integer|exists:users,id',
-            'filter_role' => 'integer|exists:roles,id',
+            'filter_roles' => 'array',
+            'filter_roles.*' => 'integer|exists:roles,id',
         ]);
 
         /*
@@ -103,9 +104,9 @@ class ReportController extends Controller
         if (isset($params['filter_user'])) {
             $reports = $reports->where('user_id', $params['filter_user']);
         }
-        if (isset($params['filter_role'])) {
+        if (isset($params['filter_roles'])) {
             $reports = $reports->join('role_user', 'role_user.user_id', '=', 'user_reports.user_id')
-                ->where('role_user.role_id', $params['filter_role']);
+                ->whereIn('role_user.role_id', $params['filter_roles']);
         }
 
         // Calculate report for each user

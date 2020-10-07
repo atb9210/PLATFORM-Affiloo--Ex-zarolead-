@@ -376,7 +376,7 @@ export default {
         if (objIndex >= 0 && objIndex < this.objects.length && this.objects[objIndex].day == this.formatDate(currentDay)) {
           visits = parseInt(this.objects[objIndex].visits)
           leads = parseInt(this.objects[objIndex].leads)
-          cost = (this.filters.form != '') ? parseFloat(this.objects[objIndex].total_cost) : parseFloat(this.objects[objIndex].cost)
+          cost = (this.filters.form != '' && this.filters.form.id != 0) ? parseFloat(this.objects[objIndex].total_cost) : parseFloat(this.objects[objIndex].cost)
           cpa = ((leads > 0) ? (cost / leads) : cost)
           objIndex--
         }
@@ -514,7 +514,7 @@ export default {
       }
 
       // Retrieve user's report
-      if (this.filters.form != '') {
+      if (this.filters.form != '' && this.filters.form.id != 0) {
         this.$http.get('/api/v1/forms/' + this.filters.form.id + '/stats', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
@@ -606,6 +606,10 @@ export default {
     this.$http.get('/api/v1/forms', { headers })
       .then((response) => {
         this.formOptions = []
+        this.formOptions.push({
+          id: 0,
+          label: 'All forms',
+        })
         response.data.data.forEach((form) => {
           this.formOptions.push({
             id: form.id,

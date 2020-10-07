@@ -512,6 +512,11 @@ class FormController extends Controller
                 $landingStats->save();
             }
         }
+
+        // Update user's report stats
+        $report = UserReport::getObject($form->user->id, $formStats->day);
+        $report->visits += 1;
+        $report->save();
     }
 
     /**

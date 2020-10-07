@@ -202,7 +202,7 @@ export default {
         data['filter_user'] = this.filters.user.id
       }
       if (this.filters.role != '') {
-        data['filter_role'] = this.filters.role.id
+        data['filter_roles'] = [this.filters.role.id]
       }
 
       // Retrieve report
