@@ -1565,6 +1565,20 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/reports/advertisers',
+          name: 'report-advertisers',
+          component: () => import('./views/ReportAdvertisers.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Advertisers', active: true }
+            ],
+            pageTitle: 'Report Advertisers',
+            rule: 'editor'
+          }
+        },
         /*
         {
           path: '/dashboard/reports/affiliates',

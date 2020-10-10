@@ -24,13 +24,13 @@ class UserMonthlyReport extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public static function getObject(App\User $user, int $month, int $year) : App\UserMonthlyReport
+    public static function getObject(User $user, int $month, int $year) : UserMonthlyReport
     {
         if ($user == null) {
             return null;
         }
 
-        $numOfDays = cal_days_in_a_month(CAL_GREGORIAN, $month, $year);
+        $numOfDays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
         // Format YYYY-mm-dd
         $YYYY = str_pad($year, 4, '0', STR_PAD_LEFT);
@@ -41,7 +41,7 @@ class UserMonthlyReport extends Model
         $from = $YYYY . '-' . $mm . '-' . $ddFirst;
         $to =   $YYYY . '-' . $mm . '-' . $ddLast;
 
-        $reports = UserReport::where('user_id', '=', $user->id())
+        $reports = UserReport::where('user_id', '=', $user->id)
             ->where('day', '>=', $from)
             ->where('day', '<=', $to);
 
@@ -52,17 +52,16 @@ class UserMonthlyReport extends Model
             'visits' => 0,
             'leads' => 0,
             'commission' => 0.0,
-            'approved_commission' => 0.0,
             'total_cost' => 0.0,
             'profit' => 0.0,
         ];
 
         foreach ($reports->get() as $report) {
-            $toCreate['visits'] += $report->visits;
-            $toCreate['leads'] += $report->leads;
-            $toCreate['commission'] += $report->commission;
-            $toCreate['total_cost'] += $report->cost + $report->extra_cost;
-            $toCreate['profit'] += $report->profit;
+            $monthlyReport['visits'] += $report->visits;
+            $monthlyReport['leads'] += $report->leads;
+            $monthlyReport['commission'] += $report->commission;
+            $monthlyReport['total_cost'] += $report->cost + $report->extra_cost;
+            $monthlyReport['profit'] += $report->profit;
         }
 
         $toReturn = null;

@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Order as Order;
 use App\User as User;
+use App\Role as Role;
 use App\UserReport as UserReport;
 use App\Http\Resources\api\v1\UserReportResource;
 use App\UserMonthlyReport as UserMonthlyReport;
 use App\Http\Resources\api\v1\UserMonthlyReportResource;
+use App\FormStats as FormStats;
 
 class ReportController extends Controller
 {
@@ -156,8 +158,6 @@ class ReportController extends Controller
      *
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
-     * @urlParam filter_product int Product's id
-     * @urlParam filter_advertiser int Advertiser's id
      *
      * @response {
      *  "data": [report]
@@ -175,31 +175,23 @@ class ReportController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
-            'filter_product' => 'integer|exists:products,id',
-            'filter_advertiser' => 'integer|exists:advertisers,id',
+            'filter_advertiser' => 'integer|exists:users,id',
         ]);
 
         // Retrieve orders
-        $orders = Order::query();
-        $orders = $orders->where('archived', 0);
+        $formsStats = FormStats::query();
         if (isset($params['filter_date_from'])) {
-            $orders = $orders->where('created_at', '>=', $params['filter_date_from']);
+            $formsStats = $formsStats->where('day', '>=', $params['filter_date_from']);
         }
         if (isset($params['filter_date_to'])) {
-            $orders = $orders->where('created_at', '<=', $params['filter_date_to']);
-        }
-        if (isset($params['filter_product'])) {
-            $orders = $orders->where('product_id', $params['filter_product']);
-        }
-        if (isset($params['filter_advertiser'])) {
-            $orders = $orders->where('advertiser_id', $params['filter_advertiser']);
+            $formsStats = $formsStats->where('day', '<=', $params['filter_date_to']);
         }
 
         // Calculate report for each product
         $reports = [];
         $lookupTable = []; // Id => reports array index
-        foreach ($orders->get() as $order) {
-            $product = $order->product;
+        foreach ($formsStats->get() as $stats) {
+            $product = $stats->form->product;
             if (!array_key_exists($product->id, $lookupTable)) {
                 $lookupTable[$product->id] = count($reports);
                 $reports[] = [
@@ -207,21 +199,23 @@ class ReportController extends Controller
                         'id' => $product->id,
                         'name' => $product->name,
                     ],
+                    'visits' => 0,
                     'leads' => 0,
-                    'commissions' => 0.0,
-                    'sub_commissions' => 0.0,
+                    'total_commission' => 0.0,
+                    'total_cost' => 0.0,
                 ];
             }
             $index = $lookupTable[$product->id];
-            $reports[$index]['leads'] += 1;
-            $reports[$index]['commissions'] += (float)$order->commission;
-            $reports[$index]['sub_commissions'] += (float)$order->sub_commission;
+            $reports[$index]['visits'] += intval($stats->visits);
+            $reports[$index]['leads'] += intval($stats->leads);
+            $reports[$index]['total_commission'] += floatval($stats->total_commission);
+            $reports[$index]['total_cost'] += (float)$stats->total_cost;
         }
 
-        // Format commissions and sub_commission (2 decimal digits)
+        // Format currencies (2 decimal digits)
         for ($i = 0; $i < count($reports); $i++) {
-            $reports[$i]['commissions'] = round($reports[$i]['commissions'], 2);
-            $reports[$i]['sub_commissions'] = round($reports[$i]['sub_commissions'], 2);
+            $reports[$i]['total_commission'] = round($reports[$i]['total_commission'], 2);
+            $reports[$i]['total_cost'] = round($reports[$i]['total_cost'], 2);
         }
 
         return response([
@@ -230,17 +224,16 @@ class ReportController extends Controller
     }
 
     /**
-     * Get monthly report.
+     * Get advertisers' monthly report.
      *
-     * @urlParam user int User's id
-     * @urlParam month int Month
-     * @urlParam year int Year
+     * @urlParam month int required Month
+     * @urlParam year int required Year
      *
      * @response {
      *  "data": [report]
      * }
      */
-    public function monthlyReport(Request $request)
+    public function advertisers(Request $request)
     {
         if (!Auth::user()->hasPermission('report', 'users')) {
             return response([
@@ -250,29 +243,62 @@ class ReportController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'user' => 'required|integer|exists:users,id',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:0',
         ]);
 
-        $user = User::findOrFail($params['user']);
-        $monthlyReport = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+        $reports = [];
 
-        return new UserMonthlyReportResource($monthlyReport);
+        $users = User::query();
+        $role = Role::where('name', 'advertiser');
+        if ($role->count() > 0) {
+            $role = $role->first();
+            $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+                ->where('role_user.role_id', $role->id);
+            foreach ($users->get() as $user) {
+                $reports[] = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+            }
+        }
+
+        return UserMonthlyReportResource::collection($reports);
     }
 
     /**
-     * Update monthly report.
+     * Update advertiser' monthly report
      *
-     * @urlParam user int User's id
-     * @urlParam month int Month
-     * @urlParam year int Year
-     * @urlParam year int Year
+     * @bodyParam month int required Month
+     * @bodyParam year int required Year
+     * @bodyParam approved_commission float required Approved commission
      *
      * @response {
-     *  "data": [report]
+     *  "data": report
      * }
      */
-    public function monthlyReport(Request $request)
+    public function advertisersUpdate($user_id, Request $request)
     {
+        if (!Auth::user()->hasPermission('report', 'users')) {
+            return response([
+                "message" => "You don't have permissions to update reports"
+            ], 403);
+        }
+
+        $params = $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:0',
+            'approved_commission' => 'required|numeric|min:0',
+        ]);
+
+        $user = User::findOrFail($user_id);
+        $report = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+        if ($params['approved_commission'] > $report->commission) {
+            return response([
+                "message" => "Approved commission value cannot be greather than commission value"
+            ], 422);
+        }
+
+        $report->approved_commission = $params['approved_commission'];
+        $report->save();
+
+        return new UserMonthlyReportResource($report);
+    }
 }

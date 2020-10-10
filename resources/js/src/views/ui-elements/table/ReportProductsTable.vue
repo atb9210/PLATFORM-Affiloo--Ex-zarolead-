@@ -45,17 +45,6 @@
                 </div>
             </div>
 
-            <div class="vx-row mb-2">
-                <div class="vx-col w-full md:w-1/2">
-                    <label>Product</label>
-                    <v-select :options="products" v-model="filters.product" />
-                </div>
-                <div class="vx-col w-full md:w-1/2">
-                    <label>Advertiser</label>
-                    <v-select :options="advertisers" v-model="filters.advertiser" />
-                </div>
-            </div>
-
             <div class="vx-row mt-6">
                 <div class="vx-col w-full">
                     <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
@@ -92,8 +81,10 @@
                 <vs-th sort-key="product.id">Product Id</vs-th>
                 <vs-th sort-key="product.name">Product Name</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="commission">Commission</vs-th>
-                <vs-th sort-key="sub_commission">Sub commission</vs-th>
+                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="total_cost">Cost</vs-th>
+                <vs-th sort-key="profit">Profit</vs-th>
+                <vs-th sort-key="roi">ROI</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -111,15 +102,44 @@
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commissions">
-                        {{data[indextr].commissions}} €
+                    <vs-td :data="data[indextr].total_commission">
+                        {{data[indextr].total_commission}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].sub_commissions">
-                        {{data[indextr].sub_commissions}} €
+                    <vs-td :data="data[indextr].total_cost">
+                        {{data[indextr].total_cost}} €
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].profit">
+                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].profit}} €</vs-chip>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].roi">
+                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>
+                    {{total_stats.leads}}
+                </vs-td>
+                <vs-td>
+                    {{total_stats.total_commission}} €
+                </vs-td>
+                <vs-td>
+                    {{total_stats.total_cost}} €
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">{{total_stats.profit}} €</vs-chip>
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : '')">{{total_stats.roi}} %</vs-chip>
+                </vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
     </vx-card>
@@ -143,8 +163,6 @@ export default {
       filters: {
         date_from: '',
         date_to: '',
-        product: '',
-        advertiser: '',
       },
       showFilters: false,
 
@@ -196,14 +214,33 @@ export default {
       if (this.filters.date_to != '') {
         data['filter_date_to'] = this.filters.date_to
       }
-      if (this.filters.product != '') {
-        data['filter_product'] = this.filters.product.id
-      }
 
       // Retrieve report
       this.$http.get('/api/v1/reports/products', { headers, params: data })
         .then((response) => {
-          this.objects = response.data.data
+          this.objects = []
+          response.data.data.forEach((obj) => {
+            let total_commission = parseFloat(obj.total_commission)
+            let total_cost = parseFloat(obj.total_cost)
+            let profit = total_commission - total_cost
+            let roi = (total_cost > 0) ? ((profit / total_cost)*100) : ((profit > 0) ? 9999.99 : 0)
+
+            total_commission = total_commission.toFixed(2)
+            total_cost = total_cost.toFixed(2)
+            profit = profit.toFixed(2)
+            roi = roi.toFixed(2)
+
+            this.objects.push({
+              product: obj.product,
+              visits: obj.visits,
+              leads: obj.leads,
+              total_commission: total_commission,
+              total_cost: total_cost,
+              profit: profit,
+              roi: roi,
+            })
+          })
+          this.calculateStats()
           this.$vs.loading.close()
           console.log(this.objects)
         })
@@ -225,9 +262,8 @@ export default {
       this.filters = {
         date_from: '',
         date_to: '',
-        product: '',
       }
-      this.applyFilters()
+      this.filterDatesShortcut('this_month')
     },
     applyFilters() {
       this.retrieveObjects()
@@ -278,9 +314,41 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
     },
+    calculateStats() {
+      this.total_stats = {
+        visits: 0,
+        leads: 0,
+        total_commission: 0,
+        total_cost: 0,
+        profit: 0,
+        roi: 0,
+      }
+
+      for (var i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+
+        let visits = parseInt(obj.visits)
+        let leads = parseInt(obj.leads)
+        let total_commission = parseFloat(obj.total_commission)
+        let total_cost = parseFloat(obj.total_cost)
+        let profit = parseFloat(obj.profit)
+
+        this.total_stats.visits += visits
+        this.total_stats.leads += leads
+        this.total_stats.total_commission += total_commission
+        this.total_stats.total_cost += total_cost
+        this.total_stats.profit += profit
+      }
+      this.total_stats.roi = (this.total_stats.total_cost > 0) ? ((this.total_stats.profit/this.total_stats.total_cost)*100) : ((this.total_stats.profit > 0) ? 9999.99 : 0)
+
+      this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
+      this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
+      this.total_stats.profit = this.total_stats.profit.toFixed(2)
+      this.total_stats.roi = this.total_stats.roi.toFixed(2)
+    },
   },
   created() {
-    this.retrieveObjects()
+    this.resetFilters()
 
     this.$vs.loading()
 
@@ -305,7 +373,9 @@ export default {
       })
 
     // Retrieve advertisers
-    this.$http.get('/api/v1/advertisers', { headers })
+    let data = {}
+    data['filter_roles'] = [5],
+    this.$http.get('/api/v1/users', { headers, params: data })
       .then((response) => {
         this.advertisers = []
         response.data.data.forEach((advertiser) => {

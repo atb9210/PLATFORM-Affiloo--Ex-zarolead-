@@ -55,11 +55,6 @@ Route::apiResource('tags', 'api\v1\TagController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
-/* Advertisers routes */
-Route::apiResource('advertisers', 'api\v1\AdvertiserController')->except([
-    'create', 'edit',
-])->middleware('auth:api');
-
 /* Traffic sources routes */
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
     'create', 'edit',
@@ -140,6 +135,7 @@ Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::get('users', 'api\v1\ReportController@users')->name('reports.users');
     Route::get('products', 'api\v1\ReportController@products')->name('reports.products');
     Route::get('advertisers', 'api\v1\ReportController@advertisers')->name('reports.advertisers');
+    Route::put('advertisers/{user_id}', 'api\v1\ReportController@advertisersUpdate')->name('reports.advertisers.update');
 
     // TODO: HERE
     Route::put('monthly', 'api\v1\ReportController@monthlyReportEdit')->name('reports.monthly.update');

@@ -184,6 +184,13 @@ export default [
             i18n: 'Mediabuyers',
             roles: ['developer', 'admin'],
           },
+          {
+            url: '/dashboard/reports/advertisers',
+            name: 'Advertisers',
+            slug: 'report-advertisers',
+            i18n: 'Advertisers',
+            roles: ['developer', 'admin'],
+          },
           /*
           {
             url: '/dashboard/reports/affiliates',
