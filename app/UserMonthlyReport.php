@@ -70,6 +70,7 @@ class UserMonthlyReport extends Model
             ->where('year', $year);
 
         if ($rows->count() == 0) {
+            $monthlyReport['approved_commission'] = 0.0;
             $toReturn = UserMonthlyReport::create($monthlyReport);
         } else {
             $toReturn = $rows->first();
