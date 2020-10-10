@@ -17,7 +17,7 @@ class Product extends Model
 
 	public function advertiser()
     {
-		return $this->belongsTo('App\Advertiser', 'advertiser_id');
+		return $this->belongsTo('App\User', 'advertiser_id');
 	}
 
 	public function tag()

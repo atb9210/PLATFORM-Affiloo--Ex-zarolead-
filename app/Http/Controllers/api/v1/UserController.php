@@ -18,15 +18,29 @@ class UserController extends Controller
     /**
      * Get all users list.
      *
+     * @urlParam filter_roles array User's roles
+     *
      * @response {
      *  "data": [users],
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', 'App\User');
 
-        return UserResource::collection(User::all());
+        // Param validation
+        $params = $request->validate([
+            'filter_roles' => 'array',
+            'filter_roles.*' => 'integer|exists:roles,id',
+        ]);
+
+        $users = User::query();
+        if (isset($params['filter_roles'])) {
+            $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+                ->whereIn('role_user.role_id', $params['filter_roles']);
+        }
+
+        return UserResource::collection($users->get());
     }
 
     /**
@@ -217,8 +231,8 @@ class UserController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
 
         $reports = UserReport::where('user_id', Auth::user()->id);

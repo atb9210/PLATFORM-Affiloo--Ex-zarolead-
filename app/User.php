@@ -91,6 +91,11 @@ class User extends Authenticatable
         return $this->hasMany('App\UserReport');
     }
 
+    public function monthly_reports()
+    {
+        return $this->hasMany('App\UserMonthlyReport');
+    }
+
     public function roles()
     {
         return $this->belongsToMany('App\Role', 'role_user');

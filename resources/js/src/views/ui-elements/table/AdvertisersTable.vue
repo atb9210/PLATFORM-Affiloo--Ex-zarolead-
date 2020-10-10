@@ -11,11 +11,6 @@
 <template>
     <vx-card title="Advertisers" code-toggler>
 
-        <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
-        </p>
-
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                 <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
@@ -42,7 +37,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th>Actions</vs-th>
+                <vs-th sort-key="email">Email</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -56,11 +51,8 @@
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td>
-                        <div class="flex items-center">
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
-                        </div>
+                    <vs-td :data="data[indextr].email">
+                        {{data[indextr].email}}
                     </vs-td>
 
                 </vs-tr>
@@ -174,8 +166,11 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
+      let data = {}
+      data['filter_roles'] = [5],
+
       // Retrieve advertisers
-      this.$http.get('/api/v1/advertisers', { headers })
+      this.$http.get('/api/v1/users', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()

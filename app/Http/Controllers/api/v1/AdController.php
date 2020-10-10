@@ -31,10 +31,10 @@ class AdController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
-            'filter_traffic_source' => 'nullable|integer|exists:traffic_sources,id',
-            'filter_form' => 'nullable|integer|exists:forms,id',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+            'filter_traffic_source' => 'integer|exists:traffic_sources,id',
+            'filter_form' => 'integer|exists:forms,id',
         ]);
 
         $ads = Ad::query();

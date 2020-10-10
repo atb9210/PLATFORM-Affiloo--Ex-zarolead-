@@ -25,7 +25,7 @@ class CreateProductsTable extends Migration
 
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('tag_id')->references('id')->on('tags');
-			$table->foreign('advertiser_id')->references('id')->on('advertisers');
+			$table->foreign('advertiser_id')->references('id')->on('users');
         });
     }
 

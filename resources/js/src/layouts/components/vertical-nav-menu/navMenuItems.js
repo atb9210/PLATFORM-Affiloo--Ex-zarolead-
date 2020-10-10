@@ -27,6 +27,7 @@ export default [
   //   icon: "MailIcon",
   //   i18n: "Email",
   // },
+  /*
   {
     url: null,
     name: 'Dashboard',
@@ -43,22 +44,29 @@ export default [
         slug: 'dashboard-analytics',
         i18n: 'Analytics'
       },
-      /*
       {
         url: '/dashboard/ecommerce',
         name: 'eCommerce',
         slug: 'dashboard-ecommerce',
         i18n: 'eCommerce'
       }
-      */
     ]
   },
+  */
   {
     header: 'Apps',
     icon: 'PackageIcon',
     i18n: 'Apps',
     roles: ['developer', 'admin'],
     items: [
+      {
+        url: '/dashboard/analytics',
+        name: 'Dashboard',
+        slug: 'dashboard-analytics',
+        icon: 'HomeIcon',
+        i18n: 'Dashboard',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
       {
         url: '/dashboard/users',
         name: 'Users',

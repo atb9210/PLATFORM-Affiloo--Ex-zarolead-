@@ -33,10 +33,10 @@ class OrderController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
-            'filter_status' => 'nullable|integer|min:0',
-            'filter_product' => 'nullable|integer|exists:products,id',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+            'filter_status' => 'integer|min:0',
+            'filter_product' => 'integer|exists:products,id',
         ]);
 
         // Query orders (applying filters)
@@ -239,16 +239,16 @@ class OrderController extends Controller
 
         // Params validation
         $params = $request->validate([
-            'order_status_id' => 'nullable|int|min:1|exists:order_statuses,id',
-            'name' => 'nullable|string|min:3',
-            'phone' => 'nullable|string|min:3',
-            'address' => 'nullable|string|min:3',
-            'email' => 'nullable|email|min:3',
-            'product_id' => 'nullable|integer|min:1|exists:products,id',
-            'quantity' => 'nullable|string|min:1',
-            'commission' => 'nullable|numeric|min:1',
-            'sub_commission' => 'nullable|numeric|min:1',
-            'network_id' => 'nullable|integer|min:1|exists:networks,id',
+            'order_status_id' => 'int|min:1|exists:order_statuses,id',
+            'name' => 'string|min:3',
+            'phone' => 'string|min:3',
+            'address' => 'string|min:3',
+            'email' => 'email|min:3',
+            'product_id' => 'integer|min:1|exists:products,id',
+            'quantity' => 'string|min:1',
+            'commission' => 'numeric|min:1',
+            'sub_commission' => 'numeric|min:1',
+            'network_id' => 'integer|min:1|exists:networks,id',
         ]);
 
         // Update orders information

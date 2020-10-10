@@ -413,14 +413,6 @@ export default {
       this.cpaSeries = [{ data: cpaSeries, name: 'CPA' }]
     },
     loadMonthlyCharts() {
-      // TODO: to delete
-      console.log(this.monthlyVisits)
-      console.log(this.monthlyLeads)
-      console.log(this.monthlyCost)
-      console.log(this.monthlyCpa)
-
-      // TODO: HERE
-
       // X axis
       let categories = []
       let monthNames = [
@@ -429,15 +421,8 @@ export default {
       ]
       let dateObj = new Date()
       for(let monthIndex = this.lastMonths - 1; monthIndex >= 0; monthIndex--) {
-        // TODO: to delete
-        console.log("monthIndex:", monthIndex)
-        console.log(this.formatDate(dateObj))
-
         categories.push(monthNames[dateObj.getMonth() - monthIndex])
       }
-
-        // TODO: to delete
-      console.log(categories)
 
       this.lineAreaChartSpline.chartOptions = {
         chart: {
@@ -632,10 +617,6 @@ export default {
         filter_date_from: this.formatDate(fromObj),
         filter_date_to: this.formatDate(toObj),
       }
-
-      // TODO: to delete
-      console.log("monthIndex:", monthIndex)
-      console.log("From:", data.filter_date_from, "To:", data.filter_date_to)
 
       this.$http.get('/api/v1/my-reports', { headers, params: data })
         .then((response) => {

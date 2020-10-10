@@ -139,4 +139,8 @@ Route::post('ads/{id}/update', 'api\v1\AdController@update')->middleware('auth:a
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::get('users', 'api\v1\ReportController@users')->name('reports.users');
     Route::get('products', 'api\v1\ReportController@products')->name('reports.products');
+    Route::get('advertisers', 'api\v1\ReportController@advertisers')->name('reports.advertisers');
+
+    // TODO: HERE
+    Route::put('monthly', 'api\v1\ReportController@monthlyReportEdit')->name('reports.monthly.update');
 });

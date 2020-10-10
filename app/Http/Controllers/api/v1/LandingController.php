@@ -174,8 +174,8 @@ class LandingController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
 
         $stats = LandingStats::where('form_id', $id);

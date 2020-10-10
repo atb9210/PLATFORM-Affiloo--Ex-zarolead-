@@ -10,6 +10,8 @@ use App\Order as Order;
 use App\User as User;
 use App\UserReport as UserReport;
 use App\Http\Resources\api\v1\UserReportResource;
+use App\UserMonthlyReport as UserMonthlyReport;
+use App\Http\Resources\api\v1\UserMonthlyReportResource;
 
 class ReportController extends Controller
 {
@@ -19,7 +21,7 @@ class ReportController extends Controller
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_user int User's id
-     * @urlParam filter_roles int Users' roles
+     * @urlParam filter_roles array Users' roles
      *
      * @response {
      *  "data": [report]
@@ -35,8 +37,8 @@ class ReportController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_user' => 'integer|exists:users,id',
             'filter_roles' => 'array',
             'filter_roles.*' => 'integer|exists:roles,id',
@@ -171,8 +173,8 @@ class ReportController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_product' => 'integer|exists:products,id',
             'filter_advertiser' => 'integer|exists:advertisers,id',
         ]);
@@ -226,4 +228,51 @@ class ReportController extends Controller
             'data' => $reports
         ]);
     }
+
+    /**
+     * Get monthly report.
+     *
+     * @urlParam user int User's id
+     * @urlParam month int Month
+     * @urlParam year int Year
+     *
+     * @response {
+     *  "data": [report]
+     * }
+     */
+    public function monthlyReport(Request $request)
+    {
+        if (!Auth::user()->hasPermission('report', 'users')) {
+            return response([
+                "message" => "You don't have permissions to access reports"
+            ], 403);
+        }
+
+        // Param validation
+        $params = $request->validate([
+            'user' => 'required|integer|exists:users,id',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:0',
+        ]);
+
+        $user = User::findOrFail($params['user']);
+        $monthlyReport = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+
+        return new UserMonthlyReportResource($monthlyReport);
+    }
+
+    /**
+     * Update monthly report.
+     *
+     * @urlParam user int User's id
+     * @urlParam month int Month
+     * @urlParam year int Year
+     * @urlParam year int Year
+     *
+     * @response {
+     *  "data": [report]
+     * }
+     */
+    public function monthlyReport(Request $request)
+    {
 }

@@ -72,7 +72,7 @@ class ProductController extends Controller
         $params = $request->validate([
             'name' => 'required|string|min:3',
             'tag_id' => 'required|integer|exists:tags,id',
-            'advertiser_id' => 'required|integer|exists:advertisers,id',
+            'advertiser_id' => 'required|integer|exists:users,id',
             'country' => 'string|min:1',
         ]);
         $params['user_id'] = Auth::user()->id;
@@ -94,7 +94,7 @@ class ProductController extends Controller
      *
      * @bodyParam name string Product's new name
      * @bodyParam tag_id int Product's new tag ID
-     * @bodyParam advertiser_id int Product's new advertiser ID
+     * @bodyParam advertiser_id int Product's new user ID
      * @bodyParam country string Product's new country
      *
      * @response {
@@ -116,7 +116,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'name' => 'string|min:3|max:255',
             'tag_id' => 'integer|min:1|exists:tags,id',
-            'advertiser_id' => 'integer|min:1|exists:advertisers,id',
+            'advertiser_id' => 'integer|min:1|exists:users,id',
             'country' => 'string|min:1|max:255',
         ]);
 

@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateUserMonthlyReports extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('user_monthly_reports', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned();
+            $table->integer('month')->unsigned();
+            $table->integer('year')->unsigned();
+            $table->integer('visits')->unsigned()->default(0);
+            $table->integer('leads')->unsigned()->default(0);
+            $table->decimal('commission', 9, 2)->default(0.0);
+            $table->decimal('approved_commission', 9, 2)->default(0.0);
+            $table->decimal('total_cost', 9, 2)->default(0.0);
+            $table->decimal('profit', 9, 2)->default(0.0);
+            $table->timestamps();
+
+            $table->unique(['user_id', 'month', 'year']);
+
+			$table->foreign('user_id')->references('id')->on('users');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('user_monthly_reports');
+    }
+}

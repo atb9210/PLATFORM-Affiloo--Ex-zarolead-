@@ -66,9 +66,6 @@ class CreateRolesTable extends Migration
                     "tag" => [
                         "viewAny" => true,
                     ],
-                    "advertiser" => [
-                        "viewAny" => true,
-                    ],
                     "traffic_source" => [
                         "viewAny" => true,
                     ],
@@ -126,9 +123,6 @@ class CreateRolesTable extends Migration
                         "delete" => true,
                     ],
                     "tag" => [
-                        "viewAny" => true,
-                    ],
-                    "advertiser" => [
                         "viewAny" => true,
                     ],
                     "traffic_source" => [
