@@ -492,8 +492,10 @@ export default {
       })
 
     // Retrieve advertisers
+    let data = {}
+    data['filter_roles'] = [5],
     this.$vs.loading()
-    this.$http.get('/api/v1/advertisers/', { headers })
+    this.$http.get('/api/v1/users/', { headers, params: data })
       .then((response) => {
         this.advertisers = []
         response.data.data.forEach((advertiser) => {
