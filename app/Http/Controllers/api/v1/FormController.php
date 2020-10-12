@@ -364,6 +364,16 @@ class FormController extends Controller
         $report->profit = $report->commission - ($report->cost + $report->extra_cost);
         $report->save();
 
+        // Update advertiser's report stats
+        $timestamp = strtotime($stats->day);
+        $month = intval(date('m'), $timestamp);
+        $year = intval(date('Y'), $timestamp);
+        $advertiser = $form->product->advertiser;
+        $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+        $advReport->total_cost += $stats->total_cost - $prev_total_cost;
+        $advReport->profit = $advReport->commission - $advReport->total_cost;
+        $advReport->save();
+
         return new FormStatsResource($stats);
     }
 
@@ -517,6 +527,16 @@ class FormController extends Controller
         $report = UserReport::getObject($form->user->id, $formStats->day);
         $report->visits += 1;
         $report->save();
+
+
+        // Update advertiser's report stats
+        $timestamp = strtotime($formStats->day);
+        $month = intval(date('m'), $timestamp);
+        $year = intval(date('Y'), $timestamp);
+        $advertiser = $form->product->advertiser;
+        $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+        $advReport->visits += 1;
+        $advReport->save();
     }
 
     /**

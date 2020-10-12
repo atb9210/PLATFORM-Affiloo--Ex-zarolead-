@@ -11,9 +11,9 @@ use App\User as User;
 use App\Role as Role;
 use App\UserReport as UserReport;
 use App\Http\Resources\api\v1\UserReportResource;
-use App\UserMonthlyReport as UserMonthlyReport;
-use App\Http\Resources\api\v1\UserMonthlyReportResource;
 use App\FormStats as FormStats;
+use App\AdvertiserReport as AdvertiserReport;
+use App\Http\Resources\api\v1\AdvertiserReportResource;
 
 class ReportController extends Controller
 {
@@ -256,11 +256,11 @@ class ReportController extends Controller
             $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
                 ->where('role_user.role_id', $role->id);
             foreach ($users->get() as $user) {
-                $reports[] = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+                $reports[] = AdvertiserReport::getObject($user, $params['month'], $params['year']);
             }
         }
 
-        return UserMonthlyReportResource::collection($reports);
+        return AdvertiserReportResource::collection($reports);
     }
 
     /**
@@ -289,7 +289,7 @@ class ReportController extends Controller
         ]);
 
         $user = User::findOrFail($user_id);
-        $report = UserMonthlyReport::getObject($user, $params['month'], $params['year']);
+        $report = AdvertiserReport::getObject($user, $params['month'], $params['year']);
         if ($params['approved_commission'] > $report->commission) {
             return response([
                 "message" => "Approved commission value cannot be greather than commission value"
@@ -299,6 +299,6 @@ class ReportController extends Controller
         $report->approved_commission = $params['approved_commission'];
         $report->save();
 
-        return new UserMonthlyReportResource($report);
+        return new AdvertiserReportResource($report);
     }
 }

@@ -14,6 +14,7 @@ use App\FormStats;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
 use App\UserReport as UserReport;
+use App\AdvertiserReport as AdvertiserReport;
 
 class OrderController extends Controller
 {
@@ -205,6 +206,17 @@ class OrderController extends Controller
             $report->commission += $order->commission;
             $report->profit = $report->commission - ($report->cost + $report->extra_cost);
             $report->save();
+
+            // Update advertiser's report stats
+            $timestamp = strototime($today);
+            $month = intval(date('m'), $timestamp);
+            $year = intval(date('Y'), $timestamp);
+            $advertiser = $form->product->advertiser;
+            $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+            $advReport->leads += 1;
+            $advReport->commission += $order->commission;
+            $advReport->profit = $advReport->commission - $advReport->cost;
+            $advReport->save();
         }
 
         return response([

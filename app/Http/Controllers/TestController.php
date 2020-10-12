@@ -7,13 +7,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-use App\Landing;
+use App\User;
+use App\AdvertiserReport;
 
 class TestController extends Controller
 {
     public function test()
     {
-        include('http://www.google.com/');
+        $user = User::find(1);
+        $advReport = AdvertiserReport::getObject($user, 10, 2020);
+        echo var_export($advReport->user->id, true);
         exit();
         /*
         $p = public_path("robots.txt");
