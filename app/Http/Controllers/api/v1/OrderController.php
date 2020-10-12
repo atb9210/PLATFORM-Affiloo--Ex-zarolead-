@@ -208,7 +208,7 @@ class OrderController extends Controller
             $report->save();
 
             // Update advertiser's report stats
-            $timestamp = strototime($today);
+            $timestamp = strtotime($today);
             $month = intval(date('m', $timestamp));
             $year = intval(date('Y', $timestamp));
             $advertiser = User::findOrFail($form->product->advertiser_id);
