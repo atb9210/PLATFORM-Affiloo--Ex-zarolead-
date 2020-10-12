@@ -201,7 +201,7 @@ class OrderController extends Controller
             $form->save();
 
             // Update user's report stats
-            $report = UserReport::getObject($form->user->id, $today);
+            $report = UserReport::getObject($form->user->id, date('Y-m-d'));
             $report->leads += 1;
             $report->commission += $order->commission;
             $report->profit = $report->commission - ($report->cost + $report->extra_cost);
