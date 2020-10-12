@@ -14,6 +14,7 @@ use App\FormStats;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
 use App\UserReport as UserReport;
+use App\User as User;
 use App\AdvertiserReport as AdvertiserReport;
 
 class OrderController extends Controller

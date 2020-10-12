@@ -11,12 +11,15 @@ class NetworksTableSeeder extends Seeder
      */
     public function run()
     {
+        $app_url = env('APP_URL', '');
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/worldfilia' : '{form.api_call_url}');
         \App\Network::create([
             'name' => 'Worldfilia',
             'api' => [
                 'store' => [
                     'request' => [
-                        'url' => '{form.api_call_url}',
+                        'url' => $url,
                         'method' => 'post',
                         'type' => 'json',
                         'urlParams' => [
@@ -145,12 +148,14 @@ class NetworksTableSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/amsped' : 'https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder');
         \App\Network::create([
             'name' => 'Amsped',
             'api' => [
                 'store' => [
                     'request' => [
-                        'url' => 'https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder',
+                        'url' => $url,
                         'method' => 'post',
                         'type' => 'json',
                         'bodyParams' => [
@@ -268,12 +273,14 @@ class NetworksTableSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/affiliation-park' : 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php');
         \App\Network::create([
             'name' => 'Affiliation Park',
             'api' => [
                 'store' => [
                     'request' => [
-                        'url' => 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php', // TODO: string after public/
+                        'url' => $url,
                         'method' => 'get',
                         'type' => 'json',
                         'urlParams' => [
