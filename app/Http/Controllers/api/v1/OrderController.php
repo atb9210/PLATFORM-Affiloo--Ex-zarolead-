@@ -201,7 +201,7 @@ class OrderController extends Controller
             $form->save();
 
             // Update user's report stats
-            $report = UserReport::getObject($form->user->id, date('Y-m-d'));
+            $report = UserReport::getObject($form->user->id, $today);
             $report->leads += 1;
             $report->commission += $order->commission;
             $report->profit = $report->commission - ($report->cost + $report->extra_cost);
@@ -209,8 +209,8 @@ class OrderController extends Controller
 
             // Update advertiser's report stats
             $timestamp = strototime($today);
-            $month = intval(date('m'), $timestamp);
-            $year = intval(date('Y'), $timestamp);
+            $month = intval(date('m', $timestamp));
+            $year = intval(date('Y', $timestamp));
             $advertiser = User::findOrFail($form->product->advertiser_id);
             $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
             $advReport->leads += 1;

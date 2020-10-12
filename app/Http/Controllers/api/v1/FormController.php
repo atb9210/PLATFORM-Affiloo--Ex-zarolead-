@@ -367,8 +367,8 @@ class FormController extends Controller
 
         // Update advertiser's report stats
         $timestamp = strtotime($stats->day);
-        $month = intval(date('m'), $timestamp);
-        $year = intval(date('Y'), $timestamp);
+        $month = intval(date('m', $timestamp));
+        $year = intval(date('Y', $timestamp));
         $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->total_cost += $stats->total_cost - $prev_total_cost;
@@ -531,8 +531,8 @@ class FormController extends Controller
 
         // Update advertiser's report stats
         $timestamp = strtotime($formStats->day);
-        $month = intval(date('m'), $timestamp);
-        $year = intval(date('Y'), $timestamp);
+        $month = intval(date('m', $timestamp));
+        $year = intval(date('Y', $timestamp));
         $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->visits += 1;
