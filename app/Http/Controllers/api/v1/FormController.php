@@ -18,6 +18,7 @@ use App\Network as Network;
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
 use App\UserReport as UserReport;
+use App\AdvertiserReport as AdvertiserReport;
 
 class FormController extends Controller
 {
@@ -368,7 +369,7 @@ class FormController extends Controller
         $timestamp = strtotime($stats->day);
         $month = intval(date('m'), $timestamp);
         $year = intval(date('Y'), $timestamp);
-        $advertiser = $form->product->advertiser;
+        $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->total_cost += $stats->total_cost - $prev_total_cost;
         $advReport->profit = $advReport->commission - $advReport->total_cost;
@@ -528,12 +529,11 @@ class FormController extends Controller
         $report->visits += 1;
         $report->save();
 
-
         // Update advertiser's report stats
         $timestamp = strtotime($formStats->day);
         $month = intval(date('m'), $timestamp);
         $year = intval(date('Y'), $timestamp);
-        $advertiser = $form->product->advertiser;
+        $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->visits += 1;
         $advReport->save();
