@@ -177,6 +177,20 @@
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>{{total_amount}}</vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -358,10 +372,10 @@ export default {
 
           this.total_amount = 0.0
           this.objects.forEach((obj) => {
-            this.total_amount += obj.amount
+            this.total_amount += parseFloat(obj.amount)
           })
+          this.total_amount = this.total_amount.toFixed(2)
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -583,7 +597,6 @@ export default {
       // Retrieve invoices
       this.$http.get('/api/v1/invoices', { headers, params: data })
         .then((response) => {
-            console.log(response)
           this.objects = response.data.data
           this.$vs.loading.close()
         })

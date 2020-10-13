@@ -292,6 +292,30 @@ class FormController extends Controller
     }
 
     /**
+     * Restore the specified form.
+     *
+     * @urlParam id int required Form's id
+     *
+     * @response {
+     *  "message": "Form has been restored",
+     * }
+     */
+    public function restore($id)
+    {
+        $form = Form::findOrFail($id);
+
+        $this->authorize('delete', $form);
+
+        // Archive the form
+        $form->archived = 0;
+        $form->save();
+
+        return response([
+            'message' => 'Form has been restored'
+        ]);
+    }
+
+    /**
      * Get form stats.
      *
      * @urlParam id int required Form's id

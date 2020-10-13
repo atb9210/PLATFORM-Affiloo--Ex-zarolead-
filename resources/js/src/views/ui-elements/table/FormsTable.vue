@@ -163,6 +163,7 @@
                             <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
+                            <vs-button v-if="data[indextr].archived == 1" @click="restoreForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-unlock"></vs-button>
                             <!--<vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>-->
                         </div>
                     </vs-td>
@@ -1224,6 +1225,15 @@ export default {
         this.objects[i].stats.cpv = cpv
         this.objects[i].stats.epv = epv
         this.objects[i].stats.cpl = cpl
+
+        // NOTE: This is useful for table sorting since the table is not able to
+        // sort nested property (e.g. stats.*)
+        this.objects[i].profit = profit
+        this.objects[i].roi = roi
+        this.objects[i].cr = cr
+        this.objects[i].cpv = cpv
+        this.objects[i].epv = epv
+        this.objects[i].cpl = cpl
       }
 
       // Total stats
@@ -1256,6 +1266,9 @@ export default {
 
       this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
       this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
+
+      console.log(this.objects);
+      console.log(this.total_stats);
     },
     resetFilters() {
       this.filters = {
@@ -1489,6 +1502,36 @@ export default {
           })
           let newForm = response.data.data
           this.$router.push({name: 'form-editor', params: {form_id: newForm.id}})
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    restoreForm(id) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$http.get('/api/v1/forms/' + id + '/restore', { headers: headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Form restored',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()

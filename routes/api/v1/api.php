@@ -79,6 +79,8 @@ Route::get('flows/{id}/landings/get', 'api\v1\FlowController@getLandingUrl')->na
 Route::apiResource('forms', 'api\v1\FormController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('forms/{id}/restore', 'api\v1\FormController@restore')->middleware('auth:api')
+    ->name('forms.restore');
 Route::post('forms/{id}/clone', 'api\v1\FormController@clone')->middleware('auth:api')
     ->name('forms.clone');
 Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
