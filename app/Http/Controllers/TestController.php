@@ -14,9 +14,31 @@ class TestController extends Controller
 {
     public function test()
     {
-        $user = User::find(1);
-        $advReport = AdvertiserReport::getObject($user, 10, 2020);
-        echo var_export($advReport->user->id, true);
+        //phpinfo();
+        //exit();
+        //$url = 'http://zarolead.localhost/test';
+        $url = 'http://zarolead.localhost/api/fake/network/worldfilia';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        $bodyParams = [
+            'Ciao' => '111',
+            'Ciaone' => '222',
+        ];
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $server_output = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        //var_dump([
+        //    gethostbyname($url),
+        //    gethostbyname('zarolead.localhost'),
+        //    gethostbyname(env('APP_URL')),
+        //]);
+        //exit();
+        echo var_export($http_code, true);
+        echo var_export(curl_error($ch), true);
+        curl_close($ch);
+        echo var_export($server_output, true);
         exit();
         /*
         $p = public_path("robots.txt");
@@ -31,8 +53,9 @@ class TestController extends Controller
 
     public function post(Request $request)
     {
-        echo "<pre>" . var_export($request, true) . "</pre>";
-        exit();
+        return response([
+            'YO' => 'man'
+        ]);
     }
 
     public function hash(Request $request)

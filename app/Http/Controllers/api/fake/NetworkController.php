@@ -9,23 +9,23 @@ class NetworkController extends Controller
 {
     public function worldfilia(Request $request)
     {
-        return [
+        return response([
             'status' => 'success',
-        ];
+        ]);
     }
 
     public function amsped(Request $request)
     {
-        return [
+        return response([
             'error' => false,
-        ];
+        ]);
     }
 
     public function affiliationPark(Request $request)
     {
-        return [
+        return response([
             'status' => true,
             'response' => 'Order added',
-        ];
+        ]);
     }
 }

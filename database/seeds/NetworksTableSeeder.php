@@ -13,7 +13,7 @@ class NetworksTableSeeder extends Seeder
     {
         $app_url = env('APP_URL', '');
 
-        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/worldfilia' : '{form.api_call_url}');
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/worldfilia' : '{form.api_call_url}');
         \App\Network::create([
             'name' => 'Worldfilia',
             'api' => [
@@ -149,7 +149,7 @@ class NetworksTableSeeder extends Seeder
             ],
         ]);
 
-        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/amsped' : 'https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder');
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/amsped' : 'https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder');
         \App\Network::create([
             'name' => 'Amsped',
             'api' => [
@@ -274,7 +274,7 @@ class NetworksTableSeeder extends Seeder
             ],
         ]);
 
-        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/affiliation-park' : 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php');
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/affiliation-park' : 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php');
         \App\Network::create([
             'name' => 'Affiliation Park',
             'api' => [

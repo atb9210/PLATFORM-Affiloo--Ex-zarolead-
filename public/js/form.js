@@ -48,7 +48,8 @@ Form.prototype.initialize = function() {
     }
     if (this.DEBUG) {
         api_url = 'http://';
-        api_url += '127.0.0.1:8000/';
+        //api_url += '127.0.0.1:8000/';
+        api_url += 'zarolead.localhost/';
     } else {
         api_url += 'zarolead.com/';
     }
