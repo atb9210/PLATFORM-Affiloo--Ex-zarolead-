@@ -127,6 +127,19 @@
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>{{total_stats.visits}}</vs-td>
+                <vs-td>{{total_stats.leads}}</vs-td>
+                <vs-td>{{total_stats.tq}}</vs-td>
+                <vs-td>{{total_stats.commission}}</vs-td>
+                <vs-td>{{total_stats.cost}}</vs-td>
+                <vs-td>{{total_stats.extra_cost}}</vs-td>
+                <vs-td>{{total_stats.profit}}</vs-td>
+                <vs-td></vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -171,6 +184,16 @@ export default {
       notes: '',
       isEditingCost: false,
       editingCostValue: 0,
+
+      total_stats: {
+        visits: 0,
+        leads: 0,
+        tq: 0,
+        commission: 0,
+        cost: 0,
+        extra_cost: 0,
+        profit: 0,
+      },
     }
   },
   computed: {
@@ -233,6 +256,7 @@ export default {
               this.objects[i].notes = ''
             }
           }
+          this.calculateStats()
 
           this.$vs.loading.close()
         })
@@ -393,6 +417,36 @@ export default {
             color: 'danger'
           })
         })
+    },
+    calculateStats() {
+      this.total_stats = {
+        visits: 0,
+        leads: 0,
+        tq: 0,
+        commission: 0,
+        cost: 0,
+        extra_cost: 0,
+        profit: 0,
+      }
+
+      for (var i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+
+        this.total_stats.visits += parseInt(obj.visits)
+        this.total_stats.leads += parseInt(obj.leads)
+        this.total_stats.commission += parseFloat(obj.commission)
+        this.total_stats.cost += parseFloat(obj.cost)
+        this.total_stats.extra_cost += parseFloat(obj.extra_cost)
+        this.total_stats.tq += parseInt(obj.tq)
+      }
+      if (this.objects.length > 0) {
+        this.total_stats.tq /= this.objects.length
+      }
+
+      // Format total stats
+      this.total_stats.commission = this.total_stats.commission.toFixed(2)
+      this.total_stats.cost = this.total_stats.cost.toFixed(2)
+      this.total_stats.extra_cost = this.total_stats.extra_cost.toFixed(2)
     },
   },
   created() {

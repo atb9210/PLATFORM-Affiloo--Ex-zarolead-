@@ -84,6 +84,7 @@
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url" v-clipboard:success="onUrlCopied"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -473,6 +474,15 @@ export default {
             color: 'danger'
           })
         })
+    },
+    onUrlCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'URL copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   created() {

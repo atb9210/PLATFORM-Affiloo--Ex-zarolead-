@@ -308,7 +308,10 @@ export default {
 
       showChart: false,
       maxChartLines: 10,
-      themeColors: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+      themeColors: {
+          admin: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+          mediaBuyer: ['#7367F0', '#28C76F', '#9C1E10', '#E36222', '#1E1E1E'],
+      },
       lineAreaChartSpline: {
         series: [],
         chartOptions: {
@@ -321,7 +324,7 @@ export default {
           stroke: {
             curve: 'smooth'
           },
-          colors: this.themeColors,
+          colors: [],
           xaxis: {
             categories: [],
           },
@@ -1076,26 +1079,6 @@ export default {
         categories.push(this.formatDate(currentDay))
         currentDay.setDate(currentDay.getDate() + 1)
       }
-      this.lineAreaChartSpline.chartOptions = {
-        chart: {
-          type: 'line',
-        },
-        dataLabels: {
-          enabled: false
-        },
-        stroke: {
-          curve: 'smooth'
-        },
-        colors: this.themeColors,
-        xaxis: {
-          categories: categories,
-        },
-        tooltip: {
-          x: {
-            format: 'yyyy-MM-dd'
-          }
-        },
-      }
 
       // Retrieve forms' stats and set chart Y axis
       this.lineAreaChartSpline.series = []
@@ -1106,48 +1089,94 @@ export default {
       // Calculate CPV and EPV
       let cpv_values = []
       let epv_values = []
-      let c_on_tq_values = []
+      let cost_values = []
+      let tq_values = []
+      let cpa_values = []
       for(let j = 0; j < numDots; j++) {
         cpv_values.push(0)
         epv_values.push(0)
-        c_on_tq_values.push(0)
+        cost_values.push(0)
+        tq_values.push(0)
+        cpa_values.push(0)
       }
       for(let j = 0; j < stats.length; j++) {
         let stat = stats[j]
 
         let cpv = 0
         let epv = 0
-        let c_on_tq = 0
+        let cost = 0
+        let tq = 0
+        let cpa = 0
 
         cpv = parseFloat((stat.visits == 0) ? stat.total_cost : stat.total_cost/stat.visits)
         epv = parseFloat((stat.visits == 0) ? stat.total_commission : stat.total_commission/stat.visits)
-        c_on_tq = parseFloat((stat.tq > 0) ? (stat.total_cost/stat.tq) : (0))
+        cost = parseFloat(stat.total_cost)
+        tq = parseInt(stat.tq)
+        cpa = parseFloat((stat.leads == 0) ? stat.total_cost : stat.total_cost/stat.leads)
 
         let index = categories.indexOf(stat.day)
 
         if (index >= 0) {
           cpv_values[index] = cpv.toFixed(2)
           epv_values[index] = epv.toFixed(2)
-          c_on_tq_values[index] = c_on_tq.toFixed(2)
+          cost_values[index] = cost.toFixed(2)
+          tq_values[index] = tq
+          cpa_values[index] = cpa.toFixed(2)
         }
       }
 
-      series.push({
-        name: "cpv",
-        data: cpv_values,
-      })
+      let themeColors = []
       if (this.canViewStats) {
+        themeColors = this.themeColors.admin
+        series.push({
+          name: "cpv",
+          data: cpv_values,
+        })
         series.push({
           name: "epv",
           data: epv_values,
         })
       } else {
+        themeColors = this.themeColors.mediaBuyer
         series.push({
-          name: "Cost / TQ",
-          data: c_on_tq_values,
+          name: "CPV",
+          data: cpv_values,
+        })
+        series.push({
+          name: "TQ",
+          data: tq_values,
+        })
+        series.push({
+          name: "Cost",
+          data: cost_values,
+        })
+        series.push({
+          name: "CPA",
+          data: cpa_values,
         })
       }
       this.lineAreaChartSpline.series = series
+
+      this.lineAreaChartSpline.chartOptions = {
+        chart: {
+          type: 'line',
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        colors: themeColors,
+        xaxis: {
+          categories: categories,
+        },
+        tooltip: {
+          x: {
+            format: 'yyyy-MM-dd'
+          }
+        },
+      }
     },
     showLandingsStats(id) {
       this.$router.push({name: 'landings-stats', params: {form_id: id}})
