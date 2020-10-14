@@ -438,15 +438,17 @@ export default {
         this.total_stats.cost += parseFloat(obj.cost)
         this.total_stats.extra_cost += parseFloat(obj.extra_cost)
         this.total_stats.tq += parseInt(obj.tq)
+        this.total_stats.profit += parseFloat(obj.profit)
       }
       if (this.objects.length > 0) {
-        this.total_stats.tq /= this.objects.length
+        this.total_stats.tq = parseInt(this.total_stats.tq / this.objects.length)
       }
 
       // Format total stats
       this.total_stats.commission = this.total_stats.commission.toFixed(2)
       this.total_stats.cost = this.total_stats.cost.toFixed(2)
       this.total_stats.extra_cost = this.total_stats.extra_cost.toFixed(2)
+      this.total_stats.profit = this.total_stats.profit.toFixed(2)
     },
   },
   created() {
