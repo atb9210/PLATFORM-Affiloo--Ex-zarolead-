@@ -78,6 +78,9 @@ class CreateRolesTable extends Migration
                     "ad" => [
                         "*" => true,
                     ],
+                    "domain" => [
+                        "*" => true,
+                    ],
                 ],
             ],
             [
@@ -135,6 +138,9 @@ class CreateRolesTable extends Migration
                         "viewAny" => true,
                     ],
                     "ad" => [
+                        "*" => true,
+                    ],
+                    "domain" => [
                         "*" => true,
                     ],
                 ],

@@ -140,6 +140,14 @@ export default [
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
+        url: '/dashboard/domains',
+        name: 'Domains',
+        slug: 'domains',
+        icon: 'LinkIcon',
+        i18n: 'Domains',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+      {
         url: '/dashboard/flows',
         name: 'Flows',
         slug: 'flows',
