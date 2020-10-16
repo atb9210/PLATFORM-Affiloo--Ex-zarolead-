@@ -119,8 +119,8 @@ Route::apiResource('networks', 'api\v1\NetworkController')->except([
 Route::post('networks/{id}/params/validate', 'api\v1\NetworkController@validateParams')->middleware('auth:api')
     ->name('networks.params.validate');
 
-/* Campaigns routes */
-Route::apiResource('campaigns', 'api\v1\CampaignController')->except([
+/* Domains routes */
+Route::apiResource('domains', 'api\v1\DomainController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 

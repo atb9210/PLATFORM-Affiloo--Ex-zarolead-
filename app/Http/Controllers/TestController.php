@@ -9,11 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 use App\User;
 use App\AdvertiserReport;
+use App\TrafficSource;
 
 class TestController extends Controller
 {
     public function test()
     {
+        $t = TrafficSource::find(1);
+        echo var_export($t->getUrlParams(), true);
+        exit();
         //phpinfo();
         //exit();
         //$url = 'http://zarolead.localhost/test';

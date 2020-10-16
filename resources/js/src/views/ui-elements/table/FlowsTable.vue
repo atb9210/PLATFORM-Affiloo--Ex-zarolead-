@@ -129,14 +129,13 @@
                 </div>
                 <div class="vx-col sm:w-1/2 w-full">
                     <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('create')" @keyup.escape="dontAddNewDomain('create')" />
-                    <vs-select v-else v-model="newObject['create'].domains.selected" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="index" :text="item" v-for="(item, index) in newObject['create'].domains.list" class="w-full" />
+                    <vs-select v-else v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
-                    <span class="w-full text-danger">{{ errors.first('domains') }}</span>
+                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
                 </div>
                 <div class="vx-col sm:w-1/6 w-full flex items-center">
-                    <vs-button class="w-1/3 mr-2" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('create')"></vs-button>
-                    <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeDomain('create')"></vs-button>
+                    <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('create')"></vs-button>
                 </div>
             </div>
 
@@ -237,14 +236,13 @@
                 </div>
                 <div class="vx-col sm:w-1/2 w-full">
                     <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('edit')" @keyup.escape="dontAddNewDomain('edit')" />
-                    <vs-select v-else v-model="newObject['edit'].domains.selected" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="index" :text="item" v-for="(item, index) in newObject['edit'].domains.list" class="w-full" />
+                    <vs-select v-else v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
-                    <span class="w-full text-danger">{{ errors.first('domains') }}</span>
+                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
                 </div>
                 <div class="vx-col sm:w-1/6 w-full flex items-center">
                     <vs-button class="w-1/3 mr-2" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('edit')"></vs-button>
-                    <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeDomain('edit')"></vs-button>
                 </div>
             </div>
 
@@ -309,6 +307,8 @@ export default {
 
       trafficSources: [],
       firstTrafficSourceId: 0,
+      domains: [],
+      firstDomainId: 0,
 
       editingObject: -1,
 
@@ -330,10 +330,7 @@ export default {
           weights: [
             1,
           ],
-          domains: {
-            list: [],
-            selected: 0,
-          },
+          domain: 0,
         },
         'edit': {
           name: '',
@@ -348,10 +345,7 @@ export default {
           weights: [
             1,
           ],
-          domains: {
-            list: [],
-            selected: 0,
-          },
+          domain: 0,
         },
       },
       isAddingDomain: false,
@@ -558,7 +552,7 @@ export default {
         path_name: pathName,
         rules: JSON.stringify(rules),
         traffic_source_id: this.newObject['create'].traffic_source,
-        domains: JSON.stringify(this.newObject['create'].domains),
+        domain_id: this.newObject['create'].domain,
       }
 
       this.$http.post('/api/v1/flows', data, { headers: headers })
@@ -615,7 +609,7 @@ export default {
         landings: landings,
         weights: weights,
         traffic_source: obj.traffic_source.id,
-        domains: obj.domains,
+        domain: obj.domain.id,
       }
       this.editingObject = obj.id
       this.errors.clear()
@@ -665,7 +659,7 @@ export default {
         path_name: pathName,
         rules: JSON.stringify(rules),
         traffic_source_id: this.newObject['edit'].traffic_source,
-        domains: JSON.stringify(this.newObject['edit'].domains),
+        domain_id: this.newObject['edit'].domain,
       }
 
       this.$http.put('/api/v1/flows/' + id, data, { headers: headers })
@@ -764,22 +758,36 @@ export default {
       inputEl.focus()
     },
     addNewDomain(type) {
-      this.newObject[type].domains.list.push(this.addingDomain)
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
 
-      this.addingDomain = 'http://'
-      this.isAddingDomain = false
+      let data = {
+          url: this.addingDomain,
+      }
+
+      this.$vs.loading()
+      this.$http.post('/api/v1/domains', data, { headers: headers })
+        .then((response) => {
+          this.domains.push(response.data.data)
+          this.newObject[type].domain = response.data.data.id
+          this.addingDomain = 'http://'
+          this.isAddingDomain = false
+          this.$vs.loading.close()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
     dontAddNewDomain(type) {
       this.isAddingDomain = false
-    },
-    removeDomain(type) {
-      let s = this.newObject[type].domains.selected
-      if (s >= 0 && s < this.newObject[type].domains.list.length) {
-        this.newObject[type].domains.list.splice(s, 1)
-      }
-      if (s > 0) {
-        this.newObject[type].domains.selected -= 1
-      }
     },
     onUrlCopied() {
       this.$vs.notify({
@@ -793,7 +801,6 @@ export default {
   },
   created() {
     this.retrieveObjects()
-
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
@@ -833,6 +840,28 @@ export default {
         if (this.trafficSources.length > 0) {
           this.firstTrafficSourceId = this.trafficSources[0].id
           this.newObject['create'].traffic_source = this.newObject['edit'].traffic_source = this.firstTrafficSourceId
+        }
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      })
+
+    // Retrieve domains
+    this.$vs.loading()
+    this.$http.get('/api/v1/domains', { headers })
+      .then((response) => {
+        this.domains = response.data.data
+        if (this.domains.length > 0) {
+          this.firstDomainId = this.domains[0].id
+          this.newObject['create'].domain = this.newObject['edit'].domain = this.firstDomainId
         }
         this.$vs.loading.close()
       })

@@ -11,7 +11,7 @@ use App\Landing;
 class Flow extends Model
 {
     protected $fillable = [
-        'user_id', 'name', 'type', 'rules', 'traffic_source_id', 'domains', 'path_name',
+        'user_id', 'name', 'type', 'rules', 'traffic_source_id', 'domain_id', 'path_name',
     ];
 
     protected $casts = [
@@ -29,6 +29,11 @@ class Flow extends Model
     public function traffic_source()
     {
         return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
+    }
+
+    public function domain()
+    {
+        return $this->belongsTo('App\Domain', 'domain_id');
     }
 
     public static function buildFullPathname($path_name)

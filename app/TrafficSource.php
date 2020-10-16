@@ -50,4 +50,19 @@ class TrafficSource extends Model
         }
         return $ad_model;
     }
+
+    public function getUrlParams()
+    {
+        $url_params = '';
+        $isFirst = true;
+        foreach ($this->custom_params as $param) {
+            if (!$isFirst) {
+                $url_params .= '&';
+            } else {
+                $isFirst = false;
+            }
+            $url_params .= $param['query_param'] . '=' . $param['token'];
+        }
+        return $url_params;
+    }
 }

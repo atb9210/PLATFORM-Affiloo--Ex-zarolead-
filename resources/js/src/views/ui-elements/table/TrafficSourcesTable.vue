@@ -329,7 +329,7 @@ export default {
         custom_params: JSON.stringify(custom_params),
       }
 
-      // Retrieve traffic sources
+      // Create traffic source
       this.$http.post('/api/v1/traffic-sources', data, { headers: headers })
         .then((response) => {
           this.$vs.loading.close()

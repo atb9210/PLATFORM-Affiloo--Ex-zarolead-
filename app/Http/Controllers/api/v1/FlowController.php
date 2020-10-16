@@ -22,7 +22,7 @@ class FlowController extends Controller
     public function index(Request $request)
     {
         $flows = Flow::query();
-        if (!Auth::user()->can('viewAny', 'App\Flows')) {
+        if (!Auth::user()->can('viewAny', 'App\Flow')) {
             $flows = $flows->where('user_id', Auth::user()->id);
         }
 
@@ -42,7 +42,6 @@ class FlowController extends Controller
     {
         $flow = Flow::findOrFail($id);
         $this->authorize('view', $flow);
-
         return new FlowResource($flow);
     }
 
@@ -52,7 +51,7 @@ class FlowController extends Controller
      * @bodyParam name string required Flow's name
      * @bodyParam type string required Flow's type (redirect, hotload)
      * @bodyParam rules json required Flow's rules
-     * @bodyParam domains json required Flow's domains
+     * @bodyParam domain_id int required Domain's id
      * @bodyParam path_name string required Flow's path name
      * @bodyParam traffic_source_id int required Traffic source's id
      *
@@ -70,13 +69,12 @@ class FlowController extends Controller
             'name' => 'required|string|min:3',
             'type' => 'required|in:redirect,hotload',
             'rules' => 'required|json',
-            'domains' => 'required|json',
+            'domain_id' => 'required|exists:domains,id',
             'path_name' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
         ]);
         $params['user_id'] = Auth::user()->id;
         $params['rules'] = json_decode($params['rules'], TRUE);
-        $params['domains'] = json_decode($params['domains'], TRUE);
 
         // Validate rules JSON
         $validator = Validator::make($params['rules'], [
@@ -85,18 +83,6 @@ class FlowController extends Controller
         if ($validator->fails()) {
             return response([
                 'message' => 'The given data - for the rules JSON param - was invalid.',
-                'errors' => $validator->messages(),
-            ], 422);
-        }
-
-        // Validate domains JSON
-        $validator = Validator::make($params['domains'], [
-            'list' => 'required|array',
-            'selected' => 'required|integer|min:0',
-        ]);
-        if ($validator->fails()) {
-            return response([
-                'message' => 'The given data - for the domains JSON param - was invalid.',
                 'errors' => $validator->messages(),
             ], 422);
         }
@@ -133,7 +119,7 @@ class FlowController extends Controller
      * @bodyParam path_name string Flow's path name
      * @bodyParam traffic_source_id int Traffic source's id
      * @bodyParam rules json Flow's rules
-     * @bodyParam domains json Flow's domains
+     * @bodyParam domain_id int Domain's id
      *
      * @response {
      *  "data": flow,
@@ -151,13 +137,10 @@ class FlowController extends Controller
             'path_name' => 'regex:#^(\w+/){1,2}\w+\.\w+$#',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'rules' => 'json',
-            'domains' => 'json',
+            'domain_id' => 'exists:domains,id',
         ]);
         if (isset($params['rules'])) {
             $params['rules'] = json_decode($params['rules'], TRUE);
-        }
-        if (isset($params['domains'])) {
-            $params['domains'] = json_decode($params['domains'], TRUE);
         }
 
         // Validate rules JSON
@@ -168,20 +151,6 @@ class FlowController extends Controller
             if ($validator->fails()) {
                 return response([
                     'message' => 'The given data - for the rules JSON param - was invalid.',
-                    'errors' => $validator->messages(),
-                ], 422);
-            }
-        }
-
-        // Validate domains JSON
-        if (isset($params['domains'])) {
-            $validator = Validator::make($params['domains'], [
-                'list' => 'required|array',
-                'selected' => 'required|integer|min:0',
-            ]);
-            if ($validator->fails()) {
-                return response([
-                    'message' => 'The given data - for the domains JSON param - was invalid.',
                     'errors' => $validator->messages(),
                 ], 422);
             }

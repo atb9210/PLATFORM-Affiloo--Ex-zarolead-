@@ -20,12 +20,13 @@ class CreateFlowsTable extends Migration
             $table->enum('type', ['redirect', 'hotload']);
             $table->json('rules')->nullable();
             $table->bigInteger('traffic_source_id')->unsigned();
-            $table->json('domains')->nullable();
+            $table->bigInteger('domain_id')->unsigned();
             $table->string('path_name');
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
+			$table->foreign('domain_id')->references('id')->on('domains');
         });
     }
 

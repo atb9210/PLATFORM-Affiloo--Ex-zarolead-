@@ -1358,6 +1358,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/domains',
+          name: 'domains',
+          component: () => import('./views/Domains.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Domains', active: true }
+            ],
+            pageTitle: 'Domains',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/forms',
           name: 'forms',
           component: () => import('./views/Forms.vue'),
