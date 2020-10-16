@@ -21,10 +21,6 @@ class LandingResource extends JsonResource
                 'id' => $this->user->id,
                 'email' => $this->user->email,
             ],
-            'campaign' => [
-                'id' => $this->form->campaign->id,
-                'name' => $this->form->campaign->name,
-            ],
             'form' => [
                 'id' => $this->form->id,
                 'name' => $this->form->name,

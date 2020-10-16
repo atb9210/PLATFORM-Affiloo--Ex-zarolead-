@@ -124,14 +124,6 @@ export default [
         roles: ['developer', 'admin'],
       },
       {
-        url: '/dashboard/campaigns',
-        name: 'Campaigns',
-        slug: 'campaigns',
-        icon: 'DollarSignIcon',
-        i18n: 'Campaigns',
-        roles: ['developer', 'admin'],
-      },
-      {
         url: '/dashboard/forms',
         name: 'Forms',
         slug: 'forms',

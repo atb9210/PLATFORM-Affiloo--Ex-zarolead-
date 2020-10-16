@@ -14,7 +14,7 @@ class Form extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'campaign_id', 'network_id', 'product_id', 'quantity', 'upsell',
+        'user_id', 'name', 'network_id', 'product_id', 'quantity', 'upsell',
         'tag_id', 'traffic_source_id',
         'info', 'network_params', 'plugins',
     ];
@@ -38,11 +38,6 @@ class Form extends Model
     public function user()
     {
         return $this->belongsTo('App\User', 'user_id');
-    }
-
-    public function campaign()
-    {
-        return $this->belongsTo('App\Campaign', 'campaign_id');
     }
 
     public function landings()

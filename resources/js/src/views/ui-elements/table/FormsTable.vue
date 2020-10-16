@@ -244,15 +244,6 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaign</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="campaigns" v-model="newObject['create'].campaign" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
                     <span>Network</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -423,15 +414,6 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaign</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="campaigns" v-model="newObject['edit'].campaign" />
                 </div>
             </div>
 
@@ -626,7 +608,6 @@ export default {
       newObject: {
         'create': {
           name: '',
-          campaign: '',
           network: '',
           product: '',
           quantity: '',
@@ -651,7 +632,6 @@ export default {
         },
         'edit': {
           name: '',
-          campaign: '',
           network: '',
           product: '',
           quantity: '',
@@ -676,7 +656,6 @@ export default {
         },
       },
 
-      campaigns: [],
       networks: [],
       products: [],
       traffic_sources: [],
@@ -832,7 +811,6 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
-        campaign: '',
         network: '',
         product: '',
         quantity: '',
@@ -859,7 +837,6 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
-        && obj.campaign != '' && obj.campaign.id >= 1
         && obj.network != '' && obj.network.id >= 1
         && obj.product != '' && obj.product.id >= 1
         && obj.quantity.length > 0
@@ -924,7 +901,6 @@ export default {
 
       let data = {
         name: this.newObject['create'].name,
-        campaign_id: this.newObject['create'].campaign.id,
         network_id: this.newObject['create'].network.id,
         product_id: this.newObject['create'].product.id,
         quantity: this.newObject['create'].quantity,
@@ -993,10 +969,6 @@ export default {
       let obj = this.allObjects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
-        campaign: {
-          id: obj.campaign.id,
-          label: obj.campaign.name,
-        },
         network: {
           id: obj.network.id,
           label: obj.network.name,
@@ -1073,7 +1045,6 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
-        campaign_id: this.newObject['edit'].campaign.id,
         network_id: this.newObject['edit'].network.id,
         product_id: this.newObject['edit'].product.id,
         quantity: this.newObject['edit'].quantity,
@@ -1197,7 +1168,7 @@ export default {
         let obj = this.objects[i]
 
         let profit = parseFloat(obj.stats.total_commission) - parseFloat(obj.stats.total_cost)
-        let roi = parseFloat((obj.stats.total_cost > 0) ? (profit/parseFloat(obj.stats.total_cost))*100 : 9999)
+        let roi = parseFloat((obj.stats.total_cost > 0 && profit > 0) ? (profit/parseFloat(obj.stats.total_cost))*100 : ((profit == 0) ? 0 : 9999))
         let cr = 0.0
         if (obj.stats.leads == 0) cr = 0.0
         else if (obj.stats.visits == 0) cr = 100.0
@@ -1240,7 +1211,7 @@ export default {
       let obj = this.total_stats
 
       let profit = obj.total_commission - obj.total_cost
-      let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
+      let roi = parseFloat((obj.total_cost > 0 && profit > 0) ? (profit/obj.total_cost)*100 : ((profit == 0) ? 0 : 9999))
       let cr = 0.0
       if (obj.leads == 0) cr = 0.0
       else if (obj.visits == 0) cr = 100.0
@@ -1266,9 +1237,6 @@ export default {
 
       this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
       this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
-
-      console.log(this.objects);
-      console.log(this.total_stats);
     },
     resetFilters() {
       this.filters = {
@@ -1629,23 +1597,6 @@ export default {
           this.networks.push({
             id: network.id,
             label: network.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve campaigns
-    this.$vs.loading()
-    this.$http.get('/api/v1/campaigns/', { headers })
-      .then((response) => {
-        this.campaigns = []
-        response.data.data.forEach((campaign) => {
-          this.campaigns.push({
-            id: campaign.id,
-            label: campaign.name,
           })
         })
         this.$vs.loading.close()

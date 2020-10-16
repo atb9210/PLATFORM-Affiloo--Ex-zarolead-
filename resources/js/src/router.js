@@ -1358,20 +1358,6 @@ const router = new Router({
           }
         },
         {
-          path: '/dashboard/campaigns',
-          name: 'campaigns',
-          component: () => import('./views/Campaigns.vue'),
-          meta: {
-            authRequired: true,
-            breadcrumb: [
-              { title: 'Home', url: '/' },
-              { title: 'Campaigns', active: true }
-            ],
-            pageTitle: 'Campaigns',
-            rule: 'editor'
-          }
-        },
-        {
           path: '/dashboard/forms',
           name: 'forms',
           component: () => import('./views/Forms.vue'),

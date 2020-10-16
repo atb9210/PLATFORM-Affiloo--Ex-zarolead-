@@ -42,7 +42,6 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="campaign.name">Campaign</vs-th>
                 <vs-th sort-key="form.name">Form</vs-th>
                 <vs-th sort-key="tag.name">Tag</vs-th>
                 <vs-th sort-key="url">URL</vs-th>
@@ -59,10 +58,6 @@
 
                     <vs-td :data="data[indextr].name">
                         {{data[indextr].name}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].campaign.name">
-                        {{data[indextr].campaign.name}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].form.name">
@@ -501,23 +496,6 @@ export default {
           this.tags.push({
             id: tag.id,
             label: tag.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve campaigns
-    this.$vs.loading()
-    this.$http.get('/api/v1/campaigns/', { headers })
-      .then((response) => {
-        this.campaigns = []
-        response.data.data.forEach((campaign) => {
-          this.campaigns.push({
-            id: campaign.id,
-            label: campaign.name,
           })
         })
         this.$vs.loading.close()

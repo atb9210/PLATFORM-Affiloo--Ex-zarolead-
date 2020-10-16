@@ -45,10 +45,6 @@ class FormResource extends JsonResource
                 'id' => $this->user->id,
                 'email' => $this->user->email,
             ],
-            'campaign' => [
-                'id' => $this->campaign->id,
-                'name' => $this->campaign->name,
-            ],
             'network' => [
                 'id' => $this->network->id,
                 'name' => $this->network->name,

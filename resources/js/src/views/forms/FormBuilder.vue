@@ -21,12 +21,6 @@
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select v-model="campaign" class="w-full select-large" label="Campaign" v-validate="'required'">
-                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in campaigns" class="w-full" />
-              </vs-select>
-              <span class="text-danger">{{ errors.first('step-1.campaign') }}</span>
-            </div>
-            <div class="vx-col md:w-1/2 w-full mt-5">
               <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
@@ -44,7 +38,7 @@
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
             </div>
-            <div class="vx-col w-full mt-5" v-if="canChangeUser">
+            <div class="vx-col md:w-1/2 w-full mt-5" v-if="canChangeUser">
               <vs-select v-model="user" class="w-full select-large" label="User" v-validate="'required'">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in users" class="w-full" />
               </vs-select>
@@ -295,9 +289,6 @@ const dict = {
     name: {
       required: 'Name is required',
     },
-    campaign: {
-      required: 'Campaign is required',
-    },
     network: {
       required: 'Network is required',
     },
@@ -320,7 +311,6 @@ export default {
   data () {
     return {
       users: [],
-      campaigns: [],
       networks: [],
       forms: [],
       products: [],
@@ -333,7 +323,6 @@ export default {
 
       user: '',
       name: '',
-      campaign: '',
       network: '',
       product: '',
       traffic_source: '',
@@ -506,14 +495,6 @@ export default {
               })
             }
           }
-          if (this.campaign === '' || this.campaign <= 0) {
-            selectionResult = false
-            this.errors.add({
-              scope: 'step-1',
-              field: 'campaign',
-              msg: 'Campaign is required (if it doesn\'t exist just create one)'
-            })
-          }
           if (this.product === '' || this.product <= 0) {
             selectionResult = false
             this.errors.add({
@@ -615,7 +596,6 @@ export default {
 
         let data = {
           name: this.name,
-          campaign_id: this.campaign,
           network_id: this.network,
           product_id: this.product,
           traffic_source_id: this.traffic_source,
@@ -755,24 +735,6 @@ export default {
             label: network.name,
           })
           this.network = network.id;
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve campaigns
-    this.$vs.loading()
-    this.$http.get('/api/v1/campaigns/', { headers })
-      .then((response) => {
-        this.campaigns = []
-        response.data.data.forEach((campaign) => {
-          this.campaigns.push({
-            id: campaign.id,
-            label: campaign.name,
-          })
-          this.campaign = campaign.id;
         })
         this.$vs.loading.close()
       })
