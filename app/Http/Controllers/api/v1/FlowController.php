@@ -52,7 +52,9 @@ class FlowController extends Controller
      * @bodyParam name string required Flow's name
      * @bodyParam type string required Flow's type (redirect, hotload)
      * @bodyParam rules json required Flow's rules
+     * @bodyParam domains json required Flow's domains
      * @bodyParam path_name string required Flow's path name
+     * @bodyParam traffic_source_id int required Traffic source's id
      *
      * @response 201 {
      *  "message": "Flow created",
@@ -68,18 +70,33 @@ class FlowController extends Controller
             'name' => 'required|string|min:3',
             'type' => 'required|in:redirect,hotload',
             'rules' => 'required|json',
+            'domains' => 'required|json',
             'path_name' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
+            'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
         ]);
         $params['user_id'] = Auth::user()->id;
         $params['rules'] = json_decode($params['rules'], TRUE);
+        $params['domains'] = json_decode($params['domains'], TRUE);
 
         // Validate rules JSON
         $validator = Validator::make($params['rules'], [
-            'landings' => 'array',
+            'landings' => 'required|array',
         ]);
         if ($validator->fails()) {
             return response([
                 'message' => 'The given data - for the rules JSON param - was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
+
+        // Validate domains JSON
+        $validator = Validator::make($params['domains'], [
+            'list' => 'required|array',
+            'selected' => 'required|integer|min:0',
+        ]);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data - for the domains JSON param - was invalid.',
                 'errors' => $validator->messages(),
             ], 422);
         }
@@ -114,7 +131,9 @@ class FlowController extends Controller
      * @bodyParam name string Flow's name
      * @bodyParam type string Flow's type (redirect, hotload)
      * @bodyParam path_name string Flow's path name
+     * @bodyParam traffic_source_id int Traffic source's id
      * @bodyParam rules json Flow's rules
+     * @bodyParam domains json Flow's domains
      *
      * @response {
      *  "data": flow,
@@ -130,20 +149,39 @@ class FlowController extends Controller
             'name' => 'string|min:3',
             'type' => 'in:redirect,hotload',
             'path_name' => 'regex:#^(\w+/){1,2}\w+\.\w+$#',
+            'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'rules' => 'json',
+            'domains' => 'json',
         ]);
         if (isset($params['rules'])) {
             $params['rules'] = json_decode($params['rules'], TRUE);
+        }
+        if (isset($params['domains'])) {
+            $params['domains'] = json_decode($params['domains'], TRUE);
         }
 
         // Validate rules JSON
         if (isset($params['rules'])) {
             $validator = Validator::make($params['rules'], [
-                'landings' => 'array',
+                'landings' => 'required|array',
             ]);
             if ($validator->fails()) {
                 return response([
                     'message' => 'The given data - for the rules JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
+
+        // Validate domains JSON
+        if (isset($params['domains'])) {
+            $validator = Validator::make($params['domains'], [
+                'list' => 'required|array',
+                'selected' => 'required|integer|min:0',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the domains JSON param - was invalid.',
                     'errors' => $validator->messages(),
                 ], 422);
             }

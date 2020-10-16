@@ -114,7 +114,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].extra_cost" v-if="canViewStats">
-                        <vs-input v-if="isEditingCost && editingObjectId == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <vs-input v-if="isEditingCost && editingObjectId == data[indextr].id" :ref="'editCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" @keyup.escape="dontEditCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>{{data[indextr].extra_cost}} € <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
@@ -380,6 +380,12 @@ export default {
       this.editingCostValue = this.objects[index].extra_cost
       this.editingObjectId = id
       this.editingObject = this.objects[index]
+
+      let refValue = 'editCostInput' + id
+      this.$nextTick(() => {
+        let inputEl = this.$refs[refValue][0].$el.querySelector('input')
+        inputEl.focus()
+      });
     },
     editCost() {
       this.$vs.loading()
@@ -417,6 +423,9 @@ export default {
             color: 'danger'
           })
         })
+    },
+    dontEditCost() {
+      this.isEditingCost = false
     },
     calculateStats() {
       this.total_stats = {

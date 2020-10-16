@@ -42,6 +42,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="url_domain">Link</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
@@ -56,8 +57,13 @@
                         {{data[indextr].name}}
                     </vs-td>
 
+                    <vs-td :data="data[indextr].url_domain">
+                        <a :href="data[indextr].url_domain" target="_blank">{{data[indextr].url_domain}}</a>
+                    </vs-td>
+
                     <vs-td>
                         <div class="flex items-center">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url_domain" v-clipboard:success="onUrlCopied"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -102,6 +108,35 @@
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['create'].path_name" />
                     <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Traffic Source</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="newObject['create'].traffic_source" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Domain</span>
+                </div>
+                <div class="vx-col sm:w-1/2 w-full">
+                    <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('create')" @keyup.escape="dontAddNewDomain('create')" />
+                    <vs-select v-else v-model="newObject['create'].domains.selected" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="index" :text="item" v-for="(item, index) in newObject['create'].domains.list" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('domains') }}</span>
+                </div>
+                <div class="vx-col sm:w-1/6 w-full flex items-center">
+                    <vs-button class="w-1/3 mr-2" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('create')"></vs-button>
+                    <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeDomain('create')"></vs-button>
                 </div>
             </div>
 
@@ -184,6 +219,35 @@
                 </div>
             </div>
 
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Traffic Source</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="newObject['edit'].traffic_source" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Domain</span>
+                </div>
+                <div class="vx-col sm:w-1/2 w-full">
+                    <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('edit')" @keyup.escape="dontAddNewDomain('edit')" />
+                    <vs-select v-else v-model="newObject['edit'].domains.selected" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="index" :text="item" v-for="(item, index) in newObject['edit'].domains.list" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('domains') }}</span>
+                </div>
+                <div class="vx-col sm:w-1/6 w-full flex items-center">
+                    <vs-button class="w-1/3 mr-2" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('edit')"></vs-button>
+                    <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeDomain('edit')"></vs-button>
+                </div>
+            </div>
+
             <div class="vx-row mb-2" v-for="(lan, indexparam) in newObject['edit'].landings">
                 <div class="vx-col w-1/2 mb-2 text-center" v-if="indexparam == 0">
                     <span>Landings</span>
@@ -243,6 +307,9 @@ export default {
 
       maxItems: 20,
 
+      trafficSources: [],
+      firstTrafficSourceId: 0,
+
       editingObject: -1,
 
       showPopup: {
@@ -254,6 +321,7 @@ export default {
           name: '',
           type: 'redirect',
           path_name: '',
+          traffic_source: 0,
           landings: [
             {
               id: '',
@@ -262,11 +330,16 @@ export default {
           weights: [
             1,
           ],
+          domains: {
+            list: [],
+            selected: 0,
+          },
         },
         'edit': {
           name: '',
           type: 'redirect',
           path_name: '',
+          traffic_source: 0,
           landings: [
             {
               id: '',
@@ -275,8 +348,14 @@ export default {
           weights: [
             1,
           ],
+          domains: {
+            list: [],
+            selected: 0,
+          },
         },
       },
+      isAddingDomain: false,
+      addingDomain: 'http://',
 
       landings: [],
       landingOptions: [],
@@ -328,6 +407,19 @@ export default {
       this.$http.get('/api/v1/flows', { headers })
         .then((response) => {
           this.objects = response.data.data
+          for (let i = 0; i < this.objects.length; i++) {
+            if (this.objects[i].rules == null) {
+              this.objects[i].rules = {
+                landings: [],
+              }
+            }
+            if (this.objects[i].domains == null) {
+              this.objects[i].domains = {
+                list: [],
+                selected: 0,
+              }
+            }
+          }
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -398,12 +490,17 @@ export default {
         name: '',
         type: 'redirect',
         path_name: '',
+        traffic_source: this.firstTrafficSourceId,
         landings: [
           defaultLanding,
         ],
         weights: [
           1,
         ],
+        domains: {
+          list: [],
+          selected: 0,
+        },
       }
     },
     isValidForm(type) {
@@ -428,6 +525,17 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
+      let pathName = this.newObject['create'].path_name
+      if (pathName.length > 0) {
+        if (!pathName.includes(".")) {
+          if (this.newObject['create'].path_name.slice(-1) != "/") {
+            pathName += "/"
+          }
+          pathName += 'index.php'
+        }
+      }
+      this.newObject['create'].path_name = pathName
+
       let landings = []
       for (let i = 0; i < this.newObject['create'].landings.length; i++) {
         let landing = this.newObject['create'].landings[i]
@@ -447,8 +555,10 @@ export default {
       let data = {
         name: this.newObject['create'].name,
         type: this.newObject['create'].type,
-        path_name: this.newObject['create'].path_name,
+        path_name: pathName,
         rules: JSON.stringify(rules),
+        traffic_source_id: this.newObject['create'].traffic_source,
+        domains: JSON.stringify(this.newObject['create'].domains),
       }
 
       this.$http.post('/api/v1/flows', data, { headers: headers })
@@ -504,6 +614,8 @@ export default {
         path_name: obj.path_name,
         landings: landings,
         weights: weights,
+        traffic_source: obj.traffic_source.id,
+        domains: obj.domains,
       }
       this.editingObject = obj.id
       this.errors.clear()
@@ -519,6 +631,17 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+
+      let pathName = this.newObject['edit'].path_name
+      if (pathName.length > 0) {
+        if (!pathName.includes(".")) {
+          if (this.newObject['edit'].path_name.slice(-1) != "/") {
+            pathName += "/"
+          }
+          pathName += 'index.php'
+        }
+      }
+      this.newObject['edit'].path_name = pathName
 
       let landings = []
       for (let i = 0; i < this.newObject['edit'].landings.length; i++) {
@@ -539,8 +662,10 @@ export default {
       let data = {
         name: this.newObject['edit'].name,
         type: this.newObject['edit'].type,
-        path_name: this.newObject['edit'].path_name,
+        path_name: pathName,
         rules: JSON.stringify(rules),
+        traffic_source_id: this.newObject['edit'].traffic_source,
+        domains: JSON.stringify(this.newObject['edit'].domains),
       }
 
       this.$http.put('/api/v1/flows/' + id, data, { headers: headers })
@@ -627,18 +752,55 @@ export default {
       percentage *= 100
       return percentage.toFixed(2)
     },
+    beginAddingNewDomain(type) {
+      this.addingDomain = 'http://'
+      this.isAddingDomain = true
+      this.$nextTick(() => {
+        this.focusAddDomainInput()
+      });
+    },
+    focusAddDomainInput() {
+      let inputEl = this.$refs['addDomainInput'].$el.querySelector('input')
+      inputEl.focus()
+    },
+    addNewDomain(type) {
+      this.newObject[type].domains.list.push(this.addingDomain)
+
+      this.addingDomain = 'http://'
+      this.isAddingDomain = false
+    },
+    dontAddNewDomain(type) {
+      this.isAddingDomain = false
+    },
+    removeDomain(type) {
+      let s = this.newObject[type].domains.selected
+      if (s >= 0 && s < this.newObject[type].domains.list.length) {
+        this.newObject[type].domains.list.splice(s, 1)
+      }
+      if (s > 0) {
+        this.newObject[type].domains.selected -= 1
+      }
+    },
+    onUrlCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Link copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
   },
   created() {
     this.retrieveObjects()
 
-    // Retrieve landings
-    this.$vs.loading()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
-    // Retrieve flows
+    // Retrieve landings
+    this.$vs.loading()
     this.$http.get('/api/v1/landings', { headers })
       .then((response) => {
         this.landings = response.data.data
@@ -650,6 +812,28 @@ export default {
             label: landing.name,
           })
         })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      })
+
+    // Retrieve traffic sources
+    this.$vs.loading()
+    this.$http.get('/api/v1/traffic-sources', { headers })
+      .then((response) => {
+        this.trafficSources = response.data.data
+        if (this.trafficSources.length > 0) {
+          this.firstTrafficSourceId = this.trafficSources[0].id
+          this.newObject['create'].traffic_source = this.newObject['edit'].traffic_source = this.firstTrafficSourceId
+        }
         this.$vs.loading.close()
       })
       .catch((error) => {

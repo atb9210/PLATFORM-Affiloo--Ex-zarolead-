@@ -33,6 +33,11 @@ class TrafficSource extends Model
         return $this->hasMany('App\Form');
     }
 
+    public function flows()
+    {
+        return $this->hasMany('App\Flows');
+    }
+
     public function getAdModel($key)
     {
         $keys = explode('.', $key);

@@ -11,11 +11,12 @@ use App\Landing;
 class Flow extends Model
 {
     protected $fillable = [
-        'user_id', 'name', 'type', 'rules', 'path_name',
+        'user_id', 'name', 'type', 'rules', 'traffic_source_id', 'domains', 'path_name',
     ];
 
     protected $casts = [
         'rules' => 'array',
+        'domains' => 'array',
     ];
 
     protected static $directory = 'flo';
@@ -23,6 +24,11 @@ class Flow extends Model
     public function user()
     {
         return $this->belongsTo('App\User', 'user_id');
+    }
+
+    public function traffic_source()
+    {
+        return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
     }
 
     public static function buildFullPathname($path_name)
