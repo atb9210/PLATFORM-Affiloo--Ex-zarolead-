@@ -53,7 +53,10 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
-                        {{data[indextr].name}}
+                        <vs-chip>
+                            <vs-avatar :src="data[indextr].icon"/>
+                            {{data[indextr].name}}
+                        </vs-chip>
                     </vs-td>
 
                     <vs-td>
@@ -89,16 +92,16 @@
                     <vs-card class="cardx">
                         <div slot="header">
                             <h3 class="mr-auto ml-auto text-center">
-                                <span class="mr-auto ml-auto">{{ (fileToUpload == '') ? 'No icon selected' : 'Icon selected' }}</span>
+                                <span class="mr-auto ml-auto">{{ (newObject['create'].fileToUpload == '') ? 'No icon selected' : 'Icon selected' }}</span>
                             </h3>
                         </div>
                         <div slot="media" class="mb-3">
-                            <img :src="uploadCardImage">
+                            <img :src="uploadCardImage('create')">
                         </div>
                         <div slot="footer">
                             <vs-row vs-justify="center">
-                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-file-plus" :disabled="fileToUpload != ''" @click="showFilePicker"></vs-button>
-                                <vs-button class="mr-2" color="danger" icon-pack="feather" icon="icon-trash" :disabled="fileToUpload == ''" @click="clearFileToUpload"></vs-button>
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-file-plus" :disabled="newObject['create'].fileToUpload != ''" @click="showFilePicker('create')"></vs-button>
+                                <vs-button class="mr-2" color="danger" icon-pack="feather" icon="icon-trash" :disabled="newObject['create'].fileToUpload == ''" @click="clearFileToUpload('create')"></vs-button>
                             </vs-row>
                         </div>
                     </vs-card>
@@ -109,13 +112,13 @@
                         </div>
                         -->
                         <div class="vx-col w-full flex items-center">
-                            <span class="ml-auto mr-auto">Upload: {{uploadProgress}}%</span>
+                            <span class="ml-auto mr-auto">Upload: {{newObject['create'].uploadProgress}}%</span>
                         </div>
                         <div class="vx-col w-full">
-                            <vs-progress :height="12" :percent="uploadProgress" color="success"></vs-progress>
+                            <vs-progress :height="12" :percent="newObject['create'].uploadProgress" color="success"></vs-progress>
                         </div>
                     </div>
-                    <input type="file" ref="fileUpload" class="hidden" @change="onFileUploadChange" accept="image/*">
+                    <input type="file" ref="fileUploadCreate" class="hidden" @change="onFileUploadChangeCreate" accept="image/*">
                 </div>
                 <div class="vx-col sm:w-1/3 w-full">
                 </div>
@@ -159,6 +162,45 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+                <div class="vx-col sm:w-1/3" vs-justify="center" vs-align="center">
+                    <vs-card class="cardx">
+                        <div slot="header">
+                            <h3 class="mr-auto ml-auto text-center">
+                                <span class="mr-auto ml-auto">{{ (newObject['edit'].fileToUpload == '') ? 'No icon selected' : 'Icon selected' }}</span>
+                            </h3>
+                        </div>
+                        <div slot="media" class="mb-3">
+                            <img :src="uploadCardImage('edit')">
+                        </div>
+                        <div slot="footer">
+                            <vs-row vs-justify="center">
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-file-plus" :disabled="newObject['edit'].fileToUpload != ''" @click="showFilePicker('edit')"></vs-button>
+                                <vs-button class="mr-2" color="danger" icon-pack="feather" icon="icon-trash" :disabled="newObject['edit'].fileToUpload == ''" @click="clearFileToUpload('edit')"></vs-button>
+                            </vs-row>
+                        </div>
+                    </vs-card>
+                    <div class="vx-row mb-6 flex items-center">
+                        <!--
+                        <div class="vx-col w-full flex items-center">
+                            <span class="ml-auto mr-auto text-danger">{{ errors.first('icon') }}</span>
+                        </div>
+                        -->
+                        <div class="vx-col w-full flex items-center">
+                            <span class="ml-auto mr-auto">Upload: {{newObject['edit'].uploadProgress}}%</span>
+                        </div>
+                        <div class="vx-col w-full">
+                            <vs-progress :height="12" :percent="newObject['edit'].uploadProgress" color="success"></vs-progress>
+                        </div>
+                    </div>
+                    <input type="file" ref="fileUploadEdit" class="hidden" @change="onFileUploadChangeEdit" accept="image/*">
+                </div>
+                <div class="vx-col sm:w-1/3 w-full">
                 </div>
             </div>
 
@@ -210,6 +252,9 @@ export default {
       newObject: {
         'create': {
           name: '',
+          fileToUpload: '',
+          imagePreviewUrl: '',
+          uploadProgress: 0,
           custom_params: [
             {
               query_param: '',
@@ -220,6 +265,9 @@ export default {
         },
         'edit': {
           name: '',
+          fileToUpload: '',
+          imagePreviewUrl: '',
+          uploadProgress: 0,
           custom_params: [
             {
               query_param: '',
@@ -229,11 +277,6 @@ export default {
           ],
         },
       },
-
-      fileToUpload: '',
-      isUploading: false,
-      uploadProgress: 0,
-      imagePreviewUrl: '',
     }
   },
   computed: {
@@ -252,13 +295,6 @@ export default {
       },
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
-      }
-    },
-    uploadCardImage() {
-      if (this.imagePreviewUrl == '') {
-        return 'https://www.iconfinder.com/data/icons/set-app-incredibles/24/Image-01-512.png'
-      } else {
-        return this.imagePreviewUrl
       }
     },
   },
@@ -349,6 +385,9 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
+        fileToUpload: '',
+        imagePreviewUrl: '',
+        uploadProgress: 0,
         custom_params: [
           {
             query_param: '',
@@ -366,7 +405,17 @@ export default {
       this.$vs.loading()
 
       let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+        'Content-Type': 'multipart/form-data',
+      }
+
+      let config = {
+        headers: headers,
+          onUploadProgress: e => {
+            if (e.lengthComputable) {
+              this.newObject['create'].uploadProgress = (e.loaded / e.total) * 100
+            }
+          }
       }
 
       let custom_params = []
@@ -375,13 +424,13 @@ export default {
         custom_params.push(custom_param)
       })
 
-      let data = {
-        name: this.newObject['create'].name,
-        custom_params: JSON.stringify(custom_params),
-      }
+      let formData = new FormData()
+      formData.append('name', this.newObject['create'].name)
+      formData.append('custom_params', JSON.stringify(custom_params))
+      formData.append('icon', this.newObject['create'].fileToUpload)
 
       // Create traffic source
-      this.$http.post('/api/v1/traffic-sources', data, { headers: headers })
+      this.$http.post('/api/v1/traffic-sources', formData, config)
         .then((response) => {
           this.$vs.loading.close()
           this.$vs.notify({
@@ -422,6 +471,9 @@ export default {
       this.newObject['edit'] = {
         name: obj.name,
         custom_params: custom_params,
+        fileToUpload: '',
+        imagePreviewUrl: obj.icon,
+        uploadProgress: 0,
       }
       this.editingObject = obj.id
       this.showForm('edit')
@@ -434,7 +486,17 @@ export default {
       this.$vs.loading()
 
       let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+        'Content-Type': 'multipart/form-data',
+      }
+
+      let config = {
+        headers: headers,
+          onUploadProgress: e => {
+            if (e.lengthComputable) {
+              this.newObject['edit'].uploadProgress = (e.loaded / e.total) * 100
+            }
+          }
       }
 
       let custom_params = []
@@ -443,12 +505,14 @@ export default {
         custom_params.push(custom_param)
       })
 
-      let data = {
-        name: this.newObject['edit'].name,
-        custom_params: JSON.stringify(custom_params),
+      let formData = new FormData()
+      formData.append('name', this.newObject['edit'].name)
+      formData.append('custom_params', JSON.stringify(custom_params))
+      if (this.newObject['edit'].fileToUpload != '') {
+        formData.append('icon', this.newObject['edit'].fileToUpload)
       }
 
-      this.$http.put('/api/v1/traffic-sources/' + id, data, { headers })
+      this.$http.post('/api/v1/traffic-sources/' + id + '/update', formData, config)
         .then((response) => {
           this.$vs.loading.close()
           this.$vs.notify({
@@ -510,20 +574,41 @@ export default {
         name: '',
       })
     },
-    showFilePicker() {
-      this.$refs.fileUpload.click()
+    showFilePicker(type) {
+      if (type == 'create') {
+        this.$refs.fileUploadCreate.click()
+      } else if (type == 'edit') {
+        this.$refs.fileUploadEdit.click()
+      }
     },
-    onFileUploadChange(event) {
-      this.fileToUpload = event.target.files[0]
-      this.imagePreviewUrl = URL.createObjectURL(this.fileToUpload)
+    onFileUploadChangeCreate(event) {
+      let type = 'create'
+      this.newObject[type].fileToUpload = event.target.files[0]
+      this.newObject[type].imagePreviewUrl = URL.createObjectURL(this.newObject[type].fileToUpload)
     },
-    isValidUpload() {
-      return (this.fileToUpload != '')
+    onFileUploadChangeEdit(event) {
+      let type = 'edit'
+      this.newObject[type].fileToUpload = event.target.files[0]
+      this.newObject[type].imagePreviewUrl = URL.createObjectURL(this.newObject[type].fileToUpload)
     },
-    clearFileToUpload() {
-      this.fileToUpload = ''
-      this.filePreviewToUpload = ''
-      this.imagePreviewUrl = ''
+    isValidUpload(type) {
+      return (this.newObject[type].fileToUpload != '')
+    },
+    clearFileToUpload(type) {
+      this.newObject[type].fileToUpload = ''
+      if (type == 'create') {
+        this.newObject[type].imagePreviewUrl = ''
+      } else if (type == 'edit') {
+        let obj = this.objects[this.getObjectIndexById(this.editingObject)]
+        this.newObject[type].imagePreviewUrl = obj.icon
+      }
+    },
+    uploadCardImage(type) {
+      if (this.newObject[type].imagePreviewUrl == '') {
+        return 'https://www.iconfinder.com/data/icons/set-app-incredibles/24/Image-01-512.png'
+      } else {
+        return this.newObject[type].imagePreviewUrl
+      }
     },
   },
   created() {

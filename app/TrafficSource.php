@@ -12,7 +12,7 @@ class TrafficSource extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'custom_params', 'ad_model',
+        'name', 'custom_params', 'ad_model', 'icon',
     ];
 
     /**
@@ -38,7 +38,7 @@ class TrafficSource extends Model
         return $this->hasMany('App\Flows');
     }
 
-    public function getAdModel($key)
+    public function getAdModel($key) : array
     {
         $keys = explode('.', $key);
         $ad_model = $this->ad_model;
@@ -51,7 +51,7 @@ class TrafficSource extends Model
         return $ad_model;
     }
 
-    public function getUrlParams()
+    public function getUrlParams() : string
     {
         $url_params = '';
         $isFirst = true;
@@ -64,5 +64,11 @@ class TrafficSource extends Model
             $url_params .= $param['query_param'] . '=' . $param['token'];
         }
         return $url_params;
+    }
+
+    public function getIconStoragePath() : string
+    {
+        $pathname = env('DROPBOX_FOLDER') . '/icons/' . $this->id;
+        return $pathname;
     }
 }

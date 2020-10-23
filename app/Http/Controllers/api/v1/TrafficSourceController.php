@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 use App\TrafficSource as TrafficSource;
@@ -52,6 +53,7 @@ class TrafficSourceController extends Controller
      * Create a new traffic source.
      *
      * @bodyParam name string required Traffic source's name
+     * @bodyParam icon file Traffic source's icon
      * @bodyParam custom_params json Custom params
      *
      * @response 201 {
@@ -66,6 +68,7 @@ class TrafficSourceController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
+            'icon' => 'mimes:jpeg,jpg,png,bmp,gif',
             'custom_params' => 'json',
         ]);
 
@@ -75,7 +78,16 @@ class TrafficSourceController extends Controller
             $params['custom_params'] = [];
         }
 
+        unset($params['icon']);
         $traffic_source = TrafficSource::create($params);
+
+        // File upload
+        if ($request->hasFile('icon')) {
+            $file = $request->file('icon');
+            $path = Storage::disk('dropbox')->putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
+            $traffic_source->icon = $path;
+            $traffic_source->save();
+        }
 
         return response([
             "message" => "Traffic source created",
@@ -84,13 +96,13 @@ class TrafficSourceController extends Controller
     }
 
 
-
     /**
      * Update the traffic source's fields.
      *
      * @urlParam id int required Traffic source's id
      *
      * @bodyParam name string Traffic source's name
+     * @bodyParam icon file Traffic source's icon
      * @bodyParam custom_params json Custom params
      *
      * @response {
@@ -111,6 +123,7 @@ class TrafficSourceController extends Controller
         // Param validation
         $params = $request->validate([
             'name' => 'string|min:3',
+            'icon' => 'mimes:jpeg,jpg,png,bmp,gif',
             'custom_params' => 'json',
         ]);
 
@@ -118,7 +131,17 @@ class TrafficSourceController extends Controller
             $params['custom_params'] = json_decode($params['custom_params']);
         }
 
+        unset($params['icon']);
         $traffic_source->update($params);
+
+        // File upload
+        if ($request->hasFile('icon')) {
+            $file = $request->file('icon');
+            Storage::disk('dropbox')->delete($traffic_source->getIconStoragePath());
+            $path = Storage::disk('dropbox')->putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
+            $traffic_source->icon = $path;
+            $traffic_source->save();
+        }
 
         return new TrafficSourceResource($traffic_source);
     }

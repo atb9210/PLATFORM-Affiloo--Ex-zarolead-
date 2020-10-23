@@ -46,7 +46,7 @@ class Ad extends Model
         return $this->belongsTo('App\Form', 'form_id');
     }
 
-    public function getStoragePath()
+    public function getStoragePath() : string
     {
         $pathname = env('DROPBOX_FOLDER') . '/ads/' . $this->id;
         return $pathname;

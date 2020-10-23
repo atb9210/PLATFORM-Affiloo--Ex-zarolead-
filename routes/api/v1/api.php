@@ -57,8 +57,10 @@ Route::apiResource('tags', 'api\v1\TagController')->except([
 
 /* Traffic sources routes */
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
-    'create', 'edit',
+    'create', 'edit', 'update',
 ])->middleware('auth:api');
+Route::post('traffic-sources/{id}/update', 'api\v1\TrafficSourceController@update')->middleware('auth:api')
+    ->name('traffic-sources.update');
 Route::post('traffic-sources/{id}/ad-model/validate', 'api\v1\TrafficSourceController@validateAdModel')->middleware('auth:api')
     ->name('traffic-sources.ad-model.validate');
 
