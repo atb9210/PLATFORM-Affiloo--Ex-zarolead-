@@ -14,6 +14,7 @@ class FormStats extends Model
      */
     protected $fillable = [
         'form_id', 'day', 'visits', 'leads', 'total_commission', 'total_cost',
+        'custom_params_stats',
     ];
 
     /**
@@ -25,7 +26,8 @@ class FormStats extends Model
     ];
     
     protected $casts = [
-        'info' => 'array'
+        'info' => 'array',
+        'custom_params_stats' => 'array',
     ];
 
     public function form()

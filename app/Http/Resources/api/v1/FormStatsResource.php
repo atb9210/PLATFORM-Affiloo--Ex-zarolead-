@@ -40,6 +40,8 @@ class FormStatsResource extends JsonResource
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
             'tq' => $tq,
+            'info' => $this->info,
+            'custom_params_stats' => json_decode(json_encode($this->custom_params_stats)),
         ];
 
         if (Auth::check() && Auth::user()->hasPermission('form', 'viewCommission')) {

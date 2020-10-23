@@ -64,6 +64,7 @@ class FormResource extends JsonResource
             'traffic_source' => [
                 'id' => $this->traffic_source->id,
                 'name' => $this->traffic_source->name,
+                'custom_params' => $this->traffic_source->custom_params,
             ],
             'info' => $this->info,
             'network_params' => $this->network_params,

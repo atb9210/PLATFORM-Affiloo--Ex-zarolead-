@@ -34,6 +34,7 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showNotes"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshFormStats"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="showLandingsStats(form_id)"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(view == 'normal') ? 'icon-facebook' : 'icon-activity'" @click="view = (view == 'normal') ? 'traffic_source' : 'normal'"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -74,143 +75,217 @@
             <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
         </div>
 
-        <vs-dropdown vs-trigger-click class="cursor-pointer">
-            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
-            </div>
-            <vs-dropdown-menu>
-                <vs-dropdown-item @click="maxItems = 20">
-                    <span>20</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 50">
-                    <span>50</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 100">
-                    <span>100</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 150">
-                    <span>150</span>
-                </vs-dropdown-item>
-            </vs-dropdown-menu>
-        </vs-dropdown>
+        <div v-if="view == 'normal'">
+            <vs-dropdown vs-trigger-click class="cursor-pointer">
+                <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
+                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
+                    <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+                </div>
+                <vs-dropdown-menu>
+                    <vs-dropdown-item @click="maxItems = 20">
+                        <span>20</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 50">
+                        <span>50</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 100">
+                        <span>100</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 150">
+                        <span>150</span>
+                    </vs-dropdown-item>
+                </vs-dropdown-menu>
+            </vs-dropdown>
 
-        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
-            <template slot="thead">
-                <vs-th></vs-th>
-                <vs-th sort-key="day">Day</vs-th>
-                <vs-th sort-key="visits">Visits</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="total_cost">Cost</vs-th>
-                <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>
-                <vs-th sort-key="profit" v-if="canViewStats">Profit</vs-th>
-                <vs-th sort-key="roi" v-if="canViewStats">ROI</vs-th>
-                <vs-th sort-key="cr">CR</vs-th>
-                <vs-th sort-key="tq">TQ</vs-th>
-                <vs-th sort-key="cpv" v-if="canViewStats">CPV</vs-th>
-                <vs-th sort-key="epv" v-if="canViewStats">EPV</vs-th>
-                <vs-th sort-key="cpl">CPL</vs-th>
-            </template>
+                <template slot="thead">
+                    <vs-th></vs-th>
+                    <vs-th sort-key="day">Day</vs-th>
+                    <vs-th sort-key="visits">Visits</vs-th>
+                    <vs-th sort-key="leads">Leads</vs-th>
+                    <vs-th sort-key="total_cost">Cost</vs-th>
+                    <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>
+                    <vs-th sort-key="profit" v-if="canViewStats">Profit</vs-th>
+                    <vs-th sort-key="roi" v-if="canViewStats">ROI</vs-th>
+                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="tq">TQ</vs-th>
+                    <vs-th sort-key="cpv" v-if="canViewStats">CPV</vs-th>
+                    <vs-th sort-key="epv" v-if="canViewStats">EPV</vs-th>
+                    <vs-th sort-key="cpl">CPL</vs-th>
+                </template>
 
-            <template slot-scope="{data}">
-                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
+                        <vs-td>
+                            <vs-button radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].day">
+                            {{data[indextr].day}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].visits">
+                            {{data[indextr].visits}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].leads">
+                            {{data[indextr].leads}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].total_cost">
+                            <vs-input v-if="isEditingCost && editingObject == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                            <span v-else>€ {{data[indextr].total_cost}} <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                            € {{data[indextr].total_commission}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].profit" v-if="canViewStats">
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].roi" v-if="canViewStats">
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].cr">
+                            {{data[indextr].cr}} %
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].tq">
+                            {{data[indextr].tq}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].cpv" v-if="canViewStats">
+                            € {{data[indextr].cpv}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].cpl">
+                            € {{data[indextr].cpl}}
+                        </vs-td>
+
+                    </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
                     <vs-td>
-                        <vs-button radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                        {{total_stats.visits}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].day">
-                        {{data[indextr].day}}
+                    <vs-td>
+                        {{total_stats.leads}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].visits">
-                        {{data[indextr].visits}}
+                    <vs-td>
+                        € {{total_stats.total_cost}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].leads">
-                        {{data[indextr].leads}}
+                    <vs-td v-if="canViewStats">
+                        € {{total_stats.total_commission}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].total_cost">
-                        <vs-input v-if="isEditingCost && editingObject == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
-                        <span v-else>€ {{data[indextr].total_cost}} <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
+                    <vs-td v-if="canViewStats">
+                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
                     </vs-td>
-
-                    <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
-                        € {{data[indextr].total_commission}}
+                    <vs-td v-if="canViewStats">
+                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi}} %</vs-chip>
                     </vs-td>
-
-                    <vs-td :data="data[indextr].profit" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
+                    <vs-td>
+                        {{total_stats.cr}} %
                     </vs-td>
-
-                    <vs-td :data="data[indextr].roi" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
+                    <vs-td>
+                        {{total_stats.tq}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].cr">
-                        {{data[indextr].cr}} %
+                    <vs-td v-if="canViewStats">
+                        € {{total_stats.cpv}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].tq">
-                        {{data[indextr].tq}}
+                    <vs-td v-if="canViewStats">
+                        <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
                     </vs-td>
-
-                    <vs-td :data="data[indextr].cpv" v-if="canViewStats">
-                        € {{data[indextr].cpv}}
+                    <vs-td>
+                        € {{total_stats.cpl}}
                     </vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
+            </vs-table>
+        </div>
 
-                    <vs-td :data="data[indextr].epv" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
+        <div v-if="view == 'traffic_source'">
+            <vs-select
+                autocomplete
+                label="Query Param"
+                v-model="currentParam"
+                >
+                <vs-select-item :key="index" :value="item.query_param" :text="item.name" v-for="(item, index) in paramOptions" />
+            </vs-select>
+
+            <vs-table stripe multiple v-model="selectedParamValues" search :data="(customParamsStats.hasOwnProperty(currentParam)) ? customParamsStats[currentParam] : []">
+
+                <template slot="thead">
+                    <vs-th sort-key="value">Value</vs-th>
+                    <vs-th sort-key="visits">Visits</vs-th>
+                    <vs-th sort-key="leads">Leads</vs-th>
+                    <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>
+                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="epv" v-if="canViewStats">EPV</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td :data="data[indextr].value">
+                            {{data[indextr].value}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].visits">
+                            {{data[indextr].visits}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].leads">
+                            {{data[indextr].leads}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                            € {{data[indextr].total_commission}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].cr">
+                            {{data[indextr].cr}} %
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
+                        </vs-td>
+
+                    </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
+                    <vs-td>
+                        {{customParamsStatsTotal[currentParam].visits}}
                     </vs-td>
-
-                    <vs-td :data="data[indextr].cpl">
-                        € {{data[indextr].cpl}}
+                    <vs-td>
+                        {{customParamsStatsTotal[currentParam].leads}}
                     </vs-td>
-
-                </vs-tr>
-
-                <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
-                    {{total_stats.visits}}
-                </vs-td>
-                <vs-td>
-                    {{total_stats.leads}}
-                </vs-td>
-                <vs-td>
-                    € {{total_stats.total_cost}}
-                </vs-td>
-                <vs-td v-if="canViewStats">
-                    € {{total_stats.total_commission}}
-                </vs-td>
-                <vs-td v-if="canViewStats">
-                    <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
-                </vs-td>
-                <vs-td v-if="canViewStats">
-                    <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi}} %</vs-chip>
-                </vs-td>
-                <vs-td>
-                    {{total_stats.cr}} %
-                </vs-td>
-                <vs-td>
-                    {{total_stats.tq}}
-                </vs-td>
-                <vs-td v-if="canViewStats">
-                    € {{total_stats.cpv}}
-                </vs-td>
-                <vs-td v-if="canViewStats">
-                    <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
-                </vs-td>
-                <vs-td>
-                    € {{total_stats.cpl}}
-                </vs-td>
-                <!-- END TOTAL STATS-->
-            </template>
-        </vs-table>
+                    <vs-td v-if="canViewStats">
+                        € {{customParamsStatsTotal[currentParam].total_commission}}
+                    </vs-td>
+                    <vs-td>
+                        {{customParamsStatsTotal[currentParam].cr}} %
+                    </vs-td>
+                    <vs-td v-if="canViewStats">
+                        <vs-chip transparent :color="(customParamsStatsTotal[currentParam].epv > 0) ? 'success' : 'danger'">€ {{customParamsStatsTotal[currentParam].epv}}</vs-chip>
+                    </vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
+            </vs-table>
+        </div>
 
         <!-- Notes popup -->
         <vs-popup title="Notes" :active.sync="showNotesPopup">
@@ -264,10 +339,17 @@ export default {
   },
   data () {
     return {
+      view: 'normal',
+
       form: {},
       objects: [],
       selected: [],
       deleted: [],
+
+      customParamsStats: {},
+      currentParam: '',
+      selectedParamValues: [],
+      paramOptions: [],
 
       maxItems: 20,
 
@@ -392,6 +474,10 @@ export default {
       this.$http.get('/api/v1/forms/' + this.form_id, { headers })
         .then((response) => {
           this.form = response.data.data
+          this.paramOptions = this.form.traffic_source.custom_params
+          if (this.paramOptions.length > 0) {
+            this.currentParam = this.paramOptions[0].query_param
+          }
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -445,6 +531,9 @@ export default {
         cpl: 0,
       }
 
+      this.customParamsStats = {}
+      this.customParamsStatsTotal = {}
+
       for (var i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
 
@@ -478,6 +567,61 @@ export default {
         this.objects[i].cpv = cpv
         this.objects[i].epv = epv
         this.objects[i].cpl = cpl
+
+        if (obj.custom_params_stats !== undefined) {
+          for (const [param, valueStats] of Object.entries(obj.custom_params_stats)) {
+            if (!this.customParamsStats.hasOwnProperty(param)) {
+              this.customParamsStats[param] = []
+            }
+            for (let [value, stats] of Object.entries(valueStats)) {
+              let visits = parseInt(stats.visits)
+              let leads = parseInt(stats.leads)
+              let total_commission = parseFloat(stats.total_commission)
+
+              let index = -1
+              for (let j = 0; j < this.customParamsStats[param].length; j++) {
+                if (this.customParamsStats[param][j].value == value) {
+                  index = j
+                  break
+                }
+              }
+              if (index == -1) {
+                this.customParamsStats[param].push({
+                  value: value,
+                  visits: 0,
+                  leads: 0,
+                  total_commission: 0.0,
+                  cr: 0.0,
+                  epv: 0.0,
+                })
+                index = this.customParamsStats[param].length - 1
+              }
+              this.customParamsStats[param][index].visits += visits
+              this.customParamsStats[param][index].leads += leads
+              this.customParamsStats[param][index].total_commission += total_commission
+
+              let cr = 0.0
+              if (this.customParamsStats[param][index].leads == 0) cr = 0.0
+              else if (this.customParamsStats[param][index].visits == 0) cr = 100.0
+              else cr = parseFloat((this.customParamsStats[param][index].leads/this.customParamsStats[param][index].visits)*100.0)
+              let epv = parseFloat((this.customParamsStats[param][index].visits == 0) ?
+                this.customParamsStats[param][index].total_commission :
+                this.customParamsStats[param][index].total_commission / this.customParamsStats[param][index].visits)
+
+              // TODO: Format total_commission, cr and epv into a new cycle
+              /*
+              total_commission = total_commission.toFixed(2)
+              cr = cr.toFixed(2)
+              epv = epv.toFixed(2)
+
+              this.customParamsStats[param][index].total_commission = total_commission
+              */
+
+              this.customParamsStats[param][index].cr = cr
+              this.customParamsStats[param][index].epv = epv
+            }
+          }
+        }
       }
 
       // Total stats
@@ -511,6 +655,47 @@ export default {
 
       this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
       this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
+
+      // Calculate custom params total stats and format custom params stats
+      for (const [param, stats] of Object.entries(this.customParamsStats)) {
+        if (!this.customParamsStatsTotal.hasOwnProperty(param)) {
+          this.customParamsStatsTotal[param] = {
+            visits: 0,
+            leads: 0,
+            total_commission: 0.0,
+            cr: 0.0,
+            epv: 0.0,
+          }
+        }
+        for (let j = 0; j < stats.length; j++) {
+          this.customParamsStatsTotal[param].visits += stats[j].visits
+          this.customParamsStatsTotal[param].leads += stats[j].leads
+          this.customParamsStatsTotal[param].total_commission += stats[j].total_commission
+
+          // Format total_commission, cr and epv
+          this.customParamsStats[param][j].total_commission = this.customParamsStats[param][j].total_commission.toFixed(2)
+          this.customParamsStats[param][j].cr = this.customParamsStats[param][j].cr.toFixed(2)
+          this.customParamsStats[param][j].epv = this.customParamsStats[param][j].epv.toFixed(2)
+        }
+
+        let cr = 0.0
+        if (this.customParamsStatsTotal[param].leads == 0) cr = 0.0
+        else if (this.customParamsStatsTotal[param].visits == 0) cr = 100.0
+        else cr = parseFloat((this.customParamsStatsTotal[param].leads/this.customParamsStatsTotal[param].visits)*100.0)
+        let epv = parseFloat((this.customParamsStatsTotal[param].visits == 0) ?
+          this.customParamsStatsTotal[param].total_commission :
+          this.customParamsStatsTotal[param].total_commission/this.customParamsStatsTotal[param].visits)
+        this.customParamsStatsTotal[param].cr = cr
+        this.customParamsStatsTotal[param].epv = epv
+      }
+      for (const [param, stats] of Object.entries(this.customParamsStatsTotal)) {
+        // Format total_commission, cr and epv
+        this.customParamsStatsTotal[param].total_commission = this.customParamsStatsTotal[param].total_commission.toFixed(2)
+        this.customParamsStatsTotal[param].cr = this.customParamsStatsTotal[param].cr.toFixed(2)
+        this.customParamsStatsTotal[param].epv = this.customParamsStatsTotal[param].epv.toFixed(2)
+      }
+      // TODO: to delete
+      console.log(this.customParamsStatsTotal)
     },
     onPageChanged(val) {
       this.currentPage = val

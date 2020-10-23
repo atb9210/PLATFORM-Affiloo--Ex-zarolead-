@@ -515,6 +515,7 @@ class FormController extends Controller
      * @urlParam id int required Form's id
      *
      * @bodyParam landing_id int Landing id
+     * @bodyParam query_params json Query params
      *
      * @response {
      *  "data": "",
@@ -525,6 +526,7 @@ class FormController extends Controller
         // Params validation
         $params = $request->validate([
             'landing_id' => 'integer|exists:landings,id',
+            'query_params' => 'json',
         ]);
 
         $form = Form::findOrFail($id);
@@ -535,6 +537,27 @@ class FormController extends Controller
 
         $formStats = FormStats::getObject($id, $today);
         $formStats->visits += 1;
+        if (isset($params['query_params'])) {
+            $query_params = json_decode($params['query_params'], true);
+            $custom_params_stats = $formStats->custom_params_stats;
+            if ($custom_params_stats === null) {
+                $custom_params_stats = [];
+            }
+            foreach ($query_params as $k => $v) {
+                if (!isset($custom_params_stats[$k])) {
+                    $custom_params_stats[$k] = [];
+                }
+                if (!isset($custom_params_stats[$k][$v])) {
+                    $custom_params_stats[$k][$v] = [
+                        'visits' => 0,
+                        'leads' => 0,
+                        'total_commission' => 0.0,
+                    ];
+                }
+                $custom_params_stats[$k][$v]['visits'] += 1;
+            }
+            $formStats->custom_params_stats = $custom_params_stats;
+        }
         $formStats->save();
 
         if (isset($params['landing_id'])) {

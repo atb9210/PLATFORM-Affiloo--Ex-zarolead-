@@ -22,15 +22,16 @@ class UserReport extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public static function getObject($user_id, $date)
+    // TODO: Transform int $user_id into User $user?? (Check AdvertiserReport)
+    public static function getObject(int $user_id, string $day) : UserReport
     {
     	$report = UserReport::where('user_id', '=', $user_id)
-    		->where('day', '=', $date);
+    		->where('day', '=', $day);
 
     	if ($report->count() == 0) {
     		$report = UserReport::create([
     			'user_id' => $user_id,
-    			'day' => $date
+    			'day' => $day
     		]);
     	} else {
     		$report = $report->first();

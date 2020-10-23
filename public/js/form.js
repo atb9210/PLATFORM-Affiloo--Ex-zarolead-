@@ -1,7 +1,17 @@
-function getUrlParams(param) {
+function getUrlParam(param) {
     var url_string = window.location.href
     var url = new URL(url_string);
     return url.searchParams.get(param);
+}
+
+function getUrlParams() {
+    var toReturn = {};
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    for (const entry of url.searchParams.entries()) {
+        toReturn[entry[0]] = entry[1];
+    }
+    return toReturn;
 }
 
 function Form(id, debug = false, beta = false) {
@@ -56,7 +66,7 @@ Form.prototype.initialize = function() {
     api_url += 'api/v1/';
     this.API_URL = api_url;
 
-    var landing_id = getUrlParams('landing'); 
+    var landing_id = getUrlParam('landing'); 
     if (landing_id !== null) {
         this.landing_id = parseInt(landing_id);
     }
@@ -96,6 +106,8 @@ Form.prototype.formVisited = function() {
     if (this.landing_id > 0) {
         data.landing_id = this.landing_id;
     }
+    var query_params = getUrlParams();
+    data["query_params"] = JSON.stringify(query_params);
 
     // Submit
     $.ajax({
@@ -311,6 +323,8 @@ Form.prototype.onSubmit = function(step) {
         if (this.landing_id > 0) {
             data["landing_id"] = this.landing_id;
         }
+        var query_params = getUrlParams();
+        data["query_params"] = JSON.stringify(query_params);
 
         this.pluginManager.onSubmit();
 
@@ -325,7 +339,6 @@ Form.prototype.onSubmit = function(step) {
 
                 // Store the order's info
                 this.order = data.data;
-
 
                 this.pluginManager.afterSubmit(data);
 

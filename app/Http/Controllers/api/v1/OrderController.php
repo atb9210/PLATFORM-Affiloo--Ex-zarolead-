@@ -97,6 +97,7 @@ class OrderController extends Controller
      * @bodyParam form_id integer required Form's id
      * @bodyParam network_data json required Network Data in json format
      * @bodyParam landing_id integer Landing's id
+     * @bodyParam query_params json Query params
      *
      * @response 201 {
      *  "message": "Order created",
@@ -116,6 +117,8 @@ class OrderController extends Controller
             'network_data' => 'required|json',
 
             'landing_id' => 'integer|exists:landings,id',
+
+            'query_params' => 'json',
         ]);
 
         $form = Form::findOrFail($params['form_id']);
@@ -171,6 +174,28 @@ class OrderController extends Controller
             }
             $formStatsInfo['total_sub_commission'] += $sub_commission;
             $formStats->info = $formStatsInfo;
+            if (isset($params['query_params'])) {
+                $query_params = json_decode($params['query_params'], true);
+                $custom_params_stats = $formStats->custom_params_stats;
+                if ($custom_params_stats === null) {
+                    $custom_params_stats = [];
+                }
+                foreach ($query_params as $k => $v) {
+                    if (!isset($custom_params_stats[$k])) {
+                        $custom_params_stats[$k] = [];
+                    }
+                    if (!isset($custom_params_stats[$k][$v])) {
+                        $custom_params_stats[$k][$v] = [
+                            'visits' => 0,
+                            'leads' => 0,
+                            'total_commission' => 0.0,
+                        ];
+                    }
+                    $custom_params_stats[$k][$v]['leads'] += 1;
+                    $custom_params_stats[$k][$v]['total_commission'] += $order->commission;
+                }
+                $formStats->custom_params_stats = $custom_params_stats;
+            }
             $formStats->save();
 
             // Landing stats
