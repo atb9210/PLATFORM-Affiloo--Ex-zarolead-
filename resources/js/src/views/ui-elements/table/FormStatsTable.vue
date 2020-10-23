@@ -694,8 +694,6 @@ export default {
         this.customParamsStatsTotal[param].cr = this.customParamsStatsTotal[param].cr.toFixed(2)
         this.customParamsStatsTotal[param].epv = this.customParamsStatsTotal[param].epv.toFixed(2)
       }
-      // TODO: to delete
-      console.log(this.customParamsStatsTotal)
     },
     onPageChanged(val) {
       this.currentPage = val

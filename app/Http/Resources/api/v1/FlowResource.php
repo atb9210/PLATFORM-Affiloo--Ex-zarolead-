@@ -15,7 +15,10 @@ class FlowResource extends JsonResource
     public function toArray($request)
     {
         $domain = $this->domain->url;
-        $urlDomain = $domain;
+        if ($domain[strlen($domain) - 1] != '/') {
+          $domain .= '/';
+        }
+        $urlDomain = $domain . 'flo/' . $this->path_name;
         if (count($this->traffic_source->custom_params) > 0) {
             if (strpos($urlDomain, '?') === false) {
                 $urlDomain .= '?';
