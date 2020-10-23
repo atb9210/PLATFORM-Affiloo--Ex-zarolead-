@@ -45,46 +45,6 @@
         </tab-content>
 
         <!-- tab 2 content -->
-        <!--
-        <tab-content title="Quantity & Upsell" class="mb-5" icon="feather icon-dollar-sign" :before-change="validateStep2">
-          <form data-vv-scope="step-2">
-          <div class="vx-row">
-            <vs-list class="vx-col w-full mt-5">
-              <vs-list-header icon-pack="feather" icon="icon-hash" title="Quantity Options" ></vs-list-header>
-              <vs-list-item
-                icon-pack="feather" icon="icon-check"
-                :title="'Quantity: ' + quantityOption.quantity"
-                :subtitle="'Price: €' + quantityOption.price + ', Commission: €' + quantityOption.commission + ', Sub Commission: €' + quantityOption.sub_commission"
-                v-for="(quantityOption, index) in quantityOptions" :key="index">
-                <div class="flex items-center">
-                  <vs-radio class="mr-4" v-model="quantityDefaultIndex" :vs-value="index" @change="changeQuantityDefault">Default</vs-radio>
-                  <vs-button class="mr-2" icon-pack="feather" icon="icon-edit" type="filled" color="primary" @click="showEditQuantityOptionForm(index)"></vs-button>
-                  <vs-button class="mr-2" icon-pack="feather" icon="icon-trash" type="filled" color="danger" @click="removeQuantityOption(index)"></vs-button>
-                </div>
-              </vs-list-item>
-            </vs-list>
-            <div class="vx-col w-full mt-2">
-              <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')">Add option</vs-button> 
-            </div>
-            <div class="vx-col w-full mt-5">
-              <div class="mb-2">Upsell</div>
-              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
-                <template slot="prepend">
-                  <div class="prepend-text">
-                    <vs-checkbox v-model="upsell"></vs-checkbox>
-                  </div>
-                </template>
-                <vs-select v-model="upsellQuantity" class="w-full">
-                  <vs-select-item :key="index" :value="item.quantity" :text="item.quantity" v-for="(item,index) in quantityOptions" class="w-full" />
-                </vs-select>
-              </vx-input-group>
-            </div>
-          </div>
-          </form>
-        </tab-content>
-        -->
-
-        <!-- tab 2 content -->
         <tab-content title="Ad Model" class="mb-5" icon="feather icon-image" :before-change="validateStep2">
           <form data-vv-scope="step-2">
           <div class="vx-row">

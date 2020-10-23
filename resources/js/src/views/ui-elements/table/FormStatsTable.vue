@@ -568,7 +568,7 @@ export default {
         this.objects[i].epv = epv
         this.objects[i].cpl = cpl
 
-        if (obj.custom_params_stats !== undefined) {
+        if (obj.custom_params_stats !== undefined && obj.custom_params_stats !== null) {
           for (const [param, valueStats] of Object.entries(obj.custom_params_stats)) {
             if (!this.customParamsStats.hasOwnProperty(param)) {
               this.customParamsStats[param] = []
@@ -607,15 +607,6 @@ export default {
               let epv = parseFloat((this.customParamsStats[param][index].visits == 0) ?
                 this.customParamsStats[param][index].total_commission :
                 this.customParamsStats[param][index].total_commission / this.customParamsStats[param][index].visits)
-
-              // TODO: Format total_commission, cr and epv into a new cycle
-              /*
-              total_commission = total_commission.toFixed(2)
-              cr = cr.toFixed(2)
-              epv = epv.toFixed(2)
-
-              this.customParamsStats[param][index].total_commission = total_commission
-              */
 
               this.customParamsStats[param][index].cr = cr
               this.customParamsStats[param][index].epv = epv
@@ -668,9 +659,9 @@ export default {
           }
         }
         for (let j = 0; j < stats.length; j++) {
-          this.customParamsStatsTotal[param].visits += stats[j].visits
-          this.customParamsStatsTotal[param].leads += stats[j].leads
-          this.customParamsStatsTotal[param].total_commission += stats[j].total_commission
+          this.customParamsStatsTotal[param].visits += parseInt(stats[j].visits)
+          this.customParamsStatsTotal[param].leads += parseInt(stats[j].leads)
+          this.customParamsStatsTotal[param].total_commission += parseFloat(stats[j].total_commission)
 
           // Format total_commission, cr and epv
           this.customParamsStats[param][j].total_commission = this.customParamsStats[param][j].total_commission.toFixed(2)

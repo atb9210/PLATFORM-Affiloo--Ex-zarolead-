@@ -82,6 +82,45 @@
                 </div>
             </div>
 
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+                <div class="vx-col sm:w-1/3" vs-justify="center" vs-align="center">
+                    <vs-card class="cardx">
+                        <div slot="header">
+                            <h3 class="mr-auto ml-auto text-center">
+                                <span class="mr-auto ml-auto">{{ (fileToUpload == '') ? 'No icon selected' : 'Icon selected' }}</span>
+                            </h3>
+                        </div>
+                        <div slot="media" class="mb-3">
+                            <img :src="uploadCardImage">
+                        </div>
+                        <div slot="footer">
+                            <vs-row vs-justify="center">
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-file-plus" :disabled="fileToUpload != ''" @click="showFilePicker"></vs-button>
+                                <vs-button class="mr-2" color="danger" icon-pack="feather" icon="icon-trash" :disabled="fileToUpload == ''" @click="clearFileToUpload"></vs-button>
+                            </vs-row>
+                        </div>
+                    </vs-card>
+                    <div class="vx-row mb-6 flex items-center">
+                        <!--
+                        <div class="vx-col w-full flex items-center">
+                            <span class="ml-auto mr-auto text-danger">{{ errors.first('icon') }}</span>
+                        </div>
+                        -->
+                        <div class="vx-col w-full flex items-center">
+                            <span class="ml-auto mr-auto">Upload: {{uploadProgress}}%</span>
+                        </div>
+                        <div class="vx-col w-full">
+                            <vs-progress :height="12" :percent="uploadProgress" color="success"></vs-progress>
+                        </div>
+                    </div>
+                    <input type="file" ref="fileUpload" class="hidden" @change="onFileUploadChange" accept="image/*">
+                </div>
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+            </div>
+
             <div class="vx-row mb-6" v-for="(custom_param, indexparam) in newObject['create'].custom_params">
                 <div class="vx-col sm:w-1/3 w-full">
                     <span v-if="indexparam == 0">Custom Params</span>
@@ -190,6 +229,11 @@ export default {
           ],
         },
       },
+
+      fileToUpload: '',
+      isUploading: false,
+      uploadProgress: 0,
+      imagePreviewUrl: '',
     }
   },
   computed: {
@@ -208,6 +252,13 @@ export default {
       },
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
+      }
+    },
+    uploadCardImage() {
+      if (this.imagePreviewUrl == '') {
+        return 'https://www.iconfinder.com/data/icons/set-app-incredibles/24/Image-01-512.png'
+      } else {
+        return this.imagePreviewUrl
       }
     },
   },
@@ -458,6 +509,21 @@ export default {
         token: '',
         name: '',
       })
+    },
+    showFilePicker() {
+      this.$refs.fileUpload.click()
+    },
+    onFileUploadChange(event) {
+      this.fileToUpload = event.target.files[0]
+      this.imagePreviewUrl = URL.createObjectURL(this.fileToUpload)
+    },
+    isValidUpload() {
+      return (this.fileToUpload != '')
+    },
+    clearFileToUpload() {
+      this.fileToUpload = ''
+      this.filePreviewToUpload = ''
+      this.imagePreviewUrl = ''
     },
   },
   created() {
