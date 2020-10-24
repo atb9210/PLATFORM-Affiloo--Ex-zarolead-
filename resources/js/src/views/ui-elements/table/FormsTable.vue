@@ -136,28 +136,28 @@
                         € {{data[indextr].stats.total_commission}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.profit" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].stats.profit > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.profit}}</vs-chip>
+                    <vs-td :data="data[indextr].profit" v-if="canViewStats">
+                        <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.roi" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].stats.roi > 0) ? 'success' : 'danger'">{{data[indextr].stats.roi}} %</vs-chip>
+                    <vs-td :data="data[indextr].roi" v-if="canViewStats">
+                        <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi}} %</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.cr">
-                        {{data[indextr].stats.cr}} %
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.cpv" v-if="canViewStats">
-                        € {{data[indextr].stats.cpv}}
+                    <vs-td :data="data[indextr].cpv" v-if="canViewStats">
+                        € {{data[indextr].cpv}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.epv" v-if="canViewStats">
-                        <vs-chip transparent :color="(data[indextr].stats.epv > 0) ? 'success' : 'danger'">€ {{data[indextr].stats.epv}}</vs-chip>
+                    <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].stats.cpl">
-                        € {{data[indextr].stats.cpl}}
+                    <vs-td :data="data[indextr].cpl">
+                        € {{data[indextr].cpl}}
                     </vs-td>
 
                     <vs-td>
