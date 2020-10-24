@@ -114,7 +114,10 @@
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                     <vs-td :data="data[indextr].name">
-                        {{data[indextr].name}}
+                        <vs-chip>
+                            <vs-avatar :src="data[indextr].traffic_source.icon"/>
+                            {{data[indextr].name}}
+                        </vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].visits">
@@ -1301,6 +1304,19 @@ export default {
             if (flag) {
               this.objects.push(obj)
             }
+
+            let tsIndex = -1
+            for (let j = 0; j < this.traffic_sources.length; j++) {
+              if (this.traffic_sources[j].id == this.allObjects[i].traffic_source.id) {
+                tsIndex = j
+                break
+              }
+            }
+            if (tsIndex == -1) {
+              this.allObjects[i].traffic_source.icon = ''
+            } else {
+              this.allObjects[i].traffic_source.icon = this.traffic_sources[tsIndex].icon
+            }
           }
 
           this.calculateStats()
@@ -1514,8 +1530,6 @@ export default {
     },
   },
   created() {
-    this.resetFilters()
-
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
@@ -1529,77 +1543,71 @@ export default {
           this.traffic_sources.push({
             id: traffic_source.id,
             label: traffic_source.name,
+            icon: traffic_source.icon,
           })
         })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
 
-    // Retrieve users
-    this.$vs.loading()
-    this.$http.get('/api/v1/users', { headers })
-      .then((response) => {
-        this.userOptions = []
-        response.data.data.forEach((user) => {
-          this.userOptions.push({
-            id: user.id,
-            label: user.email,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+        // Retrieve users
+        this.$http.get('/api/v1/users', { headers })
+          .then((response) => {
+            this.userOptions = []
+            response.data.data.forEach((user) => {
+              this.userOptions.push({
+                id: user.id,
+                label: user.email,
+              })
+            })
 
-    // Retrieve tags
-    this.$vs.loading()
-    this.$http.get('/api/v1/tags', { headers })
-      .then((response) => {
-        this.tagOptions = []
-        response.data.data.forEach((tag) => {
-          this.tagOptions.push({
-            id: tag.id,
-            label: tag.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+            // Retrieve tags
+            this.$http.get('/api/v1/tags', { headers })
+              .then((response) => {
+                this.tagOptions = []
+                response.data.data.forEach((tag) => {
+                  this.tagOptions.push({
+                    id: tag.id,
+                    label: tag.name,
+                  })
+                })
 
-    // Retrieve products
-    this.$vs.loading()
-    this.$http.get('/api/v1/products/', { headers })
-      .then((response) => {
-        this.products = []
-        response.data.data.forEach((product) => {
-          this.products.push({
-            id: product.id,
-            label: product.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+                // Retrieve products
+                this.$http.get('/api/v1/products/', { headers })
+                  .then((response) => {
+                    this.products = []
+                    response.data.data.forEach((product) => {
+                      this.products.push({
+                        id: product.id,
+                        label: product.name,
+                      })
+                    })
 
-    // Retrieve networks
-    this.$vs.loading()
-    this.$http.get('/api/v1/networks/', { headers })
-      .then((response) => {
-        this.networks = []
-        response.data.data.forEach((network) => {
-          this.networks.push({
-            id: network.id,
-            label: network.name,
+                    // Retrieve networks
+                    this.$http.get('/api/v1/networks/', { headers })
+                      .then((response) => {
+                        this.networks = []
+                        response.data.data.forEach((network) => {
+                          this.networks.push({
+                            id: network.id,
+                            label: network.name,
+                          })
+                        })
+                        this.resetFilters()
+                        this.$vs.loading.close()
+                      })
+                      .catch((error) => {
+                        this.$vs.loading.close()
+                      })
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                  })
+              })
+              .catch((error) => {
+                this.$vs.loading.close()
+              })
           })
-        })
-        this.$vs.loading.close()
+          .catch((error) => {
+            this.$vs.loading.close()
+          })
       })
       .catch((error) => {
         this.$vs.loading.close()

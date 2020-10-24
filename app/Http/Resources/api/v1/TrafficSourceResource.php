@@ -18,8 +18,11 @@ class TrafficSourceResource extends JsonResource
     {
         $client = new \Spatie\Dropbox\Client(env('DROPBOX_AUTH_TOKEN', ''));
         $icon_url = '';
-        if ($this->icon != '') {
-            $icon_url = $client->getTemporaryLink($this->icon);
+        if ($this->icon != '' && !is_null($this->icon) && $this->icon != NULL) {
+            try {
+                $icon_url = $client->getTemporaryLink($this->icon);
+            } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
+            }
         }
 
         return [

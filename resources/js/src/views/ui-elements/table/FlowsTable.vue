@@ -413,6 +413,8 @@ export default {
                 selected: 0,
               }
             }
+            this.objects[i].url_domain = this.objects[i].url_domain.replace('index.html', '')
+            this.objects[i].url_domain = this.objects[i].url_domain.replace('index.php', '')
           }
           this.$vs.loading.close()
         })

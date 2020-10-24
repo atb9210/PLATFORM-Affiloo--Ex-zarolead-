@@ -134,10 +134,10 @@
                 <vs-td>{{total_stats.visits}}</vs-td>
                 <vs-td>{{total_stats.leads}}</vs-td>
                 <vs-td>{{total_stats.tq}}</vs-td>
-                <vs-td>{{total_stats.commission}}</vs-td>
+                <vs-td v-if="canViewStats">{{total_stats.commission}}</vs-td>
                 <vs-td>{{total_stats.cost}}</vs-td>
-                <vs-td>{{total_stats.extra_cost}}</vs-td>
-                <vs-td>{{total_stats.profit}}</vs-td>
+                <vs-td v-if="canViewStats">{{total_stats.extra_cost}}</vs-td>
+                <vs-td v-if="canViewStats">{{total_stats.profit}}</vs-td>
                 <vs-td></vs-td>
                 <!-- END TOTAL STATS-->
             </template>

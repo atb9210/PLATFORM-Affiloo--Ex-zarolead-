@@ -755,108 +755,97 @@ export default {
           }
         }
 
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+        // Retrieve users
+        this.$http.get('/api/v1/users/', { headers })
+          .then((response) => {
+            this.traffic_sources = []
+            response.data.data.forEach((user) => {
+              this.users.push({
+                id: user.id,
+                label: user.email,
+              })
+              if (user.id == this.form.user.id) {
+                this.user = user.id;
+              }
+            })
 
-    // Retrieve users
-    this.$vs.loading()
-    this.$http.get('/api/v1/users/', { headers })
-      .then((response) => {
-        this.traffic_sources = []
-        response.data.data.forEach((user) => {
-          this.users.push({
-            id: user.id,
-            label: user.email,
-          })
-          if (user.id == this.form.user.id) {
-            this.user = user.id;
-          }
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+            // Retrieve traffic sources
+            this.$http.get('/api/v1/traffic-sources/', { headers })
+              .then((response) => {
+                this.traffic_sources = []
+                response.data.data.forEach((traffic_source) => {
+                  this.traffic_sources.push({
+                    id: traffic_source.id,
+                    label: traffic_source.name,
+                  })
+                  if (traffic_source.id == this.form.traffic_source.id) {
+                    this.traffic_source = traffic_source.id;
+                  }
+                })
 
-    // Retrieve traffic sources
-    this.$vs.loading()
-    this.$http.get('/api/v1/traffic-sources/', { headers })
-      .then((response) => {
-        this.traffic_sources = []
-        response.data.data.forEach((traffic_source) => {
-          this.traffic_sources.push({
-            id: traffic_source.id,
-            label: traffic_source.name,
-          })
-          if (traffic_source.id == this.form.traffic_source.id) {
-            this.traffic_source = traffic_source.id;
-          }
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+                // Retrieve products
+                this.$http.get('/api/v1/products/', { headers })
+                  .then((response) => {
+                    this.products = []
+                    response.data.data.forEach((product) => {
+                      this.products.push({
+                        id: product.id,
+                        label: product.name,
+                      })
+                      if (product.id == this.form.product.id) {
+                        this.product = product.id;
+                      }
+                    })
 
-    // Retrieve products
-    this.$vs.loading()
-    this.$http.get('/api/v1/products/', { headers })
-      .then((response) => {
-        this.products = []
-        response.data.data.forEach((product) => {
-          this.products.push({
-            id: product.id,
-            label: product.name,
-          })
-          if (product.id == this.form.product.id) {
-            this.product = product.id;
-          }
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+                    // Retrieve networks
+                    this.$http.get('/api/v1/networks/', { headers })
+                      .then((response) => {
+                        this.networks = response.data.data
+                        this.networks.forEach((network) => {
+                          this.networksOptions.push({
+                            id: network.id,
+                            label: network.name,
+                          })
+                          if (network.id == this.form.network.id) {
+                            this.network = network.id;
+                          }
+                        })
 
-    // Retrieve networks
-    this.$vs.loading()
-    this.$http.get('/api/v1/networks/', { headers })
-      .then((response) => {
-        this.networks = response.data.data
-        this.networks.forEach((network) => {
-          this.networksOptions.push({
-            id: network.id,
-            label: network.name,
+                        // Retrieve forms
+                        this.$http.get('/api/v1/forms/', { headers })
+                          .then((response) => {
+                            this.forms = response.data.data
+                            this.forms.forEach((form) => {
+                              this.formsOptions.push({
+                                id: form.id,
+                                label: form.name + " - ID: " + form.id,
+                              })
+                              if (this.form.plugins.hasOwnProperty('double_recovery') && 
+                                  form.id == this.form.plugins.double_recovery.form_id) {
+                                this.plugins['double_recovery'].form_id = form.id;
+                              }
+                            })
+                            this.$vs.loading.close()
+                          })
+                          .catch((error) => {
+                            this.$vs.loading.close()
+                          })
+                      })
+                      .catch((error) => {
+                        this.$vs.loading.close()
+                      })
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                  })
+              })
+              .catch((error) => {
+                this.$vs.loading.close()
+              })
           })
-          if (network.id == this.form.network.id) {
-            this.network = network.id;
-          }
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve forms
-    this.$vs.loading()
-    this.$http.get('/api/v1/forms/', { headers })
-      .then((response) => {
-        this.forms = response.data.data
-        this.forms.forEach((form) => {
-          this.formsOptions.push({
-            id: form.id,
-            label: form.name + " - ID: " + form.id,
+          .catch((error) => {
+            this.$vs.loading.close()
           })
-          if (this.form.plugins.hasOwnProperty('double_recovery') && 
-              form.id == this.form.plugins.double_recovery.form_id) {
-            this.plugins['double_recovery'].form_id = form.id;
-          }
-        })
-        this.$vs.loading.close()
       })
       .catch((error) => {
         this.$vs.loading.close()

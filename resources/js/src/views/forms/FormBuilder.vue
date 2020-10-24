@@ -682,84 +682,76 @@ export default {
           })
           this.user = user.id;
         })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
 
-    // Retrieve traffic sources
-    this.$vs.loading()
-    this.$http.get('/api/v1/traffic-sources/', { headers })
-      .then((response) => {
-        this.traffic_sources = []
-        response.data.data.forEach((traffic_source) => {
-          this.traffic_sources.push({
-            id: traffic_source.id,
-            label: traffic_source.name,
+        // Retrieve traffic sources
+        this.$http.get('/api/v1/traffic-sources/', { headers })
+          .then((response) => {
+            this.traffic_sources = []
+            response.data.data.forEach((traffic_source) => {
+              this.traffic_sources.push({
+                id: traffic_source.id,
+                label: traffic_source.name,
+              })
+              this.traffic_source = traffic_source.id;
+            })
+
+            // Retrieve products
+            this.$http.get('/api/v1/products/', { headers })
+              .then((response) => {
+                this.products = []
+                response.data.data.forEach((product) => {
+                  this.products.push({
+                    id: product.id,
+                    label: product.name,
+                  })
+                  this.product = product.id;
+                })
+
+                // Retrieve networks
+                this.$http.get('/api/v1/networks/', { headers })
+                  .then((response) => {
+                    this.networks = response.data.data
+                    this.networks.forEach((network) => {
+                      this.networksOptions.push({
+                        id: network.id,
+                        label: network.name,
+                      })
+                      this.network = network.id;
+                    })
+
+                    // Retrieve forms
+                    this.$http.get('/api/v1/forms/', { headers })
+                      .then((response) => {
+                        this.forms = response.data.data
+                        for (let i = 0; i < this.forms.length; i++) {
+                          let form = this.forms[i]
+                          this.formsOptions.push({
+                            id: form.id,
+                            label: form.name + " - ID: " + form.id,
+                          })
+                          this.plugins['double_recovery'].form_id = form.id;
+                        }
+                        this.$vs.loading.close()
+                      })
+                      .catch((error) => {
+                        this.$vs.loading.close()
+                      })
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                  })
+              })
+              .catch((error) => {
+                this.$vs.loading.close()
+              })
           })
-          this.traffic_source = traffic_source.id;
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve products
-    this.$vs.loading()
-    this.$http.get('/api/v1/products/', { headers })
-      .then((response) => {
-        this.products = []
-        response.data.data.forEach((product) => {
-          this.products.push({
-            id: product.id,
-            label: product.name,
+          .catch((error) => {
+            this.$vs.loading.close()
           })
-          this.product = product.id;
-        })
-        this.$vs.loading.close()
       })
       .catch((error) => {
         this.$vs.loading.close()
       })
-
-    // Retrieve networks
-    this.$vs.loading()
-    this.$http.get('/api/v1/networks/', { headers })
-      .then((response) => {
-        this.networks = response.data.data
-        this.networks.forEach((network) => {
-          this.networksOptions.push({
-            id: network.id,
-            label: network.name,
-          })
-          this.network = network.id;
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
-    // Retrieve forms
-    this.$vs.loading()
-    this.$http.get('/api/v1/forms/', { headers })
-      .then((response) => {
-        this.forms = response.data.data
-        this.forms.forEach((form) => {
-          this.formsOptions.push({
-            id: form.id,
-            label: form.name + " - ID: " + form.id,
-          })
-          this.plugins['double_recovery'].form_id = form.id;
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
-
   },
 }
 </script>

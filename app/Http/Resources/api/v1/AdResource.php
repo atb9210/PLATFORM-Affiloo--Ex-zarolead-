@@ -23,7 +23,10 @@ class AdResource extends JsonResource
             $file_url = $client->getTemporaryLink($this->pathname);
         }
         if ($this->type == 'video' && $this->pathname_preview != '') {
-            $file_url_preview = $client->getTemporaryLink($this->pathname_preview);
+            try {
+                $file_url_preview = $client->getTemporaryLink($this->pathname_preview);
+            } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
+            }
         } elseif ($this->type == 'image') {
             $file_url_preview = $file_url;
         }
