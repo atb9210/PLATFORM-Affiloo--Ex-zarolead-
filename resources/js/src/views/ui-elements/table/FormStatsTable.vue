@@ -136,23 +136,23 @@
 
                         <vs-td :data="data[indextr].total_cost">
                             <vs-input v-if="isEditingCost && editingObject == data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
-                            <span v-else>€ {{data[indextr].total_cost}} <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
+                            <span v-else>€ {{data[indextr].total_cost.toFixed(2)}} <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
                         <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
-                            € {{data[indextr].total_commission}}
+                            € {{data[indextr].total_commission.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].profit" v-if="canViewStats">
-                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit.toFixed(2)}}</vs-chip>
                         </vs-td>
 
                         <vs-td :data="data[indextr].roi" v-if="canViewStats">
-                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : '')">{{data[indextr].roi.toFixed(2)}} %</vs-chip>
                         </vs-td>
 
                         <vs-td :data="data[indextr].cr">
-                            {{data[indextr].cr}} %
+                            {{data[indextr].cr.toFixed(2)}} %
                         </vs-td>
 
                         <vs-td :data="data[indextr].tq">
@@ -160,15 +160,15 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].cpv" v-if="canViewStats">
-                            € {{data[indextr].cpv}}
+                            € {{data[indextr].cpv.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].epv" v-if="canViewStats">
-                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
+                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                         </vs-td>
 
                         <vs-td :data="data[indextr].cpl">
-                            € {{data[indextr].cpl}}
+                            € {{data[indextr].cpl.toFixed(2)}}
                         </vs-td>
 
                     </vs-tr>
@@ -184,28 +184,28 @@
                         {{total_stats.leads}}
                     </vs-td>
                     <vs-td>
-                        € {{total_stats.total_cost}}
+                        € {{total_stats.total_cost.toFixed(2)}}
                     </vs-td>
                     <vs-td v-if="canViewStats">
-                        € {{total_stats.total_commission}}
+                        € {{total_stats.total_commission.toFixed(2)}}
                     </vs-td>
                     <vs-td v-if="canViewStats">
-                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit}}</vs-chip>
+                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit.toFixed(2)}}</vs-chip>
                     </vs-td>
                     <vs-td v-if="canViewStats">
-                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi}} %</vs-chip>
+                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi.toFixed(2)}} %</vs-chip>
                     </vs-td>
                     <vs-td>
-                        {{total_stats.cr}} %
+                        {{total_stats.cr.toFixed(2)}} %
                     </vs-td>
                     <vs-td>
                         {{total_stats.tq}}
                     </vs-td>
                     <vs-td v-if="canViewStats">
-                        € {{total_stats.cpv}}
+                        € {{total_stats.cpv.toFixed(2)}}
                     </vs-td>
                     <vs-td v-if="canViewStats">
-                        <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
+                        <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv.toFixed(2)}}</vs-chip>
                     </vs-td>
                     <vs-td>
                         € {{total_stats.cpl}}
@@ -553,14 +553,10 @@ export default {
         this.total_stats.total_commission += parseFloat(obj.total_commission)
         this.total_stats.tq += parseInt(obj.tq)
 
-        // Format calculated stats
-        profit = profit.toFixed(2)
-        roi = roi.toFixed(2)
-        cr = cr.toFixed(2)
-        cpv = cpv.toFixed(2)
-        epv = epv.toFixed(2)
-        cpl = cpl.toFixed(2)
-
+        this.objects[i].visits = parseInt(obj.visits)
+        this.objects[i].leads = parseInt(obj.leads)
+        this.objects[i].total_commission = parseFloat(obj.total_commission)
+        this.objects[i].total_cost = parseFloat(obj.total_cost)
         this.objects[i].profit = profit
         this.objects[i].roi = roi
         this.objects[i].cr = cr
@@ -628,14 +624,6 @@ export default {
       let epv = parseFloat((obj.visits == 0) ? obj.total_commission : obj.total_commission/obj.visits)
       let cpl = parseFloat((obj.leads == 0) ? obj.total_cost : obj.total_cost/obj.leads)
 
-      // Format calculated stats
-      profit = profit.toFixed(2)
-      roi = roi.toFixed(2)
-      cr = cr.toFixed(2)
-      cpv = cpv.toFixed(2)
-      epv = epv.toFixed(2)
-      cpl = cpl.toFixed(2)
-
       this.total_stats.profit = profit
       this.total_stats.roi = roi
       this.total_stats.cr = cr
@@ -643,9 +631,6 @@ export default {
       this.total_stats.cpv = cpv
       this.total_stats.epv = epv
       this.total_stats.cpl = cpl
-
-      this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
-      this.total_stats.total_commission = this.total_stats.total_commission.toFixed(2)
 
       // Calculate custom params total stats and format custom params stats
       for (const [param, stats] of Object.entries(this.customParamsStats)) {
