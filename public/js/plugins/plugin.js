@@ -28,8 +28,9 @@ PluginManager.prototype.add = function(plugin, data) {
         this.plugins.push(new ZeusTrackPlugin(data));
     } else if(plugin == "double_recovery") {
         this.plugins.push(new DoubleRecoveryPlugin(data));
+    } else if(plugin == "custom") {
+        this.plugins.push(new CustomPlugin(data));
     }
-
 }
 
 PluginManager.prototype.onVisit = function() {

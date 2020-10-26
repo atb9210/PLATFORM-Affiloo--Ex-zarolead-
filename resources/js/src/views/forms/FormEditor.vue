@@ -188,6 +188,17 @@
                 </vs-select>
               </vx-input-group>
             </div>
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Custom (after submit, on success) wrapped into &lt;script&gt; tags</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['custom'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-textarea v-model="plugins['custom'].afterSubmit"/>
+              </vx-input-group>
+            </div>
           </div>
           </form>
         </tab-content>
@@ -366,6 +377,10 @@ export default {
         'double_recovery': {
           enabled: false,
           form_id: 0,
+        },
+        'custom': {
+          enabled: false,
+          afterSubmit: '',
         },
       },
       facebookEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
