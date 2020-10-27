@@ -1,0 +1,41 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateProductMediasTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('product_medias', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('product_id')->unsigned();
+            $table->enum('type', ['image', 'video'])->default('image');
+            $table->string('pathname')->nullable();
+            $table->string('original_file_name')->nullable();
+            $table->string('pathname_preview')->nullable();
+            $table->string('original_file_name_preview')->nullable();
+            $table->timestamps();
+
+			$table->foreign('user_id')->references('id')->on('users');
+			$table->foreign('product_id')->references('id')->on('products');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('product_medias');
+    }
+}

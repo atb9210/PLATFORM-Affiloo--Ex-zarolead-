@@ -217,10 +217,18 @@ export default [
         ]
       },
       {
+        url: '/dashboard/product-medias',
+        name: 'Product Medias',
+        slug: 'product-medias',
+        icon: 'ImageIcon',
+        i18n: 'Product Medias',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+      {
         url: '/dashboard/ads',
         name: 'Ads',
         slug: 'ads',
-        icon: 'ImageIcon',
+        icon: 'ArrowUpIcon',
         i18n: 'Ads',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },

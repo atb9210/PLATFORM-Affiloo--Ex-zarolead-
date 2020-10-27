@@ -1474,6 +1474,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/product-medias',
+          name: 'product-medias',
+          component: () => import('./views/ProductMedias.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Product Medias', active: true }
+            ],
+            pageTitle: 'Product Medias',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/ads',
           name: 'ads',
           component: () => import('./views/Ads.vue'),

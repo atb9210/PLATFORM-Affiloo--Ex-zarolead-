@@ -126,13 +126,18 @@ Route::apiResource('domains', 'api\v1\DomainController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
-/* Ads routes */
-Route::apiResource('ads', 'api\v1\AdController')->except([
+/* Product medias routes */
+Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
     'create', 'edit', 'update',
 ])->middleware('auth:api');
-Route::post('ads/{id}/update', 'api\v1\AdController@update')->middleware('auth:api')
-    ->name('ads.update'); // This must be declared this way because the put method
-                          // has some problems when uploading a file
+Route::post('product-medias/{id}/update', 'api\v1\ProductMediaController@update')->middleware('auth:api')
+    ->name('product-medias.update'); // This must be declared this way because the put method
+                                     // has some problems when uploading a file
+
+/* Ads routes */
+Route::apiResource('ads', 'api\v1\AdController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
 
 /* Reports routes */
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {

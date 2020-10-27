@@ -17,21 +17,18 @@ class CreateAdsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->bigInteger('traffic_source_id')->unsigned();
-            $table->bigInteger('form_id')->unsigned();
+            $table->bigInteger('product_id')->unsigned();
             $table->decimal('ctr', 9, 2)->default(0.0);
             $table->decimal('cpc', 9, 2)->default(0.0);
             $table->decimal('cpa', 9, 2)->default(0.0);
             $table->json('info');
-            $table->enum('type', ['image', 'video'])->default('image');
-            $table->string('pathname')->nullable();
-            $table->string('original_file_name')->nullable();
-            $table->string('pathname_preview')->nullable();
-            $table->string('original_file_name_preview')->nullable();
+            $table->bigInteger('product_media_id')->unsigned();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
-			$table->foreign('form_id')->references('id')->on('forms');
+			$table->foreign('product_id')->references('id')->on('products');
+			$table->foreign('product_media_id')->references('id')->on('product_medias');
         });
     }
 

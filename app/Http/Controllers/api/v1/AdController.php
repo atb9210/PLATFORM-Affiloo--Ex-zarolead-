@@ -21,7 +21,7 @@ class AdController extends Controller
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_traffic_source int Traffic source's id
-     * @urlParam filter_form int Form's id
+     * @urlParam filter_product int Product's id
      *
      * @response {
      *  "data": [ads],
@@ -34,7 +34,7 @@ class AdController extends Controller
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_traffic_source' => 'integer|exists:traffic_sources,id',
-            'filter_form' => 'integer|exists:forms,id',
+            'filter_product' => 'integer|exists:products,id',
         ]);
 
         $ads = Ad::query();
@@ -50,8 +50,8 @@ class AdController extends Controller
         if (isset($params['filter_traffic_source'])) {
             $ads = $ads->where('traffic_source_id', $params['filter_traffic_source']);
         }
-        if (isset($params['filter_form'])) {
-            $ads = $ads->where('form_id', $params['filter_form']);
+        if (isset($params['filter_product'])) {
+            $ads = $ads->where('product_id', $params['filter_product']);
         }
 
         return AdResource::collection($ads->get());
@@ -77,14 +77,12 @@ class AdController extends Controller
      * Create a new ad.
      *
      * @bodyParam traffic_source_id int required Ad's traffic source id
-     * @bodyParam form_id int required Ad's form id
+     * @bodyParam product_id int required Ad's product id
      * @bodyParam ctr float required Ad's CTR
      * @bodyParam cpc float required Ad's CPC
      * @bodyParam cpa float required Ad's CPA
      * @bodyParam info json required Ad's info (title and text for example...)
-     * @bodyParam type string required Ad's type (image, video)
-     * @bodyParam file file required Ad's image or video
-     * @bodyParam file_preview file Ad's preview
+     * @bodyParam product_media_id int required Ad's product media id
      *
      * @response 201 {
      *  "message": "Ad created",
@@ -98,14 +96,12 @@ class AdController extends Controller
         // Params validation
         $params = $request->validate([
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
-            'form_id' => 'required|integer|exists:forms,id',
+            'product_id' => 'required|integer|exists:products,id',
             'ctr' => 'required|numeric|min:0',
             'cpc' => 'required|numeric|min:0',
             'cpa' => 'required|numeric|min:0',
             'info' => 'required|json',
-            'type' => 'required|in:image,video',
-            'file' => 'required|mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
-            'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
+            'product_media_id' => 'required|integer|exists:product_medias,id',
         ]);
         $params['user_id'] = Auth::user()->id;
 
@@ -121,31 +117,8 @@ class AdController extends Controller
             ], 422);
         }
 
-        // File(s) check
-        $file = '';
-        if (!$request->hasFile('file')) {
-            return response([
-                'errors' => 'Ad\'s file (image or video) not uploaded'
-            ], 400);
-        }
-        $file = $request->file('file');
-        $params['original_file_name'] = $file->getClientOriginalName();
-        if ($request->hasFile('file_preview')) {
-            $params['original_file_name_preview'] = $request->file('file_preview')->getClientOriginalName();
-        }
-
         // Create Ad
         $ad = Ad::create($params);
-
-        // File(s) upload
-        $path = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file, $ad->getFilename());
-        $ad->pathname = $path;
-        if ($request->hasFile('file_preview')) {
-            $file_preview = $request->file('file_preview');
-            $path_preview = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file_preview, $ad->getFilename('preview'));
-            $ad->pathname_preview = $path_preview;
-        }
-        $ad->save();
 
         return response([
             "message" => "Ad created",
@@ -156,17 +129,15 @@ class AdController extends Controller
     /**
      * Update the ad's fields.
      *
-     * @urlParam id int required Form's id
+     * @urlParam id int required Ad's id
      *
-     * @bodyParam form_id int Ad's form id
+     * @bodyParam product_id int Ad's product id
      * @bodyParam traffic_source_id int Ad's traffic source id
      * @bodyParam ctr float Ad's CTR
      * @bodyParam cpc float Ad's CPC
      * @bodyParam cpa float Ad's CPA
      * @bodyParam info json Ad's info (title and text for example...)
-     * @bodyParam type string Ad's type (image, video)
-     * @bodyParam file file Ad's image or video
-     * @bodyParam file_preview file Ad's preview
+     * @bodyParam product_media_id int Ad's product media id
      *
      * @response {
      *  "data": ad,
@@ -180,14 +151,12 @@ class AdController extends Controller
         // Params validation
         $params = $request->validate([
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
-            'form_id' => 'integer|exists:forms,id',
+            'product_id' => 'integer|exists:products,id',
             'ctr' => 'numeric|min:0',
             'cpc' => 'numeric|min:0',
             'cpa' => 'numeric|min:0',
             'info' => 'json',
-            'type' => 'in:image,video',
-            'file' => 'mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
-            'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
+            'product_media_id' => 'required|integer|exists:product_medias,id',
         ]);
 
         // Validate info JSON
@@ -204,32 +173,6 @@ class AdController extends Controller
             }
         }
 
-        // File(s) check
-        $file_uploaded = false;
-        $file_preview_uploaded = false;
-        $file = '';
-        if ($request->hasFile('file')) {
-            $file_uploaded = true;
-        }
-        if ($request->hasFile('file_preview')) {
-            $file_preview_uploaded = true;
-        }
-
-        // Delete old file(s) and upload new ones
-        if ($file_uploaded) {
-            $file = $request->file('file');
-            Storage::disk('dropbox')->delete($ad->getStoragePathname());
-            $path = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file, $ad->getFilename());
-            $params['original_file_name'] = $file->getClientOriginalName();
-            $params['pathname'] = $path;
-        }
-        if ($file_preview_uploaded) {
-            $file_preview = $request->file('file_preview');
-            Storage::disk('dropbox')->delete($ad->getStoragePathname('preview'));
-            $path_preview = Storage::disk('dropbox')->putFileAs($ad->getStoragePath(), $file_preview, $ad->getFilename('preview'));
-            $params['original_file_name_preview'] = $request->file('file_preview')->getClientOriginalName();
-            $params['pathname_preview'] = $path_preview;
-        }
         $ad->update($params);
 
         return response(new AdResource($ad));
@@ -249,9 +192,6 @@ class AdController extends Controller
         $ad = Ad::findOrFail($id);
 
         $this->authorize('delete', $ad);
-
-        // Delete the ad image/video (and preview)
-        Storage::disk('dropbox')->deleteDirectory($ad->getStoragePath());
 
         // Delete the ad record
         $ad->delete();

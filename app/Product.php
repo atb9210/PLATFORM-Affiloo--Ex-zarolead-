@@ -34,4 +34,14 @@ class Product extends Model
     {
         return $this->hasMany('App\Order');
     }
+
+    public function product_medias()
+    {
+        return $this->hasMany('App\ProductMedia');
+    }
+
+    public function ads()
+    {
+        return $this->hasMany('App\Ad');
+    }
 }

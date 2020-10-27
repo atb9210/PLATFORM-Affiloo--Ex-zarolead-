@@ -13,10 +13,9 @@ class Ad extends Model
      */
     protected $fillable = [
         'user_id',
-        'traffic_source_id', 'form_id',
+        'traffic_source_id', 'product_id',
         'ctr', 'cpc', 'cpa',
-        'info', 'type',
-        'pathname', 'original_file_name', 'pathname_preview', 'original_file_name_preview',
+        'info', 'product_media_id',
     ];
 
     /**
@@ -41,33 +40,13 @@ class Ad extends Model
         return $this->belongsTo('App\TrafficSource', 'traffic_source_id');
     }
 
-    public function form()
+    public function product()
     {
-        return $this->belongsTo('App\Form', 'form_id');
+        return $this->belongsTo('App\Product', 'product_id');
     }
 
-    public function getStoragePath() : string
+    public function product_media()
     {
-        $pathname = env('DROPBOX_FOLDER') . '/ads/' . $this->id;
-        return $pathname;
-    }
-
-    public function getFilename($what = 'main')
-    {
-        $file_name = '';
-        if ($what == 'preview') {
-            $file_name = $this->original_file_name_preview;
-        } else {
-            $what = 'main';
-            $file_name = $this->original_file_name;
-        }
-        $i = pathinfo($file_name);
-        $ext = $i['extension'];
-        return $what . '.' . $ext;
-    }
-
-    public function getStoragePathname($what = 'main')
-    {
-        return $this->getStoragePath() . '/' . $this->getFilename($what);
+        return $this->belongsTo('App\ProductMedia', 'product_media_id');
     }
 }

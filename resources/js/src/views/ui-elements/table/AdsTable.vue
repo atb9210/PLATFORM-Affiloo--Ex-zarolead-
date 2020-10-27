@@ -49,7 +49,7 @@
             <div class="vx-row mb-2">
                 <div class="vx-col w-1/2">
                     <label>Form</label>
-                    <v-select :options="formOptions" v-model="filters.form" />
+                    <v-select :options="productOptions" v-model="filters.product" />
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Traffic Source</label>
@@ -94,19 +94,20 @@
         <vs-table v-if="!showImagesGrid" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="form.name">Form</vs-th>
+                <vs-th sort-key="product.name">Product</vs-th>
                 <vs-th sort-key="traffic_source.name">Traffic Source</vs-th>
                 <vs-th sort-key="ctr">CTR</vs-th>
                 <vs-th sort-key="cpc">CPC</vs-th>
                 <vs-th sort-key="cpa">CPA</vs-th>
+                <vs-th>Preview</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].form.name">
-                        {{data[indextr].form.name}}
+                    <vs-td :data="data[indextr].product.name">
+                        {{data[indextr].product.name}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].traffic_source.name">
@@ -126,10 +127,14 @@
                     </vs-td>
 
                     <vs-td>
+                        <img :src="data[indextr].product_media.file_url_preview" style="border: 1px solid gray; width: 80px;">
+                    </vs-td>
+
+                    <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="showAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToAdEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <a :href="data[indextr].file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
+                            <a :href="data[indextr].product_media.file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
                             <vs-button v-if="canCreateAndEdit" @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -168,16 +173,16 @@
               </div>
               <vs-textarea :label="item" disabled="true" :data="adModel" :key="index" v-for="(item, index) in adModel" v-model="adModelValues[item]"/>
               <div>
-                  Type: <span>{{editingObject.type}}</span>
+                  Type: <span>{{editingObject.product_media.type}}</span>
               </div>
               <div>
-                Main: <a :href="editingObject.file_url">Download</a>
+                Main: <a :href="editingObject.product_media.file_url">Download</a>
               </div>
               <div>
-                Preview: <a :href="editingObject.file_url_preview">Download</a>
+                Preview: <a :href="editingObject.product_media.file_url_preview">Download</a>
               </div>
               <div class="w-full">
-                <img class="w-full" :src="editingObject.file_url_preview" style="border: 1px solid gray" />
+                <img class="w-full" :src="editingObject.product_media.file_url_preview" style="border: 1px solid gray" />
               </div>
             </div>
             <div class="vx-col w-1/5">
@@ -220,11 +225,11 @@ export default {
         date_from: '',
         date_to: '',
         traffic_source: '',
-        form: '',
+        product: '',
       },
 
       trafficSourceOptions: [],
-      formOptions: [],
+      productOptions: [],
 
       showImagesGrid: false,
 
@@ -232,10 +237,8 @@ export default {
       adModel: [],
       adModelValues: {},
       editingObject: {
-        id: -1,
-        type: '',
-        file_url: '',
-        file_url_preview: '',
+        id: 0,
+        product_media: {},
       },
     }
   },
@@ -388,7 +391,7 @@ export default {
         date_from: '',
         date_to: '',
         traffic_source: '',
-        form: '',
+        product: '',
       }
       this.filterDatesShortcut('this_month')
     },
@@ -410,11 +413,11 @@ export default {
       if (this.filters.traffic_source != '') {
         data['filter_traffic_source'] = this.filters.traffic_source.id
       }
-      if (this.filters.form != '') {
-        data['filter_form'] = this.filters.form.id
+      if (this.filters.product != '') {
+        data['filter_product'] = this.filters.product.id
       }
 
-      // Retrieve forms
+      // Retrieve ads
       this.$http.get('/api/v1/ads', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
@@ -486,7 +489,14 @@ export default {
         return
       }
       let obj = this.objects[objIndex]
+
+      // TODO: to delete
+      console.log("AE")
+
       this.editingObject = obj
+
+      // TODO: to delete
+      console.log("EO")
 
       this.adModel = []
       this.adModelValues = {}
@@ -522,15 +532,15 @@ export default {
         this.$vs.loading.close()
       })
 
-    // Retrieve forms
+    // Retrieve products
     this.$vs.loading()
-    this.$http.get('/api/v1/forms', { headers })
+    this.$http.get('/api/v1/products', { headers })
       .then((response) => {
-        this.formOptions = []
-        response.data.data.forEach((form) => {
-          this.formOptions.push({
-            id: form.id,
-            label: form.name,
+        this.productOptions = []
+        response.data.data.forEach((products) => {
+          this.productOptions.push({
+            id: product.id,
+            label: product.name,
           })
         })
         this.$vs.loading.close()
