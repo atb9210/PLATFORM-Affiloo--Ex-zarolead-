@@ -43,23 +43,29 @@ class OrderController extends Controller
 
         // Query orders (applying filters)
         $orders = Order::query();
-        $orders = $orders->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Order')) {
-            $orders = $orders->where('user_id', Auth::user()->id);
+            if (Auth::user()->hasRole('advertiser')) {
+                $orders = $orders->join('products', 'products.id', '=', 'orders.product_id')
+                    ->where('products.advertiser_id', Auth::user()->id);
+            } else {
+                $orders = $orders->where('user_id', Auth::user()->id);
+            }
         }
         if (isset($params['filter_date_from'])) {
-            $orders = $orders->where('created_at', '>=', $params['filter_date_from'] . " 00:00:00");
+            $orders = $orders->where('orders.created_at', '>=', $params['filter_date_from'] . " 00:00:00");
         }
         if (isset($params['filter_date_to'])) {
-            $orders = $orders->where('created_at', '<=', $params['filter_date_to'] . " 23:59:59");
+            $orders = $orders->where('orders.created_at', '<=', $params['filter_date_to'] . " 23:59:59");
         }
         if (isset($params['filter_status'])) {
-            $orders = $orders->where('order_status_id', $params['filter_status']);
+            $orders = $orders->where('orders.order_status_id', $params['filter_status']);
         }
         if (isset($params['filter_product'])) {
-            $orders = $orders->where('product_id', $params['filter_product']);
+            $orders = $orders->where('orders.product_id', $params['filter_product']);
         }
-        $orders = $orders->orderBy('created_at', 'desc');
+        $orders = $orders->where('orders.archived', 0);
+        $orders = $orders->orderBy('orders.created_at', 'desc');
+        $orders = $orders->select('orders.*');
 
         return OrderResource::collection($orders->get());
     }
@@ -145,6 +151,11 @@ class OrderController extends Controller
         $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
+        $params['info'] = [
+            'price' => $price,
+            'commission' => $commission,
+            'sub_commission' => $sub_commission,
+        ];
 
         $network_data['price'] = $price;
         $network_data['commission'] = $price;

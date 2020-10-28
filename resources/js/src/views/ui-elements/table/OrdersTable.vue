@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="canExportTable" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="exportTable"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteOrders"></vs-button>
         </p>
 
@@ -87,8 +88,8 @@
                 <vs-th sort-key="email">Id</vs-th>
                 <vs-th sort-key="created_at">Date</vs-th>
                 <vs-th sort-key="product">Product</vs-th>
-                <vs-th sort-key="username">Name</vs-th>
-                <vs-th sort-key="roles">Phone</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="phone">Phone</vs-th>
                 <vs-th sort-key="quantity">Q.ty</vs-th>
                 <vs-th sort-key="commission">Commission</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
@@ -220,7 +221,11 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
-    }
+    },
+    canExportTable() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('advertiser'))
+    },
   },
   methods: {
     retrieveObjects() {
@@ -236,7 +241,6 @@ export default {
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -287,7 +291,6 @@ export default {
       // Retrieve orders
       this.$http.get('/api/v1/orders', { headers, params: data })
         .then((response) => {
-            console.log(response)
           this.objects = response.data.data
           this.$vs.loading.close()
         })
@@ -395,6 +398,43 @@ export default {
       
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
+    },
+    exportTable() {
+      let formattedData = []
+
+      this.objects.forEach((obj) => {
+        let createdAt = this.formatDate(new Date(obj.created_at))
+        let price = '0.00'
+        if (obj.info != null && obj.info != '') {
+          let info = JSON.parse(obj.info)
+          if (info.hasOwnProperty('price')) {
+            price = parseFloat(info.price).toFixed(2)
+          }
+        }
+
+        let row = []
+        row.push(obj.id)
+        row.push(createdAt)
+        row.push(obj.product)
+        row.push(obj.name)
+        row.push(obj.phone)
+        row.push(obj.address)
+        row.push(obj.quantity)
+        row.push(price)
+        formattedData.push(row)
+      })
+
+      let csv = 'id,date,product,name,phone,address,quantity,price\n';
+      formattedData.forEach((row) => {
+        csv += row.join(',');
+        csv += "\n";
+      })
+ 
+      let anchor = document.createElement('a');
+      anchor.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      anchor.target = '_blank';
+      anchor.download = 'nameYourFileHere.csv';
+      anchor.click();
     },
   },
   created() {

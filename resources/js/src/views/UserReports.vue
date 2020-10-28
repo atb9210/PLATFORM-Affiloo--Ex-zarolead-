@@ -10,16 +10,34 @@
 
 <template>
     <div id="table-demo">
-        <user-reports-table></user-reports-table>
+        <user-reports-table v-if="dashboardView == 'normal'"></user-reports-table>
+        <advertiser-reports-table v-if="dashboardView == 'advertiser'"></advertiser-reports-table>
     </div>
 </template>
 
 <script>
 import UserReportsTable from './ui-elements/table/UserReportsTable.vue'
+import AdvertiserReportsTable from './ui-elements/table/AdvertiserReportsTable.vue'
 
 export default{
   components: {
-    UserReportsTable
+    UserReportsTable,
+    AdvertiserReportsTable
+  },
+  computed: {
+    dashboardView() {
+      if (this.$store.getters.userHasRole('developer')) {
+        return 'normal'
+      } else if (this.$store.getters.userHasRole('admin')) {
+        return 'normal'
+      } else if (this.$store.getters.userHasRole('mediabuyer')) {
+        return 'normal'
+      } else if (this.$store.getters.userHasRole('buyer')) {
+        return 'normal'
+      } else if (this.$store.getters.userHasRole('advertiser')) {
+        return 'advertiser'
+      }
+    },
   },
   data() {
       return {
@@ -28,6 +46,6 @@ export default{
   methods: {
   },
   created() {
-  }
+  },
 }
 </script>

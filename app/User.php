@@ -33,34 +33,6 @@ class User extends Authenticatable
         'info' => 'array'
     ];
 
-    public function hasPermission($object, $permission)
-    {
-        foreach ($this->roles as $role) {
-            if ($role->hasPermission($object, $permission)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function setPermission($permission, $value)
-    {
-        $data = array();
-        if (isset($this->info) && is_array($this->info)) {
-            $data = $this->info;
-        }
-
-        if (isset($data['permissions']) && is_array($data['permissions'])) {
-            $data['permissions'][$permission] = $value;
-        } else {
-            $data['permissions'] = array(
-                $permission => $value
-            );
-        }
-        $this->info = $data;
-        $this->save();
-    }
-
     public function orders()
     {
         return $this->hasMany('App\Order');
@@ -109,5 +81,45 @@ class User extends Authenticatable
     public function invoices()
     {
         return $this->hasMany('App\Invoice');
+    }
+
+    public function hasRole(string $roleName) : bool
+    {
+        $result = false;
+        foreach ($this->roles as $role) {
+            if ($role->name == $roleName) {
+                $result = true;
+                break;
+            }
+        }
+        return $result;
+    }
+
+    public function hasPermission(string $object, string $permission) : bool
+    {
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($object, $permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function setPermission(string $permission, string $value)
+    {
+        $data = array();
+        if (isset($this->info) && is_array($this->info)) {
+            $data = $this->info;
+        }
+
+        if (isset($data['permissions']) && is_array($data['permissions'])) {
+            $data['permissions'][$permission] = $value;
+        } else {
+            $data['permissions'] = array(
+                $permission => $value
+            );
+        }
+        $this->info = $data;
+        $this->save();
     }
 }

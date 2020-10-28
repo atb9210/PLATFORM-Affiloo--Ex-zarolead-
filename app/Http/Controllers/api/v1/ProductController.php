@@ -22,10 +22,15 @@ class ProductController extends Controller
     {
         $products = Product::query();
         if (!Auth::user()->can('viewAny', 'App\Product')) {
-            $products = $products->where('user_id', Auth::user()->id);
+            if (Auth::user()->hasRole('advertiser')) {
+                $products = $products->where('advertiser_id', Auth::user()->id);
+            } else {
+                $products = $products->where('user_id', Auth::user()->id);
+            }
         }
+        $products = $products->where('archived', 0);
 
-        return ProductResource::collection(Product::where('archived', 0)->get());
+        return ProductResource::collection($products->get());
     }
 
     /**

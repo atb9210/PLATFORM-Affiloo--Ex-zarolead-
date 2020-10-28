@@ -65,7 +65,7 @@ export default [
         slug: 'dashboard-analytics',
         icon: 'HomeIcon',
         i18n: 'Dashboard',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
       {
         url: '/dashboard/users',
@@ -81,7 +81,7 @@ export default [
         slug: 'orders',
         icon: 'PackageIcon',
         i18n: 'Orders',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
       {
         url: '/dashboard/advertisers',
@@ -113,7 +113,7 @@ export default [
         slug: 'products',
         icon: 'CodesandboxIcon',
         i18n: 'Products',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
       {
         url: '/dashboard/traffic-sources',
@@ -155,14 +155,18 @@ export default [
         i18n: 'Flows',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
+
+      /* Reports for mediabuyer and buyer */
       {
         url: '/dashboard/my-reports',
         name: 'My Reports',
         slug: 'my-reports',
         icon: 'PieChartIcon',
         i18n: 'My Reports',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
+
+      /* Reports for admin */
       {
         url: null,
         name: 'Reports',

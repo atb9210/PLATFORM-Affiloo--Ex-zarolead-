@@ -4,6 +4,8 @@ namespace App\Http\Resources\api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use Illuminate\Support\Facades\Auth;
+
 class AdvertiserReportResource extends JsonResource
 {
     /**
@@ -14,7 +16,7 @@ class AdvertiserReportResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $toReturn = [
             'id' => $this->id,
             'user' => [
                 'id' => $this->user->id,
@@ -27,8 +29,12 @@ class AdvertiserReportResource extends JsonResource
             'leads' => $this->leads,
             'commission' => $this->commission,
             'approved_commission' => $this->approved_commission,
-            'total_cost' => $this->total_cost,
-            'profit' => $this->profit,
         ];
+        if (Auth::user()->hasPermission('report', 'users')) {
+            $toReturn['total_cost'] = $this->total_cost;
+            $toReturn['profit'] = $this->profit;
+        }
+
+        return $toReturn;
     }
 }

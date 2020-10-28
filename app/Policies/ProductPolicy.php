@@ -53,7 +53,9 @@ class ProductPolicy
      */
     public function update(User $user, Product $product)
     {
-        return $user->hasPermission('product', 'update');
+        return $user->hasPermission('product', 'update') ||
+            ($user->id === $product->user_id && !$product->archived) ||
+            ($user->id === $product->advertiser_id && !$product->archived);
     }
 
     /**
@@ -65,7 +67,9 @@ class ProductPolicy
      */
     public function delete(User $user, Product $product)
     {
-        return $user->hasPermission('product', 'delete');
+        return $user->hasPermission('product', 'delete') ||
+            ($user->id === $product->user_id && !$product->archived) ||
+            ($user->id === $product->advertiser_id && !$product->archived);
     }
 
     /**

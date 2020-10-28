@@ -235,7 +235,7 @@ class ReportController extends Controller
      */
     public function advertisers(Request $request)
     {
-        if (!Auth::user()->hasPermission('report', 'users')) {
+        if (!Auth::user()->hasRole('advertiser') && !Auth::user()->hasPermission('report', 'users')) {
             return response([
                 "message" => "You don't have permissions to access reports"
             ], 403);
@@ -253,8 +253,12 @@ class ReportController extends Controller
         $role = Role::where('name', 'advertiser');
         if ($role->count() > 0) {
             $role = $role->first();
-            $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
-                ->where('role_user.role_id', $role->id);
+            if (Auth::user()->hasPermission('report', 'users')) {
+                $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+                    ->where('role_user.role_id', $role->id);
+            } elseif (Auth::user()->hasRole('advertiser')) {
+                $users = $users->where('id', Auth::user()->id);
+            }
             foreach ($users->get() as $user) {
                 $reports[] = AdvertiserReport::getObject($user, $params['month'], $params['year']);
             }
@@ -276,7 +280,8 @@ class ReportController extends Controller
      */
     public function advertisersUpdate($user_id, Request $request)
     {
-        if (!Auth::user()->hasPermission('report', 'users')) {
+        if (!(Auth::user()->hasPermission('report', 'users') ||
+            (Auth::user()->hasRole('advertiser') && Auth::user()->id == $user_id))) {
             return response([
                 "message" => "You don't have permissions to update reports"
             ], 403);

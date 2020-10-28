@@ -12,8 +12,8 @@
     <vx-card title="Products" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <div class="vx-row mb-6">
+            <div v-if="canCreateAsAdmin" class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Advertiser</span>
                 </div>
@@ -153,7 +153,7 @@
                 </div>
             </div>
 
-            <div class="vx-row mb-6">
+            <div v-if="canCreateAsAdmin" class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Advertiser</span>
                 </div>
@@ -193,6 +193,8 @@ export default {
       deleted: [],
 
       maxItems: 20,
+
+      myId: 0,
 
       editingObject: -1,
 
@@ -237,6 +239,13 @@ export default {
         this.gridApi.paginationGoToPage(val - 1)
       }
     },
+    canCreateAndEdit() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('advertiser'))
+    },
+    canCreateAsAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
   },
   methods: {
     getObjectIndexById(id) {
@@ -262,7 +271,6 @@ export default {
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -333,9 +341,12 @@ export default {
     },
     isValidForm(type) {
       let obj = this.newObject[type]
-      return (obj.name.length > 0
-        && obj.tag != '' && obj.tag.id >= 1
-        && obj.advertiser != '' && obj.advertiser.id >= 1)
+      let isValid = (obj.name.length > 0
+        && obj.tag != '' && obj.tag.id >= 1)
+      if (this.canCreateAsAdmin) {
+        isValid = isValid && (obj.advertiser != '' && obj.advertiser.id >= 1)
+      }
+      return isValid
     },
     createObject() {
       this.$vs.loading()
@@ -347,7 +358,7 @@ export default {
       let data = {
         name: this.newObject['create'].name,
         tag_id: this.newObject['create'].tag.id,
-        advertiser_id: this.newObject['create'].advertiser.id,
+        advertiser_id: this.myId,
         country: this.newObject['create'].country,
       }
 
@@ -407,7 +418,7 @@ export default {
       let data = {
         name: this.newObject['edit'].name,
         tag_id: this.newObject['edit'].tag.id,
-        advertiser_id: this.newObject['edit'].advertiser.id,
+        advertiser_id: this.myId,
         country: this.newObject['edit'].country,
       }
 
@@ -492,23 +503,28 @@ export default {
       })
 
     // Retrieve advertisers
-    let data = {}
-    data['filter_roles'] = [5],
-    this.$vs.loading()
-    this.$http.get('/api/v1/users/', { headers, params: data })
-      .then((response) => {
-        this.advertisers = []
-        response.data.data.forEach((advertiser) => {
-          this.advertisers.push({
-            id: advertiser.id,
-            label: advertiser.name,
+    if (this.canCreateAsAdmin) {
+      let data = {}
+      data['filter_roles'] = [5],
+      this.$vs.loading()
+      this.$http.get('/api/v1/users/', { headers, params: data })
+        .then((response) => {
+          this.advertisers = []
+          response.data.data.forEach((advertiser) => {
+            this.advertisers.push({
+              id: advertiser.id,
+              label: advertiser.name,
+            })
           })
+          this.$vs.loading.close()
         })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+        .catch((error) => {
+          this.$vs.loading.close()
+        })
+    } else {
+      let userInfo = this.$store.getters.getUserInfo()
+      this.myId = userInfo.id
+    }
   },
   mounted () {
   }

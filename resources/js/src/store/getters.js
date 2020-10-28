@@ -29,18 +29,26 @@ const getters = {
     return state.is_touch_device ? 'div' : 'VuePerfectScrollbar'
   },
 
+  getUserInfo: (state) => (info) => {
+    let userInfo = []
+    if (localStorage.getItem('userInfo') != null && localStorage.getItem('userInfo') != '') {
+      userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    }
+    return userInfo
+  },
+
   userHasRole: (state) => (role) => {
-      let hasRole = false
+    let hasRole = false
 
-      let userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      let userRoles = []
-      if (userInfo.hasOwnProperty('roles')) {
-        userRoles = userInfo.roles
-      }
-     
-      hasRole = userRoles.includes(role)
+    let userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    let userRoles = []
+    if (userInfo.hasOwnProperty('roles')) {
+      userRoles = userInfo.roles
+    }
+    
+    hasRole = userRoles.includes(role)
 
-      return hasRole
+    return hasRole
   },
 }
 

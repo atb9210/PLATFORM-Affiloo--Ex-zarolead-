@@ -91,6 +91,21 @@ class CreateRolesTable extends Migration
             [
                 "name" => "advertiser",
                 "permissions" => [
+                    "order" => [
+                        "viewAny" => false,
+                        "create" => false,
+                        "update" => false,
+                        "delete" => false,
+                    ],
+                    "product" => [
+                        "viewAny" => false,
+                        "create" => true,
+                        "update" => false,
+                        "delete" => false,
+                    ],
+                    "tag" => [
+                        "viewAny" => true,
+                    ],
                 ],
             ],
             [

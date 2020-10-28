@@ -94,24 +94,24 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].total_cost">
-                        {{data[indextr].total_cost}} €
+                        {{data[indextr].total_cost.toFixed(2)}} €
                     </vs-td>
 
                     <vs-td :data="data[indextr].commission">
-                        {{data[indextr].commission}} €
+                        {{data[indextr].commission.toFixed(2)}} €
                     </vs-td>
 
                     <vs-td :data="data[indextr].approved_commission">
-                        <vs-input v-if="isEditing && editingObjectId == data[indextr].id" type="number" step="0.01" min="0" :max="data[indextr].commission" v-model="editingValue" @keyup.enter="edit" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
-                        <span v-else>{{data[indextr].approved_commission}} € <span class="underline" @click="showEditInput(data[indextr].id)">(edit)</span></span>
+                        <vs-input v-if="isEditing && editingObjectId == data[indextr].id" :ref="'editInput' + data[indextr].id" type="number" step="0.01" min="0" :max="data[indextr].commission" v-model="editingValue" @keyup.enter="edit" @keyup.escape="dontEdit" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <span v-else>{{data[indextr].approved_commission.toFixed(2)}} € <span class="underline" @click="showEditInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].approved_commission_percentage">
-                        {{data[indextr].approved_commission_percentage}} %
+                        {{data[indextr].approved_commission_percentage.toFixed(2)}} %
                     </vs-td>
 
                     <vs-td :data="data[indextr].net_profit">
-                        {{data[indextr].net_profit}} €
+                        {{data[indextr].net_profit.toFixed(2)}} €
                     </vs-td>
 
                 </vs-tr>
@@ -123,19 +123,19 @@
                     {{total_stats.leads}}
                 </vs-td>
                 <vs-td>
-                    {{total_stats.total_cost}} €
+                    {{total_stats.total_cost.toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.commission}} €
+                    {{total_stats.commission.toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.approved_commission}} €
+                    {{total_stats.approved_commission.toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.approved_commission_percentage}} %
+                    {{total_stats.approved_commission_percentage.toFixed(2)}} %
                 </vs-td>
                 <vs-td>
-                    {{total_stats.net_profit}} €
+                    {{total_stats.net_profit.toFixed(2)}} €
                 </vs-td>
                 <!-- END TOTAL STATS-->
             </template>
@@ -263,13 +263,6 @@ export default {
             let approved_commission_percentage = (commission > 0) ? ((approved_commission / commission)*100) : 0
             let net_profit = approved_commission - total_cost
 
-            total_cost = total_cost.toFixed(2)
-            commission = commission.toFixed(2)
-
-            approved_commission = approved_commission.toFixed(2)
-            approved_commission_percentage = approved_commission_percentage.toFixed(2)
-            net_profit = net_profit.toFixed(2)
-
             this.objects.push({
               id: obj.id,
               user: obj.user,
@@ -364,21 +357,23 @@ export default {
         this.total_stats.net_profit += parseFloat(obj.net_profit)
       }
       this.total_stats.approved_commission_percentage = (this.total_stats.commission > 0) ? ((this.total_stats.approved_commission / this.total_stats.commission)*100) : 0
-
-      // Format calculated stats
-      this.total_stats.total_cost = this.total_stats.total_cost.toFixed(2)
-      this.total_stats.commission = this.total_stats.commission.toFixed(2)
-      this.total_stats.approved_commission = this.total_stats.approved_commission.toFixed(2)
-      this.total_stats.approved_commission_percentage = this.total_stats.approved_commission_percentage.toFixed(2)
-      this.total_stats.net_profit = this.total_stats.net_profit.toFixed(2)
     },
     showEditInput(id) {
       let index = this.getObjectIndexById(id)
 
       this.isEditing = true
-      this.editingValue = this.objects[index].approved_commission
+      this.editingValue = this.objects[index].approved_commission.toFixed(2)
       this.editingObjectId = id
       this.editingObject = this.objects[index]
+
+      let refValue = 'editInput' + id
+      this.$nextTick(() => {
+        let inputEl = this.$refs[refValue][0].$el.querySelector('input')
+        inputEl.focus()
+      });
+    },
+    dontEdit() {
+      this.isEditing = false
     },
     edit() {
       this.$vs.loading()
