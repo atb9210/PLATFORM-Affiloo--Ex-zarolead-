@@ -13,13 +13,7 @@ class TestController extends Controller
 {
     public function test()
     {
-        $formStats = FormStats::findOrFail(1);
-        $c = $formStats->custom_params_stats;
-        if ($c === null) {
-            echo "CIAONE";
-        }
-        echo "<pre>".var_export($c, true)."</pre>";
-        exit();
+        return view('test');
     }
 
     public function post(Request $request)

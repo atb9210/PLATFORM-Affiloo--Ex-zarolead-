@@ -244,6 +244,14 @@ export default [
         i18n: 'Invoices',
         roles: ['developer', 'admin', 'mediabuyer'],
       },
+      {
+        url: '/dashboard/fb-accounts',
+        name: 'FB accounts',
+        slug: 'fb-accounts',
+        icon: 'FacebookIcon',
+        i18n: 'FB accounts',
+        roles: ['developer', 'admin', 'mediabuyer'],
+      },
       /*
       {
         url: '/apps/email',

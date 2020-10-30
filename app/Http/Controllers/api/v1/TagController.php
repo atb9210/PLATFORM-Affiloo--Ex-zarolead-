@@ -93,8 +93,6 @@ class TagController extends Controller
         ], 201);
     }
 
-
-
     /**
      * Update the tag's fields.
      *

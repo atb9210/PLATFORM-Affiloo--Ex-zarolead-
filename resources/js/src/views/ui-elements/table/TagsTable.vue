@@ -40,8 +40,8 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="email">Id</vs-th>
-                <vs-th sort-key="username">Name</vs-th>
+                <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="bg_color">Back color</vs-th>
                 <vs-th sort-key="fb_color">Text color</vs-th>
                 <vs-th>Actions</vs-th>
@@ -293,7 +293,7 @@ export default {
         fg_color: this.newObject['create'].fg_color,
       }
 
-      // Retrieve tags
+      // Create tag
       this.$http.post('/api/v1/tags', data, { headers: headers })
         .then((response) => {
           this.$vs.loading.close()
