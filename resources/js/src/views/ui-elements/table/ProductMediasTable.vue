@@ -60,7 +60,7 @@
 
         <div v-if="showImagesGrid" class="images-grid w-full">
           <vs-images>
-            <vs-image :src="object.file_url_preview" :key="index" v-for="(object, index) in objects" @click.native="showProductMedia(object.id)" />
+            <vs-image :src="object.url_preview" :key="index" v-for="(object, index) in objects" @click.native="showProductMedia(object.id)" />
           </vs-images>
         </div>
 
@@ -106,13 +106,15 @@
                     </vs-td>
 
                     <vs-td>
-                        <img :src="data[indextr].file_url_preview" style="border: 1px solid gray; width: 80px;">
+                        <a :href="data[indextr].url" target="_blank">
+                            <img :src="(data[indextr].type == 'video') ? dropboxThumbnail : data[indextr].url_preview" style="border: 1px solid gray; width: 80px;">
+                        </a>
                     </vs-td>
 
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="showProductMedia(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
-                            <a :href="data[indextr].file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
+                            <a :href="data[indextr].url_preview"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
                             <vs-button v-if="canCreateAndEdit" @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -149,38 +151,18 @@
                             <vs-progress :height="12" :percent="uploadProgress" color="success"></vs-progress>
                         </div>
                         <div class="vx-col w-full flex items-center">
-                            <span class="ml-auto mr-auto">{{ (fileToUpload == '') ? 'No file selected' : fileToUpload.name }}</span>
+                            <span class="ml-auto mr-auto">{{ (filesToUpload.length == 0) ? 'No file selected' : ((filesToUpload.length == 1) ? filesToUpload[0].name : filesToUpload.length + ' ' + type + 's') }}</span>
                         </div>
                         <div class="vx-col w-full flex items-center">
                             <span class="text-danger">{{ errors.first('file') }}</span>
                         </div>
                     </vs-col>
-                    <input type="file" ref="fileUpload" class="hidden" @change="onFileUploadChange" :accept="type + '/*'">
+                    <input type="file" ref="fileUpload" class="hidden" :accept="type + '/*'" multiple @change="onFilesUploadChange">
                 </vs-row>
 
-                <vs-row vs-justify="center" class="mb-3 mt-3" v-if="type == 'video'">
-                    <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="6">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker('preview')">Upload preview</vs-button>
-                        <div class="vx-col w-full">
-                            <vs-progress :height="12" :percent="uploadPreviewProgress" color="success"></vs-progress>
-                        </div>
-                        <div class="vx-col w-full flex items-center">
-                            <span class="ml-auto mr-auto">{{ (filePreviewToUpload == '') ? 'No preview selected' : filePreviewToUpload.name }}</span>
-                        </div>
-                        <div class="vx-col w-full flex items-center">
-                            <span class="text-danger">{{ errors.first('file_preview') }}</span>
-                        </div>
-                    </vs-col>
-                    <input type="file" ref="filePreviewUpload" class="hidden" @change="onFilePreviewUploadChange" accept="image/*">
-                </vs-row>
                 <vs-row vs-justify="center" class="mb-3 mt-3">
                     <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="6">
-                        <img class="w-full" :src="imagePreviewUrl" style="border: 1px solid gray">
-                    </vs-col>
-                </vs-row>
-                <vs-row vs-justify="center" class="mb-3 mt-3">
-                    <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="6">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" class="w-full" @click="createObject()">Create product media</vs-button>
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" class="w-full" @click="createObjects()">Create product media</vs-button>
                     </vs-col>
                 </vs-row>
             </div>
@@ -196,13 +178,13 @@
                   Type: <span>{{editingObject.type}}</span>
               </div>
               <div>
-                Main: <a :href="editingObject.file_url">Download</a>
+                Main: <a :href="editingObject.url">Download</a>
               </div>
               <div>
-                Preview: <a :href="editingObject.file_url_preview">Download</a>
+                Preview: <a :href="editingObject.url_preview">Download</a>
               </div>
               <div class="w-full">
-                <img class="w-full" :src="editingObject.file_url_preview" style="border: 1px solid gray" />
+                <img class="w-full" :src="editingObject.url_preview" style="border: 1px solid gray" />
               </div>
             </div>
             <div class="vx-col w-1/5">
@@ -264,23 +246,21 @@ export default {
       editingObject: {
         id: -1,
         type: '',
-        file_url: '',
-        file_url_preview: '',
+        url: '',
+        url_preview: '',
       },
       
-      fileToUpload: '',
+      filesToUpload: [],
       isUploading: false,
       uploadProgress: 0,
-
-      filePreviewToUpload: '',
-      isUploadingPreview: false,
-      uploadPreviewProgress: 0,
+      numOfFilesToUpload: 0,
 
       images: {
         'image': 'https://www.iconfinder.com/data/icons/set-app-incredibles/24/Image-01-512.png',
         'video': 'https://icon-library.com/images/media-icon-png/media-icon-png-0.jpg',
       },
-      imagePreviewUrl: '',
+
+      dropboxThumbnail: 'https://www.shareicon.net/data/512x512/2016/07/10/119920_dropbox_512x512.png',
     }
   },
   computed: {
@@ -506,7 +486,6 @@ export default {
     },
     changeType() {
       this.clearFileToUpload()
-      this.clearFileToUpload('preview')
     },
     showFilePicker(what = 'main') {
       if (what == 'preview') {
@@ -515,28 +494,13 @@ export default {
         this.$refs.fileUpload.click()
       }
     },
-    onFileUploadChange(event) {
-      this.fileToUpload = event.target.files[0]
-      if (this.type == 'image') {
-        this.imagePreviewUrl = URL.createObjectURL(this.fileToUpload)
-      }
+    clearFileToUpload() {
+      this.filesToUpload = []
     },
-    onFilePreviewUploadChange(event) {
-      this.filePreviewToUpload = event.target.files[0]
-      this.imagePreviewUrl = URL.createObjectURL(this.filePreviewToUpload)
-    },
-    clearFileToUpload(what = 'main') {
-      if (what == 'preview') {
-        this.filePreviewToUpload = ''
-        this.imagePreviewUrl = ''
-      } else {
-        this.fileToUpload = ''
-        this.filePreviewToUpload = ''
-        this.imagePreviewUrl = ''
-      }
-    },
-    createObject() {
-      // Create Ad
+    createObjects() {
+      if (this.filesToUpload.length == 0) return;
+
+      // Create product medias
       this.$vs.loading()
       let headers = {
         'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
@@ -547,49 +511,62 @@ export default {
         onUploadProgress: e => {
           if (e.lengthComputable) {
             this.uploadProgress = (e.loaded / e.total) * 100
-            this.uploadPreviewProgress = (e.loaded / e.total) * 100
           }
         }
       }
-      let formData = new FormData()
-      formData.append('product_id', this.product)
-      formData.append('type', this.type)
-      formData.append('file', this.fileToUpload)
-      if (this.filePreviewToUpload != '') {
-        formData.append('file_preview', this.filePreviewToUpload)
-      }
-      this.$http.post('/api/v1/product-medias', formData, config)
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Product media created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.showPopup['create'] = false
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.errors.clear()
-          for (const [key, value] of Object.entries(error.response.data.errors)) {
-            for (let i = 0; i < value.length; i++) {
-              this.errors.add({
-                field: key,
-                msg: value[i]
+      this.numOfFilesToUpload = this.filesToUpload.length
+      let filesUploaded = 0
+
+      for (let i = 0; i < this.filesToUpload.length; i++) {
+        let fileToUpload = this.filesToUpload[i]
+        let formData = new FormData()
+        formData.append('product_id', this.product)
+        formData.append('type', this.type)
+        formData.append('file', fileToUpload)
+        this.$http.post('/api/v1/product-medias', formData, config)
+          .then((response) => {
+            filesUploaded += 1
+            if (filesUploaded == this.numOfFilesToUpload) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Product media(s) created',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
               })
+              this.showPopup['create'] = false
+              this.applyFilters()
             }
-          }
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
           })
-        })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.errors.clear()
+            for (const [key, value] of Object.entries(error.response.data.errors)) {
+              for (let i = 0; i < value.length; i++) {
+                this.errors.add({
+                  field: key,
+                  msg: value[i]
+                })
+              }
+            }
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      }
+    },
+    onFilesUploadChange(event) {
+      this.filesToUpload = event.target.files
+    },
+    clearForm() {
+      this.product = ''
+      this.type = 'image'
+      this.file = ''
     },
   },
   created() {

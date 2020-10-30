@@ -23,12 +23,14 @@ class CreateAdsTable extends Migration
             $table->decimal('cpa', 9, 2)->default(0.0);
             $table->json('info');
             $table->bigInteger('product_media_id')->unsigned();
+            $table->bigInteger('product_media_preview_id')->unsigned()->nullable();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
 			$table->foreign('product_id')->references('id')->on('products');
 			$table->foreign('product_media_id')->references('id')->on('product_medias');
+			$table->foreign('product_media_preview_id')->references('id')->on('product_medias');
         });
     }
 

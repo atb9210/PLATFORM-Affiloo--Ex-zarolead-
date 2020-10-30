@@ -130,9 +130,11 @@ Route::apiResource('domains', 'api\v1\DomainController')->except([
 Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
     'create', 'edit', 'update',
 ])->middleware('auth:api');
+/*
 Route::post('product-medias/{id}/update', 'api\v1\ProductMediaController@update')->middleware('auth:api')
     ->name('product-medias.update'); // This must be declared this way because the put method
                                      // has some problems when uploading a file
+*/
 
 /* Ads routes */
 Route::apiResource('ads', 'api\v1\AdController')->except([

@@ -83,6 +83,7 @@ class AdController extends Controller
      * @bodyParam cpa float required Ad's CPA
      * @bodyParam info json required Ad's info (title and text for example...)
      * @bodyParam product_media_id int required Ad's product media id
+     * @bodyParam product_media_preview_id int Ad's product media preview id
      *
      * @response 201 {
      *  "message": "Ad created",
@@ -102,6 +103,7 @@ class AdController extends Controller
             'cpa' => 'required|numeric|min:0',
             'info' => 'required|json',
             'product_media_id' => 'required|integer|exists:product_medias,id',
+            'product_media_preview_id' => 'integer|exists:product_medias,id',
         ]);
         $params['user_id'] = Auth::user()->id;
 
@@ -138,6 +140,7 @@ class AdController extends Controller
      * @bodyParam cpa float Ad's CPA
      * @bodyParam info json Ad's info (title and text for example...)
      * @bodyParam product_media_id int Ad's product media id
+     * @bodyParam product_media_preview_id int Ad's product media preview id
      *
      * @response {
      *  "data": ad,
@@ -156,7 +159,8 @@ class AdController extends Controller
             'cpc' => 'numeric|min:0',
             'cpa' => 'numeric|min:0',
             'info' => 'json',
-            'product_media_id' => 'required|integer|exists:product_medias,id',
+            'product_media_id' => 'integer|exists:product_medias,id',
+            'product_media_preview_id' => 'integer|exists:product_medias,id',
         ]);
 
         // Validate info JSON

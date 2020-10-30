@@ -127,14 +127,16 @@
                     </vs-td>
 
                     <vs-td>
-                        <img :src="data[indextr].product_media.file_url_preview" style="border: 1px solid gray; width: 80px;">
+                        <a :href="data[indextr].product_media.url" target="_blank">
+                            <img :src="(data[indextr].product_media.type == 'image') ? data[indextr].product_media.url_preview : ((data[indextr].hasPreview) ? data[indextr].product_media_preview.url_preview : dropboxThumbnail)" style="border: 1px solid gray; width: 80px;">
+                        </a>
                     </vs-td>
 
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="showAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToAdEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <a :href="data[indextr].product_media.file_url"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
+                            <a :href="data[indextr].product_media.url_preview"><vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button></a>
                             <vs-button v-if="canCreateAndEdit" @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -176,13 +178,13 @@
                   Type: <span>{{editingObject.product_media.type}}</span>
               </div>
               <div>
-                Main: <a :href="editingObject.product_media.file_url">Download</a>
+                Main: <a :href="editingObject.product_media.url_preview">Download</a>
               </div>
-              <div>
-                Preview: <a :href="editingObject.product_media.file_url_preview">Download</a>
+              <div v-if="editingObject.hasPreview">
+                Preview: <a :href="editingObject.product_media_preview.url_preview">Download</a>
               </div>
-              <div class="w-full">
-                <img class="w-full" :src="editingObject.product_media.file_url_preview" style="border: 1px solid gray" />
+              <div class="w-full" v-if="editingObject.hasPreview">
+                <img class="w-full" :src="editingObject.product_media_preview.url_preview" style="border: 1px solid gray" />
               </div>
             </div>
             <div class="vx-col w-1/5">
@@ -240,6 +242,8 @@ export default {
         id: 0,
         product_media: {},
       },
+
+      dropboxThumbnail: 'https://www.shareicon.net/data/512x512/2016/07/10/119920_dropbox_512x512.png',
     }
   },
   computed: {
@@ -490,13 +494,7 @@ export default {
       }
       let obj = this.objects[objIndex]
 
-      // TODO: to delete
-      console.log("AE")
-
       this.editingObject = obj
-
-      // TODO: to delete
-      console.log("EO")
 
       this.adModel = []
       this.adModelValues = {}

@@ -15,7 +15,7 @@ class Ad extends Model
         'user_id',
         'traffic_source_id', 'product_id',
         'ctr', 'cpc', 'cpa',
-        'info', 'product_media_id',
+        'info', 'product_media_id', 'product_media_preview_id',
     ];
 
     /**
@@ -48,5 +48,10 @@ class Ad extends Model
     public function product_media()
     {
         return $this->belongsTo('App\ProductMedia', 'product_media_id');
+    }
+
+    public function product_media_preview()
+    {
+        return $this->belongsTo('App\ProductMedia', 'product_media_preview_id');
     }
 }

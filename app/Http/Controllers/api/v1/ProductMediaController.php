@@ -74,7 +74,6 @@ class ProductMediaController extends Controller
      * @bodyParam product_id int required ProductMedia's form id
      * @bodyParam type string required ProductMedia's type (image, video)
      * @bodyParam file file required ProductMedia's image or video
-     * @bodyParam file_preview file ProductMedia's preview
      *
      * @response 201 {
      *  "message": "Product media created",
@@ -90,7 +89,6 @@ class ProductMediaController extends Controller
             'product_id' => 'required|integer|exists:products,id',
             'type' => 'required|in:image,video',
             'file' => 'required|mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
-            'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
         ]);
         $params['user_id'] = Auth::user()->id;
 
@@ -103,21 +101,39 @@ class ProductMediaController extends Controller
         }
         $file = $request->file('file');
         $params['original_file_name'] = $file->getClientOriginalName();
-        if ($request->hasFile('file_preview')) {
-            $params['original_file_name_preview'] = $request->file('file_preview')->getClientOriginalName();
-        }
 
         // Create ProductMedia
         $product_media = ProductMedia::create($params);
 
-        // File(s) upload
-        $path = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file, $product_media->getFilename());
-        $product_media->pathname = $path;
-        if ($request->hasFile('file_preview')) {
-            $file_preview = $request->file('file_preview');
-            $path_preview = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file_preview, $product_media->getFilename('preview'));
-            $product_media->pathname_preview = $path_preview;
+        $file_name = '';
+        $productMedias = ProductMedia::where('product_id', $params['product_id'])->where('type', $params['type']);
+        $num = $productMedias->count() + 1;
+        if ($params['type'] == 'image') {
+            $file_name .= 'F';
+        } elseif ($params['type'] == 'video') {
+            $file_name .= 'V';
+        } else {
+            $file_name .= 'U';
         }
+        $file_name .= $num;
+        $to_find_extension = $params['original_file_name'];
+        $i = pathinfo($to_find_extension);
+        $ext = $i['extension'];
+        $file_name = $file_name . '.' . $ext;
+
+        // File(s) upload
+        $path = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file, $file_name);
+        $public_url = '';
+        try {
+            $sharedLink = $client->createSharedLinkWithSettings($path);
+            $public_url = $sharedLink['url'];
+        } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
+            $sharedLinks = $client->listSharedLinks($path);
+            $sharedLink = $sharedLinks[0];
+            $public_url = $sharedLink['url'];
+        }
+        $product_media->pathname = $path;
+        $product_media->public_url = $public_url;
         $product_media->save();
 
         return response([
@@ -134,12 +150,12 @@ class ProductMediaController extends Controller
      * @bodyParam product_id int ProductMedia's form id
      * @bodyParam type string ProductMedia's type (image, video)
      * @bodyParam file file ProductMedia's image or video
-     * @bodyParam file_preview file ProductMedia's preview
      *
      * @response {
      *  "data": product_media,
      * }
      */
+     /*
     public function update(Request $request, $id)
     {
         $product_media = ProductMedia::findOrFail($id);
@@ -150,7 +166,6 @@ class ProductMediaController extends Controller
             'product_id' => 'integer|exists:products,id',
             'type' => 'in:image,video',
             'file' => 'mimes:jpeg,jpg,png,bmp,gif,m3u8,ts,mp4,m4a,m4v,f4v,f4a,m4b,m4r,f4b,mov,3gp,3gp2,3g2,3gpp,3gpp2,ogg,oga,ogv,ogx,wmv,wma,webm,flv,avi',
-            'file_preview' => 'mimes:jpeg,jpg,png,bmp,gif',
         ]);
 
         // File(s) check
@@ -159,9 +174,6 @@ class ProductMediaController extends Controller
         $file = '';
         if ($request->hasFile('file')) {
             $file_uploaded = true;
-        }
-        if ($request->hasFile('file_preview')) {
-            $file_preview_uploaded = true;
         }
 
         // Delete old file(s) and upload new ones
@@ -172,17 +184,11 @@ class ProductMediaController extends Controller
             $params['original_file_name'] = $file->getClientOriginalName();
             $params['pathname'] = $path;
         }
-        if ($file_preview_uploaded) {
-            $file_preview = $request->file('file_preview');
-            Storage::disk('dropbox')->delete($product_media->getStoragePathname('preview'));
-            $path_preview = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file_preview, $product_media->getFilename('preview'));
-            $params['original_file_name_preview'] = $request->file('file_preview')->getClientOriginalName();
-            $params['pathname_preview'] = $path_preview;
-        }
         $product_media->update($params);
 
         return response(new ProductMediaResource($product_media));
     }
+    */
 
     /**
      * Delete the specified product media.

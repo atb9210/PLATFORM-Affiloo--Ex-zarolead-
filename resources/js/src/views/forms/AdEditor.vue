@@ -112,12 +112,38 @@
               </vs-select>
             </div>
 
-            <div class="images-grid w-full">
+            <div class="w-full flex">
               <span class="text-danger">{{ errors.first('step-2.product_media_id') }}</span>
-              <vs-images>
-                <vs-image v-if="object.type == type" :src="object.file_url_preview" :key="index" v-for="(object, index) in productMediasOptions" @click.native="selectProductMedia(object.id)" :class="(object.id == productMedia) ? 'selected-product-media' : ''" />
-              </vs-images>
             </div>
+            <div class="w-full flex">
+              <div class="vx-col md:w-1/4 w-full mb-2 mr-2" v-for="(object, index) in productMediasOptions.filter(filterByType)" :key="index">
+                <vs-card class="cardx" :class="(object.id == productMedia) ? 'selected-product-media' : ''" @click.native="selectProductMedia(object.id)">
+                  <div slot="media">
+                    <img :src="(object.type == 'image') ? object.url_preview : dropboxThumbnail">
+                  </div>
+                  <div>
+                    <span>{{object.pathname}}</span>
+                  </div>
+                </vs-card>
+              </div>
+            </div>
+
+            <div class="vx-col w-full mb-2" vs-justify="center" vs-align="center" v-if="type == 'video'">
+              <h3 class="mt-5 mb-4" vs-justify="center">Preview</h3>
+            </div>
+            <div class="w-full flex" v-if="type == 'video'">
+              <div class="vx-col md:w-1/4 w-full mb-2 mr-2" v-for="(object, index) in productMediasOptions.filter(filterOnlyImages)" :key="index">
+                <vs-card class="cardx" :class="(object.id == productMediaPreview) ? 'selected-product-media' : ''" @click.native="selectProductMediaPreview(object.id)">
+                  <div slot="media">
+                    <img :src="object.url_preview">
+                  </div>
+                  <div>
+                    <span>{{object.pathname}}</span>
+                  </div>
+                </vs-card>
+              </div>
+            </div>
+
           </div>
           </form>
         </tab-content>
@@ -177,10 +203,13 @@ export default {
       cpc: 0.0,
       cpa: 0.0,
       productMedia: 0,
+      productMediaPreview: '',
       params: {},
 
       traffic_source_params: [],
       traffic_source_params_values: [],
+
+      dropboxThumbnail: 'https://www.shareicon.net/data/512x512/2016/07/10/119920_dropbox_512x512.png',
     }
   },
   computed: {
@@ -265,7 +294,9 @@ export default {
             this.productMediasOptions.push({
               id: product_media.id,
               type: product_media.type,
-              file_url_preview: product_media.file_url_preview,
+              pathname: product_media.pathname,
+              url: product_media.url,
+              url_preview: product_media.url_preview,
             })
           })
           this.$vs.loading.close()
@@ -343,6 +374,9 @@ export default {
             data['cpa'] = this.cpa
             data['info'] = JSON.stringify(this.params)
             data['product_media_id'] = this.productMedia
+            if (this.productMediaPreview != '') {
+                data['product_media_preview_id'] = this.productMediaPreview
+            }
             this.$http.put('/api/v1/ads/' + this.ad_id, data, { headers: headers })
               .then((response) => {
                 this.$vs.loading.close()
@@ -443,6 +477,15 @@ export default {
     selectProductMedia(id) {
       this.productMedia = id
     },
+    selectProductMediaPreview(id) {
+      this.productMediaPreview = id
+    },
+    filterByType(value) {
+      return (value.type == this.type)
+    },
+    filterOnlyImages(value) {
+      return (value.type == 'image')
+    },
   },
   components: {
     FormWizard,
@@ -465,6 +508,10 @@ export default {
 
         this.type = this.ad.product_media.type
         this.productMedia = this.ad.product_media.id
+
+        if (this.hasPreview) {
+          this.productMediaPreview = this.ad.product_media_preview.id
+        }
 
         // Retrieve traffic sources
         this.$http.get('/api/v1/traffic-sources/', { headers })

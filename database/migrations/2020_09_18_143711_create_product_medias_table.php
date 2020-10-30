@@ -20,8 +20,7 @@ class CreateProductMediasTable extends Migration
             $table->enum('type', ['image', 'video'])->default('image');
             $table->string('pathname')->nullable();
             $table->string('original_file_name')->nullable();
-            $table->string('pathname_preview')->nullable();
-            $table->string('original_file_name_preview')->nullable();
+            $table->string('public_url')->nullable();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
