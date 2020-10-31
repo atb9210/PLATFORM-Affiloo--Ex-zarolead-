@@ -124,6 +124,14 @@ export default [
         roles: ['developer', 'admin'],
       },
       {
+        url: '/dashboard/fb-accounts',
+        name: 'FB accounts',
+        slug: 'fb-accounts',
+        icon: 'FacebookIcon',
+        i18n: 'FB accounts',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+      {
         url: '/dashboard/forms',
         name: 'Forms',
         slug: 'forms',
@@ -242,14 +250,6 @@ export default [
         slug: 'invoices',
         icon: 'FileTextIcon',
         i18n: 'Invoices',
-        roles: ['developer', 'admin', 'mediabuyer'],
-      },
-      {
-        url: '/dashboard/fb-accounts',
-        name: 'FB accounts',
-        slug: 'fb-accounts',
-        icon: 'FacebookIcon',
-        i18n: 'FB accounts',
         roles: ['developer', 'admin', 'mediabuyer'],
       },
       /*
