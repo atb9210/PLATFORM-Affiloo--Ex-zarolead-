@@ -16,6 +16,7 @@ class CreateFbAccountsTable extends Migration
         Schema::create('3rd_fb_accounts', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
+            $table->string('gologin_id')->nullable()->unique();
             $table->string('name');
             $table->text('notes')->nullable();
             $table->string('token');

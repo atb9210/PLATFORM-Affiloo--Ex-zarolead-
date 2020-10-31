@@ -119,7 +119,7 @@ export default [
         url: '/dashboard/traffic-sources',
         name: 'Traffic Sources',
         slug: 'traffic-sources',
-        icon: 'FacebookIcon',
+        icon: 'RadioIcon',
         i18n: 'Traffic Sources',
         roles: ['developer', 'admin'],
       },
