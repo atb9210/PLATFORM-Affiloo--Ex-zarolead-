@@ -76,12 +76,12 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].status">
-                        {{data[indextr].status}}
+                        <vs-chip v-if="data[indextr].status != '' && data[indextr].status != null" transparent :color="(data[indextr].status == 'active') ? 'success' : 'danger'">{{data[indextr].status}}</vs-chip>
                     </vs-td>
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                            <vs-button @click="checkStatus(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -562,6 +562,77 @@ export default {
             icon: 'icon-alert-circle',
             color: 'danger'
           })
+        })
+    },
+    checkStatus(objIndex) {
+      let obj = this.objects[objIndex]
+      if (obj.token == null || obj.token == '') {
+        return
+      }
+
+      // Check FB API token status
+      this.$http.get('https://graph.facebook.com/me?access_token=' + obj.token)
+        .then((response) => {
+          // FB API token is active
+          let headers = {
+            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+          }
+          let data = {
+            status: 'active',
+          }
+          this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+            .then((response) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Token is active',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.retrieveObjects()
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
+        })
+        .catch((error) => {
+          // FB API token is disabled
+          let headers = {
+            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+          }
+          let data = {
+            status: 'disabled',
+          }
+          this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+            .then((response) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: 'Token is disabled',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+              this.retrieveObjects()
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
         })
     },
   },
