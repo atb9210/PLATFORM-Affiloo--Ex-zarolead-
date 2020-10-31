@@ -124,6 +124,7 @@ class ProductMediaController extends Controller
         // File(s) upload
         $path = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file, $file_name);
         $public_url = '';
+        $client = new \Spatie\Dropbox\Client(env('DROPBOX_AUTH_TOKEN', ''));
         try {
             $sharedLink = $client->createSharedLinkWithSettings($path);
             $public_url = $sharedLink['url'];

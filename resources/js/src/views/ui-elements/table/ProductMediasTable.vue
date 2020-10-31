@@ -60,7 +60,7 @@
 
         <div v-if="showImagesGrid" class="images-grid w-full">
           <vs-images>
-            <vs-image :src="object.url_preview" :key="index" v-for="(object, index) in objects" @click.native="showProductMedia(object.id)" />
+            <vs-image :src="(object.type == 'video') ? dropboxThumbnail : object.url_preview" :key="index" v-for="(object, index) in objects" @click.native="showProductMedia(object.id)" />
           </vs-images>
         </div>
 
@@ -88,8 +88,8 @@
         <vs-table v-if="!showImagesGrid" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="product.name">Product</vs-th>
                 <vs-th sort-key="pathname">Pathname</vs-th>
+                <vs-th sort-key="product.name">Product</vs-th>
                 <vs-th>Preview</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
@@ -97,12 +97,12 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].product.name">
-                        {{data[indextr].product.name}}
-                    </vs-td>
-
                     <vs-td :data="data[indextr].pathname">
                         {{data[indextr].pathname}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].product.name">
+                        {{data[indextr].product.name}}
                     </vs-td>
 
                     <vs-td>
@@ -536,6 +536,7 @@ export default {
                 color: 'success'
               })
               this.showPopup['create'] = false
+              this.clearForm()
               this.applyFilters()
             }
           })
@@ -566,7 +567,8 @@ export default {
     clearForm() {
       this.product = ''
       this.type = 'image'
-      this.file = ''
+      this.filesToUpload = []
+      this.uploadProgress = 0
     },
   },
   created() {
