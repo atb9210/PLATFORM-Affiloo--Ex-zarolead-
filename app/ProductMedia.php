@@ -24,7 +24,7 @@ class ProductMedia extends Model
 
     public function getStoragePath() : string
     {
-        $pathname = env('DROPBOX_FOLDER') . '/product_medias/product_' . $this->product_id;
+        $pathname = 'public/product_medias/product_' . $this->product_id;
         return $pathname;
     }
 }

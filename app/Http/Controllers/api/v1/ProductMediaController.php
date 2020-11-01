@@ -107,7 +107,7 @@ class ProductMediaController extends Controller
 
         $file_name = '';
         $productMedias = ProductMedia::where('product_id', $params['product_id'])->where('type', $params['type']);
-        $num = $productMedias->count() + 1;
+        $num = $productMedias->count();
         if ($params['type'] == 'image') {
             $file_name .= 'F';
         } elseif ($params['type'] == 'video') {
@@ -122,17 +122,9 @@ class ProductMediaController extends Controller
         $file_name = $file_name . '.' . $ext;
 
         // File(s) upload
-        $path = Storage::disk('dropbox')->putFileAs($product_media->getStoragePath(), $file, $file_name);
-        $public_url = '';
-        $client = new \Spatie\Dropbox\Client(env('DROPBOX_AUTH_TOKEN', ''));
-        try {
-            $sharedLink = $client->createSharedLinkWithSettings($path);
-            $public_url = $sharedLink['url'];
-        } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-            $sharedLinks = $client->listSharedLinks($path);
-            $sharedLink = $sharedLinks[0];
-            $public_url = $sharedLink['url'];
-        }
+        $path = Storage::putFileAs($product_media->getStoragePath(), $file, $file_name);
+        $public_url = str_replace("public/", "storage/", $path);
+        $public_url = asset($public_url);
         $product_media->pathname = $path;
         $product_media->public_url = $public_url;
         $product_media->save();
@@ -208,10 +200,7 @@ class ProductMediaController extends Controller
 
         // Delete the ad image/video (and preview)
         if ($product_media->pathname != null && $product_media->pathname != '') {
-            Storage::disk('dropbox')->delete($product_media->pathname);
-        }
-        if ($product_media->pathname_preview != null && $product_media->pathname_preview != '') {
-            Storage::disk('dropbox')->delete($product_media->pathname_preview);
+            Storage::delete($product_media->pathname);
         }
 
         // Delete the ad record

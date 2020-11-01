@@ -148,3 +148,6 @@ Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::get('advertisers', 'api\v1\ReportController@advertisers')->name('reports.advertisers');
     Route::put('advertisers/{user_id}', 'api\v1\ReportController@advertisersUpdate')->name('reports.advertisers.update');
 });
+
+/* Storage routes */
+Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');

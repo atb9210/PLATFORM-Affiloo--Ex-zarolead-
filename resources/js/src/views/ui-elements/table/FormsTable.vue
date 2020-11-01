@@ -47,7 +47,7 @@
                 </div>
             </div>
             <div class="vx-row mb-2">
-                <div class="vx-col w-1/3">
+                <div class="vx-col w-1/3" v-if="canFilterAsAdmin">
                     <label>User</label>
                     <v-select :options="userOptions" v-model="filters.user" />
                 </div>
@@ -750,7 +750,10 @@ export default {
     canCreateAndEdit() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
               this.$store.getters.userHasRole('mediabuyer'))
-    }
+    },
+    canFilterAsAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
   },
   methods: {
     getObjectIndexById(id) {
@@ -1541,14 +1544,14 @@ export default {
           })
         })
 
-        // Retrieve users
-        this.$http.get('/api/v1/users', { headers })
+        // Retrieve networks
+        this.$http.get('/api/v1/networks/', { headers })
           .then((response) => {
-            this.userOptions = []
-            response.data.data.forEach((user) => {
-              this.userOptions.push({
-                id: user.id,
-                label: user.email,
+            this.networks = []
+            response.data.data.forEach((network) => {
+              this.networks.push({
+                id: network.id,
+                label: network.name,
               })
             })
 
@@ -1574,22 +1577,27 @@ export default {
                       })
                     })
 
-                    // Retrieve networks
-                    this.$http.get('/api/v1/networks/', { headers })
-                      .then((response) => {
-                        this.networks = []
-                        response.data.data.forEach((network) => {
-                          this.networks.push({
-                            id: network.id,
-                            label: network.name,
+                    if (this.canFilterAsAdmin) {
+                      // Retrieve users
+                      this.$http.get('/api/v1/users', { headers })
+                        .then((response) => {
+                          this.userOptions = []
+                          response.data.data.forEach((user) => {
+                            this.userOptions.push({
+                              id: user.id,
+                              label: user.email,
+                            })
                           })
+                          this.resetFilters()
+                          this.$vs.loading.close()
                         })
-                        this.resetFilters()
-                        this.$vs.loading.close()
-                      })
-                      .catch((error) => {
-                        this.$vs.loading.close()
-                      })
+                        .catch((error) => {
+                          this.$vs.loading.close()
+                        })
+                    } else {
+                      this.resetFilters()
+                      this.$vs.loading.close()
+                    }
                   })
                   .catch((error) => {
                     this.$vs.loading.close()

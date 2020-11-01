@@ -14,58 +14,7 @@ class AdResource extends JsonResource
      */
     public function toArray($request)
     {
-        $client = new \Spatie\Dropbox\Client(env('DROPBOX_AUTH_TOKEN', ''));
-        $url = '';
-        $url_preview = '';
-        if ($this->product_media->pathname != '') {
-            if ($this->product_media->public_url == null || $this->product_media->public_url == '') {
-                try {
-                    $sharedLink = $client->createSharedLinkWithSettings($this->product_media->pathname);
-                    $url = $sharedLink['url'];
-                    $this->product_media->public_url = $url;
-                    $this->product_media->save();
-                } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-                    $sharedLinks = $client->listSharedLinks($this->product_media->pathname);
-                    $sharedLink = $sharedLinks[0];
-                    $url = $sharedLink['url'];
-                    $this->product_media->public_url = $url;
-                    $this->product_media->save();
-                }
-            } else {
-                $url = $this->product_media->public_url;
-            }
-            try {
-                $url_preview = $client->getTemporaryLink($this->product_media->pathname);
-            } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-            }
-        }
-
-        $hasPreview = false;
-        $preview_url = '';
-        $preview_url_preview = '';
-        if ($this->product_media_preview_id != null && $this->product_media_preview != null && $this->product_media_preview->pathname != '') {
-            $hasPreview = true;
-            if ($this->product_media_preview->public_url == null || $this->product_media_preview->public_url == '') {
-                try {
-                    $sharedLink = $client->createSharedLinkWithSettings($this->product_media_preview->pathname);
-                    $preview_url = $sharedLink['url'];
-                    $this->product_media_preview->public_url = $preview_url;
-                    $this->product_media_preview->save();
-                } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-                    $sharedLinks = $client->listSharedLinks($this->product_media_preview->pathname);
-                    $sharedLink = $sharedLinks[0];
-                    $preview_url = $sharedLink['url'];
-                    $this->product_media_preview->public_url = $preview_url;
-                    $this->product_media_preview->save();
-                }
-            } else {
-                $preview_url = $this->product_media_preview->public_url;
-            }
-            try {
-                $preview_url_preview = $client->getTemporaryLink($this->product_media_preview->pathname);
-            } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-            }
-        }
+        $hasPreview = ($this->product_media_preview_id != null && $this->product_media_preview != null && $this->product_media_preview->pathname != '');
 
         $toReturn = [
             'id' => $this->id,
@@ -84,8 +33,9 @@ class AdResource extends JsonResource
             'product_media' => [
                 'id' => $this->product_media->id,
                 'type' => $this->product_media->type,
-                'url' => $url,
-                'url_preview' => $url_preview,
+                'url' => $this->product_media->public_url,
+                'url_preview' => $this->product_media->public_url,
+                'original_file_name' => $this->product_media->original_file_name,
             ],
             'hasPreview' => $hasPreview,
             'created_at' => $this->created_at,
@@ -95,8 +45,9 @@ class AdResource extends JsonResource
             $toReturn['product_media_preview'] = [
                 'id' => $this->product_media_preview->id,
                 'type' => $this->product_media_preview->type,
-                'url' => $preview_url,
-                'url_preview' => $preview_url_preview,
+                'url' => $this->product_media_preview->public_url,
+                'url_preview' => $this->product_media_preview->public_url,
+                'original_file_name' => $this->product_media_preview->original_file_name,
             ];
         }
 

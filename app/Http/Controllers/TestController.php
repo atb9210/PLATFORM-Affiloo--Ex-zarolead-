@@ -13,7 +13,8 @@ class TestController extends Controller
 {
     public function test()
     {
-        return view('test');
+        echo disk_free_space(env("APP_PATH")) . " / " . disk_total_space(env("APP_PATH"));
+        exit();
     }
 
     public function post(Request $request)
