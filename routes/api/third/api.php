@@ -17,3 +17,5 @@ use Illuminate\Http\Request;
 Route::apiResource('fb-accounts', 'api\third\FbAccountController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('/fb-accounts/import', 'api\third\FbAccountController@import')->middleware('auth:api')
+    ->name('fb-accounts.import');

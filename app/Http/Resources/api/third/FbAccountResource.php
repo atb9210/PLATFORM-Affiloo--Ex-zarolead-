@@ -24,6 +24,7 @@ class FbAccountResource extends JsonResource
             'notes' => $this->notes,
             'token' => $this->token,
             'status' => $this->status,
+            'profile' => $this->profile,
             'created_at' => $this->created_at,
         ];
     }

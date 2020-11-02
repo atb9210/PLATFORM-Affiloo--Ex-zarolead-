@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
 
@@ -92,7 +93,7 @@
         </vs-table>
 
         <!-- Create popup -->
-        <vs-popup title="Create Tag" :active.sync="showPopup['create']">
+        <vs-popup title="Create FB account" :active.sync="showPopup['create']">
             <div class="vx-row mb-6 flex items-center">
                 <vs-button class="mr-auto ml-auto">{{newObject['create'].name}}</vs-button>
             </div>
@@ -140,12 +141,39 @@
             </div>
 
             <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User Agent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="newObject['create'].userAgent" />
+                    <span class="text-danger">{{ errors.first('create.user_agent') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Proxy</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                        <template slot="prepend">
+                            <div class="prepend-text">
+                                <vs-checkbox v-model="newObject['create'].proxyEnabled"></vs-checkbox>
+                            </div>
+                        </template>
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].proxy" placeholder="host::port::user::password" />
+                    </vx-input-group>
+                    <span class="text-danger">{{ errors.first('create.proxy') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
         </vs-popup>
 
         <!-- Edit popup -->
-        <vs-popup title="Edit Tag" :active.sync="showPopup['edit']">
+        <vs-popup title="Edit FB account" :active.sync="showPopup['edit']">
             <div class="vx-row mb-6 flex items-center">
                 <vs-button class="mr-auto ml-auto">{{newObject['edit'].name}}</vs-button>
             </div>
@@ -192,9 +220,52 @@
                 </div>
             </div>
 
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User Agent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="newObject['edit'].userAgent" />
+                    <span class="text-danger">{{ errors.first('edit.user_agent') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Proxy</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                        <template slot="prepend">
+                            <div class="prepend-text">
+                                <vs-checkbox v-model="newObject['edit'].proxyEnabled"></vs-checkbox>
+                            </div>
+                        </template>
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].proxy" placeholder="host::port::user::password" />
+                    </vx-input-group>
+                    <span class="text-danger">{{ errors.first('edit.proxy') }}</span>
+                </div>
+            </div>
 
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="updateObject" color="primary" type="filled" :disabled="!isValidForm('edit')">Update</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Import popup -->
+        <vs-popup title="Import FB accounts from gologin" :active.sync="showPopup['import']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Profiles' IDs</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-textarea v-model="profileIds"></vs-textarea>
+                    <span class="text-danger">{{ errors.first('import.profile_ids') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="importProfiles" color="primary" type="filled" :disabled="profileIds == ''">Import</vs-button>
             </div>
         </vs-popup>
 
@@ -219,6 +290,7 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
+        'import': false,
       },
       newObject: {
         'create': {
@@ -226,12 +298,18 @@ export default {
           name: '',
           notes: '',
           token: '',
+          userAgent: '',
+          proxyEnabled: false,
+          proxy: '',
         },
         'edit': {
           user: '',
           name: '',
           notes: '',
           token: '',
+          userAgent: '',
+          proxyEnabled: false,
+          proxy: '',
         },
       },
 
@@ -246,6 +324,8 @@ export default {
           value: '',
         },
       },
+
+      profileIds: '',
     }
   },
   computed: {
@@ -384,7 +464,15 @@ export default {
         name: this.newObject['create'].name,
         user_id: this.newObject['create'].user,
         notes: this.newObject['create'].notes,
-        token: this.newObject['create'].token,
+      }
+      if (this.newObject['create'].token != '') {
+        data.token = this.newObject['create'].token
+      }
+      if (this.newObject['create'].userAgent != '') {
+        data.user_agent = this.newObject['create'].userAgent
+      }
+      if (this.newObject['create'].proxyEnabled) {
+        data.proxy = this.newObject['create'].proxy
       }
 
       // Create fb account
@@ -429,6 +517,18 @@ export default {
         user: obj.user.id,
         notes: obj.notes,
         token: obj.token,
+        userAgent: '',
+        proxyEnabled: false,
+        proxy: '',
+      }
+      if (obj.profile.hasOwnProperty('user_agent')) {
+        this.newObject['edit'].userAgent = obj.profile['user_agent']
+      }
+      if (obj.profile.hasOwnProperty('proxy_enabled')) {
+        this.newObject['edit'].proxyEnabled = obj.profile['proxy_enabled']
+      }
+      if (obj.profile.hasOwnProperty('proxy')) {
+        this.newObject['edit'].proxy = obj.profile['proxy']
       }
       this.editingObject = obj.id
       this.showForm('edit')
@@ -448,6 +548,8 @@ export default {
         user_id: this.newObject['edit'].user,
         notes: this.newObject['edit'].notes,
         token: this.newObject['edit'].token,
+        user_agent: this.newObject['create'].userAgent,
+        proxy: this.newObject['create'].proxy,
       }
 
       this.$http.put('/api/3rd/fb-accounts/' + id, data, { headers })
@@ -633,6 +735,50 @@ export default {
                 color: 'danger'
               })
             })
+        })
+    },
+    importProfiles() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let pIds = []
+      let lines = this.profileIds.split('\n')
+      for (let i = 0; i < lines.length; i++) {
+        lines[i] = lines[i].replace('\r', '')
+        if (lines[i] != '') {
+          pIds.push(lines[i])
+        }
+      }
+
+      let data = {
+        gologin_ids: pIds,
+      }
+
+      this.$http.post('/api/3rd/fb-accounts/import', data, { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'FB account imported',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.profileIds = ''
+          this.showPopup['import'] = false
+          this.retrieveObjects()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
         })
     },
   },

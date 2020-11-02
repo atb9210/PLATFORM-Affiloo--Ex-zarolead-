@@ -17,9 +17,10 @@ class CreateFbAccountsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->string('gologin_id')->nullable()->unique();
+            $table->json('profile')->nullable();
             $table->string('name');
             $table->text('notes')->nullable();
-            $table->string('token');
+            $table->string('token')->nullable();
             $table->enum('status', ['active', 'disabled'])->nullable();
             $table->timestamps();
 

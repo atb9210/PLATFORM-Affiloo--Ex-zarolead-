@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\third;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use App\third\FbAccount as FbAccount;
 use App\Http\Resources\api\third\FbAccountResource;
@@ -46,8 +47,10 @@ class FbAccountController extends Controller
      * @bodyParam user_id int required Fb account's owner
      * @bodyParam name string required Fb account's name
      * @bodyParam notes string Fb account's notes
-     * @bodyParam token string required Fb account's token
+     * @bodyParam token string Fb account's token
      * @bodyParam status string Fb account's status
+     * @bodyParam user_agent string Fb account's user agent
+     * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
      * @response 201 {
      *  "message": "Fb account created",
@@ -63,9 +66,15 @@ class FbAccountController extends Controller
             'user_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|min:1',
             'notes' => 'string|nullable',
-            'token' => 'required|string|min:3',
+            'token' => 'string',
             'status' => 'in:active,disabled',
+            'user_agent' => 'string',
+            'proxy' => 'string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
+
+        if (!isset($params['user_id'])) {
+            $params['user_id'] = Auth::user()->id;
+        }
 
         $options = [
             'name' => $params['name'],
@@ -73,7 +82,37 @@ class FbAccountController extends Controller
         if (isset($params['notes'])) {
             $options['notes'] = $params['notes'];
         }
-        $options['os'] = 'win';
+        $profile = [];
+        if (isset($params['user_agent'])) {
+            $profile['user_agent'] = $params['user_agent'];
+            $options['navigator'] = [
+                'userAgent' => $params['user_agent'],
+                'platform' => 'Win32',
+            ];
+        }
+        if (isset($params['proxy'])) {
+            if ($params['proxy'] != '') {
+                $profile['proxy_enabled'] = true;
+                $profile['proxy'] = $params['proxy'];
+                $options['proxyEnabled'] = true;
+                $temp = explode('::', $params['proxy'], 4);
+                $host = $temp[0];
+                $port = intval($temp[1]);
+                $user = $temp[2];
+                $password = $temp[3];
+                $options['proxy'] = [
+                    'mode' => 'http',
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $user,
+                    'password' => $password,
+                ];
+            } else {
+                $profile['proxy_enabled'] = false;
+                $options['proxyEnabled'] = false;
+            }
+        }
+        $params['profile'] = $profile;
         $gologin_id = $this->gologinCreate($options);
         if ($gologin_id == '' || $gologin_id == null) {
             return response([
@@ -99,6 +138,8 @@ class FbAccountController extends Controller
      * @bodyParam notes string Fb account's notes
      * @bodyParam token string Fb account's token
      * @bodyParam status string Fb account's status
+     * @bodyParam user_agent string Fb account's user agent
+     * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
      * @response {
      *  "data": fb_account,
@@ -114,9 +155,15 @@ class FbAccountController extends Controller
             'user_id' => 'integer|exists:users,id',
             'name' => 'string|min:1',
             'notes' => 'string|nullable',
-            'token' => 'string|min:3',
+            'token' => 'string',
             'status' => 'in:active,disabled',
+            'user_agent' => 'string',
+            'proxy' => 'string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
+
+        if (!isset($params['user_id'])) {
+            $params['user_id'] = Auth::user()->id;
+        }
 
         $options = [];
         if (isset($params['name'])) {
@@ -125,6 +172,37 @@ class FbAccountController extends Controller
         if (isset($params['notes'])) {
             $options['notes'] = $params['notes'];
         }
+        $profile = $fb_account->profile;
+        if (isset($params['user_agent'])) {
+            $profile['user_agent'] = $params['user_agent'];
+            $options['navigator'] = [
+                'userAgent' => $params['user_agent'],
+                'platform' => 'Win32',
+            ];
+        }
+        if (isset($params['proxy'])) {
+            if ($params['proxy'] != '') {
+                $profile['proxy_enabled'] = true;
+                $profile['proxy'] = $params['proxy'];
+                $options['proxyEnabled'] = true;
+                $temp = explode('::', $params['proxy'], 4);
+                $host = $temp[0];
+                $port = intval($temp[1]);
+                $user = $temp[2];
+                $password = $temp[3];
+                $options['proxy'] = [
+                    'mode' => 'http',
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $user,
+                    'password' => $password,
+                ];
+            } else {
+                $profile['proxy_enabled'] = false;
+                $options['proxyEnabled'] = false;
+            }
+        }
+        $params['profile'] = $profile;
         if (!empty($options)) {
             if (!($fb_account->gologin_id != '' && $fb_account->gologin_id != null && $this->gologinUpdate($fb_account->gologin_id, $options))) {
                 return response([
@@ -162,6 +240,74 @@ class FbAccountController extends Controller
         ]);
     }
 
+    /**
+     * Import fb accounts from gologin.
+     *
+     * @bodyParam user_id int required Fb accounts' owner
+     * @bodyParam gologin_ids array required Fb accounts' gologin ids array
+     *
+     * @response {
+     *  "message": [fb_account],
+     * }
+     */
+    public function import(Request $request)
+    {
+        // Params validation
+        $params = $request->validate([
+            'user_id' => 'integer|exists:users,id',
+            'gologin_ids' => 'required|array',
+            'gologin_ids.*' => 'string|min:3',
+        ]);
+
+        $user_id = Auth::user()->id;
+        if (isset($params['user_id'])) {
+            $user_id = $params['user_id'];
+        }
+
+        // TODO: to delete
+        /*
+        echo "<pre>".var_export($params['gologin_ids'], true)."</pre>";
+        exit();
+        */
+
+        $fb_accounts = [];
+        foreach ($params['gologin_ids'] as $gologin_id) {
+            if (FbAccount::where('gologin_id', $gologin_id)->count() >= 1) {
+                continue;
+            }
+
+            $profile = $this->gologinGetProfile($gologin_id);
+            if (empty($profile) || !isset($profile['id']) || !isset($profile['name'])) {
+                continue;
+            }
+
+            $data = [
+                'user_id' => $user_id,
+                'name' => $profile['name'],
+                'gologin_id' => $profile['id'],
+                'profile' => [
+                    'proxy_enabled' => false,
+                ],
+            ];
+            if (isset($profile['notes'])) {
+                $data['notes'] = $profile['notes'];
+            }
+
+            if (isset($profile['navigator']) && isset($profile['navigator']['userAgent'])) {
+                $data['profile']['user_agent'] = $profile['navigator']['userAgent'];
+            }
+            if (isset($profile['proxyEnabled']) && isset($profile['proxy']) &&
+                isset($profile['proxy']['host']) && isset($profile['proxy']['port']) &&
+                isset($profile['proxy']['username']) && isset($profile['proxy']['password'])) {
+                $data['profile']['proxy_enabled'] = true;
+                $data['profile']['proxy'] = $profile['proxy']['host'] . '::' . $profile['proxy']['port'] . '::' . $profile['proxy']['username'] . '::' . $profile['proxy']['password'];
+            }
+            $fb_accounts[] = FbAccount::create($data);
+        }
+
+        return FbAccountResource::collection($fb_accounts);
+    }
+
     // Put these functions into a vendor package?
     private $gologinToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTY3Y2VkNjNjODg5NTA5YWI3N2I2OGMiLCJ0eXBlIjoiZGV2Iiwiand0aWQiOiI1ZTg1YjY1ZTNhYmRkMzJhNTg1ZDI0YTgifQ.CI4zOcLcWmcoKT6H_hhPFzm3UcBpdBgIRnzjcOZS4-I';
 
@@ -174,7 +320,7 @@ class FbAccountController extends Controller
     {
         $fingerprint = [];
 
-        $os = 'lin';
+        $os = 'win';
         if (isset($options['os'])) {
             $os = $options['os'];
         } 

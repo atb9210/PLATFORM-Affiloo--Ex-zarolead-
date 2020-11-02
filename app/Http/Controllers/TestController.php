@@ -13,7 +13,17 @@ class TestController extends Controller
 {
     public function test()
     {
-        echo disk_free_space(env("APP_PATH")) . " / " . disk_total_space(env("APP_PATH"));
+        $s = [];
+        $s[] = 'host::port::user::password';
+        $s[] = 'ciao::2';
+        $s[] = '127.0.0.1::80::user::password';
+        $s[] = '127.0.0.1::80::::';
+        $s[] = '127.0.0.1::80';
+        
+        $regex = "/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-.]+::.+$/";
+        foreach ($s as $value) {
+            echo $value . " => " . preg_match($regex, $value) . "<br>";
+        }
         exit();
     }
 
