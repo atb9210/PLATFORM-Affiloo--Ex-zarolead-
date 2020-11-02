@@ -75,6 +75,11 @@ class CreateRolesTable extends Migration
                     "network" => [
                         "viewAny" => true,
                     ],
+                    "product_media" => [
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
+                    ],
                     "ad" => [
                         "*" => true,
                     ],
@@ -120,10 +125,7 @@ class CreateRolesTable extends Migration
                         "*" => false,
                     ],
                     "product" => [
-                        "viewAny" => false,
-                        "create" => true,
-                        "update" => true,
-                        "delete" => true,
+                        "*" => false,
                     ],
                     "flow" => [
                         "viewAny" => false,
@@ -154,6 +156,11 @@ class CreateRolesTable extends Migration
                     ],
                     "network" => [
                         "viewAny" => true,
+                    ],
+                    "product_media" => [
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
                     ],
                     "ad" => [
                         "*" => true,
