@@ -66,10 +66,10 @@ class FbAccountController extends Controller
             'user_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|min:1',
             'notes' => 'string|nullable',
-            'token' => 'string',
+            'token' => 'nullable|string',
             'status' => 'in:active,disabled',
-            'user_agent' => 'string',
-            'proxy' => 'string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
+            'user_agent' => 'nullable|string',
+            'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
 
         if (!isset($params['user_id'])) {
@@ -113,6 +113,9 @@ class FbAccountController extends Controller
             }
         }
         $params['profile'] = $profile;
+        $options['os'] = 'win';
+        $options['browserType'] = 'chrome';
+        $options['googleServicesEnabled'] = true;
         $gologin_id = $this->gologinCreate($options);
         if ($gologin_id == '' || $gologin_id == null) {
             return response([
@@ -155,10 +158,10 @@ class FbAccountController extends Controller
             'user_id' => 'integer|exists:users,id',
             'name' => 'string|min:1',
             'notes' => 'string|nullable',
-            'token' => 'string',
+            'token' => 'nullable|string',
             'status' => 'in:active,disabled',
-            'user_agent' => 'string',
-            'proxy' => 'string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
+            'user_agent' => 'nullable|string',
+            'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
 
         if (!isset($params['user_id'])) {
@@ -323,7 +326,7 @@ class FbAccountController extends Controller
         $os = 'win';
         if (isset($options['os'])) {
             $os = $options['os'];
-        } 
+        }
 
         try {
             $ch = curl_init();
@@ -386,11 +389,11 @@ class FbAccountController extends Controller
 
         $params = [
             "name" => "default_name",
-            "notes" => "auto generated",
+            "notes" => "",
             "browserType" => "chrome",
-            "os" => "lin",
+            "os" => "win",
             "startUrl" => "google.com",
-            "googleServicesEnabled" => false,
+            "googleServicesEnabled" => true,
             "lockEnabled" => false,
             "audioContext" => [
                 "mode" => "noise"
@@ -405,14 +408,14 @@ class FbAccountController extends Controller
                 "fillBasedOnIp" => true
             ],
             "navigator" => [
-                "userAgent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0",
-                "resolution" => "1200x800",
-                "language" => "EN",
-                "platform" => "Linux x86_64"
+                "userAgent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
+                "resolution" => "1600x900",
+                "language" => "it-IT",
+                "platform" => "Win32"
             ],
-            "proxyEnabled" => true,
-            "screenHeight" => 800,
-            "screenWidth" => 1200,
+            "proxyEnabled" => false,
+            "screenHeight" => 900,
+            "screenWidth" => 1600,
             "profile" => json_encode($profileOptions),
         ];
 

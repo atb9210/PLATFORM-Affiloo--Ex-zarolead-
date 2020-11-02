@@ -548,8 +548,8 @@ export default {
         user_id: this.newObject['edit'].user,
         notes: this.newObject['edit'].notes,
         token: this.newObject['edit'].token,
-        user_agent: this.newObject['create'].userAgent,
-        proxy: this.newObject['create'].proxy,
+        user_agent: this.newObject['edit'].userAgent,
+        proxy: this.newObject['edit'].proxy,
       }
 
       this.$http.put('/api/3rd/fb-accounts/' + id, data, { headers })
