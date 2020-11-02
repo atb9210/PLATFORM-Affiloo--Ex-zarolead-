@@ -73,6 +73,7 @@ class FbAccountController extends Controller
         if (isset($params['notes'])) {
             $options['notes'] = $params['notes'];
         }
+        $options['os'] = 'win';
         $gologin_id = $this->gologinCreate($options);
         if ($gologin_id == '' || $gologin_id == null) {
             return response([
