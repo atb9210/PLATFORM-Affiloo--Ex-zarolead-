@@ -17,7 +17,7 @@
           <form data-vv-scope="step-1">
           <div class="vx-row">
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'">
+              <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'" autocomplete>
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productsOptions" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.product_id') }}</span>

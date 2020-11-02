@@ -47,7 +47,7 @@
             <div class="vx-row mb-2">
                 <div class="vx-col w-1/2">
                     <label>Product</label>
-                    <v-select :options="productOptions" v-model="filters.product" />
+                    <v-select autocomplete :options="productOptions" v-model="filters.product" />
                 </div>
             </div>
             <div class="vx-row mt-6">
@@ -137,7 +137,7 @@
             <div class="vx-row mb-6 flex items-center" vs-justify="center">
                 <vs-row vs-justify="center" class="mb-3">
                     <vs-col type="flex" vs-justify="center" vs-align="center" vs-w="6">
-                        <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'">
+                        <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'" autocomplete>
                             <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
                         </vs-select>
                         <span class="text-danger">{{ errors.first('product_id') }}</span>
