@@ -426,7 +426,7 @@ class FbAccountController extends Controller
             "notes" => "",
             "browserType" => "chrome",
             "os" => "win",
-            "startUrl" => "google.com",
+            "startUrl" => "https://business.facebook.com",
             "googleServicesEnabled" => true,
             "lockEnabled" => false,
             "audioContext" => [
