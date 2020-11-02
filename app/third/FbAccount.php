@@ -9,7 +9,7 @@ class FbAccount extends Model
     protected $table = '3rd_fb_accounts';
 
     protected $fillable = [
-        'user_id', 'gologin_id', 'profile', 'name', 'notes', 'token', 'status', 'token_status',
+        'user_id', 'gologin_id', 'dolphin_id', 'profile', 'name', 'notes', 'token', 'status', 'token_status',
     ];
 
     protected $casts = [

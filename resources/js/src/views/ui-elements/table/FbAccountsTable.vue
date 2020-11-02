@@ -392,7 +392,7 @@ export default {
 
       statusColors: {
         'setup': 'primary',
-        'warm': '#ffdf82',
+        'warm': 'dark',
         'ready': 'warning',
         'run': 'success',
         'ban': 'danger',

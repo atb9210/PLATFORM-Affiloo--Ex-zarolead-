@@ -106,6 +106,9 @@ class FbAccountController extends Controller
             $options['navigator'] = [
                 'userAgent' => $params['user_agent'],
                 'platform' => 'Win32',
+                'resolution' => '1600x900',
+                'language' => 'it-IT',
+                'platform' => 'Win32',
             ];
         }
         if (isset($params['proxy'])) {
@@ -143,6 +146,15 @@ class FbAccountController extends Controller
 
         $params['gologin_id'] = $gologin_id;
         $fb_account = FbAccount::create($params);
+
+        if (isset($params['token']) && $params['token'] != '' && $params['token'] != null) {
+            $dolphin_id = $this->dolphinCreate($fb_account);
+            if ($dolphin_id != null) {
+                $fb_account->dolphin_id = $dolphin_id;
+                $fb_account->save();
+            }
+        }
+
         return response([
             "message" => "Fb account created",
             "data" => new FbAccountResource($fb_account),
@@ -235,6 +247,14 @@ class FbAccountController extends Controller
         }
         $fb_account->update($params);
 
+        if ($fb_account->dolphin_id == null && isset($params['token']) && $params['token'] != '' && $params['token'] != null && $params['token'] != $fb_account->token) {
+            $dolphin_id = $this->dolphinCreate($fb_account);
+            if ($dolphin_id != null) {
+                $fb_account->dolphin_id = $dolphin_id;
+                $fb_account->save();
+            }
+        }
+
         return new FbAccountResource($fb_account);
     }
 
@@ -286,12 +306,6 @@ class FbAccountController extends Controller
         if (isset($params['user_id'])) {
             $user_id = $params['user_id'];
         }
-
-        // TODO: to delete
-        /*
-        echo "<pre>".var_export($params['gologin_ids'], true)."</pre>";
-        exit();
-        */
 
         $fb_accounts = [];
         foreach ($params['gologin_ids'] as $gologin_id) {
@@ -529,5 +543,64 @@ class FbAccountController extends Controller
         } catch (Throwable $e) {
         }
         return false;
+    }
+
+    public function dolphinCreate($fb_account)
+    {
+        $dolphin_id = null;
+
+        $params = [
+            "name" => $fb_account->name,
+            "access_token" => $fb_account->token,
+            "tags" => [],
+        ];
+        if (isset($fb_account->profile['user_agent']) && $fb_account->profile['user_agent'] != '') {
+            $params['user_agent'] = $fb_account->profile['user_agent'];
+        }
+        if (isset($fb_account->profile['proxy_enabled']) && $fb_account->profile['proxy_enabled'] &&
+            isset($fb_account->profile['proxy']) && $fb_account->profile['proxy'] != '') {
+            $temp = explode('::', $fb_account->profile['proxy'], 4);
+            $host = $temp[0];
+            $port = intval($temp[1]);
+            $user = $temp[2];
+            $password = $temp[3];
+            $params['proxy'] = [
+                'ip' => $host,
+                'port' => $port,
+                'type' => 'http',
+                'login' => $user,
+                'password' => $password,
+            ];
+        }
+
+        try {
+            $ch = curl_init();
+            $url = 'http://justadforme.com/new/accounts/add';
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: 1-e5f858ef904cb6820a3d3b32877327e3',
+            ]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+
+            $response = curl_exec($ch);
+
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode == 200) {
+                $response = json_decode($response, true);
+                if ($response['success']) {
+                    $dolphin_id = $response['data']['account_id'];
+                }
+            }
+        } catch (Exception $e) {
+        } catch (Throwable $e) {
+        }
+        return $dolphin_id;
     }
 }
