@@ -14,14 +14,30 @@ class FbAccountController extends Controller
     /**
      * Get all fb accounts list.
      *
+     * @urlParam filter_user int User id
+     * @urlParam filter_status string Status
+     *
      * @response {
      *  "data": [fb_accounts],
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
         //$this->authorize('viewAny', 'App\Tag');
-        return FbAccountResource::collection(FbAccount::query()->get());
+        $params = $request->validate([
+            'filter_user' => 'integer|exists:users,id',
+            'filter_status' => 'in:setup,warm,ready,run,ban',
+        ]);
+
+        $fb_accounts = FbAccount::query();
+        if (isset($params['filter_user'])) {
+            $fb_accounts = $fb_accounts->where('user_id', $params['filter_user']);
+        }
+        if (isset($params['filter_status'])) {
+            $fb_accounts = $fb_accounts->where('status', $params['filter_status']);
+        }
+
+        return FbAccountResource::collection($fb_accounts->get());
     }
 
     /**
@@ -49,6 +65,7 @@ class FbAccountController extends Controller
      * @bodyParam notes string Fb account's notes
      * @bodyParam token string Fb account's token
      * @bodyParam status string Fb account's status
+     * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
      * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
@@ -67,7 +84,8 @@ class FbAccountController extends Controller
             'name' => 'required|string|min:1',
             'notes' => 'string|nullable',
             'token' => 'nullable|string',
-            'status' => 'in:active,disabled',
+            'status' => 'in:setup,warm,ready,run,ban',
+            'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
@@ -141,6 +159,7 @@ class FbAccountController extends Controller
      * @bodyParam notes string Fb account's notes
      * @bodyParam token string Fb account's token
      * @bodyParam status string Fb account's status
+     * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
      * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
@@ -159,7 +178,8 @@ class FbAccountController extends Controller
             'name' => 'string|min:1',
             'notes' => 'string|nullable',
             'token' => 'nullable|string',
-            'status' => 'in:active,disabled',
+            'status' => 'in:setup,warm,ready,run,ban',
+            'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);

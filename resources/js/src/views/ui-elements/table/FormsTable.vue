@@ -37,25 +37,25 @@
             </div>
 
             <div class="vx-row mb-2">
-                <div class="vx-col w-1/2">
+                <div class="vx-col md:w-1/2 w-full">
                     <label>From</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
                 </div>
-                <div class="vx-col w-1/2">
+                <div class="vx-col md:w-1/2 w-full">
                     <label>To</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
             </div>
             <div class="vx-row mb-2">
-                <div class="vx-col w-1/3" v-if="canFilterAsAdmin">
+                <div class="vx-col md:w-1/3 w-full" v-if="canFilterAsAdmin">
                     <label>User</label>
                     <v-select :options="userOptions" v-model="filters.user" />
                 </div>
-                <div class="vx-col w-1/3">
+                <div class="vx-col md:w-1/3 w-full">
                     <label>Tag</label>
                     <v-select :options="tagOptions" v-model="filters.tag" />
                 </div>
-                <div class="vx-col w-1/3">
+                <div class="vx-col md:w-1/3 w-full">
                     <label>Status</label>
                     <v-select :options="statusOptions" v-model="filters.status" />
                 </div>

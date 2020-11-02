@@ -21,7 +21,8 @@ class CreateFbAccountsTable extends Migration
             $table->string('name');
             $table->text('notes')->nullable();
             $table->string('token')->nullable();
-            $table->enum('status', ['active', 'disabled'])->nullable();
+            $table->enum('status', ['setup', 'warm', 'ready', 'run', 'ban'])->default('setup');
+            $table->enum('token_status', ['active', 'disabled'])->nullable();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');

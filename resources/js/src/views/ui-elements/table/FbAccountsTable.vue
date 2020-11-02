@@ -12,10 +12,34 @@
     <vx-card title="FB Accounts" code-toggler>
 
         <p class="flex items-center mb-4">
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
+
+        <div v-if="showFilters" class="mb-12">
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/2 w-full" v-if="canCreateAsAdmin">
+                    <label>User</label>
+                    <vs-select autocomplete v-model="filters.user" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in userOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>Status</label>
+                    <vs-select autocomplete v-model="filters.status" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptionsForFilters" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+            <div class="vx-row mt-6">
+                <div class="vx-col w-full">
+                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                </div>
+            </div>
+        </div>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
@@ -43,10 +67,11 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="user.email">User</vs-th>
+                <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="notes">Notes</vs-th>
                 <vs-th sort-key="token">Token</vs-th>
-                <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="token_status">Token Status</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
@@ -59,6 +84,10 @@
 
                     <vs-td :data="data[indextr].user.email">
                         {{data[indextr].user.email}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].status">
+                        <vs-chip transparent :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
@@ -76,8 +105,8 @@
                         <vs-input type="text" v-if="((fastEdit['token'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].token" @keyup.enter="if (fastEdit['token'].enabled) { doFastEdit($event, 'token'); }" @keyup.escape="fastEdit['token'].enabled = false" />
                     </vs-td>
 
-                    <vs-td :data="data[indextr].status">
-                        <vs-chip v-if="data[indextr].status != '' && data[indextr].status != null" transparent :color="(data[indextr].status == 'active') ? 'success' : 'danger'">{{data[indextr].status}}</vs-chip>
+                    <vs-td :data="data[indextr].token_status">
+                        <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">{{data[indextr].token_status}}</vs-chip>
                     </vs-td>
 
                     <vs-td>
@@ -105,6 +134,18 @@
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
                     <span class="text-danger">{{ errors.first('create.name') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Status</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].status" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('create.status') }}</span>
                 </div>
             </div>
 
@@ -185,6 +226,18 @@
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
                     <span class="text-danger">{{ errors.first('edit.name') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Status</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['edit'].status" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('edit.status') }}</span>
                 </div>
             </div>
 
@@ -282,6 +335,14 @@ export default {
 
       maxItems: 20,
 
+      showFilters: false,
+      filters: {
+        user: '',
+        status: 'run',
+      },
+
+      statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'ban'],
+      statusOptions: ['setup', 'warm', 'ready', 'run', 'ban'],
       userOptions: [],
       myId: 0,
 
@@ -296,6 +357,7 @@ export default {
         'create': {
           user: '',
           name: '',
+          status: 'setup',
           notes: '',
           token: '',
           userAgent: '',
@@ -305,6 +367,7 @@ export default {
         'edit': {
           user: '',
           name: '',
+          status: '',
           notes: '',
           token: '',
           userAgent: '',
@@ -326,6 +389,14 @@ export default {
       },
 
       profileIds: '',
+
+      statusColors: {
+        'setup': 'primary',
+        'warm': '#ffdf82',
+        'ready': 'warning',
+        'run': 'success',
+        'ban': 'danger',
+      },
     }
   },
   computed: {
@@ -361,7 +432,14 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
+    resetFilters() {
+      this.filters = {
+        user: '',
+        status: 'run',
+      }
+      this.applyFilters()
+    },
+    applyFilters() {
       this.selected = []
       this.$vs.loading()
 
@@ -369,8 +447,16 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
+      let data = {}
+      if (this.filters.user != '') {
+        data['filter_user'] = this.filters.user
+      }
+      if (this.filters.status != '' && this.filters.status != 'all') {
+        data['filter_status'] = this.filters.status
+      }
+
       // Retrieve fb accounts
-      this.$http.get('/api/3rd/fb-accounts', { headers })
+      this.$http.get('/api/3rd/fb-accounts', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
           this.$vs.loading.close()
@@ -416,7 +502,7 @@ export default {
               })
               this.selected = []
               this.deleted = []
-              this.retrieveObjects()
+              this.applyFilters()
             }
           })
           .catch((error) => {
@@ -437,6 +523,7 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
+        status: 'setup',
         user: '',
         notes: '',
         token: '',
@@ -462,6 +549,7 @@ export default {
 
       let data = {
         name: this.newObject['create'].name,
+        status: this.newObject['create'].status,
         user_id: this.newObject['create'].user,
         notes: this.newObject['create'].notes,
       }
@@ -488,7 +576,7 @@ export default {
           })
           this.clearForm('create')
           this.showPopup['create'] = false
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -514,6 +602,7 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
+        status: obj.status,
         user: obj.user.id,
         notes: obj.notes,
         token: obj.token,
@@ -545,6 +634,7 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
+        status: this.newObject['edit'].status,
         user_id: this.newObject['edit'].user,
         notes: this.newObject['edit'].notes,
         token: this.newObject['edit'].token,
@@ -562,7 +652,7 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -594,7 +684,7 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -680,7 +770,7 @@ export default {
             Authorization: 'Bearer ' + localStorage.getItem('accessToken')
           }
           let data = {
-            status: 'active',
+            token_status: 'active',
           }
           this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
             .then((response) => {
@@ -692,7 +782,7 @@ export default {
                 icon: 'icon-alert-circle',
                 color: 'success'
               })
-              this.retrieveObjects()
+              this.applyFilters()
             })
             .catch((error) => {
               this.$vs.loading.close()
@@ -711,7 +801,7 @@ export default {
             Authorization: 'Bearer ' + localStorage.getItem('accessToken')
           }
           let data = {
-            status: 'disabled',
+            token_status: 'disabled',
           }
           this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
             .then((response) => {
@@ -723,7 +813,7 @@ export default {
                 icon: 'icon-alert-circle',
                 color: 'danger'
               })
-              this.retrieveObjects()
+              this.applyFilters()
             })
             .catch((error) => {
               this.$vs.loading.close()
@@ -768,7 +858,7 @@ export default {
           })
           this.profileIds = ''
           this.showPopup['import'] = false
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -787,7 +877,7 @@ export default {
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId
 
-    this.retrieveObjects()
+    this.resetFilters()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
