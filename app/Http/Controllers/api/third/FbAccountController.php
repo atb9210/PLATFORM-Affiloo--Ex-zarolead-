@@ -368,7 +368,7 @@ class FbAccountController extends Controller
 
     public function gologinGetErrors() : array
     {
-        return $gologinErrors;
+        return $this->gologinErrors;
     }
 
     private $gologinToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTY3Y2VkNjNjODg5NTA5YWI3N2I2OGMiLCJ0eXBlIjoiZGV2Iiwiand0aWQiOiI1ZTg1YjY1ZTNhYmRkMzJhNTg1ZDI0YTgifQ.CI4zOcLcWmcoKT6H_hhPFzm3UcBpdBgIRnzjcOZS4-I';
@@ -584,7 +584,7 @@ class FbAccountController extends Controller
 
     public function dolphinGetErrors() : array
     {
-        return $dolphinErrors;
+        return $this->dolphinErrors;
     }
 
     public function dolphinCreate($fb_account)
