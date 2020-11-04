@@ -405,7 +405,7 @@ class FbAccountController extends Controller
             if ($httpCode == 200) {
                 $fingerprint = json_decode($response, true);
             } else {
-                $gologinErrors[] = json_decode($response, true);
+                $this->gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -436,7 +436,7 @@ class FbAccountController extends Controller
             if ($httpCode == 200) {
                 $profile = json_decode($response, true);
             } else {
-                $gologinErrors[] = json_decode($response, true);
+                $this->gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -507,7 +507,7 @@ class FbAccountController extends Controller
                 $response = json_decode($response, true);
                 $gologin_id = $response['id'];
             } else {
-                $gologinErrors[] = json_decode($response, true);
+                $this->gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -543,7 +543,7 @@ class FbAccountController extends Controller
             if ($httpCode == 204) {
                 return true;
             } else {
-                $gologinErrors[] = json_decode($response, true);
+                $this->gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -572,7 +572,7 @@ class FbAccountController extends Controller
             if ($httpCode == 204) {
                 return true;
             } else {
-                $gologinErrors[] = json_decode($response, true);
+                $this->gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -640,7 +640,7 @@ class FbAccountController extends Controller
                     $dolphin_id = $response['data']['account_id'];
                 }
             } else {
-                $dolphinErrors[] = json_decode($response, true);
+                $this->dolphinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
