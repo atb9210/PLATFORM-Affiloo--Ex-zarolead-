@@ -73,6 +73,7 @@ class CreateRolesTable extends Migration
                         "viewAny" => true,
                     ],
                     "product_media" => [
+                        "viewAny" => true,
                         "create" => true,
                         "update" => true,
                         "delete" => true,
@@ -155,6 +156,7 @@ class CreateRolesTable extends Migration
                         "viewAny" => true,
                     ],
                     "product_media" => [
+                        "viewAny" => true,
                         "create" => true,
                         "update" => true,
                         "delete" => true,
