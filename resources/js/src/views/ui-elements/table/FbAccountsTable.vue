@@ -552,15 +552,14 @@ export default {
         status: this.newObject['create'].status,
         user_id: this.newObject['create'].user,
         notes: this.newObject['create'].notes,
+        proxy_enabled: this.newObject['create'].proxyEnabled,
+        proxy: this.newObject['create'].proxy,
       }
       if (this.newObject['create'].token != '') {
         data.token = this.newObject['create'].token
       }
       if (this.newObject['create'].userAgent != '') {
         data.user_agent = this.newObject['create'].userAgent
-      }
-      if (this.newObject['create'].proxyEnabled) {
-        data.proxy = this.newObject['create'].proxy
       }
 
       // Create fb account
@@ -639,6 +638,7 @@ export default {
         notes: this.newObject['edit'].notes,
         token: this.newObject['edit'].token,
         user_agent: this.newObject['edit'].userAgent,
+        proxy_enabled: this.newObject['edit'].proxyEnabled,
         proxy: this.newObject['edit'].proxy,
       }
 

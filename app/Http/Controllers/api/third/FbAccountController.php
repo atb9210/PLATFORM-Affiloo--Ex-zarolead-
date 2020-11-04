@@ -67,6 +67,7 @@ class FbAccountController extends Controller
      * @bodyParam status string Fb account's status
      * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
+     * @bodyParam proxy_enabled bool Fb account's proxy is enabled
      * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
      * @response 201 {
@@ -87,6 +88,7 @@ class FbAccountController extends Controller
             'status' => 'in:setup,warm,ready,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
+            'proxy_enabled' => 'boolean',
             'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
 
@@ -111,11 +113,16 @@ class FbAccountController extends Controller
                 'platform' => 'Win32',
             ];
         }
+        if (isset($params['proxy_enabled'])) {
+            $profile['proxy_enabled'] = ($params['proxy_enabled'] == true);
+            $options['proxyEnabled'] = ($params['proxy_enabled'] == true);
+        } else {
+            $profile['proxy_enabled'] = false;
+            $options['proxyEnabled'] = false;
+        }
         if (isset($params['proxy'])) {
             if ($params['proxy'] != '') {
-                $profile['proxy_enabled'] = true;
                 $profile['proxy'] = $params['proxy'];
-                $options['proxyEnabled'] = true;
                 $temp = explode('::', $params['proxy'], 4);
                 $host = $temp[0];
                 $port = intval($temp[1]);
@@ -128,9 +135,6 @@ class FbAccountController extends Controller
                     'username' => $user,
                     'password' => $password,
                 ];
-            } else {
-                $profile['proxy_enabled'] = false;
-                $options['proxyEnabled'] = false;
             }
         }
         $params['profile'] = $profile;
@@ -141,6 +145,7 @@ class FbAccountController extends Controller
         if ($gologin_id == '' || $gologin_id == null) {
             return response([
                 "message" => "Fb account cannot be created on GoLogin",
+                "gologin_errors" => $this->gologinGetErrors(),
             ], 401);
         }
 
@@ -173,6 +178,7 @@ class FbAccountController extends Controller
      * @bodyParam status string Fb account's status
      * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
+     * @bodyParam proxy_enabled bool Fb account's proxy is enabled
      * @bodyParam proxy string Fb account's proxy (Format: host::port::user::password)
      *
      * @response {
@@ -193,6 +199,7 @@ class FbAccountController extends Controller
             'status' => 'in:setup,warm,ready,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
+            'proxy_enabled' => 'boolean',
             'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
         ]);
 
@@ -213,13 +220,17 @@ class FbAccountController extends Controller
             $options['navigator'] = [
                 'userAgent' => $params['user_agent'],
                 'platform' => 'Win32',
+                'resolution' => '1600x900',
+                "language" => "it-IT",
             ];
         }
+        if (isset($params['proxy_enabled'])) {
+            $profile['proxy_enabled'] = ($params['proxy_enabled'] == true);
+            $options['proxyEnabled'] = ($params['proxy_enabled'] == true);
+        }
         if (isset($params['proxy'])) {
-            if ($params['proxy'] != '') {
-                $profile['proxy_enabled'] = true;
+            if ($params['proxy'] != '' && $params['proxy'] != null) {
                 $profile['proxy'] = $params['proxy'];
-                $options['proxyEnabled'] = true;
                 $temp = explode('::', $params['proxy'], 4);
                 $host = $temp[0];
                 $port = intval($temp[1]);
@@ -233,8 +244,7 @@ class FbAccountController extends Controller
                     'password' => $password,
                 ];
             } else {
-                $profile['proxy_enabled'] = false;
-                $options['proxyEnabled'] = false;
+                $profile['proxy'] = '';
             }
         }
         $params['profile'] = $profile;
@@ -242,6 +252,7 @@ class FbAccountController extends Controller
             if (!($fb_account->gologin_id != '' && $fb_account->gologin_id != null && $this->gologinUpdate($fb_account->gologin_id, $options))) {
                 return response([
                     "message" => "Fb account cannot be updated on GoLogin",
+                    "gologin_errors" => $this->gologinGetErrors(),
                 ], 401);
             }
         }
@@ -274,7 +285,12 @@ class FbAccountController extends Controller
         //$this->authorize('delete', $tag);
 
         if ($fb_account->gologin_id != null) {
-            $this->gologinDelete($fb_account->gologin_id);
+            if (!$this->gologinDelete($fb_account->gologin_id)) {
+                return response([
+                    "message" => "Fb account cannot be deleted on GoLogin",
+                    "gologin_errors" => $this->gologinGetErrors(),
+                ], 401);
+            }
         }
         $fb_account->delete();
 
@@ -333,10 +349,12 @@ class FbAccountController extends Controller
             if (isset($profile['navigator']) && isset($profile['navigator']['userAgent'])) {
                 $data['profile']['user_agent'] = $profile['navigator']['userAgent'];
             }
-            if (isset($profile['proxyEnabled']) && isset($profile['proxy']) &&
+            if (isset($profile['proxyEnabled'])) {
+                $data['profile']['proxy_enabled'] = ($profile['proxyEnabled'] == true);
+            }
+            if (isset($profile['proxy']) &&
                 isset($profile['proxy']['host']) && isset($profile['proxy']['port']) &&
                 isset($profile['proxy']['username']) && isset($profile['proxy']['password'])) {
-                $data['profile']['proxy_enabled'] = true;
                 $data['profile']['proxy'] = $profile['proxy']['host'] . '::' . $profile['proxy']['port'] . '::' . $profile['proxy']['username'] . '::' . $profile['proxy']['password'];
             }
             $fb_accounts[] = FbAccount::create($data);
@@ -346,6 +364,13 @@ class FbAccountController extends Controller
     }
 
     // Put these functions into a vendor package?
+    private $gologinErrors = [];
+
+    public function gologinGetErrors() : array
+    {
+        return $gologinErrors;
+    }
+
     private $gologinToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZTY3Y2VkNjNjODg5NTA5YWI3N2I2OGMiLCJ0eXBlIjoiZGV2Iiwiand0aWQiOiI1ZTg1YjY1ZTNhYmRkMzJhNTg1ZDI0YTgifQ.CI4zOcLcWmcoKT6H_hhPFzm3UcBpdBgIRnzjcOZS4-I';
 
     private function gologinInitialize(string $token)
@@ -379,6 +404,8 @@ class FbAccountController extends Controller
             curl_close($ch);
             if ($httpCode == 200) {
                 $fingerprint = json_decode($response, true);
+            } else {
+                $gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -408,6 +435,8 @@ class FbAccountController extends Controller
             curl_close($ch);
             if ($httpCode == 200) {
                 $profile = json_decode($response, true);
+            } else {
+                $gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -477,6 +506,8 @@ class FbAccountController extends Controller
             if ($httpCode == 201) {
                 $response = json_decode($response, true);
                 $gologin_id = $response['id'];
+            } else {
+                $gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -511,6 +542,8 @@ class FbAccountController extends Controller
             curl_close($ch);
             if ($httpCode == 204) {
                 return true;
+            } else {
+                $gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
@@ -538,11 +571,20 @@ class FbAccountController extends Controller
             curl_close($ch);
             if ($httpCode == 204) {
                 return true;
+            } else {
+                $gologinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
         }
         return false;
+    }
+
+    private $dolphinErrors = [];
+
+    public function dolphinGetErrors() : array
+    {
+        return $dolphinErrors;
     }
 
     public function dolphinCreate($fb_account)
@@ -597,6 +639,8 @@ class FbAccountController extends Controller
                 if ($response['success']) {
                     $dolphin_id = $response['data']['account_id'];
                 }
+            } else {
+                $dolphinErrors[] = json_decode($response, true);
             }
         } catch (Exception $e) {
         } catch (Throwable $e) {
