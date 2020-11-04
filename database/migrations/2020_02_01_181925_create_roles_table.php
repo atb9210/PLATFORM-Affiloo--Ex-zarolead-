@@ -40,10 +40,7 @@ class CreateRolesTable extends Migration
                         "*" => true,
                     ],
                     "product" => [
-                        "viewAny" => false,
-                        "create" => true,
-                        "update" => true,
-                        "delete" => true,
+                        "viewAny" => true,
                     ],
                     "flow" => [
                         "viewAny" => false,
@@ -125,7 +122,7 @@ class CreateRolesTable extends Migration
                         "*" => false,
                     ],
                     "product" => [
-                        "*" => false,
+                        "viewAny" => true,
                     ],
                     "flow" => [
                         "viewAny" => false,

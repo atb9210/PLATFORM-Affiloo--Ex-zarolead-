@@ -20,13 +20,17 @@ class CreateFbAccountsTable extends Migration
             $table->string('dolphin_id')->nullable()->unique();
             $table->json('profile')->nullable();
             $table->string('name');
+            $table->bigInteger('product_id')->nullable()->unsigned();
             $table->text('notes')->nullable();
+            $table->text('cards')->nullable();
             $table->string('token')->nullable();
+            $table->json('info')->nullable();
             $table->enum('status', ['setup', 'warm', 'ready', 'run', 'ban'])->default('setup');
             $table->enum('token_status', ['active', 'disabled'])->nullable();
             $table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
+			$table->foreign('product_id')->references('id')->on('products');
         });
     }
 

@@ -16,6 +16,7 @@ class FbAccountController extends Controller
      *
      * @urlParam filter_user int User id
      * @urlParam filter_status string Status
+     * @urlParam filter_product string Product id
      *
      * @response {
      *  "data": [fb_accounts],
@@ -27,6 +28,7 @@ class FbAccountController extends Controller
         $params = $request->validate([
             'filter_user' => 'integer|exists:users,id',
             'filter_status' => 'in:setup,warm,ready,run,ban',
+            'filter_product' => 'integer|exists:products,id',
         ]);
 
         $fb_accounts = FbAccount::query();
@@ -35,6 +37,9 @@ class FbAccountController extends Controller
         }
         if (isset($params['filter_status'])) {
             $fb_accounts = $fb_accounts->where('status', $params['filter_status']);
+        }
+        if (isset($params['filter_product'])) {
+            $fb_accounts = $fb_accounts->where('product_id', $params['filter_product']);
         }
 
         return FbAccountResource::collection($fb_accounts->get());
@@ -62,8 +67,11 @@ class FbAccountController extends Controller
      *
      * @bodyParam user_id int required Fb account's owner
      * @bodyParam name string required Fb account's name
+     * @bodyParam product_id array Fb account's product
      * @bodyParam notes string Fb account's notes
+     * @bodyParam cards string Fb account's cards
      * @bodyParam token string Fb account's token
+     * @bodyParam info json Fb account's info
      * @bodyParam status string Fb account's status
      * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
@@ -83,8 +91,11 @@ class FbAccountController extends Controller
         $params = $request->validate([
             'user_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|min:1',
+            'product_id' => 'integer|exists:products,id',
             'notes' => 'string|nullable',
+            'cards' => 'string|nullable',
             'token' => 'nullable|string',
+            'info' => 'nullable|json',
             'status' => 'in:setup,warm,ready,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
@@ -173,8 +184,11 @@ class FbAccountController extends Controller
      *
      * @bodyParam user_id int Fb account's owner
      * @bodyParam name string Fb account's name
+     * @bodyParam product_id array Fb account's product
      * @bodyParam notes string Fb account's notes
+     * @bodyParam cards string Fb account's cards
      * @bodyParam token string Fb account's token
+     * @bodyParam info json Fb account's info
      * @bodyParam status string Fb account's status
      * @bodyParam token_status string Fb account's token status
      * @bodyParam user_agent string Fb account's user agent
@@ -194,8 +208,11 @@ class FbAccountController extends Controller
         $params = $request->validate([
             'user_id' => 'integer|exists:users,id',
             'name' => 'string|min:1',
+            'product_id' => 'integer|exists:products,id',
             'notes' => 'string|nullable',
+            'cards' => 'string|nullable',
             'token' => 'nullable|string',
+            'info' => 'nullable|json',
             'status' => 'in:setup,warm,ready,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',

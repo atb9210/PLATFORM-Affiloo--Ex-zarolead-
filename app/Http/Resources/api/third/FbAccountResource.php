@@ -14,6 +14,15 @@ class FbAccountResource extends JsonResource
      */
     public function toArray($request)
     {
+        $product = [
+            'id' => null,
+            'name' => null,
+        ];
+        if ($this->product_id != null) {
+            $product['id'] = $this->product->id;
+            $product['name'] = $this->product->name;
+        }
+
         return [
             'id' => $this->id,
             'user' => [
@@ -21,8 +30,11 @@ class FbAccountResource extends JsonResource
                 'email' => $this->user->email,
             ],
             'name' => $this->name,
+            'product' => $product,
             'notes' => $this->notes,
+            'cards' => $this->cards,
             'token' => $this->token,
+            'info' => $this->info,
             'status' => $this->status,
             'token_status' => $this->token_status,
             'profile' => $this->profile,

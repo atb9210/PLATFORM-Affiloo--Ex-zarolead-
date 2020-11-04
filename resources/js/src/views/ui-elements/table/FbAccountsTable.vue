@@ -20,16 +20,22 @@
 
         <div v-if="showFilters" class="mb-12">
             <div class="vx-row mb-2">
-                <div class="vx-col md:w-1/2 w-full" v-if="canCreateAsAdmin">
+                <div class="vx-col md:w-1/3 w-full" v-if="canCreateAsAdmin">
                     <label>User</label>
                     <vs-select autocomplete v-model="filters.user" class="w-full select-large">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in userOptions" class="w-full" />
                     </vs-select>
                 </div>
-                <div class="vx-col md:w-1/2 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                     <label>Status</label>
                     <vs-select autocomplete v-model="filters.status" class="w-full select-large">
                         <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptionsForFilters" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col md:w-1/3 w-full">
+                    <label>Product</label>
+                    <vs-select autocomplete v-model="filters.product" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
                     </vs-select>
                 </div>
             </div>
@@ -65,22 +71,19 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="user.email">User</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="notes">Notes</vs-th>
-                <vs-th sort-key="token">Token</vs-th>
+                <vs-th sort-key="product.name">Product</vs-th>
+                <vs-th sort-key="cards">Cards</vs-th>
                 <vs-th sort-key="token_status">Token Status</vs-th>
+                <vs-th sort-key="">BM</vs-th>
+                <vs-th sort-key="">Spent</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-
-                    <vs-td :data="data[indextr].id">
-                        {{data[indextr].id}}
-                    </vs-td>
 
                     <vs-td :data="data[indextr].user.email">
                         {{data[indextr].user.email}}
@@ -94,15 +97,14 @@
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].notes">
-                        <vs-textarea v-if="((fastEdit['notes'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].notes" @keyup.enter="if (fastEdit['notes'].enabled) { doFastEdit($event, 'notes'); }" @keyup.escape="fastEdit['notes'].enabled = false"></vs-textarea>
-                        <vs-textarea v-else v-model="data[indextr].notes" @dblclick="enableFastEdit('notes', indextr)" readonly></vs-textarea>
-                        <span v-if="((fastEdit['notes'].enabled) && (fastEdit['index'] == indextr))">Ctrl + Edit to update</span>
+                    <vs-td :data="data[indextr].product.name">
+                        {{data[indextr].product.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].token">
-                        <span v-if="!((fastEdit['token'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].token" @click="enableFastEdit('token', indextr)">{{firstCharacters(data[indextr].token, 12)}}</span>
-                        <vs-input type="text" v-if="((fastEdit['token'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].token" @keyup.enter="if (fastEdit['token'].enabled) { doFastEdit($event, 'token'); }" @keyup.escape="fastEdit['token'].enabled = false" />
+                    <vs-td :data="data[indextr].cards">
+                        <vs-textarea v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].cards" @keyup.enter="if (fastEdit['cards'].enabled) { doFastEdit($event, 'cards'); }" @keyup.escape="fastEdit['cards'].enabled = false"></vs-textarea>
+                        <vs-textarea v-else v-model="data[indextr].cards" @dblclick="enableFastEdit('cards', indextr)" readonly></vs-textarea>
+                        <span v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))">Ctrl + Edit to update</span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">
@@ -110,8 +112,15 @@
                     </vs-td>
 
                     <vs-td>
+                    </vs-td>
+
+                    <vs-td>
+                    </vs-td>
+
+                    <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="checkStatus(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -129,7 +138,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                    <span>Name*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
@@ -139,13 +148,25 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Status</span>
+                    <span>Status*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="newObject['create'].status" class="w-full select-large">
                         <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
                     </vs-select>
                     <span class="text-danger">{{ errors.first('create.status') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Product</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].product" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('create.product_id') }}</span>
                 </div>
             </div>
 
@@ -221,7 +242,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                    <span>Name*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
@@ -231,13 +252,25 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Status</span>
+                    <span>Status*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="newObject['edit'].status" class="w-full select-large">
                         <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
                     </vs-select>
                     <span class="text-danger">{{ errors.first('edit.status') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Product</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['edit'].product" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('edit.product_id') }}</span>
                 </div>
             </div>
 
@@ -339,11 +372,13 @@ export default {
       filters: {
         user: '',
         status: 'run',
+        product: '',
       },
 
       statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'ban'],
       statusOptions: ['setup', 'warm', 'ready', 'run', 'ban'],
       userOptions: [],
+      productOptions: [],
       myId: 0,
 
       editingObject: -1,
@@ -357,6 +392,7 @@ export default {
         'create': {
           user: '',
           name: '',
+          product: '',
           status: 'setup',
           notes: '',
           token: '',
@@ -367,6 +403,7 @@ export default {
         'edit': {
           user: '',
           name: '',
+          product: '',
           status: '',
           notes: '',
           token: '',
@@ -378,11 +415,7 @@ export default {
 
       fastEdit: {
         'index': -1,
-        'notes': {
-          enabled: false,
-          value: '',
-        },
-        'token': {
+        'cards': {
           enabled: false,
           value: '',
         },
@@ -436,6 +469,7 @@ export default {
       this.filters = {
         user: '',
         status: 'run',
+        product: '',
       }
       this.applyFilters()
     },
@@ -453,6 +487,9 @@ export default {
       }
       if (this.filters.status != '' && this.filters.status != 'all') {
         data['filter_status'] = this.filters.status
+      }
+      if (this.filters.product != '') {
+        data['filter_product'] = this.filters.product
       }
 
       // Retrieve fb accounts
@@ -523,6 +560,7 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
+        product: '',
         status: 'setup',
         user: '',
         notes: '',
@@ -554,6 +592,9 @@ export default {
         notes: this.newObject['create'].notes,
         proxy_enabled: this.newObject['create'].proxyEnabled,
         proxy: this.newObject['create'].proxy,
+      }
+      if (this.newObject['create'].product != '' && this.newObject['create'].product > 0) {
+        data.product_id = this.newObject['create'].product
       }
       if (this.newObject['create'].token != '') {
         data.token = this.newObject['create'].token
@@ -601,6 +642,7 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
+        product: obj.product.id,
         status: obj.status,
         user: obj.user.id,
         notes: obj.notes,
@@ -640,6 +682,9 @@ export default {
         user_agent: this.newObject['edit'].userAgent,
         proxy_enabled: this.newObject['edit'].proxyEnabled,
         proxy: this.newObject['edit'].proxy,
+      }
+      if (this.newObject['edit'].product != '' && this.newObject['edit'].product > 0) {
+        data.product_id = this.newObject['edit'].product
       }
 
       this.$http.put('/api/3rd/fb-accounts/' + id, data, { headers })
@@ -715,7 +760,7 @@ export default {
       this.fastEdit[what].enabled = true
     },
     doFastEdit(event, what) {
-      if (what == 'notes' && !event.ctrlKey) {
+      if (what == 'cards' && !event.ctrlKey) {
         return
       }
       this.$vs.loading()
@@ -727,8 +772,7 @@ export default {
 
       let index = this.fastEdit['index']
       let data = {
-        notes: this.objects[index].notes,
-        token: this.objects[index].token
+        cards: this.objects[index].cards,
       }
 
       // Update notes and token
@@ -892,7 +936,29 @@ export default {
             label: user.email,
           })
         })
-        this.$vs.loading.close()
+
+        // Retrieve products
+        this.$http.get('/api/v1/products', { headers })
+          .then((response) => {
+            this.productOptions = []
+            response.data.data.forEach((product) => {
+              this.productOptions.push({
+                id: product.id,
+                label: product.name,
+              })
+            })
+            this.$vs.loading.close()
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
       })
       .catch((error) => {
         this.$vs.loading.close()
