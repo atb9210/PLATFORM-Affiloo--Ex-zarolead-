@@ -89,7 +89,7 @@ class FbAccountController extends Controller
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy_enabled' => 'boolean',
-            'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
+            'proxy' => 'nullable|string|regex:/^([a-zA-Z0-9-.]*::[0-9]*::[a-zA-Z0-9-_.]*::.*)?$/',
         ]);
 
         if (!isset($params['user_id'])) {
@@ -200,7 +200,7 @@ class FbAccountController extends Controller
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy_enabled' => 'boolean',
-            'proxy' => 'nullable|string|regex:/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/',
+            'proxy' => 'nullable|string|regex:/^([a-zA-Z0-9-.]*::[0-9]*::[a-zA-Z0-9-_.]*::.*)?$/',
         ]);
 
         if (!isset($params['user_id'])) {
