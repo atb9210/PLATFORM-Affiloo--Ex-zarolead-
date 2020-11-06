@@ -57,7 +57,7 @@ export default [
     header: 'Apps',
     icon: 'PackageIcon',
     i18n: 'Apps',
-    roles: ['developer', 'admin'],
+    roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertisers', 'account_manager'],
     items: [
       {
         url: '/dashboard/analytics',
@@ -65,7 +65,7 @@ export default [
         slug: 'dashboard-analytics',
         icon: 'HomeIcon',
         i18n: 'Dashboard',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser', 'account_manager'],
       },
       {
         url: '/dashboard/users',
@@ -73,7 +73,7 @@ export default [
         slug: 'users',
         icon: 'UserIcon',
         i18n: 'Users',
-        roles: ['developer', 'admin'],
+        roles: ['developer', 'admin', 'account_manager'],
       },
       {
         url: '/dashboard/orders',
@@ -81,7 +81,7 @@ export default [
         slug: 'orders',
         icon: 'PackageIcon',
         i18n: 'Orders',
-        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser', 'account_manager'],
       },
       {
         url: '/dashboard/advertisers',
@@ -113,7 +113,7 @@ export default [
         slug: 'products',
         icon: 'CodesandboxIcon',
         i18n: 'Products',
-        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser', 'account_manager'],
       },
       {
         url: '/dashboard/traffic-sources',
@@ -129,7 +129,7 @@ export default [
         slug: 'fb-accounts',
         icon: 'FacebookIcon',
         i18n: 'FB accounts',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
       {
         url: '/dashboard/forms',
@@ -224,7 +224,7 @@ export default [
             name: 'Products',
             slug: 'report-products',
             i18n: 'Products',
-            roles: ['developer', 'admin'],
+            roles: ['developer', 'admin', 'account_manager'],
           },
         ]
       },
@@ -234,7 +234,7 @@ export default [
         slug: 'product-medias',
         icon: 'ImageIcon',
         i18n: 'Product Medias',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
       {
         url: '/dashboard/ads',
@@ -242,7 +242,7 @@ export default [
         slug: 'ads',
         icon: 'ArrowUpIcon',
         i18n: 'Ads',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
       {
         url: '/dashboard/invoices',
@@ -250,7 +250,7 @@ export default [
         slug: 'invoices',
         icon: 'FileTextIcon',
         i18n: 'Invoices',
-        roles: ['developer', 'admin', 'mediabuyer'],
+        roles: ['developer', 'admin', 'mediabuyer', 'account_manager'],
       },
       /*
       {

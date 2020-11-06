@@ -104,7 +104,7 @@
                     <vs-td :data="data[indextr].cards">
                         <vs-textarea v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].cards" @keyup.enter="if (fastEdit['cards'].enabled) { doFastEdit($event, 'cards'); }" @keyup.escape="fastEdit['cards'].enabled = false"></vs-textarea>
                         <vs-textarea v-else v-model="data[indextr].cards" @dblclick="enableFastEdit('cards', indextr)" readonly></vs-textarea>
-                        <span v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))">Ctrl + Edit to update</span>
+                        <span v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))">Ctrl + Enter to update</span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">

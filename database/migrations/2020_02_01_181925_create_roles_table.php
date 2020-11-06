@@ -66,9 +66,6 @@ class CreateRolesTable extends Migration
                     "traffic_source" => [
                         "viewAny" => true,
                     ],
-                    "campaign" => [
-                        "viewAny" => true,
-                    ],
                     "network" => [
                         "viewAny" => true,
                     ],
@@ -149,9 +146,6 @@ class CreateRolesTable extends Migration
                     "traffic_source" => [
                         "viewAny" => true,
                     ],
-                    "campaign" => [
-                        "viewAny" => true,
-                    ],
                     "network" => [
                         "viewAny" => true,
                     ],
@@ -165,6 +159,41 @@ class CreateRolesTable extends Migration
                         "*" => true,
                     ],
                     "domain" => [
+                        "*" => true,
+                    ],
+                ],
+            ],
+            [
+                "name" => "account_manager",
+                "permissions" => [
+                    "order" => [
+                        "viewAny" => true,
+                    ],
+                    "user" => [
+                        "viewAny" => true,
+                    ],
+                    "product" => [
+                        "viewAny" => true,
+                    ],
+                    "tag" => [
+                        "viewAny" => true,
+                    ],
+                    "traffic_source" => [
+                        "viewAny" => true,
+                    ],
+                    "network" => [
+                        "viewAny" => true,
+                    ],
+                    "product_media" => [
+                        "*" => true,
+                    ],
+                    "ad" => [
+                        "*" => true,
+                    ],
+                    "domain" => [
+                        "*" => true,
+                    ],
+                    "invoice" => [
                         "*" => true,
                     ],
                 ],
