@@ -1047,38 +1047,40 @@ export default {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
-    // Retrieve users
-    this.$http.get('/api/v1/users', { headers })
+    // Retrieve products
+    this.$http.get('/api/v1/products', { headers })
       .then((response) => {
-        response.data.data.forEach((user) => {
-          this.userOptions.push({
-            id: user.id,
-            label: user.email,
+        this.productOptions = []
+        response.data.data.forEach((product) => {
+          this.productOptions.push({
+            id: product.id,
+            label: product.name,
           })
         })
 
-        // Retrieve products
-        this.$http.get('/api/v1/products', { headers })
-          .then((response) => {
-            this.productOptions = []
-            response.data.data.forEach((product) => {
-              this.productOptions.push({
-                id: product.id,
-                label: product.name,
+        if (this.canCreateAsAdmin) {
+          // Retrieve users
+          this.$http.get('/api/v1/users', { headers })
+            .then((response) => {
+              response.data.data.forEach((user) => {
+                this.userOptions.push({
+                  id: user.id,
+                  label: user.email,
+                })
+              })
+              this.$vs.loading.close()
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
               })
             })
-            this.$vs.loading.close()
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Error',
-              text: error.message,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'danger'
-            })
-          })
+        }
       })
       .catch((error) => {
         this.$vs.loading.close()
