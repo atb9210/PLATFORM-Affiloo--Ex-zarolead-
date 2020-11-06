@@ -14,6 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
@@ -147,6 +148,103 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
+                    <span class="text-danger">{{ errors.first('create.name') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Status*</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].status" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('create.status') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Product</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].product" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('create.product_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" v-if="canCreateAsAdmin">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].user" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in userOptions" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('create.user_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Notes</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-textarea v-model="newObject['create'].notes"></vs-textarea>
+                    <span class="text-danger">{{ errors.first('create.notes') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Token</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].token" />
+                    <span class="text-danger">{{ errors.first('create.token') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User Agent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="newObject['create'].userAgent" />
+                    <span class="text-danger">{{ errors.first('create.user_agent') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Proxy</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                        <template slot="prepend">
+                            <div class="prepend-text">
+                                <vs-checkbox v-model="newObject['create'].proxyEnabled"></vs-checkbox>
+                            </div>
+                        </template>
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].proxy" placeholder="host::port::user::password" />
+                    </vx-input-group>
+                    <span class="text-danger">{{ errors.first('create.proxy') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Multi create popup -->
+        <vs-popup title="Create FB accounts" :active.sync="showPopup['create']">
+            <div class="vx-row mb-6">
+                <div :class="'vx-col w-full' + ()">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['multi_create'].name" />
                     <span class="text-danger">{{ errors.first('create.name') }}</span>
                 </div>
             </div>
@@ -390,6 +488,7 @@ export default {
 
       showPopup: {
         'create': false,
+        'multi_create': false,
         'edit': false,
         'import': false,
       },
@@ -416,6 +515,10 @@ export default {
           proxyEnabled: false,
           proxy: '',
         },
+      },
+      multiCreate: {
+        num: 2,
+        objects: [],
       },
 
       fastEdit: {
@@ -564,16 +667,23 @@ export default {
       this.showPopup[type] = true
     },
     clearForm(type) {
-      this.newObject[type] = {
-        name: '',
-        product: '',
-        status: 'setup',
-        user: '',
-        notes: '',
-        token: '',
-      }
-      if (this.canCreateAsAdmin) {
-        this.newObject[type].user = this.myId
+      if (type == 'multi_create') {
+        this.multiCreate = {
+          num: 2,
+          objects: [],
+        }
+      } else {
+        this.newObject[type] = {
+          name: '',
+          product: '',
+          status: 'setup',
+          user: '',
+          notes: '',
+          token: '',
+        }
+        if (this.canCreateAsAdmin) {
+          this.newObject[type].user = this.myId
+        }
       }
     },
     isValidForm(type) {

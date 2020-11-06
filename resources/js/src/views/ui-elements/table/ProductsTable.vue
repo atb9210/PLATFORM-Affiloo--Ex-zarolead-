@@ -358,7 +358,7 @@ export default {
       let data = {
         name: this.newObject['create'].name,
         tag_id: this.newObject['create'].tag.id,
-        advertiser_id: this.myId,
+        advertiser_id: this.newObject['create'].advertiser.id,
         country: this.newObject['create'].country,
       }
 
@@ -418,7 +418,7 @@ export default {
       let data = {
         name: this.newObject['edit'].name,
         tag_id: this.newObject['edit'].tag.id,
-        advertiser_id: this.myId,
+        advertiser_id: this.newObject['create'].advertiser.id,
         country: this.newObject['edit'].country,
       }
 
