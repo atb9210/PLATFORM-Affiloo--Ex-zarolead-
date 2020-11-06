@@ -23,7 +23,7 @@ class CreateFbAccountsTable extends Migration
             $table->bigInteger('product_id')->nullable()->unsigned();
             $table->text('notes')->nullable();
             $table->text('cards')->nullable();
-            $table->string('token')->nullable();
+            $table->mediumText('token')->nullable();
             $table->json('info')->nullable();
             $table->enum('status', ['setup', 'warm', 'ready', 'run', 'ban'])->default('setup');
             $table->enum('token_status', ['active', 'disabled'])->nullable();

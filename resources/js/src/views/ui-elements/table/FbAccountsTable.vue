@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
@@ -20,6 +21,32 @@
         </p>
 
         <div v-if="showFilters" class="mb-12">
+            <div class="vx-row mb-2">
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>From</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>To</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                </div>
+            </div>
+
             <div class="vx-row mb-2">
                 <div class="vx-col md:w-1/3 w-full" v-if="canCreateAsAdmin">
                     <label>User</label>
@@ -79,7 +106,9 @@
                 <vs-th sort-key="cards">Cards</vs-th>
                 <vs-th sort-key="token_status">Token Status</vs-th>
                 <vs-th sort-key="">BM</vs-th>
-                <vs-th sort-key="">Spent</vs-th>
+                <vs-th sort-key="amount_spent">Spent</vs-th>
+                <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="cpl">CPL</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
@@ -103,9 +132,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].cards">
-                        <vs-textarea v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))" v-model="data[indextr].cards" @keyup.enter="if (fastEdit['cards'].enabled) { doFastEdit($event, 'cards'); }" @keyup.escape="fastEdit['cards'].enabled = false"></vs-textarea>
-                        <vs-textarea v-else v-model="data[indextr].cards" @dblclick="enableFastEdit('cards', indextr)" readonly></vs-textarea>
-                        <span v-if="((fastEdit['cards'].enabled) && (fastEdit['index'] == indextr))">Ctrl + Enter to update</span>
+                        <div style="white-space: pre-line">{{data[indextr].cards}}</div>
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">
@@ -121,6 +148,21 @@
                     </vs-td>
 
                     <vs-td>
+                        <div v-if="typeof data[indextr].amount_spent != 'undefined'">
+                            {{formatFbCurrency(data[indextr].amount_spent)}}
+                        </div>
+                    </vs-td>
+
+                    <vs-td>
+                        <div v-if="typeof data[indextr].leads != 'undefined'">
+                            {{data[indextr].leads}}
+                        </div>
+                    </vs-td>
+
+                    <vs-td>
+                        <div v-if="typeof data[indextr].cpl != 'undefined'">
+                            {{data[indextr].cpl.toFixed(2)}}
+                        </div>
                     </vs-td>
 
                     <vs-td>
@@ -403,6 +445,8 @@ export default {
 
       showFilters: false,
       filters: {
+        date_from: '',
+        date_to: '',
         user: '',
         status: 'run',
         product: '',
@@ -465,6 +509,12 @@ export default {
         'run': 'success',
         'ban': 'danger',
       },
+
+      dynamicStats: {
+        'date_from': '',
+        'date_to': '',
+      },
+      checked: [],
     }
   },
   computed: {
@@ -503,21 +553,36 @@ export default {
     },
     resetFilters() {
       this.filters = {
+        date_from: '',
+        date_to: '',
         user: '',
         status: 'run',
         product: '',
       }
-      this.applyFilters()
+      this.filterDatesShortcut('this_month')
     },
     applyFilters() {
       this.selected = []
       this.$vs.loading()
+
+      if (this.dynamicStats['date_from'] != this.filters.date_from || this.dynamicStats['date_to'] != this.filters.date_to) {
+        this.dynamicStats = {
+          'date_from': this.filters.date_from,
+          'date_to': this.filters.date_to,
+        }
+      }
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
       let data = {}
+      if (this.filters.date_from != '') {
+        data['filter_date_from'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        data['filter_date_to'] = this.filters.date_to
+      }
       if (this.filters.user != '') {
         data['filter_user'] = this.filters.user
       }
@@ -532,6 +597,15 @@ export default {
       this.$http.get('/api/3rd/fb-accounts', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
+          if (Object.keys(this.dynamicStats).length > 2) {
+            for (let i = 0; i < this.objects.length; i++) {
+              if (Object.keys(this.dynamicStats).includes("id" + this.objects[i].id)) {
+                this.objects[i].amount_spent = this.dynamicStats["id" + this.objects[i].id].amount_spent
+                this.objects[i].leads = this.dynamicStats["id" + this.objects[i].id].leads
+                this.objects[i].cpl = this.dynamicStats["id" + this.objects[i].id].cpl
+              }
+            }
+          }
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -877,16 +951,6 @@ export default {
         return
       }
 
-      // TODO: to delete
-      /*
-      let config = {
-      }
-      if (obj.profile.hasOwnProperty('proxy_enabled') && obj.profile.proxy_enabled &&
-          obj.profile.hasOwnProperty('proxy') && isValidProxy(obj.profile.proxy)) {
-        config.proxy = getProxyFromString(obj.profile.proxy)
-      }
-      */
-
       // Check FB API token status and get business accounts
       this.$vs.loading()
       this.$http.get('https://graph.facebook.com/me/businesses?access_token=' + obj.token)
@@ -900,10 +964,16 @@ export default {
           })
 
           // Get FB ad accounts
-          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=business,account_status,funding_source_details')
+          let since = this.filters.date_from
+          let until = this.filters.date_to
+          let fields = 'business,account_status,funding_source_details,amount_spent'
+          fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
               let mainAdAccountActive = true
               let fundingSources = ''
+              let totalAmountSpent = 0
+              let totalResult = 0
               response.data.data.forEach((adAccount) => {
                 if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                     (adAccount.business.id in businesses)) {
@@ -915,10 +985,30 @@ export default {
                 if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
                   fundingSources += adAccount.funding_source_details.display_string + '\n'
                 }
+                if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
+                  for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
+                    if (adAccount.ads.data[adsIndex].hasOwnProperty('spent')) {
+                      totalAmountSpent += parseInt(adAccount.ads.data[adsIndex].spent)
+                    }
+                    if (adAccount.ads.data[adsIndex].hasOwnProperty('result')) {
+                      totalResult += parseInt(adAccount.ads.data[adsIndex].result)
+                    }
+                  }
+                }
               })
               if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
                 fundingSources = fundingSources.slice(0, -1)
               }
+
+              this.dynamicStats["id" + obj.id] = {
+                amount_spent: 0,
+                leads: 0,
+                cpl: 0,
+              }
+
+              this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
+              this.dynamicStats["id" + obj.id].leads = totalResult
+              this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
 
               let info = obj.info
               if (info == null) {
@@ -1013,6 +1103,171 @@ export default {
               })
             })
         })
+    },
+    checkStatusGlobal() {
+      if (this.selected.length == 0) return
+
+      // TODO: HERE
+
+      // Check FB API token status and get business accounts
+      this.$vs.loading()
+      this.deleted = []
+      this.selected.forEach((obj) => {
+        this.$http.get('https://graph.facebook.com/me/businesses?access_token=' + obj.token)
+          .then((response) => {
+            let businesses = {}
+            response.data.data.forEach((bm) => {
+              businesses[bm.id] = {
+                active: 0,
+                total: 0,
+              }
+            })
+
+            // Get FB ad accounts
+            let since = this.filters.date_from
+            let until = this.filters.date_to
+            let fields = 'business,account_status,funding_source_details,amount_spent'
+            fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+            this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
+              .then((response) => {
+                let mainAdAccountActive = true
+                let fundingSources = ''
+                let totalAmountSpent = 0
+                let totalResult = 0
+                response.data.data.forEach((adAccount) => {
+                  if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
+                      (adAccount.business.id in businesses)) {
+                    businesses[adAccount.business.id].total += 1
+                    if (adAccount.account_status == 1) {
+                      businesses[adAccount.business.id].active += 1
+                    }
+                  }
+                  if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
+                    fundingSources += adAccount.funding_source_details.display_string + '\n'
+                  }
+                  if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
+                    for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
+                      if (adAccount.ads.data[adsIndex].hasOwnProperty('spent')) {
+                        totalAmountSpent += parseInt(adAccount.ads.data[adsIndex].spent)
+                      }
+                      if (adAccount.ads.data[adsIndex].hasOwnProperty('result')) {
+                        totalResult += parseInt(adAccount.ads.data[adsIndex].result)
+                      }
+                    }
+                  }
+                })
+                if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
+                  fundingSources = fundingSources.slice(0, -1)
+                }
+
+                this.dynamicStats["id" + obj.id] = {
+                  amount_spent: 0,
+                  leads: 0,
+                  cpl: 0,
+                }
+
+                this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
+                this.dynamicStats["id" + obj.id].leads = totalResult
+                this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
+
+                let info = obj.info
+                if (info == null) {
+                  info = {}
+                }
+                info["bm"] = []
+                for (const [key, value] of Object.entries(businesses)) {
+                  info["bm"].push({
+                    "active": businesses[key].active,
+                    "total": businesses[key].total,
+                  })
+                }
+
+                // Update fb account object (token status and businesses status)
+                let headers = {
+                  Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+                }
+                let data = {
+                  token_status: 'active',
+                  cards: fundingSources,
+                  info: JSON.stringify(info),
+                }
+                this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+                  .then((response) => {
+                    this.deleted.push(obj.id)
+                    if (this.deleted.length == this.selected.length) {
+                      this.$vs.loading.close()
+                    }
+                    this.$vs.notify({
+                      title: 'Success',
+                      text: 'Token is active',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'success'
+                    })
+                    this.applyFilters()
+                  })
+                  .catch((error) => {
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: error.message,
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  })
+              })
+              .catch((error) => {
+                this.$vs.notify({
+                  title: 'Error',
+                  text: error.message,
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+              })
+          })
+          .catch((error) => {
+            // FB API token is disabled
+            let headers = {
+              Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+            }
+
+            let info = obj.info
+            if (info == null) {
+              info = {}
+            }
+            info["bm"] = []
+            let data = {
+              token_status: 'disabled',
+              info: JSON.stringify(info),
+            }
+            this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+              .then((response) => {
+                this.deleted.push(obj.id)
+                if (this.deleted.length == this.selected.length) {
+                  this.$vs.loading.close()
+                }
+                this.$vs.notify({
+                  title: 'Error',
+                  text: 'Token is disabled',
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+                this.applyFilters()
+              })
+              .catch((error) => {
+                this.$vs.loading.close()
+                this.$vs.notify({
+                  title: 'Error',
+                  text: error.message,
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+              })
+          })
+      })
     },
     importProfiles() {
       this.$vs.loading()
@@ -1143,6 +1398,55 @@ export default {
             color: 'danger'
           })
         })
+    },
+    formatFbCurrency(integerNumber) {
+      return (integerNumber / 100).toFixed(2)
+    },
+    filterDatesShortcut(period) {
+      let invalidPeriod = false;
+
+      switch (period) {
+        case 'today': {
+          let today = new Date();
+          this.filters.date_from = this.formatDate(today);
+          this.filters.date_to = this.formatDate(today);
+        } break;
+        case 'yesterday': {
+          let dateObj = new Date();
+          dateObj.setDate(dateObj.getDate() - 1);
+          this.filters.date_from = this.formatDate(dateObj);
+          this.filters.date_to = this.formatDate(dateObj);
+        } break;
+        case 'this_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        case 'last_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        default: {
+          invalidPeriod = true;
+        } break;
+      }
+
+      if(!invalidPeriod) {
+        this.applyFilters();
+      }
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0');
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = dateObj.getFullYear();
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd;
+      return formattedDate;
     },
   },
   created() {
