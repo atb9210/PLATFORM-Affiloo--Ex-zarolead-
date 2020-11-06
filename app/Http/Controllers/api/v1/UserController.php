@@ -190,6 +190,7 @@ class UserController extends Controller
             'advertiser' => 'boolean',
             'accountant' => 'boolean',
             'buyer' => 'boolean',
+            'account_manager' => 'boolean',
         ]);
 
         // User cannot remove himself admin role
@@ -214,7 +215,7 @@ class UserController extends Controller
         }
         Auth::user()->refresh();
 
-        return new UserResource(Auth::user());
+        return new UserResource($user);
     }
 
     /**
