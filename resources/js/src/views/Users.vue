@@ -10,7 +10,7 @@
 
 <template>
     <div id="table-demo">
-        <users-table :users="usersAdjusted"></users-table>
+        <users-table></users-table>
     </div>
 </template>
 
@@ -23,51 +23,11 @@ export default{
   },
   data() {
       return {
-          users: [],
-          usersAdjusted: [],
       }
   },
   methods: {
-    adjustUsersArray() {
-      var roles = [ 'admin', 'mediabuyer', 'affiliate', 'advertiser', 'accountant', 'buyer' ]
-      this.users.forEach((user) => {
-        var u = {
-            id: 0,
-            name: '',
-            email: '',
-            roles: {
-            },
-            created_at: '',
-            updated_at: '',
-        }
-        u.id = user.id
-        u.name = user.name
-        u.email = user.email
-        roles.forEach((role) => {
-          if (user.roles.includes(role)) {
-            u.roles[role] = true
-          } else {
-            u.roles[role] = false
-          }
-        })
-        u.created_at = user.created_at
-        u.updated_at = user.updated_at
-        this.usersAdjusted.push(u)
-      })
-    },
   },
   created() {
-    this.$vs.loading()
-
-    this.$http.get('/api/v1/users', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
-      .then((response) => {
-        this.users = response.data.data
-        this.adjustUsersArray()
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
   }
 }
 </script>

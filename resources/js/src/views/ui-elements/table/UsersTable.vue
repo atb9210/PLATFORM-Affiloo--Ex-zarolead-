@@ -79,10 +79,7 @@
 
 <script>
 export default {
-  props: {
-      users: Array,
-  },
-  data() {
+  data () {
     return {
       selected: [],
       tableList: [
@@ -97,6 +94,8 @@ export default {
       currentPage: 1,
       totalPages: 3,
       maxPageNumbers: 100,
+
+      users: [],
     }
   },
   methods: {
@@ -147,5 +146,42 @@ export default {
       return index
     },
   },
+  created() {
+    this.$vs.loading()
+
+    this.$http.get('/api/v1/users', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
+      .then((response) => {
+        this.users = []
+        var roles = [ 'admin', 'mediabuyer', 'affiliate', 'advertiser', 'accountant', 'buyer', 'account_manager' ]
+        response.data.data.forEach((user) => {
+          var u = {
+              id: 0,
+              name: '',
+              email: '',
+              roles: {
+              },
+              created_at: '',
+              updated_at: '',
+          }
+          u.id = user.id
+          u.name = user.name
+          u.email = user.email
+          roles.forEach((role) => {
+            if (user.roles.includes(role)) {
+              u.roles[role] = true
+            } else {
+              u.roles[role] = false
+            }
+          })
+          u.created_at = user.created_at
+          u.updated_at = user.updated_at
+          this.users.push(u)
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+  }
 }
 </script>
