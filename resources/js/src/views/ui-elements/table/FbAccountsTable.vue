@@ -1083,7 +1083,7 @@ export default {
           let validObj = {
             name: obj.name,
             user_id: this.myId,
-            notes: '',
+            notes: obj.notes,
           }
           if (obj.user != '') {
             validObj.user_id = obj.user
