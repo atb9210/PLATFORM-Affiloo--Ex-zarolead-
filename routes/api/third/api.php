@@ -19,3 +19,5 @@ Route::apiResource('fb-accounts', 'api\third\FbAccountController')->except([
 ])->middleware('auth:api');
 Route::post('/fb-accounts/import', 'api\third\FbAccountController@import')->middleware('auth:api')
     ->name('fb-accounts.import');
+Route::post('/fb-accounts/multiple', 'api\third\FbAccountController@storeMultiple')->middleware('auth:api')
+    ->name('fb-accounts.store.multiple');

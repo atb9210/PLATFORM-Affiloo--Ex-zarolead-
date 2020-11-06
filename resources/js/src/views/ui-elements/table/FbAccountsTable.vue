@@ -14,7 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="/*showForm('multi_create')*/"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
@@ -242,20 +242,28 @@
 
         <!-- Multi create popup -->
         <vs-popup title="Create FB accounts" :active.sync="showPopup['multi_create']">
-            <div class="vx-row mb-3 mr-2 ml-2" v-for="(obj, index) in multiCreate.objects">
+            <div class="vx-row mb-3 mr-2 ml-2" v-for="(obj, index) in multiCreate">
                 <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].name" placeholder="name" />
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate[index].name" placeholder="Name" />
                 </div>
                 <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].user" />
+                    <vs-select autocomplete v-model="multiCreate[index].user" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in userOptions" class="w-full" />
+                    </vs-select>
                 </div>
                 <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].notes" />
+                    <vs-textarea class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate[index].notes" placeholder="Notes" />
                 </div>
             </div>
 
             <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="createObjects" color="primary" type="filled" :disabled="!isValidForm('multi_create')">Create</vs-button>
+                <div class="md:w-1/3"></div>
+                <div class="md:w-1/3"></div>
+                <vs-button class="md:w-1/3" icon-pack="feather" icon="icon-plus" @click="multiCreateAdd()">Add</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="multiCreateFinish" color="primary" type="filled" :disabled="!isValidForm('multi_create')">Create</vs-button>
             </div>
         </vs-popup>
 
@@ -438,10 +446,7 @@ export default {
           proxy: '',
         },
       },
-      multiCreate: {
-        num: 0,
-        objects: [],
-      },
+      multiCreate: [],
 
       fastEdit: {
         'index': -1,
@@ -589,21 +594,17 @@ export default {
       this.showPopup[type] = true
       if (type == 'multi_create') {
         for (let i = 0; i < 3; i++) {
-          this.multiCreate.objects.push({
+          this.multiCreate.push({
             name: '',
             user: '',
             token: '',
           })
-          this.multiCreate.num++
         }
       }
     },
     clearForm(type) {
       if (type == 'multi_create') {
-        this.multiCreate = {
-          num: 0,
-          objects: [],
-        }
+        this.multiCreate = []
       } else {
         this.newObject[type] = {
           name: '',
@@ -621,8 +622,14 @@ export default {
     isValidForm(type) {
       let isValid = false
       if (type == 'multi_create') {
-        // TODO:
-        return false
+        let flag = false
+        for (let i = 0; i < this.multiCreate.length; i++) {
+          if (this.multiCreate[i].name != '') {
+            flag = true
+            break
+          }
+        }
+        return flag
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
@@ -1060,12 +1067,92 @@ export default {
 
       return toReturn
     },
-    createObjects() {
+    multiCreateAdd() {
+      this.multiCreate.push({
+        name: '',
+        user: '',
+        token: '',
+      })
+    },
+    multiCreateFinish() {
+      this.$vs.loading()
+
+      let valid = []
+      this.multiCreate.forEach((obj) => {
+        if (obj.name != '') {
+          let validObj = {
+            name: obj.name,
+            user_id: this.myId,
+            notes: '',
+          }
+          if (obj.user != '') {
+            validObj.user_id = obj.user
+          }
+          valid.push(validObj)
+        }
+      })
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        data: JSON.stringify(valid)
+      }
+
+      // Create multiple fb accounts
+      this.$http.post('/api/3rd/fb-accounts/multiple', data, { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'FB account(s) created',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.clearForm('multi_create')
+          this.showPopup['multi_create'] = false
+          this.applyFilters()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
   },
   created() {
     // TODO: to delete
     // This is only for test purposes
+    // Retrieve products
+    /*
+    let h = { Authorization: 'Bearer ' + localStorage.getItem('accessToken') }
+    let d = []
+    d.push({
+      name: 'test 1',
+      notes: 'this is test #1',
+    })
+    d.push({
+      name: 'test 2',
+      notes: 'this is test #2',
+    })
+    d.push({
+      name: 'test 3',
+      notes: 'this is test #3',
+    })
+    d = JSON.stringify(d)
+    this.$http.post('/api/3rd/fb-accounts/multiple', { data: d }, { headers: h })
+      .then((response) => {
+      })
+      .catch((error) => {
+      })
+    */
     /*
     let p = '196.16.229.179::25707::asrafatb92::asrafatb92'
     console.log(this.isValidProxy(p))

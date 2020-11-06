@@ -77,18 +77,18 @@
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                     <span>Name</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
+                <div class="vx-col md:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
                 </div>
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
-                <div class="vx-col sm:w-1/3" vs-justify="center" vs-align="center">
+                <div class="vx-col md:w-1/3" vs-justify="center" vs-align="center">
                     <vs-card class="cardx">
                         <div slot="header">
                             <h3 class="mr-auto ml-auto text-center">
@@ -120,15 +120,15 @@
                     </div>
                     <input type="file" ref="fileUploadCreate" class="hidden" @change="onFileUploadChangeCreate" accept="image/*">
                 </div>
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
             </div>
 
             <div class="vx-row mb-6" v-for="(custom_param, indexparam) in newObject['create'].custom_params">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                     <span v-if="indexparam == 0">Custom Params</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <div class="vx-col md:w-2/3 w-full flex items-center">
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Query Param" icon-no-border v-model="newObject['create'].custom_params[indexparam].query_param" />
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Token" icon-no-border v-model="newObject['create'].custom_params[indexparam].token" />
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Name" icon-no-border v-model="newObject['create'].custom_params[indexparam].name" />
@@ -136,12 +136,12 @@
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <div class="w-1/3"></div>
-                    <div class="w-1/3"></div>
-                    <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewCustomParam('create')">Add</vs-button>
+                <div class="vx-col md:w-2/3 w-full flex items-center">
+                    <div class="md:w-1/3"></div>
+                    <div class="md:w-1/3"></div>
+                    <vs-button class="md:w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewCustomParam('create')">Add</vs-button>
                 </div>
             </div>
 
@@ -157,18 +157,18 @@
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                     <span>Name</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
+                <div class="vx-col md:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
                 </div>
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
-                <div class="vx-col sm:w-1/3" vs-justify="center" vs-align="center">
+                <div class="vx-col md:w-1/3" vs-justify="center" vs-align="center">
                     <vs-card class="cardx">
                         <div slot="header">
                             <h3 class="mr-auto ml-auto text-center">
@@ -200,15 +200,15 @@
                     </div>
                     <input type="file" ref="fileUploadEdit" class="hidden" @change="onFileUploadChangeEdit" accept="image/*">
                 </div>
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
             </div>
 
             <div class="vx-row mb-6" v-for="(custom_param, indexparam) in newObject['edit'].custom_params">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                     <span v-if="indexparam == 0">Custom Params</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <div class="vx-col md:w-2/3 w-full flex items-center">
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Query Param" icon-no-border v-model="newObject['edit'].custom_params[indexparam].query_param" />
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Token" icon-no-border v-model="newObject['edit'].custom_params[indexparam].token" />
                     <vs-input class="w-1/3" icon-pack="feather" icon="icon-code" placeholder="Name" icon-no-border v-model="newObject['edit'].custom_params[indexparam].name" />
@@ -216,9 +216,9 @@
             </div>
 
             <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <div class="vx-col md:w-2/3 w-full flex items-center">
                     <div class="w-1/3"></div>
                     <div class="w-1/3"></div>
                     <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewCustomParam('edit')">Add</vs-button>

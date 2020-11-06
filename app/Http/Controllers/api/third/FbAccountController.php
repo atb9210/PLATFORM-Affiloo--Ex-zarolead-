@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\third;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 use App\third\FbAccount as FbAccount;
 use App\Http\Resources\api\third\FbAccountResource;
@@ -89,7 +90,7 @@ class FbAccountController extends Controller
 
         // Params validation
         $params = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
+            'user_id' => 'integer|exists:users,id',
             'name' => 'required|string|min:1',
             'product_id' => 'integer|exists:products,id',
             'notes' => 'string|nullable',
@@ -309,10 +310,12 @@ class FbAccountController extends Controller
 
         if ($fb_account->gologin_id != null) {
             if (!$this->gologinDelete($fb_account->gologin_id)) {
+                /*
                 return response([
                     "message" => "Fb account cannot be deleted on GoLogin",
                     "gologin_errors" => $this->gologinGetErrors(),
                 ], 401);
+                */
             }
         }
         $fb_account->delete();
@@ -381,6 +384,140 @@ class FbAccountController extends Controller
                 $data['profile']['proxy'] = $profile['proxy']['host'] . '::' . $profile['proxy']['port'] . '::' . $profile['proxy']['username'] . '::' . $profile['proxy']['password'];
             }
             $fb_accounts[] = FbAccount::create($data);
+        }
+
+        return FbAccountResource::collection($fb_accounts);
+    }
+
+    /**
+     * Create multiple fb accounts.
+     *
+     * @bodyParam data json required Fb accounts
+     *
+     * @response {
+     *  "message": [fb_account],
+     * }
+     */
+    public function storeMultiple(Request $request)
+    {
+        // Params validation
+        $data = $request->validate([
+            'data' => 'required|json',
+        ]);
+        $data['data'] = json_decode($data['data'], true);
+
+        // Validate every element of data
+        foreach ($data['data'] as $element) {
+            if (is_array($element)) {
+                $validator = Validator::make($element, [
+                    'user_id' => 'integer|exists:users,id',
+                    'name' => 'required|string|min:1',
+                    'product_id' => 'integer|exists:products,id',
+                    'notes' => 'string|nullable',
+                    'cards' => 'string|nullable',
+                    'token' => 'string|nullable',
+                    'info' => 'json|nullable',
+                    'status' => 'in:setup,warm,ready,run,ban',
+                    'token_status' => 'in:active,disabled',
+                    'user_agent' => 'string|nullable',
+                    'proxy_enabled' => 'boolean',
+                    'proxy' => 'nullable|string|regex:/^([a-zA-Z0-9-.]*::[0-9]*::[a-zA-Z0-9-_.]*::.*)?$/',
+                ]);
+                if ($validator->fails()) {
+                    return response([
+                        'message' => 'The given data - for the data JSON param - was invalid.',
+                        'errors' => $validator->messages(),
+                    ], 422);
+                }
+            } else {
+                return response([
+                    'message' => 'The given data - for the data JSON param - was invalid.',
+                    'errors' => [
+                        'data' => [
+                            'Every element of data should be a json array',
+                        ],
+                    ],
+                ], 422);
+            }
+        }
+
+        // Create fb accounts
+        $fb_accounts = [];
+        foreach ($data['data'] as $element) {
+            $params = $element;
+            if (isset($params['info'])) {
+                $params['info'] = json_decode($params['info'], true);
+            }
+
+            if (!isset($params['user_id'])) {
+                $params['user_id'] = Auth::user()->id;
+            }
+
+            $options = [
+                'name' => $params['name'],
+            ];
+            if (isset($params['notes'])) {
+                $options['notes'] = $params['notes'];
+            }
+            $profile = [];
+            if (isset($params['user_agent'])) {
+                $profile['user_agent'] = $params['user_agent'];
+                $options['navigator'] = [
+                    'userAgent' => $params['user_agent'],
+                    'platform' => 'Win32',
+                    'resolution' => '1600x900',
+                    'language' => 'it-IT',
+                    'platform' => 'Win32',
+                ];
+            }
+            if (isset($params['proxy_enabled'])) {
+                $profile['proxy_enabled'] = ($params['proxy_enabled'] == true);
+                $options['proxyEnabled'] = ($params['proxy_enabled'] == true);
+            } else {
+                $profile['proxy_enabled'] = false;
+                $options['proxyEnabled'] = false;
+            }
+            if (isset($params['proxy'])) {
+                if ($params['proxy'] != '') {
+                    $profile['proxy'] = $params['proxy'];
+                    $temp = explode('::', $params['proxy'], 4);
+                    $host = $temp[0];
+                    $port = intval($temp[1]);
+                    $user = $temp[2];
+                    $password = $temp[3];
+                    $options['proxy'] = [
+                        'mode' => 'http',
+                        'host' => $host,
+                        'port' => $port,
+                        'username' => $user,
+                        'password' => $password,
+                    ];
+                }
+            }
+            $params['profile'] = $profile;
+            $options['os'] = 'win';
+            $options['browserType'] = 'chrome';
+            $options['googleServicesEnabled'] = true;
+            $gologin_id = $this->gologinCreate($options);
+            if ($gologin_id == '' || $gologin_id == null) {
+                return response([
+                    "message" => "Fb account cannot be created on GoLogin",
+                    "gologin_errors" => $this->gologinGetErrors(),
+                ], 401);
+            }
+
+            $params['gologin_id'] = $gologin_id;
+            $fb_account = FbAccount::create($params);
+
+            if (isset($params['token']) && $params['token'] != '' && $params['token'] != null) {
+                $dolphin_id = $this->dolphinCreate($fb_account);
+                if ($dolphin_id != null) {
+                    $fb_account->dolphin_id = $dolphin_id;
+                    $fb_account->save();
+                }
+            }
+
+            $fb_accounts[] = $fb_account;
         }
 
         return FbAccountResource::collection($fb_accounts);
