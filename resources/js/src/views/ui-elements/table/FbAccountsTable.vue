@@ -14,7 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="/*showForm('multi_create')*/"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
         </p>
@@ -240,10 +240,17 @@
             </div>
         </vs-popup>
 
-        <!-- Multi create popup --> <vs-popup title="Create FB accounts" :active.sync="showPopup['create']"> <div class="vx-row mb-6" v-for="(obj, index) in multiCreate">
-                <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ''">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['multi_create'].name" />
-                    <span class="text-danger">{{ errors.first('create.name') }}</span>
+        <!-- Multi create popup -->
+        <vs-popup title="Create FB accounts" :active.sync="showPopup['multi_create']">
+            <div class="vx-row mb-3 mr-2 ml-2" v-for="(obj, index) in multiCreate.objects">
+                <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].name" placeholder="name" />
+                </div>
+                <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].user" />
+                </div>
+                <div :class="'vx-col w-full' + (this.canCreateAsAdmin) ? ' md:w-1/3' : ' md:w-1/2'">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="multiCreate.objects[index].notes" />
                 </div>
             </div>
 
@@ -432,7 +439,7 @@ export default {
         },
       },
       multiCreate: {
-        num: 2,
+        num: 0,
         objects: [],
       },
 
@@ -580,11 +587,21 @@ export default {
     },
     showForm(type) {
       this.showPopup[type] = true
+      if (type == 'multi_create') {
+        for (let i = 0; i < 3; i++) {
+          this.multiCreate.objects.push({
+            name: '',
+            user: '',
+            token: '',
+          })
+          this.multiCreate.num++
+        }
+      }
     },
     clearForm(type) {
       if (type == 'multi_create') {
         this.multiCreate = {
-          num: 2,
+          num: 0,
           objects: [],
         }
       } else {
@@ -605,6 +622,7 @@ export default {
       let isValid = false
       if (type == 'multi_create') {
         // TODO:
+        return false
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
