@@ -65,7 +65,7 @@ export default [
         slug: 'dashboard-analytics',
         icon: 'HomeIcon',
         i18n: 'Dashboard',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
       {
         url: '/dashboard/users',
@@ -73,7 +73,7 @@ export default [
         slug: 'users',
         icon: 'UserIcon',
         i18n: 'Users',
-        roles: ['developer', 'admin', 'account_manager'],
+        roles: ['developer', 'admin'],
       },
       {
         url: '/dashboard/orders',
@@ -81,7 +81,7 @@ export default [
         slug: 'orders',
         icon: 'PackageIcon',
         i18n: 'Orders',
-        roles: ['developer', 'admin', 'mediabuyer', 'advertiser', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
       {
         url: '/dashboard/advertisers',
@@ -113,7 +113,7 @@ export default [
         slug: 'products',
         icon: 'CodesandboxIcon',
         i18n: 'Products',
-        roles: ['developer', 'admin', 'mediabuyer', 'advertiser', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
       {
         url: '/dashboard/traffic-sources',
@@ -224,7 +224,7 @@ export default [
             name: 'Products',
             slug: 'report-products',
             i18n: 'Products',
-            roles: ['developer', 'admin', 'account_manager'],
+            roles: ['developer', 'admin'],
           },
         ]
       },
@@ -234,7 +234,7 @@ export default [
         slug: 'product-medias',
         icon: 'ImageIcon',
         i18n: 'Product Medias',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/ads',
@@ -242,7 +242,7 @@ export default [
         slug: 'ads',
         icon: 'ArrowUpIcon',
         i18n: 'Ads',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
       {
         url: '/dashboard/invoices',

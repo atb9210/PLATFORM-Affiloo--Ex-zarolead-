@@ -33,6 +33,9 @@ class FbAccountController extends Controller
         ]);
 
         $fb_accounts = FbAccount::query();
+        if (!(Auth::user()->hasRole('developer') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('account_manager'))) {
+            $fb_accounts = $fb_accounts->where('user_id', Auth::user()->id);
+        }
         if (isset($params['filter_user'])) {
             $fb_accounts = $fb_accounts->where('user_id', $params['filter_user']);
         }
