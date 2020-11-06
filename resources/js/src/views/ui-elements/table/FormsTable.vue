@@ -17,7 +17,7 @@
             <RouterLink to="/dashboard/forms/builder" v-if="canCreateAndEdit">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
             </RouterLink>
-            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -768,6 +768,16 @@ export default {
     },
     onPageChanged(val) {
       this.currentPage = val
+    },
+    confirmDeletePopup() {
+      if (this.selected.length == 0) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Delete confirmation',
+        text: 'Are you sure you want to delete ' + this.selected.length + ' object(s)?',
+        accept: this.deleteSelected
+      })
     },
     deleteSelected() {
       if (this.selected.length == 0) return

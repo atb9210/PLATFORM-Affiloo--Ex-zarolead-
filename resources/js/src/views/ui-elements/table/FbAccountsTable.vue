@@ -16,7 +16,7 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelected"></vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -548,6 +548,16 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
+    confirmDeletePopup() {
+      if (this.selected.length == 0) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Delete confirmation',
+        text: 'Are you sure you want to delete ' + this.selected.length + ' object(s)?',
+        accept: this.deleteSelected
+      })
+    },
     deleteSelected() {
       if (this.selected.length == 0) return
 
@@ -890,9 +900,10 @@ export default {
           })
 
           // Get FB ad accounts
-          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=business,account_status')
+          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=business,account_status,funding_source_details')
             .then((response) => {
               let mainAdAccountActive = true
+              let fundingSources = ''
               response.data.data.forEach((adAccount) => {
                 if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                     (adAccount.business.id in businesses)) {
@@ -901,7 +912,13 @@ export default {
                     businesses[adAccount.business.id].active += 1
                   }
                 }
+                if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
+                  fundingSources += adAccount.funding_source_details.display_string + '\n'
+                }
               })
+              if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
+                fundingSources = fundingSources.slice(0, -1)
+              }
 
               let info = obj.info
               if (info == null) {
@@ -921,6 +938,7 @@ export default {
               }
               let data = {
                 token_status: 'active',
+                cards: fundingSources,
                 info: JSON.stringify(info),
               }
               this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })

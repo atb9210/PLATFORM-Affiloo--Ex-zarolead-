@@ -391,6 +391,16 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
+    confirmDeletePopup() {
+      if (this.selected.length == 0) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Delete confirmation',
+        text: 'Are you sure you want to delete ' + this.selected.length + ' object(s)?',
+        accept: this.deleteSelected
+      })
+    },
     deleteSelected() {
       if (this.selected.length == 0) return
 
