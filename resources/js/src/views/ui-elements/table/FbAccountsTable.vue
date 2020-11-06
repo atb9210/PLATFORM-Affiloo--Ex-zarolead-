@@ -108,10 +108,15 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">
-                        <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">{{data[indextr].token_status}}</vs-chip>
+                        <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">
+                            {{data[indextr].token_status}}
+                        </vs-chip>
                     </vs-td>
 
                     <vs-td>
+                        <div v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
+                            <vs-avatar v-for="(bm, index) in data[indextr].info['bm']" :key="index" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : 'danger'" />
+                        </div>
                     </vs-td>
 
                     <vs-td>
@@ -806,27 +811,84 @@ export default {
         return
       }
 
-      // Check FB API token status
-      this.$http.get('https://graph.facebook.com/me?access_token=' + obj.token)
+      // TODO: to delete
+      /*
+      let config = {
+      }
+      if (obj.profile.hasOwnProperty('proxy_enabled') && obj.profile.proxy_enabled &&
+          obj.profile.hasOwnProperty('proxy') && isValidProxy(obj.profile.proxy)) {
+        config.proxy = getProxyFromString(obj.profile.proxy)
+      }
+      */
+
+      // Check FB API token status and get business accounts
+      this.$vs.loading()
+      this.$http.get('https://graph.facebook.com/me/businesses?access_token=' + obj.token)
         .then((response) => {
-          // FB API token is active
-          let headers = {
-            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-          }
-          let data = {
-            token_status: 'active',
-          }
-          this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+          let businesses = {}
+          response.data.data.forEach((bm) => {
+            businesses[bm.id] = {
+              active: 0,
+              total: 0,
+            }
+          })
+
+          // Get FB ad accounts
+          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=business,account_status')
             .then((response) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Success',
-                text: 'Token is active',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
+              let mainAdAccountActive = true
+              response.data.data.forEach((adAccount) => {
+                if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
+                    (adAccount.business.id in businesses)) {
+                  businesses[adAccount.business.id].total += 1
+                  if (adAccount.account_status == 1) {
+                    businesses[adAccount.business.id].active += 1
+                  }
+                }
               })
-              this.applyFilters()
+
+              let info = obj.info
+              if (info == null) {
+                info = {}
+              }
+              info["bm"] = []
+              for (const [key, value] of Object.entries(businesses)) {
+                info["bm"].push({
+                  "active": businesses[key].active,
+                  "total": businesses[key].total,
+                })
+              }
+
+              // Update fb account object (token status and businesses status)
+              let headers = {
+                Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+              }
+              let data = {
+                token_status: 'active',
+                info: JSON.stringify(info),
+              }
+              this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+                .then((response) => {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Token is active',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                  this.applyFilters()
+                })
+                .catch((error) => {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: error.message,
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                })
             })
             .catch((error) => {
               this.$vs.loading.close()
@@ -844,8 +906,15 @@ export default {
           let headers = {
             Authorization: 'Bearer ' + localStorage.getItem('accessToken')
           }
+
+          let info = obj.info
+          if (info == null) {
+            info = {}
+          }
+          info["bm"] = []
           let data = {
             token_status: 'disabled',
+            info: JSON.stringify(info),
           }
           this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
             .then((response) => {
@@ -915,8 +984,59 @@ export default {
           })
         })
     },
+    // TODO: fix this function
+    isValidProxy(proxy) {
+      // TODO: to delete
+      return true
+
+      let regex = "/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/"
+      console.log(proxy.match(regex))
+      return (proxy.match(regex) != null)
+    },
+    getProxyFromString(proxy) {
+      let toReturn = {
+        host: '',
+        port: 0,
+        auth: {
+          username: '',
+          password: '',
+        }
+      }
+
+      let splits = proxy.split('::')
+      toReturn.host = splits[0]
+      toReturn.port = parseInt(splits[1])
+      toReturn.auth.username = splits[2]
+      toReturn.auth.password = splits[3]
+
+      return toReturn
+    },
   },
   created() {
+    // TODO: to delete
+    // This is only for test purposes
+    /*
+    let p = '196.16.229.179::25707::asrafatb92::asrafatb92'
+    console.log(this.isValidProxy(p))
+    let proxy = this.getProxyFromString(p)
+    console.log(proxy)
+
+    let config = { proxy: proxy }
+    this.$http.get('http://api.ipify.org/?format=json', config)
+      .then((response) => {
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      })
+    */
+
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId

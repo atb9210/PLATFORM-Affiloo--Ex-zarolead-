@@ -102,6 +102,9 @@ class FbAccountController extends Controller
             'proxy_enabled' => 'boolean',
             'proxy' => 'nullable|string|regex:/^([a-zA-Z0-9-.]*::[0-9]*::[a-zA-Z0-9-_.]*::.*)?$/',
         ]);
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
 
         if (!isset($params['user_id'])) {
             $params['user_id'] = Auth::user()->id;
@@ -219,6 +222,9 @@ class FbAccountController extends Controller
             'proxy_enabled' => 'boolean',
             'proxy' => 'nullable|string|regex:/^([a-zA-Z0-9-.]*::[0-9]*::[a-zA-Z0-9-_.]*::.*)?$/',
         ]);
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
 
         if (!isset($params['user_id'])) {
             $params['user_id'] = Auth::user()->id;
