@@ -456,7 +456,8 @@ export default {
       }
     },
     canCreateAsAdmin() {
-      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
+              this.$store.getters.userHasRole('account_manager'))
     },
   },
   methods: {
