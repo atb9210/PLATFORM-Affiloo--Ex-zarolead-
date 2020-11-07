@@ -1458,7 +1458,7 @@ export default {
     getCardsArray(cardsString) {
       let cardsArray = []
       if (cardsString != null && cardsString != '') {
-        cardsString.split('\n')
+        cardsArray = cardsString.split('\n')
       }
       return cardsArray
     },
