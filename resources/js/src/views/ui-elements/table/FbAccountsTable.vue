@@ -1456,7 +1456,10 @@ export default {
       return formattedDate;
     },
     getCardsArray(cardsString) {
-      let cardsArray = cardsString.split('\n')
+      let cardsArray = []
+      if (cardsString != null && cardsString != '') {
+        cardsString.split('\n')
+      }
       return cardsArray
     },
     getCardIcon(card) {
