@@ -103,7 +103,7 @@
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="product.name">Product</vs-th>
-                <vs-th sort-key="cards">Cards</vs-th>
+                <vs-th sort-key="">Cards</vs-th>
                 <vs-th sort-key="token_status">Token Status</vs-th>
                 <vs-th sort-key="">BM</vs-th>
                 <vs-th sort-key="amount_spent">Spent</vs-th>
@@ -131,8 +131,10 @@
                         {{data[indextr].product.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cards">
-                        <div style="white-space: pre-line">{{data[indextr].cards}}</div>
+                    <vs-td>
+                        <vs-chip v-for="(card, index) in getCardsArray(data[indextr].cards)" :key="index">
+                            <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(data[indextr].cards)}}
+                        </vs-chip>
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">
@@ -971,7 +973,7 @@ export default {
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
               let mainAdAccountActive = true
-              let fundingSources = ''
+              let fundingSources = []
               let totalAmountSpent = 0
               let totalResult = 0
               response.data.data.forEach((adAccount) => {
@@ -983,7 +985,9 @@ export default {
                   }
                 }
                 if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
-                  fundingSources += adAccount.funding_source_details.display_string + '\n'
+                  if (!fundingSources.includes(adAccount.funding_source_details.display_string)) {
+                    fundingSources.push(adAccount.funding_source_details.display_string)
+                  }
                 }
                 if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
                   for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
@@ -996,8 +1000,13 @@ export default {
                   }
                 }
               })
-              if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
-                fundingSources = fundingSources.slice(0, -1)
+
+              let fundingSourcesString = ''
+              for (let fsIndex = 0; fsIndex < fundingSources.length; fsIndex++) {
+                if (fsIndex > 0) {
+                  fundingSourcesString += '\n'
+                }
+                fundingSourcesString += fundingSources[fsIndex]
               }
 
               this.dynamicStats["id" + obj.id] = {
@@ -1028,7 +1037,7 @@ export default {
               }
               let data = {
                 token_status: 'active',
-                cards: fundingSources,
+                cards: fundingSourcesString,
                 info: JSON.stringify(info),
               }
               this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
@@ -1106,8 +1115,6 @@ export default {
     },
     checkStatusGlobal() {
       if (this.selected.length == 0) return
-
-      // TODO: HERE
 
       // Check FB API token status and get business accounts
       this.$vs.loading()
@@ -1447,6 +1454,30 @@ export default {
       
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
+    },
+    getCardsArray(cardsString) {
+      let cardsArray = cardsString.split('\n')
+      return cardsArray
+    },
+    getCardIcon(card) {
+      let cardIcons = {
+        'Mastercard': 'https://cdn.vox-cdn.com/thumbor/ttHUTh41dvZk5BDu3yJOZvjHx94=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/13674554/Mastercard_logo.jpg',
+        'VISA': 'https://pngimg.com/uploads/visa/visa_PNG27.png',
+      }
+      for (const [key, value] of Object.entries(cardIcons)) {
+        if (card.includes(key)) {
+          return value
+        }
+      }
+      return ''
+    },
+    getCardValue(card) {
+      let cardValue = card
+      let cardTypes = [ 'Mastercard ', 'VISA ', ]
+      for (let i = 0; i < cardTypes.length; i++) {
+        cardValue = cardValue.replace(cardTypes[i], '')
+      }
+      return cardValue
     },
   },
   created() {
