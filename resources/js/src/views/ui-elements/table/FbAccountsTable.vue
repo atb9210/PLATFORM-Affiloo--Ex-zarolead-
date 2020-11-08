@@ -968,7 +968,7 @@ export default {
           // Get FB ad accounts
           let since = this.filters.date_from
           let until = this.filters.date_to
-          let fields = 'business,account_status,funding_source_details,amount_spent'
+          let fields = 'business,account_status,funding_source_details,amount_spent,transactions'
           fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
@@ -976,6 +976,7 @@ export default {
               let fundingSources = []
               let totalAmountSpent = 0
               let totalResult = 0
+              let transactions = []
               response.data.data.forEach((adAccount) => {
                 if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                     (adAccount.business.id in businesses)) {
@@ -999,6 +1000,17 @@ export default {
                     }
                   }
                 }
+                if (adAccount.hasOwnProperty('transactions') && adAccount.transactions.hasOwnProperty('data') && Array.isArray(adAccount.transactions.data)) {
+                  for (let tIndex = 0; tIndex < adAccount.transactions.data.length; tIndex++) {
+                    let t = adAccount.transactions.data[tIndex]
+                    transactions.push({
+                      id: t.id,
+                      dateTime: this.formatDate(new Date(t.time * 1000)),
+                      amount: t.amount.total_amount,
+                      status: t.status,
+                    })
+                  }
+                }
               })
 
               let fundingSourcesString = ''
@@ -1013,11 +1025,17 @@ export default {
                 amount_spent: 0,
                 leads: 0,
                 cpl: 0,
+                transactions: [],
               }
+
+              // TODO: to delete
+              // This is only for debug purposes
+              console.log("TRANSACTIONS (" + obj.name + "):", transactions)
 
               this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
               this.dynamicStats["id" + obj.id].leads = totalResult
               this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
+              this.dynamicStats["id" + obj.id].transactions = transactions
 
               let info = obj.info
               if (info == null) {
@@ -1141,6 +1159,7 @@ export default {
                 let fundingSources = ''
                 let totalAmountSpent = 0
                 let totalResult = 0
+                let transactions = []
                 response.data.data.forEach((adAccount) => {
                   if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                       (adAccount.business.id in businesses)) {
@@ -1162,6 +1181,17 @@ export default {
                       }
                     }
                   }
+                  if (adAccount.hasOwnProperty('transactions') && adAccount.transactions.hasOwnProperty('data') && Array.isArray(adAccount.transactions.data)) {
+                    for (let tIndex = 0; tIndex < adAccount.transactions.data.length; tIndex++) {
+                      let t = adAccount.transactions.data[tIndex]
+                      transactions.push({
+                        id: t.id,
+                        dateTime: this.formatDate(new Date(t.time)),
+                        amount: t.amount.total_amount,
+                        status: t.status,
+                      })
+                    }
+                  }
                 })
                 if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
                   fundingSources = fundingSources.slice(0, -1)
@@ -1171,11 +1201,13 @@ export default {
                   amount_spent: 0,
                   leads: 0,
                   cpl: 0,
+                  transactions: [],
                 }
 
                 this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
                 this.dynamicStats["id" + obj.id].leads = totalResult
                 this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
+                this.dynamicStats["id" + obj.id].transactions = transactions
 
                 let info = obj.info
                 if (info == null) {
