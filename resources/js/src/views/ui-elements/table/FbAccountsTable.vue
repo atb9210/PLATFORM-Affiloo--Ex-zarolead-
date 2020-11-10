@@ -14,6 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-book-open" @click="generateInvoices"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
@@ -432,10 +433,83 @@
             </div>
         </vs-popup>
 
+        <!-- Invoices popup -->
+        <vs-popup title="Invoices generation" :active.sync="showPopup['invoices']">
+            <div class="vx-row">
+                <div class="vx-col w-full">
+                    <vs-table stripe multiple v-model="invoicesSelected" search :data="invoices">
+                        <template slot="thead">
+                            <vs-th sort-key="time">Date</vs-th>
+                            <vs-th sort-key="id">Invoice ID</vs-th>
+                            <vs-th sort-key="amountFloat">Amount</vs-th>
+                            <vs-th sort-key="currency">Currency</vs-th>
+                            <vs-th sort-key="">Preview</vs-th>
+                        </template>
+
+                        <template slot-scope="{data}">
+                            <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                                <vs-td :data="data[indextr].time">
+                                    {{invoiceFormatDateTime(new Date(data[indextr].time * 1000))}}
+                                </vs-td>
+
+                                <vs-td :data="data[indextr].id">
+                                    {{data[indextr].id}}
+                                </vs-td>
+
+                                <vs-td :data="data[indextr].amountFloat">
+                                    {{data[indextr].amount}}
+                                </vs-td>
+
+                                <vs-td :data="data[indextr].currency">
+                                    {{data[indextr].currency}}
+                                </vs-td>
+
+                                <vs-td>
+                                    <div class="flex items-center">
+                                        <vs-button @click="showInvoicePreview(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                                    </div>
+                                </vs-td>
+
+                            </vs-tr>
+
+                            <vs-td>
+                            </vs-td>
+
+                            <vs-td>
+                            </vs-td>
+
+                            <vs-td>
+                            </vs-td>
+
+                            <vs-td>
+                                {{invoicesTotalStats.amount.toFixed(2)}}
+                            </vs-td>
+
+                            <vs-td>
+                            </vs-td>
+
+                            <vs-td>
+                            </vs-td>
+
+                        </template>
+                    </vs-table>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="importProfiles" color="primary" type="filled" :disabled="profileIds == ''">Import</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
 <script>
+import { OpenSansRegular } from '@assets/fonts/OpenSans-Regular'
+import { OpenSansBold } from '@assets/fonts/OpenSans-Bold'
+import jsPDF from 'jspdf'
+
 export default {
   data () {
     return {
@@ -467,6 +541,7 @@ export default {
         'multi_create': false,
         'edit': false,
         'import': false,
+        'invoices': false,
       },
       newObject: {
         'create': {
@@ -517,6 +592,12 @@ export default {
         'date_to': '',
       },
       checked: [],
+
+      invoices: [],
+      invoicesTotalStats: {
+        amount: 0,
+      },
+      invoicesSelected: [],
     }
   },
   computed: {
@@ -948,6 +1029,12 @@ export default {
         })
     },
     checkStatus(objIndex) {
+      // TODO: to delete???
+      this.invoices = []
+      this.invoicesTotalStats = {
+        amount: 0,
+      }
+
       let obj = this.objects[objIndex]
       if (obj.token == null || obj.token == '') {
         return
@@ -1009,6 +1096,26 @@ export default {
                       amount: t.amount.total_amount,
                       status: t.status,
                     })
+
+                    // TODO: to delete???
+                    if (t.status == 'completed') {
+                      this.invoices.push({
+                        'id': t.id,
+                        'ad_account_id': adAccount.business.id,
+                        'ad_account_name': adAccount.business.name,
+                        'time': t.time,
+                        'funding_source': (fundingSources.length > 0) ? fundingSources[0] : 'No payment method',
+                        'reference_number': t.tracking_id,
+                        'amount': t.amount.total_amount,
+                        'amountFloat': parseFloat(t.amount.total_amount),
+                        'currency': t.amount.currency,
+                        'billing_reason': t.billing_reason,
+                        'billing_start_time': t.billing_start_time,
+                        'billing_end_time': t.billing_end_time,
+                        'vat_invoice_id': t.vat_invoice_id,
+                      })
+                      this.invoicesTotalStats.amount += parseFloat(t.amount.total_amount)
+                    }
                   }
                 }
               })
@@ -1132,6 +1239,12 @@ export default {
         })
     },
     checkStatusGlobal() {
+      // TODO: to delete???
+      this.invoices = []
+      this.invoicesTotalStats = {
+        amount: 0,
+      }
+
       if (this.selected.length == 0) return
 
       // Check FB API token status and get business accounts
@@ -1151,12 +1264,12 @@ export default {
             // Get FB ad accounts
             let since = this.filters.date_from
             let until = this.filters.date_to
-            let fields = 'business,account_status,funding_source_details,amount_spent'
+            let fields = 'business,account_status,funding_source_details,amount_spent,transactions'
             fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
               .then((response) => {
                 let mainAdAccountActive = true
-                let fundingSources = ''
+                let fundingSources = []
                 let totalAmountSpent = 0
                 let totalResult = 0
                 let transactions = []
@@ -1169,7 +1282,9 @@ export default {
                     }
                   }
                   if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
-                    fundingSources += adAccount.funding_source_details.display_string + '\n'
+                    if (!fundingSources.includes(adAccount.funding_source_details.display_string)) {
+                      fundingSources.push(adAccount.funding_source_details.display_string)
+                    }
                   }
                   if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
                     for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
@@ -1190,11 +1305,37 @@ export default {
                         amount: t.amount.total_amount,
                         status: t.status,
                       })
+
+                      // TODO: to delete???
+                      if (t.status == 'completed') {
+                        this.invoices.push({
+                          // HERE
+                          'id': t.id,
+                          'ad_account_id': adAccount.business.id,
+                          'ad_account_name': adAccount.business.name,
+                          'time': t.time,
+                          'funding_source': (fundingSources.length > 0) ? fundingSources[0] : 'No payment method',
+                          'reference_number': t.tracking_id,
+                          'amount': t.amount.total_amount,
+                          'amountFloat': parseFloat(t.amount.total_amount),
+                          'currency': t.amount.currency,
+                          'billing_reason': t.billing_reason,
+                          'billing_start_time': t.billing_start_time,
+                          'billing_end_time': t.billing_end_time,
+                          'vat_invoice_id': t.vat_invoice_id,
+                        })
+                        this.invoicesTotalStats.amount += parseFloat(t.amount.total_amount)
+                      }
                     }
                   }
                 })
-                if (fundingSources.length > 0 && fundingSources[fundingSources.length - 1] == '\n') {
-                  fundingSources = fundingSources.slice(0, -1)
+
+                let fundingSourcesString = ''
+                for (let fsIndex = 0; fsIndex < fundingSources.length; fsIndex++) {
+                  if (fsIndex > 0) {
+                    fundingSourcesString += '\n'
+                  }
+                  fundingSourcesString += fundingSources[fsIndex]
                 }
 
                 this.dynamicStats["id" + obj.id] = {
@@ -1227,7 +1368,7 @@ export default {
                 }
                 let data = {
                   token_status: 'active',
-                  cards: fundingSources,
+                  cards: fundingSourcesString,
                   info: JSON.stringify(info),
                 }
                 this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
@@ -1358,7 +1499,6 @@ export default {
       return true
 
       let regex = "/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/"
-      console.log(proxy.match(regex))
       return (proxy.match(regex) != null)
     },
     getProxyFromString(proxy) {
@@ -1514,53 +1654,180 @@ export default {
       }
       return cardValue
     },
+    invoiceFormatDateTime(d) {
+      let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      let s = ''
+      s += d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear()
+      s += ', ' + d.getHours() + ':' + d.getMinutes()
+      return s
+    },
+    invoiceFormatAmount(amount, currency, currencyISOFlag = false) {
+      let currencySymbols = {
+          'EUR': '€',
+          'USD': '$',
+      }
+      let s = ''
+      if (currencySymbols.hasOwnProperty(currency)) {
+        s += currencySymbols[currency] + amount
+      } else {
+        s += amount
+      }
+      if (currencyISOFlag) {
+          s +=  ' ' + currency
+      }
+      return s
+    },
+    initializeJSPDF() {
+      // Create font
+      let callAddFont = function () {
+          this.addFileToVFS('OpenSans-Regular-normal.ttf', OpenSansRegular);
+          this.addFont('OpenSans-Regular-normal.ttf', 'OpenSans-Regular', 'normal');
+          this.addFileToVFS('OpenSans-Bold-normal.ttf', OpenSansBold);
+          this.addFont('OpenSans-Bold-normal.ttf', 'OpenSans-Bold', 'normal');
+      }
+      jsPDF.API.events.push(['addFonts', callAddFont])
+
+      // Text alignment
+      var splitRegex = /\r\n|\r|\n/g;
+      jsPDF.API.textEx = function (text, x, y, hAlign, vAlign) {
+          var fontSize = this.internal.getFontSize() / this.internal.scaleFactor;
+
+          // As defined in jsPDF source code
+          var lineHeightProportion = 1.15;
+
+          var splittedText = null;
+          var lineCount = 1;
+          if (vAlign === 'middle' || vAlign === 'bottom' || hAlign === 'center' || hAlign === 'right') {
+              splittedText = typeof text === 'string' ? text.split(splitRegex) : text;
+
+              lineCount = splittedText.length || 1;
+          }
+
+          // Align the top
+          y += fontSize * (2 - lineHeightProportion);
+
+          if (vAlign === 'middle')
+              y -= (lineCount / 2) * fontSize;
+          else if (vAlign === 'bottom')
+              y -= lineCount * fontSize;
+
+          if (hAlign === 'center' || hAlign === 'right') {
+              var alignSize = fontSize;
+              if (hAlign === 'center')
+                  alignSize *= 0.5;
+
+              if (lineCount > 1) {
+                  for (var iLine = 0; iLine < splittedText.length; iLine++) {
+                      this.text(splittedText[iLine], x - this.getStringUnitWidth(splittedText[iLine]) * alignSize, y);
+                      y += fontSize * lineHeightProportion;
+                  }
+                  return this;
+              }
+              x -= this.getStringUnitWidth(text) * alignSize;
+          }
+
+          this.text(text, x, y);
+          return this;
+      };
+    },
+    generateInvoicePDF(invoice) {
+      // Generate PDF
+      var doc = new jsPDF({
+          unit: 'px',
+      })
+      var docW = doc.internal.pageSize.getWidth()
+      var docH = doc.internal.pageSize.getHeight()
+
+      doc.setFont('OpenSans-Regular')
+      doc.setTextColor(30, 35, 42)
+
+      doc.addImage(document.location.protocol + '//' + document.location.host + '/fb_invoice_template.png', "PNG", 0, 0, docW, docH)
+
+      // Header
+      doc.setFont('OpenSans-Regular')
+      doc.setFontSize(11)
+      doc.text("Invoice for " + invoice['ad_account_name'], 38, 42)
+      doc.setFontSize(7)
+      doc.text("Account ID: " + invoice['ad_account_id'], 38, 50)
+
+      // Transaction date
+      doc.setFont('OpenSans-Bold')
+      doc.setFontSize(7)
+      doc.text(this.invoiceFormatDateTime(new Date(invoice['time'] * 1000)), 38, 95)
+
+      // Payment method
+      doc.setFontSize(7)
+      doc.setFont('OpenSans-Bold')
+      doc.text(invoice['funding_source'], 38, 118)
+      doc.setFont('OpenSans-Regular')
+      doc.text("Reference number: " + invoice['reference_number'], 38, 126)
+
+      // Transaction id
+      doc.setFontSize(7)
+      doc.setFont('OpenSans-Bold')
+      doc.text(invoice['id'], 38, 148)
+
+      // Amount
+      doc.setFontSize(22)
+      doc.setFont('OpenSans-Regular')
+      doc.textEx(this.invoiceFormatAmount(invoice['amount'], invoice['currency'], true), 410, 128, 'right', 'bottom')
+      doc.setFontSize(7)
+      doc.textEx(invoice['billing_reason'], 410, 138, 'right', 'bottom')
+
+      // Invoice from date to date and amount
+      doc.setFontSize(7)
+      doc.setFont('OpenSans-Regular')
+      doc.text("From " + this.invoiceFormatDateTime(new Date(invoice['billing_start_time'] * 1000)) + 
+        " to " + this.invoiceFormatDateTime(new Date(invoice['billing_end_time'] * 1000)), 38, 240)
+      doc.setFont('OpenSans-Bold')
+      doc.textEx(this.invoiceFormatAmount(invoice['amount'], invoice['currency'], false), 408, 240, 'right', 'bottom')
+
+      // Invoice number
+      doc.setFontSize(7)
+      doc.setFont('OpenSans-Regular')
+      doc.setTextColor(144, 148, 165)
+      doc.textEx("Invoice no. FBADS-217-101143844", 409, 580, 'right', 'bottom')
+
+      return doc
+    },
+    generateInvoices() {
+      // TODO: to delete
+      let ids = []
+      for (let i = 0; i < this.invoices.length; i++) {
+        if (ids.includes(this.invoices[i].id)) {
+          console.log("ops")
+          break
+        }
+        ids.push(this.invoices[i].id)
+      }
+
+      this.showPopup['invoices'] = true
+    },
+    showInvoicePreview(index) {
+      var doc = this.generateInvoicePDF(this.invoices[index])
+      window.open(doc.output('bloburl'), '_blank')
+    },
   },
   created() {
-    // TODO: to delete
-    // This is only for test purposes
-    // Retrieve products
-    /*
-    let h = { Authorization: 'Bearer ' + localStorage.getItem('accessToken') }
-    let d = []
-    d.push({
-      name: 'test 1',
-      notes: 'this is test #1',
-    })
-    d.push({
-      name: 'test 2',
-      notes: 'this is test #2',
-    })
-    d.push({
-      name: 'test 3',
-      notes: 'this is test #3',
-    })
-    d = JSON.stringify(d)
-    this.$http.post('/api/3rd/fb-accounts/multiple', { data: d }, { headers: h })
-      .then((response) => {
-      })
-      .catch((error) => {
-      })
-    */
-    /*
-    let p = '196.16.229.179::25707::asrafatb92::asrafatb92'
-    console.log(this.isValidProxy(p))
-    let proxy = this.getProxyFromString(p)
-    console.log(proxy)
+    this.initializeJSPDF()
 
-    let config = { proxy: proxy }
-    this.$http.get('http://api.ipify.org/?format=json', config)
-      .then((response) => {
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-        this.$vs.notify({
-          title: 'Error',
-          text: error.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      })
+    // TODO: to delete
+    /*
+    let invoice = {
+      'id': '3126064814172325-6555665',
+      'ad_account_name': 'Redoa',
+      'ad_account_id': '985649491933016',
+      'time': 1604424742,
+      'funding_source': 'Mastercard *3489',
+      'reference_number': 'Z8KR3VAHA2',
+      'amount': '20.00',
+      'currency': 'EUR',
+      'billing_reason': 'You\'re being billed because you\'ve reached your €20.00 EUR threshold.',
+      'billing_start_time': 1604410222,
+      'billing_end_time': 1604424742,
+      'vat_invoice_id': 'FBADS-217-101143844',
+    }
+    this.generateInvoicePDF(invoice).save('test2.pdf')
     */
 
     let userInfo = this.$store.getters.getUserInfo()
