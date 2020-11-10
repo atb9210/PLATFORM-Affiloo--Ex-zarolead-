@@ -13,6 +13,7 @@ class TestController extends Controller
 {
     public function test()
     {
+        return view('test');
         $s = [];
         $s[] = 'host::port::user::password';
         $s[] = 'ciao::2';
