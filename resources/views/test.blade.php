@@ -101,7 +101,7 @@ function generateInvoicePDF(invoice) {
     doc.setFont('OpenSans-Regular');
     doc.setTextColor(30, 35, 42);
 
-    doc.addImage("http://zarolead.localhost/fb_invoice_template.png", "PNG", 0, 0, docW, docH);
+    doc.addImage("https://beta2.zarolead.com/fb_invoice_template.png", "PNG", 0, 0, docW, docH);
 
     // Header
     doc.setFont('OpenSans-Regular');
