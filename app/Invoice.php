@@ -115,7 +115,7 @@ class Invoice extends Model
 
     public function getFilename()
     {
-        return $this->transaction_id . '.pdf';
+        return $this->original_file_name;
     }
 
     public function getStoragePathname()

@@ -107,6 +107,8 @@ Route::post('forms/{id}/input/validate', 'api\v1\FormController@validateInput')-
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('invoices/store-ex', 'api\v1\InvoiceController@storeEx')->middleware('auth:api')
+    ->name('invoices.store-ex');
 Route::get('invoices/{id}/download', 'api\v1\InvoiceController@download')->middleware('auth:api')
     ->name('invoices.download');
 Route::post('invoices/download-zip', 'api\v1\InvoiceController@downloadZip')->middleware('auth:api')

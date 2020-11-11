@@ -339,4 +339,64 @@ class InvoiceController extends Controller
 
         return Storage::download('summary.csv');
     }
+
+    /**
+     * Create a new invoice specifying fields and uploading the PDF
+     *
+     * @bodyParam file file required Invoice pdf
+     * @bodyParam transaction_id string required Invoice transaction id
+     * @bodyParam invoice_date string required Invoice transaction date
+     * @bodyParam number string required Invoice number
+     * @bodyParam language string required Invoice language
+     * @bodyParam status enum('paid', 'failed') required Invoice status
+     * @bodyParam amount float required Invoice amount
+     * @bodyParam currency string required Invoice currency
+     * @bodyParam info json Invoice info
+     *
+     * @response 201 {
+     *  "data": [invoices],
+     * }
+     */
+    public function storeEx(Request $request)
+    {
+        $this->authorize('create', 'App\Invoice');
+
+        // Params validation
+        $params = $request->validate([
+            'file' => 'required|file|mimes:pdf',
+            'transaction_id' => 'required|string',
+            'invoice_date' => 'required|date|date_format:Y-m-d H:i:s',
+            'number' => 'required|string',
+            'language' => 'required|string',
+            'status' => 'required|in:paid,failed',
+            'amount' => 'required|numeric|min:0',
+            'currency' => 'required|string',
+            'info' => 'json',
+        ]);
+        $params['user_id'] = Auth::user()->id;
+        if (!$request->hasFile('file')) {
+            return response([
+                'errors' => 'File not uploaded'
+            ], 400);
+        }
+
+        $invoiceQuery = Invoice::where('transaction_id', $params['transaction_id']);
+        if ($invoiceQuery->count() > 0) {
+            return response([
+                'errors' => 'That invoice already exists'
+            ], 403);
+        }
+
+        $invoice = Invoice::create($params);
+
+        $file = $request->file('file');
+        $path = Storage::disk('dropbox')->putFileAs($invoice->getStoragePath(), $file, $file->getClientOriginalName());
+
+        $invoice->original_file_name = $file->getClientOriginalName();
+        $invoice->save();
+
+        return response([
+            "data" => new InvoiceResource($invoice),
+        ], 201);
+    }
 }
