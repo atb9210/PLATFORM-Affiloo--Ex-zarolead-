@@ -1380,7 +1380,6 @@ export default {
                 }
                 let data = {
                   token_status: 'active',
-                  cards: fundingSourcesString,
                   info: JSON.stringify(info),
                 }
                 this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
