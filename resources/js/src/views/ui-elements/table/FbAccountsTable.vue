@@ -652,11 +652,6 @@ export default {
 
       this.selected = []
 
-      this.invoices = []
-      this.invoicesTotalStats = {
-        amount: 0,
-      }
-
       if (this.dynamicStats['date_from'] != this.filters.date_from || this.dynamicStats['date_to'] != this.filters.date_to) {
         this.dynamicStats = {
           'date_from': this.filters.date_from,
@@ -1066,9 +1061,11 @@ export default {
           // Get FB ad accounts
           let since = this.filters.date_from
           let until = this.filters.date_to
-          let sinceTimestamp = parseInt((new Date(since + ' 00:00:00').valueOf()) / 1000)
-          let untilTimestamp = parseInt((new Date(until + ' 23:59:59').valueOf()) / 1000)
-          let fields = 'business,account_status,funding_source_details,amount_spent'
+          let sinceDate = new Date(since + ' 00:00:00')
+          let untilDate = new Date(until + ' 23:59:59')
+          let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
+          let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
+          let fields = 'id,name,business,account_status,funding_source_details,amount_spent'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
@@ -1121,8 +1118,8 @@ export default {
                       }
                       this.invoices.push({
                         'id': t.id,
-                        'ad_account_id': adAccount.business.id,
-                        'ad_account_name': adAccount.business.name,
+                        'ad_account_id': adAccount.id,
+                        'ad_account_name': adAccount.name,
                         'time': t.time,
                         'funding_source': fSource,
                         'reference_number': t.tracking_id,
@@ -1279,8 +1276,10 @@ export default {
             // Get FB ad accounts
             let since = this.filters.date_from
             let until = this.filters.date_to
-            let sinceTimestamp = parseInt((new Date(since + ' 00:00:00').valueOf()) / 1000)
-            let untilTimestamp = parseInt((new Date(until + ' 23:59:59').valueOf()) / 1000)
+            let sinceDate = new Date(since + ' 00:00:00')
+            let untilDate = new Date(until + ' 23:59:59')
+            let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
+            let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
             let fields = 'business,account_status,funding_source_details,amount_spent'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
             fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
@@ -1334,8 +1333,8 @@ export default {
                         }
                         this.invoices.push({
                           'id': t.id,
-                          'ad_account_id': adAccount.business.id,
-                          'ad_account_name': adAccount.business.name,
+                          'ad_account_id': adAccount.id,
+                          'ad_account_name': adAccount.name,
                           'time': t.time,
                           'funding_source': fSource,
                           'reference_number': t.tracking_id,
