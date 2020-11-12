@@ -32,7 +32,6 @@ class FbAccountResource extends JsonResource
             'name' => $this->name,
             'product' => $product,
             'notes' => $this->notes,
-            'cards' => $this->cards,
             'token' => $this->token,
             'info' => $this->info,
             'status' => $this->status,

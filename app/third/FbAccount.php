@@ -10,7 +10,7 @@ class FbAccount extends Model
 
     protected $fillable = [
         'user_id', 'gologin_id', 'dolphin_id', 'profile', 'name', 'product_id',
-        'notes', 'cards', 'token', 'info', 'status', 'token_status',
+        'notes', 'token', 'info', 'status', 'token_status',
     ];
 
     protected $casts = [

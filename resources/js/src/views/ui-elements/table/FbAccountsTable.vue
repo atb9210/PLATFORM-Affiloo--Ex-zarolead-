@@ -134,9 +134,11 @@
                     </vs-td>
 
                     <vs-td>
-                        <vs-chip v-for="(card, index) in getCardsArray(data[indextr].cards)" :key="index">
-                            <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(data[indextr].cards)}}
-                        </vs-chip>
+                        <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
+                            <vs-chip v-for="(card, index) in getCardsArray(data[indextr].info['bm'])" :key="index">
+                                <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
 
                     <vs-td :data="data[indextr].token_status">
@@ -146,8 +148,8 @@
                     </vs-td>
 
                     <vs-td>
-                        <div v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
-                            <vs-avatar v-for="(bm, index) in data[indextr].info['bm']" :key="index" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : 'danger'" />
+                        <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
+                            <vs-avatar size="24px" v-for="(bm, index) in data[indextr].info['bm']" :key="index" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
                         </div>
                     </vs-td>
 
@@ -1053,8 +1055,11 @@ export default {
           let businesses = {}
           response.data.data.forEach((bm) => {
             businesses[bm.id] = {
+              id: bm.id,
               active: 0,
+              warning: 0,
               total: 0,
+              funding_sources: [],
             }
           })
 
@@ -1069,7 +1074,6 @@ export default {
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
               let mainAdAccountActive = true
-              let fundingSources = []
               let totalAmountSpent = 0
               let totalResult = 0
               let transactions = []
@@ -1081,9 +1085,10 @@ export default {
                     businesses[adAccount.business.id].active += 1
                   }
                 }
-                if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
-                  if (!fundingSources.includes(adAccount.funding_source_details.display_string)) {
-                    fundingSources.push(adAccount.funding_source_details.display_string)
+                if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string') &&
+                  (adAccount.business.id in businesses)) {
+                  if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                    businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
                   }
                 }
                 if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
@@ -1110,12 +1115,16 @@ export default {
                     })
 
                     if (t.status == 'completed') {
+                      let fSource = 'Credit card payment'
+                      if ((adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
+                        fSource = businesses[adAccount.business.id].funding_sources[0]
+                      }
                       this.invoices.push({
                         'id': t.id,
                         'ad_account_id': adAccount.business.id,
                         'ad_account_name': adAccount.business.name,
                         'time': t.time,
-                        'funding_source': (fundingSources.length > 0) ? fundingSources[0] : 'Credit card payment',
+                        'funding_source': fSource,
                         'reference_number': t.tracking_id,
                         'amount': t.amount.total_amount,
                         'amountFloat': parseFloat(t.amount.total_amount),
@@ -1130,14 +1139,6 @@ export default {
                   }
                 }
               })
-
-              let fundingSourcesString = ''
-              for (let fsIndex = 0; fsIndex < fundingSources.length; fsIndex++) {
-                if (fsIndex > 0) {
-                  fundingSourcesString += '\n'
-                }
-                fundingSourcesString += fundingSources[fsIndex]
-              }
 
               this.dynamicStats["id" + obj.id] = {
                 amount_spent: 0,
@@ -1157,10 +1158,7 @@ export default {
               }
               info["bm"] = []
               for (const [key, value] of Object.entries(businesses)) {
-                info["bm"].push({
-                  "active": businesses[key].active,
-                  "total": businesses[key].total,
-                })
+                info["bm"].push(value)
               }
 
               // Update fb account object (token status and businesses status)
@@ -1169,7 +1167,6 @@ export default {
               }
               let data = {
                 token_status: 'active',
-                cards: fundingSourcesString,
                 info: JSON.stringify(info),
               }
               this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
@@ -1216,7 +1213,16 @@ export default {
           if (info == null) {
             info = {}
           }
-          info["bm"] = []
+          if (info.hasOwnProperty('bm')) {
+            for (let i = 0; i < info['bm'].length; i++) {
+              if (obj.token_status == 'active') {
+                if (info['bm'][i].active > 0) {
+                  info['bm'][i].warning = info['bm'][i].active
+                  info['bm'][i].active = 0
+                }
+              }
+            }
+          }
           let data = {
             token_status: 'disabled',
             info: JSON.stringify(info),
@@ -1262,8 +1268,11 @@ export default {
             let businesses = {}
             response.data.data.forEach((bm) => {
               businesses[bm.id] = {
+                id: bm.id,
                 active: 0,
+                warning: 0,
                 total: 0,
+                funding_sources: [],
               }
             })
 
@@ -1278,7 +1287,6 @@ export default {
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
               .then((response) => {
                 let mainAdAccountActive = true
-                let fundingSources = []
                 let totalAmountSpent = 0
                 let totalResult = 0
                 let transactions = []
@@ -1290,9 +1298,10 @@ export default {
                       businesses[adAccount.business.id].active += 1
                     }
                   }
-                  if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
-                    if (!fundingSources.includes(adAccount.funding_source_details.display_string)) {
-                      fundingSources.push(adAccount.funding_source_details.display_string)
+                  if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string') &&
+                    (adAccount.business.id in businesses)) {
+                    if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                      businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
                     }
                   }
                   if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
@@ -1319,12 +1328,16 @@ export default {
                       })
 
                       if (t.status == 'completed') {
+                        let fSource = 'Credit card payment'
+                        if ((adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
+                          fSource = businesses[adAccount.business.id].funding_sources[0]
+                        }
                         this.invoices.push({
                           'id': t.id,
                           'ad_account_id': adAccount.business.id,
                           'ad_account_name': adAccount.business.name,
                           'time': t.time,
-                          'funding_source': (fundingSources.length > 0) ? fundingSources[0] : 'Credit card payment',
+                          'funding_source': fSource,
                           'reference_number': t.tracking_id,
                           'amount': t.amount.total_amount,
                           'amountFloat': parseFloat(t.amount.total_amount),
@@ -1339,14 +1352,6 @@ export default {
                     }
                   }
                 })
-
-                let fundingSourcesString = ''
-                for (let fsIndex = 0; fsIndex < fundingSources.length; fsIndex++) {
-                  if (fsIndex > 0) {
-                    fundingSourcesString += '\n'
-                  }
-                  fundingSourcesString += fundingSources[fsIndex]
-                }
 
                 this.dynamicStats["id" + obj.id] = {
                   amount_spent: 0,
@@ -1366,10 +1371,7 @@ export default {
                 }
                 info["bm"] = []
                 for (const [key, value] of Object.entries(businesses)) {
-                  info["bm"].push({
-                    "active": businesses[key].active,
-                    "total": businesses[key].total,
-                  })
+                  info["bm"].push(value)
                 }
 
                 // Update fb account object (token status and businesses status)
@@ -1426,7 +1428,16 @@ export default {
             if (info == null) {
               info = {}
             }
-            info["bm"] = []
+            if (info.hasOwnProperty('bm')) {
+              for (let i = 0; i < info['bm'].length; i++) {
+                if (obj.token_status == 'active') {
+                  if (info['bm'][i].active > 0) {
+                    info['bm'][i].warning = info['bm'][i].active
+                    info['bm'][i].active = 0
+                  }
+                }
+              }
+            }
             let data = {
               token_status: 'disabled',
               info: JSON.stringify(info),
@@ -1611,10 +1622,18 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
     },
-    getCardsArray(cardsString) {
+    getCardsArray(bm) {
       let cardsArray = []
-      if (cardsString != null && cardsString != '') {
-        cardsArray = cardsString.split('\n')
+      for (let i = 0; i < bm.length; i++) {
+        if (!bm[i].hasOwnProperty('funding_sources')) {
+          continue
+        }
+        for (let j = 0; j < bm[i].funding_sources.length; j++) {
+          if (cardsArray.includes(bm[i].funding_sources[j])) {
+            continue
+          }
+          cardsArray.push(bm[i].funding_sources[j])
+        }
       }
       return cardsArray
     },

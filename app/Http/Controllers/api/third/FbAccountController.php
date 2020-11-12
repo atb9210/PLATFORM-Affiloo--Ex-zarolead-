@@ -73,7 +73,6 @@ class FbAccountController extends Controller
      * @bodyParam name string required Fb account's name
      * @bodyParam product_id array Fb account's product
      * @bodyParam notes string Fb account's notes
-     * @bodyParam cards string Fb account's cards
      * @bodyParam token string Fb account's token
      * @bodyParam info json Fb account's info
      * @bodyParam status string Fb account's status
@@ -97,7 +96,6 @@ class FbAccountController extends Controller
             'name' => 'required|string|min:1',
             'product_id' => 'integer|exists:products,id',
             'notes' => 'string|nullable',
-            'cards' => 'string|nullable',
             'token' => 'nullable|string',
             'info' => 'nullable|json',
             'status' => 'in:setup,warm,ready,run,ban',
@@ -193,7 +191,6 @@ class FbAccountController extends Controller
      * @bodyParam name string Fb account's name
      * @bodyParam product_id array Fb account's product
      * @bodyParam notes string Fb account's notes
-     * @bodyParam cards string Fb account's cards
      * @bodyParam token string Fb account's token
      * @bodyParam info json Fb account's info
      * @bodyParam status string Fb account's status
@@ -217,7 +214,6 @@ class FbAccountController extends Controller
             'name' => 'string|min:1',
             'product_id' => 'integer|exists:products,id',
             'notes' => 'string|nullable',
-            'cards' => 'string|nullable',
             'token' => 'nullable|string',
             'info' => 'nullable|json',
             'status' => 'in:setup,warm,ready,run,ban',
@@ -417,7 +413,6 @@ class FbAccountController extends Controller
                     'name' => 'required|string|min:1',
                     'product_id' => 'integer|exists:products,id',
                     'notes' => 'string|nullable',
-                    'cards' => 'string|nullable',
                     'token' => 'string|nullable',
                     'info' => 'json|nullable',
                     'status' => 'in:setup,warm,ready,run,ban',
