@@ -174,7 +174,7 @@
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="checkStatus(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
+                            <vs-button @click="showAds(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -1851,6 +1851,9 @@ export default {
             }
           })
       }
+    },
+    showAds(id) {
+      this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
     },
   },
   created() {

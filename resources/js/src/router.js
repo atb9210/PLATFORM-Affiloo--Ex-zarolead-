@@ -1665,6 +1665,22 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/fb-ads/:fb_account_id',
+          props: true,
+          name: 'fb-ads',
+          component: () => import('./views/FbAds.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'FB Accounts', url: '/dashboard/fb-accounts' },
+              { title: 'Ads', active: true }
+            ],
+            pageTitle: 'FB Ads',
+            rule: 'editor'
+          }
+        },
       ]
     },
 
