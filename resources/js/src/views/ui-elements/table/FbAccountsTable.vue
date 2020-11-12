@@ -1065,7 +1065,7 @@ export default {
           let untilDate = new Date(until + ' 23:59:59')
           let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-          let fields = 'id,name,business,account_status,funding_source_details,amount_spent'
+          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
@@ -1118,7 +1118,7 @@ export default {
                       }
                       this.invoices.push({
                         'id': t.id,
-                        'ad_account_id': adAccount.id,
+                        'ad_account_id': adAccount.account_id,
                         'ad_account_name': adAccount.name,
                         'time': t.time,
                         'funding_source': fSource,
@@ -1280,7 +1280,7 @@ export default {
             let untilDate = new Date(until + ' 23:59:59')
             let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
             let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-            let fields = 'business,account_status,funding_source_details,amount_spent'
+            let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
             fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
@@ -1333,7 +1333,7 @@ export default {
                         }
                         this.invoices.push({
                           'id': t.id,
-                          'ad_account_id': adAccount.id,
+                          'ad_account_id': adAccount.account_id,
                           'ad_account_name': adAccount.name,
                           'time': t.time,
                           'funding_source': fSource,
