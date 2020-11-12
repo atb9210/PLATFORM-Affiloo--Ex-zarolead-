@@ -14,7 +14,7 @@
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal" v-if="!showInvoicesTableFlag"></vs-button>
-            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-upload" @click="uploadInvoices" v-else></vs-button>
+            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-download" @click="downloadInvoices" v-else></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="showInvoicesTableFlag ? 'icon-users' : 'icon-book-open'" @click="showInvoicesTable"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
@@ -212,7 +212,7 @@
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button @click="showInvoicePreview(indextr)" :disabled="pdfDocs.length <= indextr" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                            <vs-button @click="showInvoicePreview(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                         </div>
                     </vs-td>
 
@@ -496,105 +496,14 @@
 </template>
 
 <script>
-import { OpenSansRegular } from '@assets/fonts/OpenSans-Regular'
-import { OpenSansBold } from '@assets/fonts/OpenSans-Bold'
-import { FbInvoiceTemplate } from '@assets/images/invoices/FbInvoiceTemplate'
-import jsPDF from 'jspdf'
-
-function invoiceFormatDateTime(d) {
-  let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  let s = ''
-  s += d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear()
-  s += ', ' + d.getHours() + ':' + d.getMinutes()
-  return s
-}
-
-function invoiceFormatAmount(amount, currency, currencyISOFlag = false) {
-  let currencySymbols = {
-      'EUR': '€',
-      'USD': '$',
-  }
-  let s = ''
-  if (currencySymbols.hasOwnProperty(currency)) {
-    s += currencySymbols[currency] + amount
-  } else {
-    s += amount
-  }
-  if (currencyISOFlag) {
-      s +=  ' ' + currency
-  }
-  return s
-}
-
-function generateInvoicePDF(invoice) {
-  // Generate PDF
-  var doc = new jsPDF({
-      unit: 'px',
-  })
-  var docW = doc.internal.pageSize.getWidth()
-  var docH = doc.internal.pageSize.getHeight()
-
-  doc.setFont('OpenSans-Regular')
-  doc.setTextColor(30, 35, 42)
-
-  let imgData = 'data:image/png;base64,' + FbInvoiceTemplate
-  doc.addImage(imgData, "PNG", 0, 0, docW, docH)
-
-  // Header
-  doc.setFont('OpenSans-Regular')
-  doc.setFontSize(11)
-  doc.text("Invoice for " + invoice['ad_account_name'], 38, 42)
-  doc.setFontSize(7)
-  doc.text("Account ID: " + invoice['ad_account_id'], 38, 50)
-
-  // Transaction date
-  doc.setFont('OpenSans-Bold')
-  doc.setFontSize(7)
-  doc.text(invoiceFormatDateTime(new Date(invoice['time'] * 1000)), 38, 95)
-
-  // Payment method
-  doc.setFontSize(7)
-  doc.setFont('OpenSans-Bold')
-  doc.text(invoice['funding_source'], 38, 118)
-  doc.setFont('OpenSans-Regular')
-  doc.text("Reference number: " + invoice['reference_number'], 38, 126)
-
-  // Transaction id
-  doc.setFontSize(7)
-  doc.setFont('OpenSans-Bold')
-  doc.text(invoice['id'], 38, 148)
-
-  // Amount
-  doc.setFontSize(22)
-  doc.setFont('OpenSans-Regular')
-  doc.textEx(invoiceFormatAmount(invoice['amount'], invoice['currency'], true), 410, 128, 'right', 'bottom')
-  doc.setFontSize(7)
-  doc.textEx(invoice['billing_reason'], 410, 138, 'right', 'bottom')
-
-  // Invoice from date to date and amount
-  doc.setFontSize(7)
-  doc.setFont('OpenSans-Regular')
-  doc.text("From " + invoiceFormatDateTime(new Date(invoice['billing_start_time'] * 1000)) + 
-    " to " + invoiceFormatDateTime(new Date(invoice['billing_end_time'] * 1000)), 38, 240)
-  doc.setFont('OpenSans-Bold')
-  doc.textEx(invoiceFormatAmount(invoice['amount'], invoice['currency'], false), 408, 240, 'right', 'bottom')
-
-  // Invoice number
-  doc.setFontSize(7)
-  doc.setFont('OpenSans-Regular')
-  doc.setTextColor(144, 148, 165)
-  doc.textEx("Invoice no. " + invoice['vat_invoice_id'], 409, 580, 'right', 'bottom')
-
-  return doc
-}
+import JSZip from 'jszip'
+import { generateInvoicePDF } from '@assets/utils/fb-invoice'
 
 function generateInvoices(invoices) {
   // Generate PDFs
   return new Promise((resolve, reject) => {
     let pdfDocs = []
     for (let i = 0; i < invoices.length; i++) {
-      // TODO: to delete
-      console.log("Generating pdfDocs[" + i + "]")
       pdfDocs.push(generateInvoicePDF(invoices[i]))
     }
     resolve(pdfDocs)
@@ -717,7 +626,7 @@ export default {
   },
   methods: {
     getObjectIndexById(id) {
-      var index = -1;
+      let index = -1;
       this.objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
@@ -737,8 +646,14 @@ export default {
       this.filterDatesShortcut('this_month')
     },
     applyFilters() {
-      this.selected = []
       this.$vs.loading()
+
+      this.selected = []
+
+      this.invoices = []
+      this.invoicesTotalStats = {
+        amount: 0,
+      }
 
       if (this.dynamicStats['date_from'] != this.filters.date_from || this.dynamicStats['date_to'] != this.filters.date_to) {
         this.dynamicStats = {
@@ -1121,7 +1036,6 @@ export default {
         })
     },
     checkStatus(objIndex) {
-      // TODO: to delete???
       this.invoices = []
       this.invoicesTotalStats = {
         amount: 0,
@@ -1195,7 +1109,6 @@ export default {
                       status: t.status,
                     })
 
-                    // TODO: to delete???
                     if (t.status == 'completed') {
                       this.invoices.push({
                         'id': t.id,
@@ -1333,7 +1246,6 @@ export default {
         })
     },
     checkStatusGlobal() {
-      // TODO: to delete???
       this.invoices = []
       this.invoicesTotalStats = {
         amount: 0,
@@ -1406,7 +1318,6 @@ export default {
                         status: t.status,
                       })
 
-                      // TODO: to delete???
                       if (t.status == 'completed') {
                         this.invoices.push({
                           'id': t.id,
@@ -1592,32 +1503,6 @@ export default {
           })
         })
     },
-    // TODO: fix this function
-    isValidProxy(proxy) {
-      // TODO: to delete
-      return true
-
-      let regex = "/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-_.]+::.+$/"
-      return (proxy.match(regex) != null)
-    },
-    getProxyFromString(proxy) {
-      let toReturn = {
-        host: '',
-        port: 0,
-        auth: {
-          username: '',
-          password: '',
-        }
-      }
-
-      let splits = proxy.split('::')
-      toReturn.host = splits[0]
-      toReturn.port = parseInt(splits[1])
-      toReturn.auth.username = splits[2]
-      toReturn.auth.password = splits[3]
-
-      return toReturn
-    },
     multiCreateAdd() {
       this.multiCreate.push({
         name: '',
@@ -1753,131 +1638,126 @@ export default {
       }
       return cardValue
     },
-    initializeJSPDF() {
-      // Create font
-      let callAddFont = function () {
-          this.addFileToVFS('OpenSans-Regular-normal.ttf', OpenSansRegular);
-          this.addFont('OpenSans-Regular-normal.ttf', 'OpenSans-Regular', 'normal');
-          this.addFileToVFS('OpenSans-Bold-normal.ttf', OpenSansBold);
-          this.addFont('OpenSans-Bold-normal.ttf', 'OpenSans-Bold', 'normal');
-      }
-      jsPDF.API.events.push(['addFonts', callAddFont])
-
-      // Text alignment
-      var splitRegex = /\r\n|\r|\n/g;
-      jsPDF.API.textEx = function (text, x, y, hAlign, vAlign) {
-          var fontSize = this.internal.getFontSize() / this.internal.scaleFactor;
-
-          // As defined in jsPDF source code
-          var lineHeightProportion = 1.15;
-
-          var splittedText = null;
-          var lineCount = 1;
-          if (vAlign === 'middle' || vAlign === 'bottom' || hAlign === 'center' || hAlign === 'right') {
-              splittedText = typeof text === 'string' ? text.split(splitRegex) : text;
-
-              lineCount = splittedText.length || 1;
-          }
-
-          // Align the top
-          y += fontSize * (2 - lineHeightProportion);
-
-          if (vAlign === 'middle')
-              y -= (lineCount / 2) * fontSize;
-          else if (vAlign === 'bottom')
-              y -= lineCount * fontSize;
-
-          if (hAlign === 'center' || hAlign === 'right') {
-              var alignSize = fontSize;
-              if (hAlign === 'center')
-                  alignSize *= 0.5;
-
-              if (lineCount > 1) {
-                  for (var iLine = 0; iLine < splittedText.length; iLine++) {
-                      this.text(splittedText[iLine], x - this.getStringUnitWidth(splittedText[iLine]) * alignSize, y);
-                      y += fontSize * lineHeightProportion;
-                  }
-                  return this;
-              }
-              x -= this.getStringUnitWidth(text) * alignSize;
-          }
-
-          this.text(text, x, y);
-          return this;
-      };
-    },
+    
     showInvoicePreview(index) {
-      let doc = this.pdfDocs[index]
-      window.open(doc.output('bloburl'), '_blank')
+      this.$vs.loading()
+      this.$nextTick(() => {
+        setTimeout(() => {
+          let doc = generateInvoicePDF(this.invoices[index])
+          this.$vs.loading.close()
+          window.open(doc.output('bloburl'), '_blank')
+        }, 100)
+      })
     },
     showInvoicesTable() {
       if (!this.showInvoicesTableFlag) {
-        this.$vs.loading()
-        this.$nextTick(() => {
-          setTimeout(() => {
-            generateInvoices(this.invoices)
-              .then((pdfDocs) => {
-                this.pdfDocs = pdfDocs
-                this.showInvoicesTableFlag = true
-                this.$vs.loading.close()
-              })
-              .catch((log) => {
-                this.$vs.loading.close()
-              })
-          }, 1000)
-        })
+        this.showInvoicesTableFlag = true
       } else {
         this.showInvoicesTableFlag = false
       }
     },
-    uploadInvoices() {
+    downloadInvoices() {
       this.$vs.loading()
-
+      
       let numInvoicesUploaded = 0
 
       let headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'multipart/form-data',
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
       }
 
       for (let i = 0; i < this.selectedInvoices.length; i++) {
         let invoice = this.selectedInvoices[i]
-        let pdfDoc = this.pdfDocs[i]
 
         let d = new Date(invoice.time * 1000)
-        let filename = ''
-        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
-        filename += ' Transaction #' + invoice.id
-        filename += '.pdf'
-        let pdfFile = new File([pdfDoc.output('blob')], filename, {
-          type: pdfDoc.output('blob').type,
-          lastModified: pdfDoc.output('blob').lastModified,
-        });
-
         let invoiceDate = this.formatDate(d) + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds()
 
-        let formData = new FormData()
-        formData.append('file', pdfFile)
-        formData.append('transaction_id', invoice.id)
-        formData.append('invoice_date', invoiceDate)
-        formData.append('number', invoice.vat_invoice_id)
-        formData.append('language', 'eng')
-        formData.append('status', 'paid')
-        formData.append('amount', invoice.amount)
-        formData.append('currency', invoice.currency.toLowerCase())
+        let info = {
+          'ad_account_name': invoice.ad_account_name,
+          'ad_account_id': invoice.ad_account_id,
+          'funding_source': invoice.funding_source,
+          'reference_number': invoice.reference_number,
+          'billing_reason': invoice.billing_reason,
+          'billing_start_time': invoice.billing_start_time,
+          'billing_end_time': invoice.billing_end_time,
+        }
+        let data = {
+          'transaction_id': invoice.id,
+          'invoice_date': invoiceDate,
+          'number': invoice.vat_invoice_id,
+          'language': 'eng',
+          'status': 'paid',
+          'amount': invoice.amount,
+          'currency': invoice.currency.toLowerCase(),
+          'info': JSON.stringify(info)
+        }
 
         // Create invoice
-        this.$http.post('/api/v1/invoices/store-ex', formData, { headers: headers })
+        this.$http.post('/api/v1/invoices', data, { headers: headers })
           .then((response) => {
             numInvoicesUploaded++
             if (numInvoicesUploaded >= this.selectedInvoices.length) {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Success',
-                text: numInvoicesUploaded + ' invoices uploaded',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  generateInvoices(this.selectedInvoices)
+                    .then((pdfDocs) => {
+                      this.pdfDocs = pdfDocs
+
+                      // Create zip file and download
+                      let zip = new JSZip()
+                      for (let i = 0; i < this.selectedInvoices.length; i++) {
+                        let invoice = this.selectedInvoices[i]
+                        let d = new Date(invoice.time * 1000)
+                        let filename = ''
+                        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
+                        filename += ' Transaction #' + invoice.id
+                        filename += '.pdf'
+                        zip.folder(d.getFullYear().toString())
+                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+                          .file(filename, this.pdfDocs[i].output('arraybuffer'))
+                      }
+                      zip.generateAsync({type:"blob"}).then(function (blob) {
+                        let url = window.URL.createObjectURL(blob)
+                        let a = document.createElement("a")
+                        document.body.appendChild(a)
+                        a.style = "display: none"
+                        a.href = url
+                        a.download = "invoices.zip"
+                        a.click()
+                        window.URL.revokeObjectURL(url)
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Success',
+                          text: numInvoicesUploaded + ' invoices uploaded',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'success'
+                        })
+                      }.bind(this), function (err) {
+                        // TODO: to delete
+                        // This should be here only for debug purposes
+                        console.log(err)
+
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Error',
+                          text: 'Error while downloading PDFs',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'danger'
+                        })
+                      }.bind(this));
+                    })
+                    .catch((log) => {
+                      this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Error',
+                        text: 'Error while generating PDFs',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'danger'
+                      })
+                    })
+                }, 100)
               })
             }
           })
@@ -1888,13 +1768,68 @@ export default {
 
             numInvoicesUploaded++
             if (numInvoicesUploaded >= this.selectedInvoices.length) {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Success',
-                text: numInvoicesUploaded + ' invoices uploaded',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  generateInvoices(this.selectedInvoices)
+                    .then((pdfDocs) => {
+                      this.pdfDocs = pdfDocs
+
+                      // Create zip file and download
+                      let zip = new JSZip()
+                      for (let i = 0; i < this.selectedInvoices.length; i++) {
+                        let invoice = this.selectedInvoices[i]
+                        let d = new Date(invoice.time * 1000)
+                        let filename = ''
+                        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
+                        filename += ' Transaction #' + invoice.id
+                        filename += '.pdf'
+                        zip.folder(d.getFullYear().toString())
+                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+                          .file(filename, this.pdfDocs[i].output('arraybuffer'))
+                      }
+                      zip.generateAsync({type:"blob"}).then(function (blob) {
+                        let url = window.URL.createObjectURL(blob)
+                        let a = document.createElement("a")
+                        document.body.appendChild(a)
+                        a.style = "display: none"
+                        a.href = url
+                        a.download = "invoices.zip"
+                        a.click()
+                        window.URL.revokeObjectURL(url)
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Success',
+                          text: numInvoicesUploaded + ' invoices uploaded',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'success'
+                        })
+                      }.bind(this), function (err) {
+                        // TODO: to delete
+                        // This should be here only for debug purposes
+                        console.log(err)
+
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Error',
+                          text: 'Error while downloading PDFs',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'danger'
+                        })
+                      }.bind(this));
+                    })
+                    .catch((log) => {
+                      this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Error',
+                        text: 'Error while generating PDFs',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'danger'
+                      })
+                    })
+                }, 100)
               })
             }
           })
@@ -1902,27 +1837,6 @@ export default {
     },
   },
   created() {
-    this.initializeJSPDF()
-
-    // TODO: to delete
-    /*
-    let invoice = {
-      'id': '3126064814172325-6555665',
-      'ad_account_name': 'Redoa',
-      'ad_account_id': '985649491933016',
-      'time': 1604424742,
-      'funding_source': 'Mastercard *3489',
-      'reference_number': 'Z8KR3VAHA2',
-      'amount': '20.00',
-      'currency': 'EUR',
-      'billing_reason': 'You\'re being billed because you\'ve reached your €20.00 EUR threshold.',
-      'billing_start_time': 1604410222,
-      'billing_end_time': 1604424742,
-      'vat_invoice_id': 'FBADS-217-101143844',
-    }
-    this.generateInvoicePDF(invoice).save('test2.pdf')
-    */
-
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId

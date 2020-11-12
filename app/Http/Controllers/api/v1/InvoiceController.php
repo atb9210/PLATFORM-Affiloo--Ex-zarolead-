@@ -100,6 +100,56 @@ class InvoiceController extends Controller
     }
 
     /**
+     * Create a new invoice specifying fields
+     *
+     * @bodyParam transaction_id string required Invoice transaction id
+     * @bodyParam invoice_date string required Invoice transaction date
+     * @bodyParam number string required Invoice number
+     * @bodyParam language string required Invoice language
+     * @bodyParam status enum('paid', 'failed') required Invoice status
+     * @bodyParam amount float required Invoice amount
+     * @bodyParam currency string required Invoice currency
+     * @bodyParam info json Invoice info
+     *
+     * @response 201 {
+     *  "data": invoice,
+     * }
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', 'App\Invoice');
+
+        // Params validation
+        $params = $request->validate([
+            'transaction_id' => 'required|string',
+            'invoice_date' => 'required|date|date_format:Y-m-d H:i:s',
+            'number' => 'required|string',
+            'language' => 'required|string',
+            'status' => 'required|in:paid,failed',
+            'amount' => 'required|numeric|min:0',
+            'currency' => 'required|string',
+            'info' => 'json',
+        ]);
+        $params['user_id'] = Auth::user()->id;
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $invoiceQuery = Invoice::where('transaction_id', $params['transaction_id']);
+        if ($invoiceQuery->count() > 0) {
+            return response([
+                'errors' => 'That invoice already exists'
+            ], 403);
+        }
+
+        $invoice = Invoice::create($params);
+
+        return response([
+            "data" => new InvoiceResource($invoice),
+        ], 201);
+    }
+
+    /**
      * Create a new invoice.
      *
      * @bodyParam files[] file required Invoice(s) PDF(s)
@@ -108,7 +158,7 @@ class InvoiceController extends Controller
      *  "data": [invoices],
      * }
      */
-    public function store(Request $request)
+    public function storeFromFile(Request $request)
     {
         $this->authorize('create', 'App\Invoice');
 
@@ -354,7 +404,7 @@ class InvoiceController extends Controller
      * @bodyParam info json Invoice info
      *
      * @response 201 {
-     *  "data": [invoices],
+     *  "data": invoice,
      * }
      */
     public function storeEx(Request $request)
