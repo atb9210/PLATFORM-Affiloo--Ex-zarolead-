@@ -1361,8 +1361,6 @@ export default {
     },
     onFormSwitch(value) {
       this.$parent.switchForm(value)
-
-      //this.$router.push({name: 'form-stats', params: {form_id: value}})
     },
   },
   created() {

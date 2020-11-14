@@ -27,6 +27,14 @@ export default{
     }
   },
   methods: {
+    switchFbAccount(value) {
+      if (value == '' || value <= 0 || value == this.fb_account_id) {
+        return
+      }
+
+      this.$router.push({name: 'fb-ads', params: {fb_account_id: value}})
+      this.fb_account_id = parseInt(this.$route.params.fb_account_id)
+    }
   },
   created() {
     this.fb_account_id = parseInt(this.$route.params.fb_account_id)

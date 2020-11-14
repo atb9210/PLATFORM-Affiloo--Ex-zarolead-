@@ -11,6 +11,25 @@
 <template>
     <vx-card title="Form Stats" code-toggler>
 
+        <!-- TODO: Fix this
+        <div class="vx-row mb-2">
+            <div class="vx-col w-1/3">
+            </div>
+            <div class="vx-col w-1/3 text-center">
+                <vs-select
+                    autocomplete
+                    @input="onFbAccountSwitch"
+                    label="Switch Fb Account"
+                    v-model="fbAccountSwitch"
+                    >
+                    <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in fbAccountSwitchOptions" />
+                </vs-select>
+            </div>
+            <div class="vx-col w-1/3">
+            </div>
+        </div>
+        -->
+
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
         </p>
@@ -87,8 +106,6 @@
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
-                    <vs-th sort-key="impressions">Impressions</vs-th>
-                    <vs-th sort-key="clicks">Clicks</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="ctr">CTR</vs-th>
@@ -123,14 +140,6 @@
                             € {{data[indextr].cpa.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].impressions">
-                            {{data[indextr].impressions}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].clicks">
-                            {{data[indextr].clicks}}
-                        </vs-td>
-
                         <vs-td :data="data[indextr].cr">
                             {{data[indextr].cr.toFixed(2)}}%
                         </vs-td>
@@ -153,7 +162,8 @@
 
                         <vs-td>
                             <div class="flex items-center">
-                                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
+                                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
 
@@ -164,38 +174,30 @@
                     <vs-td></vs-td>
                     <vs-td></vs-td>
                     <vs-td>
-                        {{total_stats.visits}}
+                        € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
                     <vs-td>
-                        {{total_stats.leads}}
+                        {{total_stats.result}}
                     </vs-td>
                     <vs-td>
-                        € {{total_stats.total_cost.toFixed(2)}}
+                        € {{total_stats.cpa.toFixed(2)}}
                     </vs-td>
                     <vs-td>
-                        € {{total_stats.total_commission.toFixed(2)}}
+                        {{total_stats.cr.toFixed(2)}}%
                     </vs-td>
                     <vs-td>
-                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit.toFixed(2)}}</vs-chip>
+                        € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td>
-                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi.toFixed(2)}} %</vs-chip>
+                        {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
                     <vs-td>
-                        {{total_stats.cr.toFixed(2)}} %
+                        € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
                     <vs-td>
-                        {{total_stats.tq}}
+                        € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
-                        € {{total_stats.cpv.toFixed(2)}}
-                    </vs-td>
-                    <vs-td>
-                        <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv.toFixed(2)}}</vs-chip>
-                    </vs-td>
-                    <vs-td>
-                        € {{total_stats.cpl}}
-                    </vs-td>
+                    <vs-td></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -237,16 +239,16 @@ export default {
       statusOptions: ['ACTIVE', 'PAUSED'],
 
       total_stats: {
-        visits: 0,
-        leads: 0,
-        total_cost: 0,
-        total_commission: 0,
-        profit: 0,
-        roi: 0,
+        spent: 0,
+        result: 0,
+        cpa: 0,
+        impressions: 0,
+        clicks: 0,
         cr: 0,
-        cpv: 0,
-        epv: 0,
-        cpl: 0,
+        cpm: 0,
+        ctr: 0,
+        cpc: 0,
+        daily_budget: 0,
       },
       dateFormat: 'yyyy-MM-dd',
       filters: {
@@ -263,8 +265,8 @@ export default {
       creatingNoteBody: '',
 
       // TODO: Fb Account switch
-      formSwitchOptions: [],
-      formSwitch: 1,
+      fbAccountSwitchOptions: [],
+      fbAccountSwitch: 1,
     }
   },
   watch: {
@@ -307,21 +309,43 @@ export default {
       return index
     },
     calculateStats() {
-      this.total_stats = {
-        visits: 0,
-        leads: 0,
-        total_cost: 0,
-        total_commission: 0,
-        profit: 0,
-        roi: 0,
-        cr: 0,
-        tq: 0,
-        cpv: 0,
-        epv: 0,
-        cpl: 0,
-      }
+      let spent = 0
+      let result = 0
+      let cpa = 0
+      let impressions = 0
+      let clicks = 0
+      let cr = 0
+      let cpm = 0
+      let ctr = 0
+      let cpc = 0
+      let daily_budget = 0
 
-      // TODO: Calculate total stats
+      for (let i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+        spent += obj.spent
+        result += obj.result
+        impressions += obj.impressions
+        clicks += obj.clicks
+        daily_budget += obj.daily_budget
+      }
+      cpa = (result > 0) ? (spent/result) : spent
+      cr = (clicks > 0) ? ((result/clicks)*100) : ((result > 0) ? 9999.99 : 0)
+      cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
+      ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
+      cpc = (clicks > 0) ? (spent/clicks) : spent
+
+      this.total_stats = {
+        spent: spent,
+        result: result,
+        cpa: cpa,
+        impressions: impressions,
+        clicks: clicks,
+        cr: cr,
+        cpm: cpm,
+        ctr: ctr,
+        cpc: cpc,
+        daily_budget: daily_budget,
+      }
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -352,10 +376,9 @@ export default {
       fields += ',campaigns.time_range(' + timeRange + '){id,name,status,result,spent,impressions,clicks,bid_strategy,daily_budget}'
 
       // Retrieve campaigns
+      this.objects = []
       this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
         .then((response) => {
-          this.objects = []
-
           for (let j = 0; j < response.data.data.length; j++) {
             let adAccount = response.data.data[j]
 
@@ -372,7 +395,7 @@ export default {
                 let spent = parseFloat(campaign.spent/100)
                 let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
                 let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
-                let cpm = spent / 1000
+                let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
                 let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
                 let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
 
@@ -405,8 +428,7 @@ export default {
               }
             }
           }
-          // TODO: to calculate total stats
-          //this.calculateStats()
+          this.calculateStats()
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -512,16 +534,30 @@ export default {
           })
         })
     },
+    onFbAccountSwitch(value) {
+      this.$parent.switchFbAccount(value)
+    },
   },
   created() {
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
-    // Retrieve Fb Account
-    this.$http.get('/api/3rd/fb-accounts/' + this.fb_account_id, { headers })
+    // Retrieve Fb Accounts
+    this.$http.get('/api/3rd/fb-accounts', { headers })
       .then((response) => {
-        this.fb_account = response.data.data
+        this.fbAccountSwitchOptions = []
+        for (let i = 0; i < response.data.data.length; i++) {
+          let obj = response.data.data[i]
+          this.fbAccountSwitchOptions.push({
+            label: obj.name,
+            value: obj.id,
+          });
+          if (this.fb_account_id == obj.id) {
+            this.fb_account = obj
+          }
+        }
+        this.fbAccountSwitch = this.fb_account.id
         this.resetFilters()
       })
       .catch((error) => {
