@@ -149,7 +149,9 @@
 
                     <vs-td>
                         <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
-                            <vs-avatar size="24px" v-for="(bm, index) in data[indextr].info['bm']" :key="index" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
+                            <vx-tooltip :text="bm.name + ' (' + bm.id + ')'" v-for="(bm, index) in data[indextr].info['bm']" :key="index">
+                                <vs-avatar size="24px" @click="showBmInfo(indextr, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
+                            </vx-tooltip>
                         </div>
                     </vs-td>
 
@@ -494,6 +496,49 @@
             </div>
         </vs-popup>
 
+        <!-- Business manager info popup -->
+        <vs-popup title="Business manager info" :active.sync="showPopup['bm_info']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{bmInfoObj.name}} (ID: {{bmInfoObj.id}})</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full flex items-center mb-2">
+                    <a class="mr-auto ml-auto" :href="'https://business.facebook.com/home/accounts?business_id=' + bmInfoObj.id">
+                        https://business.facebook.com/home/accounts?business_id={{bmInfoObj.id}}
+                    </a>
+                </div>
+                <div class="vx-col w-1/3">
+                </div>
+                <div class="vx-col w-1/3 flex items-center">
+                    <vs-button @click="checkStatus(bmInfoObjIndex)" class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw"></vs-button>
+                    <vs-button v-clipboard:copy="'https://business.facebook.com/home/accounts?business_id=' + bmInfoObj.id" v-clipboard:success="onCopy" class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
+                </div>
+                <div class="vx-col w-1/3">
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    Invitation links:
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    Invitation links:
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -543,6 +588,7 @@ export default {
         'multi_create': false,
         'edit': false,
         'import': false,
+        'bm_info': false,
       },
       newObject: {
         'create': {
@@ -601,6 +647,9 @@ export default {
       },
       selectedInvoices: [],
       pdfDocs: [],
+
+      bmInfoObj: {},
+      bmInfoObjIndex: 0,
     }
   },
   computed: {
@@ -1051,6 +1100,7 @@ export default {
           response.data.data.forEach((bm) => {
             businesses[bm.id] = {
               id: bm.id,
+              name: bm.name,
               active: 0,
               warning: 0,
               total: 0,
@@ -1266,6 +1316,7 @@ export default {
             response.data.data.forEach((bm) => {
               businesses[bm.id] = {
                 id: bm.id,
+                name: bm.name,
                 active: 0,
                 warning: 0,
                 total: 0,
@@ -1854,6 +1905,26 @@ export default {
     },
     showAds(id) {
       this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
+    },
+    showBmInfo(index, bmIndex) {
+      this.bmInfoObjIndex = index
+      let bm = this.objects[index].info['bm'][bmIndex]
+
+      // TODO: to delete
+      console.log("bm.id", bm.id)
+
+      // TODO: HERE
+      this.bmInfoObj = bm
+      this.showPopup['bm_info'] = true
+    },
+    onCopy() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   created() {

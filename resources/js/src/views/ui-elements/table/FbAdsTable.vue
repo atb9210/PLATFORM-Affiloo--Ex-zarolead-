@@ -157,13 +157,18 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].daily_budget">
-                            € {{data[indextr].daily_budget.toFixed(2)}}
+                            <span v-if="data[indextr].cbo">
+                                € {{data[indextr].daily_budget.toFixed(2)}}
+                            </span>
+                            <span v-else>
+                                Adset budget
+                            </span>
                         </vs-td>
 
                         <vs-td>
                             <div class="flex items-center">
-                                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
-                                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
+                                <vs-button @click="editBudgetPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
+                                <vs-button @click="editBidPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
 
@@ -201,6 +206,65 @@
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
+
+            <!-- Edit budget popup -->
+            <vs-popup title="Edit budget" :active.sync="showPopup['edit_budget']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{editingCampaign.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Daily Budget</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingCampaign.daily_budget" />
+                    </div>
+                    <div class="vx-col w-full mt-2" v-if="!editingCampaign.cbo">
+                        <span>* This campign is non-CBO: this daily budget will be assigned to every adset of this campaign.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="editBudget" color="primary" type="filled" :disabled="!isValidForm('edit_budget')">Update budget</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Edit bid popup -->
+            <vs-popup title="Edit budget" :active.sync="showPopup['edit_bid']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{editingCampaign.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Type</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select v-model="editingCampaign.bid_strategy" class="w-full">
+                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in bidOptions" />
+                        </vs-select>
+                    </div>
+                </div>
+                <div class="vx-row mb-6" v-if="editingCampaign.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingBidAmount" />
+                    </div>
+                </div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full mt-2" v-if="!editingCampaign.cbo">
+                        <span>* This campign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="editBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+                </div>
+            </vs-popup>
+
         </div>
 
     </vx-card>
@@ -228,8 +292,6 @@ export default {
       deleted: [],
 
       maxItems: 20,
-
-      editingObject: -1,
 
       campaigns: [],
       networks: [],
@@ -267,6 +329,18 @@ export default {
       // TODO: Fb Account switch
       fbAccountSwitchOptions: [],
       fbAccountSwitch: 1,
+
+      editingCampaign: {},
+      showPopup: {
+        'edit_budget': false,
+        'edit_bid': false,
+      },
+      bidOptions: [
+        { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+      editingBidAmount: 0,
     }
   },
   watch: {
@@ -372,8 +446,9 @@ export default {
       }
       timeRange = JSON.stringify(timeRange)
       
-      let fields = 'account_id,name'
-      fields += ',campaigns.time_range(' + timeRange + '){id,name,status,result,spent,impressions,clicks,bid_strategy,daily_budget}'
+      let fields = 'id,name'
+      fields += ',campaigns.time_range(' + timeRange + '){id,name,status,result,spent,impressions,clicks,bid_strategy,daily_budget'
+      fields += ',adsets{id,name,bid_strategy,bid_amount,daily_budget}}'
 
       // Retrieve campaigns
       this.objects = []
@@ -399,6 +474,7 @@ export default {
                 let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
                 let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
 
+                let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
                 let daily_budget = 0
                 let bid_strategy = ''
                 if (campaign.hasOwnProperty('daily_budget')) {
@@ -408,8 +484,13 @@ export default {
                   bid_strategy = campaign.bid_strategy
                 }
 
+                let adsets = []
+                if (campaign.hasOwnProperty('adsets')) {
+                  adsets = campaign.adsets.data
+                }
+
                 this.objects.push({
-                  account_id: campaign.account_id,
+                  account_id: adAccount.id,
                   id: campaign.id,
                   name: campaign.name,
                   status: campaign.status,
@@ -422,12 +503,18 @@ export default {
                   cpm: cpm,
                   ctr: ctr,
                   cpc: cpc,
+                  cbo: cbo,
                   daily_budget: daily_budget,
                   bid_strategy: bid_strategy,
+                  adsets: adsets,
                 })
               }
             }
           }
+
+          // TODO: to delete
+          console.log(this.objects)
+
           this.calculateStats()
           this.$vs.loading.close()
         })
@@ -537,6 +624,247 @@ export default {
     onFbAccountSwitch(value) {
       this.$parent.switchFbAccount(value)
     },
+    isValidForm(type) {
+      if (type == 'edit_budget') {
+        if (this.editingCampaign.hasOwnProperty('daily_budget') &&
+            this.editingCampaign.daily_budget > 0) {
+          return true
+        }
+      } else if (type == 'edit_bid') {
+        if (this.editingCampaign.hasOwnProperty('bid_strategy') &&
+            this.editingCampaign.bid_strategy != '') {
+          return ((this.editingCampaign.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
+                  (this.editingCampaign.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingBidAmount > 0)
+        }
+      }
+      return false
+    },
+    editBudgetPopup(index) {
+      this.editingCampaign = this.objects[index]
+      this.showPopup['edit_budget'] = true
+    },
+    editBidPopup(index) {
+      this.editingCampaign = this.objects[index]
+      this.showPopup['edit_bid'] = true
+    },
+    editBudget() {
+      let dailyBudget = parseInt(this.editingCampaign.daily_budget * 100)
+
+      this.$vs.loading()
+
+      if (this.editingCampaign.cbo) {
+        // Change campaign daily budget
+        this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?daily_budget=' + dailyBudget + '&access_token=' + this.fb_account.token)
+          .then((response) => {
+            this.editingCampaign = {}
+            this.showPopup['edit_budget'] = false
+            this.$vs.loading.close()
+            this.applyFilters()
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Campaign daily budget updated',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+          })
+          .catch((error) => {
+            this.editingCampaign = {}
+            this.showPopup['edit_budget'] = false
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: 'Campaign daily budget cannot be modified',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      } else {
+        // Change all adsets daily budget of this campaign
+        let adsetCounter = 0
+        let errorCounter = 0
+        for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+          let adset = this.editingCampaign.adsets[i]
+          this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + '?daily_budget=' + dailyBudget + '&access_token=' + this.fb_account.token)
+            .then((response) => {
+              adsetCounter++
+              if (adsetCounter == this.editingCampaign.adsets.length) {
+                this.editingCampaign = {}
+                this.showPopup['edit_budget'] = false
+                this.$vs.loading.close()
+                this.applyFilters()
+                if (errorCounter == 0) {
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Adsets daily budget updated',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                } else {
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: errorCounter + ' errors occured while updating adsets daily buget',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                }
+              }
+            })
+            .catch((error) => {
+              adsetCounter++
+              errorCounter++
+              if (adsetCounter == this.editingCampaign.adsets.length) {
+                this.editingCampaign = {}
+                this.showPopup['edit_budget'] = false
+                this.$vs.loading.close()
+                this.applyFilters()
+                this.$vs.notify({
+                  title: 'Error',
+                  text: errorCounter + ' errors occured while updating adsets daily buget',
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+              }
+            })
+        }
+      }
+    },
+    editBid() {
+      let bidAmount = parseInt(this.editingBidAmount * 100)
+      let bidStrategy = this.editingCampaign.bid_strategy
+
+      this.$vs.loading()
+      if (this.editingCampaign.cbo) {
+        // Change campaign bid_strategy
+        this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?bid_strategy=' + bidStrategy + '&access_token=' + this.fb_account.token)
+          .then((response) => {
+            // Change all adsets bid amount of this campaign
+            let adsetCounter = 0
+            let errorCounter = 0
+            for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+              let adset = this.editingCampaign.adsets[i]
+
+              let params = ''
+              params += '?bid_amount=' + bidAmount
+              params += '&access_token=' + this.fb_account.token
+              this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+                .then((response) => {
+                  adsetCounter++
+                  if (adsetCounter == this.editingCampaign.adsets.length) {
+                    this.editingCampaign = {}
+                    this.showPopup['edit_bid'] = false
+                    this.$vs.loading.close()
+                    this.applyFilters()
+                    if (errorCounter == 0) {
+                      this.$vs.notify({
+                        title: 'Success',
+                        text: 'Adsets bid updated',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'success'
+                      })
+                    } else {
+                      this.$vs.notify({
+                        title: 'Error',
+                        text: errorCounter + ' errors occured while updating adsets bid',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'danger'
+                      })
+                    }
+                  }
+                })
+                .catch((error) => {
+                  adsetCounter++
+                  errorCounter++
+                  if (adsetCounter == this.editingCampaign.adsets.length) {
+                    this.editingCampaign = {}
+                    this.showPopup['edit_bid'] = false
+                    this.$vs.loading.close()
+                    this.applyFilters()
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: errorCounter + ' errors occured while updating adsets bid',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  }
+                })
+            }
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: 'Campaign daily budget cannot be modified',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      } else {
+        // Change all adsets bid amount and bid strategy of this campaign
+        let adsetCounter = 0
+        let errorCounter = 0
+        for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+          let adset = this.editingCampaign.adsets[i]
+
+          let params = ''
+          params += '?bid_amount=' + bidAmount
+          params += '&bid_strategy=' + bidStrategy
+          params += '&access_token=' + this.fb_account.token
+          this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+            .then((response) => {
+              adsetCounter++
+              if (adsetCounter == this.editingCampaign.adsets.length) {
+                this.editingCampaign = {}
+                this.showPopup['edit_bid'] = false
+                this.$vs.loading.close()
+                this.applyFilters()
+                if (errorCounter == 0) {
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Adsets bid updated',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                } else {
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: errorCounter + ' errors occured while updating adsets bid',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                }
+              }
+            })
+            .catch((error) => {
+              adsetCounter++
+              errorCounter++
+              if (adsetCounter == this.editingCampaign.adsets.length) {
+                this.editingCampaign = {}
+                this.showPopup['edit_bid'] = false
+                this.$vs.loading.close()
+                this.applyFilters()
+                this.$vs.notify({
+                  title: 'Error',
+                  text: errorCounter + ' errors occured while updating adsets bid',
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+              }
+            })
+        }
+      }
+    },
   },
   created() {
     let headers = {
@@ -576,11 +904,3 @@ export default {
 }
 
 </script>
-
-<style>
-.note {
-    border: 1px solid gray;
-    background-color: #eaeaea;
-    border-radius: 0.5rem;
-}
-</style>
