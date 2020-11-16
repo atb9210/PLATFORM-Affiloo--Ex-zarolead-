@@ -743,31 +743,50 @@ export default {
         this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?bid_strategy=' + bidStrategy + '&access_token=' + this.fb_account.token)
           .then((response) => {
             // Change all adsets bid amount of this campaign
-            let adsetCounter = 0
-            let errorCounter = 0
-            for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
-              let adset = this.editingCampaign.adsets[i]
+            if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+              let adsetCounter = 0
+              let errorCounter = 0
+              for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+                let adset = this.editingCampaign.adsets[i]
 
-              let params = ''
-              params += '?bid_amount=' + bidAmount
-              params += '&access_token=' + this.fb_account.token
-              this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
-                .then((response) => {
-                  adsetCounter++
-                  if (adsetCounter == this.editingCampaign.adsets.length) {
-                    this.editingCampaign = {}
-                    this.showPopup['edit_bid'] = false
-                    this.$vs.loading.close()
-                    this.applyFilters()
-                    if (errorCounter == 0) {
-                      this.$vs.notify({
-                        title: 'Success',
-                        text: 'Adsets bid updated',
-                        iconPack: 'feather',
-                        icon: 'icon-alert-circle',
-                        color: 'success'
-                      })
-                    } else {
+                let params = ''
+                params += '?bid_amount=' + bidAmount
+                params += '&access_token=' + this.fb_account.token
+                this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+                  .then((response) => {
+                    adsetCounter++
+                    if (adsetCounter == this.editingCampaign.adsets.length) {
+                      this.editingCampaign = {}
+                      this.showPopup['edit_bid'] = false
+                      this.$vs.loading.close()
+                      this.applyFilters()
+                      if (errorCounter == 0) {
+                        this.$vs.notify({
+                          title: 'Success',
+                          text: 'Adsets bid updated',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'success'
+                        })
+                      } else {
+                        this.$vs.notify({
+                          title: 'Error',
+                          text: errorCounter + ' errors occured while updating adsets bid',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'danger'
+                        })
+                      }
+                    }
+                  })
+                  .catch((error) => {
+                    adsetCounter++
+                    errorCounter++
+                    if (adsetCounter == this.editingCampaign.adsets.length) {
+                      this.editingCampaign = {}
+                      this.showPopup['edit_bid'] = false
+                      this.$vs.loading.close()
+                      this.applyFilters()
                       this.$vs.notify({
                         title: 'Error',
                         text: errorCounter + ' errors occured while updating adsets bid',
@@ -776,25 +795,8 @@ export default {
                         color: 'danger'
                       })
                     }
-                  }
-                })
-                .catch((error) => {
-                  adsetCounter++
-                  errorCounter++
-                  if (adsetCounter == this.editingCampaign.adsets.length) {
-                    this.editingCampaign = {}
-                    this.showPopup['edit_bid'] = false
-                    this.$vs.loading.close()
-                    this.applyFilters()
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: errorCounter + ' errors occured while updating adsets bid',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
-                  }
-                })
+                  })
+              }
             }
           })
           .catch((error) => {
@@ -815,8 +817,10 @@ export default {
           let adset = this.editingCampaign.adsets[i]
 
           let params = ''
-          params += '?bid_amount=' + bidAmount
-          params += '&bid_strategy=' + bidStrategy
+          params += '?bid_strategy=' + bidStrategy
+          if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+            params += '&bid_amount=' + bidAmount
+          }
           params += '&access_token=' + this.fb_account.token
           this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
             .then((response) => {
