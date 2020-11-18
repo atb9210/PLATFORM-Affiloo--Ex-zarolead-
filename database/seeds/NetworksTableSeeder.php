@@ -386,5 +386,143 @@ class NetworksTableSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/zarolead' : $app_url . '/api/3rd/network');
+        \App\Network::create([
+            'name' => 'ZaroLead',
+            'api' => [
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'bodyParams' => [
+                            'email' => '{input.email}',
+                            'phone' => '{input.phone}',
+                            'address' => '{input.address}',
+                            'city' => '{input.city}',
+                            'zipcode' => '{input.zipcode}',
+                            'state' => '{input.state}',
+                            'country' => '{input.country}',
+                            'quantity' => '{input.quantity}',
+                            'name' => '{input.name}',
+                            'product_name' => '{form.product_name}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                            ],
+                            'bodyParams' => [
+                                'email' => 'required|email',
+                                'phone' => 'required|string|min:8',
+                                'address' => 'required|string|min:4',
+                                'city' => 'string',
+                                'zipcode' => 'string',
+                                'state' => 'string',
+                                'country' => 'string',
+                                'quantity' => 'required',
+                                'name' => 'required|string|min:3',
+                                'product_name' => 'required|string',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'status' => 'required|in:success',
+                                ],
+                            ],
+                            'error' => [
+                                'validation' => [
+                                    'status' => 'required|in:error',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                    /*
+                    // TODO to include postback?
+                    'postback' => [
+                        [
+                            'on' => 'success',
+                            'url' => 'http://ztrk37.com/postback',
+                            'method' => 'get',
+                            'urlParams' => [
+                                'cid' => '{input.sub_id}',
+                                'payout' => '{order.commission}',
+                            ],
+                        ],
+                    ],
+                    */
+                ],
+                'form' => [
+                    'input' => [
+                        'email' => [
+                            'type' => 'email',
+                            'required' => '',
+                            'label' => 'Email',
+                        ],
+                        'name' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Nome e cognome',
+                        ],
+                        'phone' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Telefono (meglio cellulare)',
+                        ],
+                        'city' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Città'
+                        ],
+                        'state' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Provincia'
+                        ],
+                        'zipcode' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'CAP'
+                        ],
+                        'country' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Stato'
+                        ],
+                        'address' => [
+                            'type' => 'text',
+                            'required' => '',
+                            'label' => 'Indirizzo di consegna'
+                        ],
+                    ],
+                    // TODO: HERE
+                    'params' => [
+                        'product_name' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'email' => 'required|email',
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:8',
+                            'city' => 'required|string|min:2',
+                            'state' => 'required|string|min:2',
+                            'zipcode' => 'required|string|min:2',
+                            'country' => 'required|string|min:2',
+                            'address' => 'required|string|min:4',
+                        ],
+                        'params' => [
+                            'product_name' => 'required|string|min:1',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 }

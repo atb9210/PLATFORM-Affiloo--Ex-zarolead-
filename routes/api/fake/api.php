@@ -13,13 +13,11 @@ use Illuminate\Http\Request;
 |
 */
 
-/*
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-*/
-
-/* Auth routes */
+/* Network routes */
 Route::post('/network/worldfilia', 'api\fake\NetworkController@worldfilia')->name('network.worldfilia');
 Route::post('/network/amsped', 'api\fake\NetworkController@amsped')->name('network.amsped');
 Route::get('/network/affiliation-park', 'api\fake\NetworkController@affiliationPark')->name('network.affiliation-park');
+Route::post('/network/zarolead', 'api\fake\NetworkController@zarolead')->name('network.amsped');
+
+/* Logistic routes */
+Route::post('/logistic/momoka', 'api\fake\LogisticController@momoka')->name('logistic.momoka');

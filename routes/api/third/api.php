@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
+/* Internal network routes */
+Route::post('/network', 'api\third\NetworkController@store')->name('network');
+
 /* Fb accounts routes */
 Route::apiResource('fb-accounts', 'api\third\FbAccountController')->except([
     'create', 'edit',

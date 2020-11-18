@@ -87,7 +87,7 @@
     position: relative;
     margin: auto;
     width: 100%;
-    height: calc(var(--vh, 1vh) * 100 - 69px);
+    height: calc(var(--vh, 1vh) * 100 - 151px); // NOTE: Changed by me, it was -69px but I changed the logo so now it's -151px
 
     &:not(.ps) {
       overflow-y: auto;
