@@ -60,6 +60,7 @@ class Order extends Model
         $context = [
             'input' => $input,
             'form' => $form,
+            'order' => $this->toArray(),
         ];
 
         // Params validation
@@ -383,18 +384,11 @@ class Order extends Model
             }
         }
         if (!$error) {
-            // TODO: To remove
-            //$this->orderSentToNetwork($this->id);
-
             $this->order_status_id = OrderStatus::WAITING;
         } else {
             // TODO: Generalize the algorithm (this only works for worldfilia)
             if (isset($server_output['check_url'])) {
                 $toReturn['redirect'] = $server_output['check_url'];
-
-                // TODO: to remove
-                // The order is double type
-                //$info['double_type'] = true;
 
                 $this->order_status_id = OrderStatus::DOUBLE;
 

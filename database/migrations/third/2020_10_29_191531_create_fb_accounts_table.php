@@ -13,7 +13,7 @@ class CreateFbAccountsTable extends Migration
      */
     public function up()
     {
-        Schema::create('3rd_fb_accounts', function (Blueprint $table) {
+        Schema::create('third_fb_accounts', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->string('gologin_id')->nullable()->unique();

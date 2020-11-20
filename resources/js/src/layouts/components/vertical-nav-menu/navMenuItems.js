@@ -132,6 +132,14 @@ export default [
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
       {
+        url: '/dashboard/logistics-orders',
+        name: 'Logistics Orders',
+        slug: 'logistics-orders',
+        icon: 'PackageIcon',
+        i18n: 'Logistics Orders',
+        roles: ['developer', 'admin'],
+      },
+      {
         url: '/dashboard/forms',
         name: 'Forms',
         slug: 'forms',

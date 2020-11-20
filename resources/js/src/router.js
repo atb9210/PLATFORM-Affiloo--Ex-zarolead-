@@ -1666,6 +1666,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/logistics-orders',
+          name: 'logistics-orders',
+          component: () => import('./views/LogisticsOrders.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Logistics Orders', active: true }
+            ],
+            pageTitle: 'Logistics Orders',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/fb-ads/:fb_account_id',
           props: true,
           name: 'fb-ads',

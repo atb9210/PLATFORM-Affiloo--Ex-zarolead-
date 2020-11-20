@@ -35,7 +35,7 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="networks" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="email">Id</vs-th>
+                <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="username">Name</vs-th>
             </template>
 
@@ -66,11 +66,6 @@ export default {
       deleted: [],
 
       maxItems: 20,
-
-      creationPopup: false,
-      newObject: {
-        name: '',
-      }
     }
   },
   computed: {
@@ -90,9 +85,6 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
-    },
-    isValidCreationForm() {
-      return (this.newObject.name.length > 0)
     },
   },
   methods: {

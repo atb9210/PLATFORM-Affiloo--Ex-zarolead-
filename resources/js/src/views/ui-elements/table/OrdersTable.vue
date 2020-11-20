@@ -105,7 +105,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].created_at">
-                        {{data[indextr].created_at}}
+                        {{formatDateTime(new Date(data[indextr].created_at))}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].product">
@@ -397,6 +397,18 @@ export default {
       let yyyy = dateObj.getFullYear();
       
       let formattedDate = yyyy + '-' + mm + '-' + dd;
+      return formattedDate;
+    },
+    formatDateTime(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0');
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = dateObj.getFullYear();
+
+      let hh = String(dateObj.getHours());
+      let ii = String(dateObj.getMinutes());
+      let ss = String(dateObj.getSeconds());
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii + ':' + ss;
       return formattedDate;
     },
     exportTable() {

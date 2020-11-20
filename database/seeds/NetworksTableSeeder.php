@@ -396,7 +396,8 @@ class NetworksTableSeeder extends Seeder
                         'url' => $url,
                         'method' => 'post',
                         'type' => 'json',
-                        'bodyParams' => [
+                        'urlParams' => [
+                            'order_id' => '{order.id}',
                             'email' => '{input.email}',
                             'phone' => '{input.phone}',
                             'address' => '{input.address}',
@@ -407,21 +408,26 @@ class NetworksTableSeeder extends Seeder
                             'quantity' => '{input.quantity}',
                             'name' => '{input.name}',
                             'product_name' => '{form.product_name}',
+                            'sku' => '{form.sku}',
+                            'weight' => '{form.weight}',
+                            'transaction_id' => '',
                         ],
                         'validation' => [
                             'urlParams' => [
-                            ],
-                            'bodyParams' => [
+                                'order_id' => 'required|integer|exists:orders,id',//TODO:
                                 'email' => 'required|email',
                                 'phone' => 'required|string|min:8',
                                 'address' => 'required|string|min:4',
-                                'city' => 'string',
-                                'zipcode' => 'string',
-                                'state' => 'string',
-                                'country' => 'string',
-                                'quantity' => 'required',
+                                'city' => 'required|string',
+                                'zipcode' => 'required|string',
+                                'state' => 'required|string',
+                                'country' => 'required|string',
+                                'quantity' => 'required|string',
                                 'name' => 'required|string|min:3',
                                 'product_name' => 'required|string',
+                                'sku' => 'required|string',
+                                'weight' => 'required|string',
+                                'transaction_id' => 'required|string|min:0',
                             ],
                         ],
                     ],
@@ -499,9 +505,16 @@ class NetworksTableSeeder extends Seeder
                             'label' => 'Indirizzo di consegna'
                         ],
                     ],
-                    // TODO: HERE
                     'params' => [
                         'product_name' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'sku' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'weight' => [
                             'type' => 'text',
                             'required' => '',
                         ],
@@ -519,6 +532,7 @@ class NetworksTableSeeder extends Seeder
                         ],
                         'params' => [
                             'product_name' => 'required|string|min:1',
+                            'sku' => 'required|string|min:1',
                         ],
                     ],
                 ],

@@ -4,6 +4,9 @@ namespace App\Http\Controllers\api\fake;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+use App\third\LogisticsOrder;
 
 class NetworkController extends Controller
 {
@@ -31,30 +34,54 @@ class NetworkController extends Controller
 
     public function zarolead(Request $request)
     {
+        $validator = Validator::make($request->query(), [
+            'order_id'       => 'required|integer|exists:orders,id',
+            'email'          => 'required|email',
+            'phone'          => 'required|string|min:7',
+            'address'        => 'required|string|min:4',
+            'city'           => 'required|string|min:2',
+            'zipcode'        => 'required|string|min:2',
+            'state'          => 'required|string|min:2',
+            'country'        => 'required|string|min:2',
+            'quantity'       => 'required|string',
+            'name'           => 'required|string',
+            'weight'         => 'required|string',
+            'product_name'   => 'required|string',
+            'sku'            => 'required|string',
+            'transaction_id' => 'nullable|string',
+        ]);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
+
+        $params = $request->query();
         $logisticUrl = 'http://zarolead.localhost/api/fake/logistic/momoka';
 
         $bodyParams = [
-            'user_id'        => '11665252',//'8748434',
+            'user_id'        => '11665252',
             'org_id'         => '1',
             'advertiser'     => '0030',
             'pipeline_id'    => '1',
-            'order_id'       => '[IL TUO RIFERIMENTO ORDINE SE PRESENTE]',
-            'email'          => 'debora.carofiglio@gmail.com',
-            'phone'          => '3890054330',
-            'address'        => 'Via G. Di Vittorio 27',
-            'city'           => 'Città Sant’Angelo',
-            'zipcode'        => '65013',
-            'state'          => 'PE',
-            'country'        => 'ITA',
-            'product'        => 'Quantità + SKU + nome prodotto',
-            'quantity'       => '1',
+            'order_id'       => $params['order_id'],
+            'email'          => $params['email'],
+            'phone'          => $params['phone'],
+            'address'        => $params['address'],
+            'city'           => $params['city'],
+            'zipcode'        => $params['zipcode'],
+            'state'          => $params['state'],
+            'country'        => $params['country'],
+            'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
+            'quantity'       => $params['quantity'],
             'payment'        => 'Alla consegna',
-            'aff_id'         => '[nome o numero affiliato]',
-            'contactname'    => '[nome citofono]',
-            'fullname'       => '[nome e cognome]',
-            'weight'         => '[peso degli articoli]',
-            'productCode'    => '[SKU]',
-            'transaction_id' => '[numero transazione della conversione]',
+            'aff_id'         => '2',
+            'contactname'    => $params['name'],
+            'fullname'       => $params['name'],
+            'weight'         => $params['weight'],
+            'productCode'    => $params['sku'],
+            'transaction_id' => $params['transaction_id'],
         ];
 
         $ch = curl_init();
@@ -65,9 +92,16 @@ class NetworkController extends Controller
         $server_output = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
         $response = json_decode($server_output, true);
 
         if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
+            $info = $bodyParams;
+            $order = LogisticsOrder::create([
+                'logistics_system_id' => 1,
+                'order_id' => $params['order_id'],
+                'info' => $info,
+            ]);
             return response([
                 'status' => 'success',
             ]);
