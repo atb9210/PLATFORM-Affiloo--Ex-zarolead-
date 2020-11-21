@@ -494,8 +494,13 @@
                 </div>
 
                 <div class="vx-row mb-6">
-                    <div class="vx-col w-full mt-2">
-                        <img :src="(viewingObject.image_url != '') ? viewingObject.image_url : noImage" class="w-full">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
+                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
                     </div>
                 </div>
 
@@ -513,24 +518,24 @@
                 
                 <div class="vx-row mb-6">
                     <div class="vx-col w-full">
-                        <vs-table stripe>
+                        <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
                             <template slot="thead">
-                                <vs-th>CTR</vs-th>
-                                <vs-th>CPC</vs-th>
-                                <vs-th>CPA</vs-th>
+                                <vs-th sort-key="ctr">CTR</vs-th>
+                                <vs-th sort-key="cpc">CPC</vs-th>
+                                <vs-th sort-key="cpa">CPA</vs-th>
                                 <vs-th>Actions</vs-th>
                             </template>
 
-                            <template>
-                                <vs-tr>
+                            <template slot-scope="{data}">
+                                <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
                                     <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
-                                        {{viewingObject.ctr.toFixed(2)}}
+                                        {{data[indextr].ctr.toFixed(2)}}%
                                     </vs-td>
                                     <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
-                                        {{viewingObject.cpc.toFixed(2)}}
+                                        € {{data[indextr].cpc.toFixed(2)}}
                                     </vs-td>
                                     <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
-                                        {{viewingObject.cpa.toFixed(2)}}
+                                        € {{data[indextr].cpa.toFixed(2)}}
                                     </vs-td>
                                     <vs-td>
                                         <div class="flex items-center">
@@ -541,6 +546,7 @@
                                     </vs-td>
                                 </vs-tr>
                             </template>
+                            
                         </vs-table>
                     </div>
                 </div>
@@ -625,7 +631,7 @@ export default {
       ],
       editingBidAmount: 0,
 
-      noImage: 'https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png',
+      noImageUrl: '',
     }
   },
   watch: {
@@ -827,6 +833,10 @@ export default {
                         if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
                           adLinkUrl = ad.creative.link_url
                         }
+                        let adImageUrl = ''
+                        if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                          adImageUrl = ad.creative.image_url
+                        }
 
                         let adToPush = {
                           object_type: 'ad',
@@ -846,7 +856,7 @@ export default {
                           cpc: adCpc,
                           daily_budget: adDailyBudget,
                           bid_strategy: adBidStrategy,
-                          image_url: ad.creative.image_url,
+                          image_url: adImageUrl,
                           body: ad.creative.body,
                           title: ad.creative.title,
                           call_to_action_type: ad.creative.call_to_action_type,
