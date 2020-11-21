@@ -625,7 +625,7 @@ export default {
       ],
       editingBidAmount: 0,
 
-      noImage: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/No_image_3x4.svg',
+      noImage: 'https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png',
     }
   },
   watch: {
