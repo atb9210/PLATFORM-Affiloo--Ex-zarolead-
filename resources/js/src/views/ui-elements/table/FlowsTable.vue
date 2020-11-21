@@ -63,7 +63,8 @@
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url_domain" v-clipboard:success="onUrlCopied"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link" v-clipboard:copy="data[indextr].url_domain" v-clipboard:success="onUrlCopied"></vs-button>
+                            <vs-button @click="showDuplicatePopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -287,6 +288,23 @@
             </div>
         </vs-popup>
 
+        <!-- Duplicate popup -->
+        <vs-popup title="Duplicate Flow" :active.sync="showPopup['duplicate']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Path name zarolead.com/flo/</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="duplicatePathName" />
+                    <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateObject" color="primary" type="filled" :disabled="!isValidDuplicatePopup()">Duplicate</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -315,6 +333,7 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
+        'duplicate': false,
       },
       newObject: {
         'create': {
@@ -357,6 +376,9 @@ export default {
       typeOptions: [
         'redirect', 'hotload',
       ],
+
+      duplicateObjectIndex: 0,
+      duplicatePathName: '',
     }
   },
   computed: {
@@ -597,6 +619,69 @@ export default {
           }
         })
     },
+    isValidDuplicatePopup() {
+      return this.duplicatePathName != ''
+    },
+    duplicateObject(index) {
+      if (this.duplicateObjectIndex < 0 || this.duplicateObjectIndex >= this.objects.length) return
+
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let obj = this.objects[this.duplicateObjectIndex]
+
+      let pathName = this.duplicatePathName
+      if (pathName.length > 0) {
+        if (!pathName.includes(".")) {
+          if (this.duplicatePathName.slice(-1) != "/") {
+            pathName += "/"
+          }
+          pathName += 'index.php'
+        }
+      }
+
+      let data = {
+        name: obj.name,
+        type: obj.type,
+        rules: JSON.stringify(obj.rules),
+        domain_id: obj.domain.id,
+        path_name: pathName,
+        traffic_source_id: obj.traffic_source.id,
+      }
+
+      this.$http.post('/api/v1/flows', data, { headers: headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Flow duplicated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.errors.clear()
+          this.duplicatePathName = ''
+          this.showPopup['duplicate'] = false
+          this.retrieveObjects()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.errors.clear()
+          if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
+            for (const [key, value] of Object.entries(error.response.data.errors)) {
+              for (let i = 0; i < value.length; i++) {
+                this.errors.add({
+                  field: key,
+                  msg: value[i]
+                })
+              }
+            }
+          }
+        })
+    },
     editForm(id) {
       let obj = this.objects[this.getObjectIndexById(id)]
 
@@ -809,6 +894,10 @@ export default {
         icon: 'icon-alert-circle',
         color: 'success'
       })
+    },
+    showDuplicatePopup(index) {
+      this.duplicateObjectIndex = index
+      this.showPopup['duplicate'] = true
     },
   },
   created() {
