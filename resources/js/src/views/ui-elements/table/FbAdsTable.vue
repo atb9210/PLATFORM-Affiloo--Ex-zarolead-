@@ -128,8 +128,9 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch color="success" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchCampaignStatus(indextr)">
-                                <span slot="on">Active</span>
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', indextr)">
+                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -183,7 +184,7 @@
                     <!-- TOTAL STATS -->
                     <vs-td></vs-td>
                     <vs-td></vs-td>
-                    <vs-td>this.campaigns.length</vs-td>
+                    <vs-td>{{data.length}}</vs-td>
                     <vs-td>
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
@@ -238,8 +239,9 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch color="success" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchCampaignStatus(indextr)">
-                                <span slot="on">Active</span>
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('adset', indextr)">
+                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -293,7 +295,7 @@
                     <!-- TOTAL STATS -->
                     <vs-td></vs-td>
                     <vs-td></vs-td>
-                    <vs-td>this.adsets.length</vs-td>
+                    <vs-td>{{data.length}}</vs-td>
                     <vs-td>
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
@@ -347,8 +349,9 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch color="success" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchCampaignStatus(indextr)">
-                                <span slot="on">Active</span>
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', indextr)">
+                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -392,7 +395,7 @@
                     <!-- TOTAL STATS -->
                     <vs-td></vs-td>
                     <vs-td></vs-td>
-                    <vs-td>this.ads.length</vs-td>
+                    <vs-td>{{data.length}}</vs-td>
                     <vs-td>
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
@@ -487,43 +490,61 @@
             <!-- View ad popup -->
             <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
                 <div class="vx-row mb-6 flex items-center">
-                    <vs-button class="mr-auto ml-auto">{{editingObject.name}}</vs-button>
+                    <vs-button class="mr-auto ml-auto">{{viewingObject.name}}</vs-button>
                 </div>
 
                 <div class="vx-row mb-6">
                     <div class="vx-col w-full mt-2">
-                        <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
+                        <img :src="(viewingObject.image_url != '') ? viewingObject.image_url : noImage" class="w-full">
                     </div>
                 </div>
+
                 <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/3 w-full">
-                        <span>Bid Type</span>
+                    <div class="vx-col w-full">
+                        <span>{{viewingObject.body}}</span>
                     </div>
-                    <div class="vx-col sm:w-2/3 w-full">
-                        <vs-select v-model="editingObject.bid_strategy" class="w-full">
-                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in bidOptions" />
-                        </vs-select>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span><b>{{viewingObject.title}}</b></span>
                     </div>
                 </div>
                 
-                <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
-                    <div class="vx-col sm:w-1/3 w-full">
-                        <span>Bid Amount</span>
-                    </div>
-                    <div class="vx-col sm:w-2/3 w-full">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingBidAmount" />
-                    </div>
-                </div>
-
                 <div class="vx-row mb-6">
-                    <div class="vx-col w-full mt-2" v-if="(editingObject.object_type == 'campaign') && (editingObject.hasOwnProperty('cbo')) && (!editingObject.cbo)">
-                        <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                    <div class="vx-col w-full">
+                        <vs-table stripe>
+                            <template slot="thead">
+                                <vs-th>CTR</vs-th>
+                                <vs-th>CPC</vs-th>
+                                <vs-th>CPA</vs-th>
+                                <vs-th>Actions</vs-th>
+                            </template>
+
+                            <template>
+                                <vs-tr>
+                                    <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
+                                        {{viewingObject.ctr.toFixed(2)}}
+                                    </vs-td>
+                                    <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
+                                        {{viewingObject.cpc.toFixed(2)}}
+                                    </vs-td>
+                                    <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
+                                        {{viewingObject.cpa.toFixed(2)}}
+                                    </vs-td>
+                                    <vs-td>
+                                        <div class="flex items-center">
+                                            <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
+                                            <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
+                                            <vs-button @click="saveAd(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
+                                        </div>
+                                    </vs-td>
+                                </vs-tr>
+                            </template>
+                        </vs-table>
                     </div>
                 </div>
-
-                <div class="vx-row mb-6">
-                    <vs-button class="mt-12 mr-auto ml-auto" @click="editBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
-                </div>
+                
             </vs-popup>
 
         </div>
@@ -558,7 +579,7 @@ export default {
       adsets: [],
       ads: [],
 
-      statusOptions: ['ACTIVE', 'PAUSED'],
+      statusOptions: ['ACTIVE', 'PAUSED', 'REVIEW'],
 
       total_stats: {
         spent: 0,
@@ -603,6 +624,8 @@ export default {
         { value:'COST_CAP',                 label: 'Cost cap' },
       ],
       editingBidAmount: 0,
+
+      noImage: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/No_image_3x4.svg',
     }
   },
   watch: {
@@ -720,10 +743,10 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,result,spent,impressions,clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',creative\{image_url,body,title,call_to_action_type,object_url\}'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,daily_budget'
+      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
       fields += '\}'
       fields += '\}'
       fields += '\}'
@@ -742,7 +765,11 @@ export default {
                 let campaign = adAccount.campaigns.data[i]
 
                 if (this.filters.status != '') {
-                  if (campaign.status != this.filters.status) {
+                  if (this.filters.status == 'REVIEW') {
+                    if (campaigns.effective_status != 'IN_PROCESS') {
+                      continue
+                    }
+                  } else if (campaign.status != this.filters.status) {
                     continue
                   }
                 }
@@ -796,6 +823,10 @@ export default {
                         if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
                           adUrl = ad.creative.object_url
                         }
+                        let adLinkUrl = ''
+                        if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                          adLinkUrl = ad.creative.link_url
+                        }
 
                         let adToPush = {
                           object_type: 'ad',
@@ -820,6 +851,7 @@ export default {
                           title: ad.creative.title,
                           call_to_action_type: ad.creative.call_to_action_type,
                           url: adUrl,
+                          post_url: adLinkUrl,
                         }
                         ads.push(adToPush)
                         this.ads.push(adToPush)
@@ -966,32 +998,66 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    switchCampaignStatus(index) {
-      let campaign = this.campaigns[index]
+    switchStatus(what, index) {
+      // TODO: HERE
+      let obj = {}
+      if (what == 'campaign') {
+        obj = this.campaigns[index]
+      } else if (what == 'adset') {
+        obj = this.adsets[index]
+      } else if (what == 'ad') {
+        obj = this.ads[index]
+      } else {
+        return
+      }
 
-      let oldStatus = campaign.status
-      let status = (campaign.status == 'ACTIVE') ? 'PAUSED' : 'ACTIVE'
-      this.campaigns[index].status = status
+      let oldStatus = obj.status
+      let status = (obj.status == 'ACTIVE') ? 'PAUSED' : 'ACTIVE'
+      if (what == 'campaign') {
+        this.campaigns[index].status = status
+      } else if (what == 'adset') {
+        this.adsets[index].status = status
+      } else if (what == 'ad') {
+        this.ads[index].status = status
+      }
 
-      // Change fb campaign status
-      this.$http.post('https://graph.facebook.com/v9.0/' + campaign.id + '?status=' + campaign.status + '&access_token=' + this.fb_account.token)
+      // Change fb campaign/adset/ad status
+      this.$http.post('https://graph.facebook.com/v9.0/' + obj.id + '?status=' + obj.status + '&access_token=' + this.fb_account.token)
         .then((response) => {
           if (response.data.success) {
-            this.campaigns[index].status = status
+            if (what == 'campaign') {
+              this.campaigns[index].status = status
+            } else if (what == 'adset') {
+              this.adsets[index].status = status
+            } else if (what == 'ad') {
+              this.ads[index].status = status
+            }
           } else {
-            this.campaigns[index].status = oldStatus
+            if (what == 'campaign') {
+              this.campaigns[index].status = oldStatus
+            } else if (what == 'adset') {
+              this.adsets[index].status = oldStatus
+            } else if (what == 'ad') {
+              this.ads[index].status = oldStatus
+            }
           }
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Success',
-            text: 'Campaign status updated',
+            text: what.charAt(0).toUpperCase() + what.slice(1) + ' status updated',
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'success'
           })
         })
         .catch((error) => {
-          this.campaigns[index].status = oldStatus
+          if (what == 'campaign') {
+            this.campaigns[index].status = oldStatus
+          } else if (what == 'adset') {
+            this.adsets[index].status = oldStatus
+          } else if (what == 'ad') {
+            this.ads[index].status = oldStatus
+          }
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Error',
@@ -1349,6 +1415,14 @@ export default {
       this.$nextTick(() => {
         this.$vs.loading.close()
       })
+    },
+    openNewTab(url) {
+      if (url != '') {
+        window.open(url)
+      }
+    },
+    saveAd(ad) {
+      // TODO: to do
     },
   },
   created() {
