@@ -321,7 +321,7 @@
         </div>
         
         <div class="vx-row mb-6">
-            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Update</vs-button>
+            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Create</vs-button>
         </div>
     </vs-popup>
 

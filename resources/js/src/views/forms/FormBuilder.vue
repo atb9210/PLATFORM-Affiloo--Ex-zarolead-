@@ -321,7 +321,7 @@
         </div>
         
         <div class="vx-row mb-6">
-            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Update</vs-button>
+            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Create</vs-button>
         </div>
     </vs-popup>
 
@@ -764,7 +764,7 @@ export default {
         .then((response) => {
           this.formsStyles.push(response.data.data)
           this.formsStylesOptions.push({
-            url: response.data.data.url,
+            value: response.data.data.url,
             label: response.data.data.name,
           })
           this.$vs.loading.close()
