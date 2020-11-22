@@ -189,6 +189,24 @@
               </vx-input-group>
             </div>
             <div class="vx-col w-full mt-5">
+              <div class="mb-2">CSS Style Template</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['css_style'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-select autocomplete v-model="plugins['css_style'].stylesheet_url" class="w-full select-large" v-validate="'required'">
+                  <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in formsStylesOptions" class="w-full" />
+                </vs-select>
+                <template slot="append">
+                    <div class="append-text bg-primary" @click="showForm('create_forms_style')">
+                        <span><vs-icon icon-pack="feather" icon="icon-plus"></vs-icon></span>
+                    </div>
+                </template>
+              </vx-input-group>
+            </div>
+            <div class="vx-col w-full mt-5">
               <div class="mb-2">Custom (after submit, on success) wrapped into &lt;script&gt; tags</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
@@ -283,6 +301,30 @@
         </div>
     </vs-popup>
 
+    <!-- Create forms style popup -->
+    <vs-popup title="Create forms style" :active.sync="showPopup['create_forms_style']">
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Name</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create_forms_style'].name" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>CSS Code</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-textarea v-model="newObject['create_forms_style'].code"/>
+            </div>
+        </div>
+        
+        <div class="vx-row mb-6">
+            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Update</vs-button>
+        </div>
+    </vs-popup>
+
   </vx-card>
 </template>
 
@@ -331,9 +373,11 @@ export default {
       forms: [],
       products: [],
       traffic_sources: [],
+      formsStyles: [],
 
       networksOptions: [],
       formsOptions: [],
+      formsStylesOptions: [],
       network_params: [],
       network_params_values: [],
 
@@ -378,6 +422,10 @@ export default {
           enabled: false,
           form_id: 0,
         },
+        'css_style': {
+          enabled: false,
+          stylesheet_url: '',
+        },
         'custom': {
           enabled: false,
           afterSubmit: '',
@@ -389,6 +437,7 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
+        'create_forms_style': false,
       },
       newObject: {
         'create': {
@@ -402,6 +451,11 @@ export default {
           price: '',
           commission: '',
           sub_commission: '',
+        },
+        'create_forms_style': {
+          name: '',
+          type: 'css',
+          code: '',
         },
       },
       editingQuantityOptionIndex: -1,
@@ -480,19 +534,31 @@ export default {
       this.showPopup[type] = true
     },
     clearForm(type) {
-      this.newObject[type] = {
-        quantity: '',
-        price: '',
-        commission: '',
-        sub_commission: '',
+      if (type == 'create_forms_style') {
+        this.newObject[type] = {
+          name: '',
+          type: 'css',
+          code: '',
+        }
+      } else {
+        this.newObject[type] = {
+          quantity: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
+        }
       }
     },
     isValidForm(type) {
       let obj = this.newObject[type]
-      return (obj.quantity != ''
-        && obj.price != '' && obj.price >= 0
-        && obj.commission != '' && obj.commission >= 0
-        && obj.sub_commission != '' && obj.sub_commission >= 0)
+      if (type == 'create_forms_style') {
+        return (obj.name != '' && obj.code != '')
+      } else {
+        return (obj.quantity != ''
+          && obj.price != '' && obj.price >= 0
+          && obj.commission != '' && obj.commission >= 0
+          && obj.sub_commission != '' && obj.sub_commission >= 0)
+      }
     },
     showEditQuantityOptionForm(index) {
       let obj = this.quantityOptions[index]
@@ -718,6 +784,50 @@ export default {
           })
       })
     },
+    createFormsStyle() {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        name: this.newObject['create_forms_style'].name,
+        type: this.newObject['create_forms_style'].type,
+        code: this.newObject['create_forms_style'].code,
+      }
+
+      // Create forms style
+      this.$http.post('/api/v1/forms-styles', data, { headers: headers })
+        .then((response) => {
+          this.formsStyles.push(response.data.data)
+          this.formsStylesOptions.push({
+            value: response.data.data.url,
+            label: response.data.data.name,
+          })
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Forms style created',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.showPopup['create_forms_style'] = false
+          this.clearForm('create_forms_style')
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+          this.showPopup['create_forms_style'] = false
+          this.clearForm('create_forms_style')
+        })
+    },
   },
   components: {
     FormWizard,
@@ -840,7 +950,27 @@ export default {
                                 this.plugins['double_recovery'].form_id = form.id;
                               }
                             })
-                            this.$vs.loading.close()
+
+                            // Retrieve forms styles
+                            this.$http.get('/api/v1/forms-styles', { headers })
+                              .then((response) => {
+                                this.formsStyles = response.data.data
+                                for (let i = 0; i < this.formsStyles.length; i++) {
+                                  let formsStyle = this.formsStyles[i]
+                                  this.formsStylesOptions.push({
+                                    value: formsStyle.url,
+                                    label: formsStyle.name,
+                                  })
+                                  if (this.form.plugins.hasOwnProperty('css_style') && 
+                                      formsStyle.url == this.form.plugins.css_style.stylesheet_url) {
+                                    this.plugins['css_style'].stylesheet_url = formsStyle.url
+                                  }
+                                }
+                                this.$vs.loading.close()
+                              })
+                              .catch((error) => {
+                                this.$vs.loading.close()
+                              })
                           })
                           .catch((error) => {
                             this.$vs.loading.close()

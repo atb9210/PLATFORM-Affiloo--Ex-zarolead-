@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Form;
 use App\FormStats;
+use App\FormsStyle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\Form as FormResource;
@@ -45,6 +46,11 @@ class FormController extends Controller {
             'form_id' => $form->id,
             'plugins' => $plugins,
         ]);
+    }
+
+    public function getStyle($id) {
+        $formsStyle = FormsStyle::findOrFail($id);
+        return $formsStyle->code;
     }
 
     public function calculateFormsReport(Request $request, $admin = false) {

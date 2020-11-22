@@ -30,6 +30,8 @@ PluginManager.prototype.add = function(plugin, data) {
         this.plugins.push(new DoubleRecoveryPlugin(data));
     } else if(plugin == "custom") {
         this.plugins.push(new CustomPlugin(data));
+    } else if(plugin == "css_style") {
+        this.plugins.push(new CssStylePlugin(data));
     }
 }
 

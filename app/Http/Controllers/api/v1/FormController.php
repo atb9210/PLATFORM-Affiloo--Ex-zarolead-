@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Form as Form;
 use App\Http\Resources\api\v1\FormResource;
 use App\FormStats as FormStats;
+use App\FormsStyle as FormsStyle;
+use App\Http\Resources\api\v1\FormsStyleResource;
 use App\User as User;
 use App\Http\Resources\api\v1\FormStatsResource;
 use App\FormNote as FormNote;
@@ -783,6 +785,47 @@ class FormController extends Controller
             "message" => "Form created",
             "data" => new FormResource($newForm),
             "html" => $output['form_html'],
+        ], 201);
+    }
+
+    /**
+     * Get all forms styles
+     *
+     * @response {
+     *  "data": [forms_styles],
+     * }
+     */
+    public function getStyles()
+    {
+        return FormsStyleResource::collection(FormsStyle::get());
+    }
+
+    /**
+     * Create a new forms style
+     *
+     * @bodyParam name string required Style's name
+     * @bodyParam type string required Style's type (css)
+     * @bodyParam code string required Style's code
+     *
+     * @response 201 {
+     *  "message": "Forms style created",
+     *  "data": forms_style,
+     * }
+     */
+    public function createStyle(Request $request)
+    {
+        // Params validation
+        $params = $request->validate([
+            'name' => 'required|string|min:3',
+            'type' => 'required|in:css',
+            'code' => 'required|string',
+        ]);
+
+        $formsStyle = FormsStyle::create($params);
+
+        return response([
+            "message" => "Forms style created",
+            "data" => new FormsStyleResource($formsStyle),
         ], 201);
     }
 }

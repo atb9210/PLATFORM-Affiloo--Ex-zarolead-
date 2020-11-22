@@ -102,6 +102,10 @@ Route::delete('forms/notes/{id}', 'api\v1\FormController@deleteNote')->middlewar
     ->name('forms.notes.destroy');
 Route::get('forms/{id}/initialize', 'api\v1\FormController@initialize')->name('forms.initialize');
 Route::post('forms/{id}/input/validate', 'api\v1\FormController@validateInput')->name('forms.input.validate');
+Route::get('forms-styles', 'api\v1\FormController@getStyles')->middleware('auth:api')
+    ->name('forms-styles.index');
+Route::post('forms-styles', 'api\v1\FormController@createStyle')->middleware('auth:api')
+    ->name('forms-styles.store');
 
 /* Invoices routes */
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([

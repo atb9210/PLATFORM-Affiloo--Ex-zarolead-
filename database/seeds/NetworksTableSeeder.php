@@ -95,20 +95,23 @@ class NetworksTableSeeder extends Seeder
                 ],
                 'form' => [
                     'input' => [
-                        'name' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Nome e cognome',
-                        ],
-                        'phone' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Telefono (meglio cellulare)',
-                        ],
-                        'address' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Città e indirizzo di consegna'
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città e indirizzo di consegna'
+                            ],
                         ],
                     ],
                     'params' => [
@@ -233,20 +236,23 @@ class NetworksTableSeeder extends Seeder
                 ],
                 'form' => [
                     'input' => [
-                        'name' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Nome e cognome',
-                        ],
-                        'phone' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Telefono (meglio cellulare)',
-                        ],
-                        'address' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Città e indirizzo di consegna'
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città e indirizzo di consegna'
+                            ],
                         ],
                     ],
                     'params' => [
@@ -337,23 +343,26 @@ class NetworksTableSeeder extends Seeder
                 ],
                 'form' => [
                     'input' => [
-                        'name' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Nome e cognome',
-                        ],
-                        'phone' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Telefono (meglio cellulare)',
-                        ],
-                        'address' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Città e indirizzo di consegna'
-                        ],
-                        'surname' => [
-                            'type' => 'hidden',
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città e indirizzo di consegna'
+                            ],
+                            'surname' => [
+                                'type' => 'hidden',
+                            ],
                         ],
                     ],
                     'params' => [
@@ -464,45 +473,52 @@ class NetworksTableSeeder extends Seeder
                 ],
                 'form' => [
                     'input' => [
-                        'email' => [
-                            'type' => 'email',
-                            'required' => '',
-                            'label' => 'Email',
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Indirizzo e numero civico'
+                            ],
                         ],
-                        'name' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Nome e cognome',
-                        ],
-                        'phone' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Telefono (meglio cellulare)',
-                        ],
-                        'city' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Città'
-                        ],
-                        'state' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Provincia'
-                        ],
-                        'zipcode' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'CAP'
-                        ],
-                        'country' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Stato'
-                        ],
-                        'address' => [
-                            'type' => 'text',
-                            'required' => '',
-                            'label' => 'Indirizzo di consegna'
+                        // Step 2
+                        [
+                            'city' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città'
+                            ],
+                            'state' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Provincia'
+                            ],
+                            'zipcode' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'CAP'
+                            ],
+                            'country' => [
+                                'type' => 'hidden',
+                                'required' => '',
+                                'label' => 'Stato',
+                                'value' => 'Italia',
+                            ],
+                            'email' => [
+                                'type' => 'email',
+                                'required' => '',
+                                'label' => 'Email',
+                            ],
                         ],
                     ],
                     'params' => [

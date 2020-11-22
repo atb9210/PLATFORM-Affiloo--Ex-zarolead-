@@ -25,12 +25,15 @@ function Form(id, debug = false, beta = false) {
 
     this.sendingForm = false;
     this.input = [];
+    this.inputSteps = [];
+    this.currentInputStep = -1;
     this.quantity = {};
     this.currentQuantity = '';
     this.upsell = {};
     this.upsellEnabled = false;
 
     this.errors = [];
+    this.errorsInStep = 0;
 
     this.networkData = {};
 
@@ -78,7 +81,7 @@ Form.prototype.initialize = function() {
     $('#mainForm').submit(false);
 
     $("#submit-button").on('click', function() {
-        this.onSubmit(1);
+        this.goToNextStep();
     }.bind(this));
 
     for (var buttonId in this.UPSELL) {
@@ -130,11 +133,20 @@ Form.prototype.initializeInput = function() {
         url: this.API_URL + 'forms/' + this.FORM_ID + '/initialize',
         method: 'GET',
         success: function(data) {
-            this.input = data.data.input;
+            this.currentInputStep = -1;
+            this.inputSteps = data.data.input;
+            this.input = [];
             this.quantity = data.data.quantity;
             this.upsell = data.data.upsell;
-            for (var i in this.input) {
-                this.createInput(i, this.input[i]);
+
+            var inputStepCounter = 0;
+            for (var inputIndex = 0; inputIndex < this.inputSteps.length; inputIndex++) {
+                var inp = this.inputSteps[inputIndex];
+                for (var i in inp) {
+                    this.input[i] = inp[i];
+                    this.createInput(i, inp[i], inputStepCounter, inputIndex);
+                }
+                inputStepCounter++;
             }
 
             this.currentQuantity = this.quantity.default;
@@ -145,6 +157,9 @@ Form.prototype.initializeInput = function() {
             // Set upsell
             this.upsellEnabled = this.upsell.enabled;
 
+            // Initialize first input step
+            this.goToNextStep();
+
             console.log('[i] FORM INPUT INITIALIZED');
         }.bind(this),
         error: function(data) {
@@ -153,10 +168,11 @@ Form.prototype.initializeInput = function() {
     });
 }
 
-Form.prototype.createInput = function(name, params) {
+Form.prototype.createInput = function(name, params, stepNum = 0) {
     // Create group
     var d = $('<div>', {
-        class: 'form-group',
+        class: 'form-group input-step' + stepNum,
+        style: "display: none;",
     }).appendTo($('#form-inputs'));
 
     // Create label
@@ -177,6 +193,9 @@ Form.prototype.createInput = function(name, params) {
     if ('required' in params) {
         inputData.required = params['required'];
     }
+    if ('value' in params) {
+        inputData.value = params['value'];
+    }
     $('<input>', inputData).appendTo(d);
 
     // Create error span
@@ -185,6 +204,42 @@ Form.prototype.createInput = function(name, params) {
             id: name + 'Error',
             class: 'span-error',
         }).appendTo(d);
+    }
+}
+
+Form.prototype.goToInputStep = function(stepNum) {
+    if (stepNum < 0 && stepNum >= this.inputSteps.length) return;
+
+    // Hide all inputs
+    for (var inputStep = 0; inputStep < this.inputSteps.length; inputStep++) {
+        var inputsToHide = $('#form-inputs').find('.input-step' + inputStep);
+        for (var i = 0; i < inputsToHide.length; i++) {
+            $(inputsToHide[i]).css('display', 'none');
+        }
+    }
+
+    // Show current step inputs
+    var inputsToShow = $('#form-inputs').find('.input-step' + stepNum);
+    for (var i = 0; i < inputsToShow.length; i++) {
+        $(inputsToShow[i]).css('display', 'block');
+    }
+
+    // Change step
+    this.currentInputStep = stepNum;
+    if (this.currentInputStep + 1 < this.inputSteps.length) {
+        $("#submit-button").html("Continua");
+    } else {
+        $("#submit-button").html("Conferma l'ordine");
+    }
+}
+
+Form.prototype.goToNextStep = function() {
+    if (this.currentInputStep + 1 < this.inputSteps.length) {
+        $("#submit-button").html("Continua");
+        this.goToInputStep(this.currentInputStep + 1);
+    } else {
+        $("#submit-button").html("Conferma l'ordine");
+        this.onSubmit(1);
     }
 }
 
@@ -240,6 +295,8 @@ Form.prototype.validateInput = function() {
 
             this.errors = response.responseJSON.errors;
             this.inputSetErrors();
+            this.goToInputStep(this.errorsInStep);
+
             $("#submit-button").removeAttr("disabled");
         }.bind(this)
     });
@@ -258,7 +315,13 @@ Form.prototype.inputClearError = function(input) {
 }
 
 Form.prototype.inputSetErrors = function() {
+    this.errorsInStep = this.inputSteps.length;
     for (var error in this.errors) {
+        for (var i = 0; i < this.errorsInStep; i++) {
+            if (this.inputSteps[i].hasOwnProperty(error)) {
+                this.errorsInStep = i;
+            }
+        }
         if (error === 'surname') {
             this.inputSetError('name', this.errors[error][0]);
         } else {

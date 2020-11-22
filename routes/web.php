@@ -212,6 +212,7 @@ Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invo
 
 */
 Route::get('/forms/{id}/get', 'FormController@getForm')->name('forms.get');
+Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.get');
 
 Route::get('/{any}', function() {
     return view('application');
