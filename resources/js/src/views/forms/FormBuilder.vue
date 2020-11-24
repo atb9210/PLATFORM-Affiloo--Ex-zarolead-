@@ -77,7 +77,7 @@
                     <vs-checkbox v-model="upsell"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="upsellQuantity" class="w-full">
+                <vs-select v-model="upsellBestSeller" class="w-full">
                   <vs-select-item :key="index" :value="item.quantity" :text="item.quantity" v-for="(item,index) in quantityOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -258,6 +258,22 @@
             </div>
         </div>
         <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Old price</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create'].old_price" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Discount %</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create'].discount" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
             <vs-button class="mt-12 mr-auto ml-auto" @click="createQuantityOption" color="primary" type="filled" :disabled="!isValidForm('create')">Add</vs-button>
         </div>
     </vs-popup>
@@ -294,6 +310,22 @@
             </div>
             <div class="vx-col sm:w-2/3 w-full">
                 <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit'].sub_commission" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Old price</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit'].old_price" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Discount %</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit'].discount" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -393,7 +425,7 @@ export default {
       quantityDefaultIndex: 0,
 
       upsell: false,
-      upsellQuantity: '1',
+      upsellBestSeller: '1',
 
       plugins: {
         'thankyou_redirect': {
@@ -438,12 +470,16 @@ export default {
           price: '',
           commission: '',
           sub_commission: '',
+          old_price: '',
+          discount: '',
         },
         'edit': {
           quantity: '',
           price: '',
           commission: '',
           sub_commission: '',
+          old_price: '',
+          discount: '',
         },
         'create_forms_style': {
           name: '',
@@ -509,6 +545,8 @@ export default {
           price: '',
           commission: '',
           sub_commission: '',
+          old_price: '',
+          discount: '',
         }
       }
     },
@@ -530,6 +568,8 @@ export default {
         price: obj.price,
         commission: obj.commission,
         sub_commission: obj.sub_commission,
+        old_price: obj.old_price,
+        discount: obj.discount,
       }
       this.editingQuantityOptionIndex = index
       this.showForm('edit')
@@ -555,6 +595,8 @@ export default {
         price: this.newObject['create'].price,
         commission: this.newObject['create'].commission,
         sub_commission: this.newObject['create'].sub_commission,
+        old_price: this.newObject['create'].old_price,
+        discount: this.newObject['create'].discount,
       })
       this.showPopup['create'] = false
       this.clearForm('create')
@@ -692,7 +734,7 @@ export default {
           },
           upsell: {
             enabled: this.upsell,
-            quantity: this.upsellQuantity,
+            best_seller: this.upsellBestSeller,
           },
           network_params: {},
           plugins: {},

@@ -14,6 +14,10 @@ function getUrlParams() {
     return toReturn;
 }
 
+function formatCurrency(curr) {
+    return parseFloat(curr).toFixed(2).replace('.', ',');
+}
+
 function Form(id, debug = false, beta = false) {
     this.DEBUG = true;
     this.BETA = false;
@@ -84,18 +88,6 @@ Form.prototype.initialize = function() {
         this.goToNextStep();
     }.bind(this));
 
-    for (var buttonId in this.UPSELL) {
-        $('#' + buttonId).on('click', function(event) {
-            var quantity = this.UPSELL[event.target.id]['quantity'];
-            var price = this.UPSELL[event.target.id]['price'];
-            var order_commission = this.UPSELL[event.target.id]['order_commission'];
-            $('#quantity').val(quantity);
-            $('#price').val(price);
-            $('#order_commission').val(order_commission);
-            this.onSubmit(2);
-        }.bind(this));
-    }
-
     $("#submit-button3").on('click', function() {
         this.signupNewsletter();
     }.bind(this));
@@ -139,6 +131,14 @@ Form.prototype.initializeInput = function() {
             this.quantity = data.data.quantity;
             this.upsell = data.data.upsell;
 
+            this.upsellEnabled = false;
+            if (this.upsell.hasOwnProperty('enabled')) {
+                this.upsellEnabled = (this.upsell.enabled == true && Object.keys(this.quantity.options).length > 1);
+            }
+            if (this.upsellEnabled) {
+                this.initializeUpsellStep();
+            }
+
             var inputStepCounter = 0;
             for (var inputIndex = 0; inputIndex < this.inputSteps.length; inputIndex++) {
                 var inp = this.inputSteps[inputIndex];
@@ -166,6 +166,96 @@ Form.prototype.initializeInput = function() {
             console.log('[!] FORM INPUT NOT INITIALIZED');
         }.bind(this)
     });
+}
+
+Form.prototype.initializeUpsellStep = function() {
+    $('#mainForm').css('display', 'none');
+    $('#upsellStep').css('display', 'block');
+
+    // Reset upsell table
+    $('#upsellTable').html('');
+
+    // Initialize headers
+    var counter = 0;
+    var tr = document.createElement('tr');
+    tr.className = 'header-row';
+    for (const [key, value] of Object.entries(this.quantity.options)) {
+        var td = document.createElement('td');
+        if (this.upsell.hasOwnProperty('best_seller')) {
+            if (this.upsell.best_seller == key) {
+                td.className = 'product_price_top_up BEST-SELLER';
+                td.innerHTML = 'IL PIÙ VENDUTO';
+            } else {
+                td.className = 'product_price_top_up';
+            }
+        } else {
+            if (counter + 1 == Object.keys(this.quantity.options).length) {
+                td.className = 'product_price_top_up BEST-SELLER';
+                td.innerHTML = 'IL PIÙ VENDUTO';
+            } else {
+                td.className = 'product_price_top_up';
+            }
+        }
+        tr.appendChild(td);
+        counter++;
+    }
+    $('#upsellTable')[0].appendChild(tr);
+
+    // Initialize columns
+    counter = 0;
+    tr = document.createElement('tr');
+    tr.className = 'real-row';
+    for (const [key, value] of Object.entries(this.quantity.options)) {
+        var td = document.createElement('td');
+        td.id = 'upsell_option_' + key;
+
+        if (this.quantity.hasOwnProperty('default') && (this.quantity.default in this.quantity.options)) {
+            if (key == this.quantity.default) {
+                td.className = 'product_qty product_price_top';
+            } else {
+                td.className = 'product_qty product_price_basic';
+            }
+        } else {
+            if (counter == 0) {
+                td.className = 'product_qty product_price_top';
+            } else {
+                td.className = 'product_qty product_price_basic';
+            }
+        }
+        var unitPrice = parseFloat(value.price) / parseInt(key);
+        td.innerHTML = '<b>' + key + '</b>x <span class="price_qty">' + formatCurrency(unitPrice) + '€</span><span class="per_qty">/pz.</span>\
+                        <hr class="total_price_qty_btns">\
+                        <span class="total_qty_price"> Importo totale: ' + formatCurrency(value.price) + '€ </span>';
+
+        // Click on td binding
+        td.onclick = function () {
+            $('#quantity').val(key);
+
+            var row = $('#upsellTable tr.real-row')[0];
+            var cols = row.children;
+            for (var colIndex = 0; colIndex < cols.length; colIndex++) {
+                var col = cols[colIndex];
+                if (col.tagName.toLowerCase() != 'td') {
+                    continue;
+                }
+
+                if (col.id == 'upsell_option_' + key) {
+                    col.className = col.className.replace('product_price_basic', 'product_price_top');
+                } else {
+                    col.className = col.className.replace('product_price_top', 'product_price_basic');
+                }
+            }
+        }.bind(this);
+
+        tr.appendChild(td);
+        counter++;
+    }
+    $('#upsellTable')[0].appendChild(tr);
+
+    // Finish upsell button click function binding
+    $('#upsell-done').on('click', function() {
+        this.finishUpsell();
+    }.bind(this));
 }
 
 Form.prototype.createInput = function(name, params, stepNum = 0) {
@@ -241,6 +331,11 @@ Form.prototype.goToNextStep = function() {
         $("#submit-button").html("Conferma l'ordine");
         this.onSubmit(1);
     }
+}
+
+Form.prototype.finishUpsell = function() {
+    $('#mainForm').css('display', 'block');
+    $('#upsellStep').css('display', 'none');
 }
 
 Form.prototype.validateInput = function() {
@@ -340,7 +435,7 @@ Form.prototype.inputSetError = function(input, message) {
 Form.prototype.resetForm = function() {
     $("#submit-button").removeAttr("disabled");
     $('#mainForm').css('display', 'block');
-    $('#mainForm2').css('display', 'none');
+    $('#upsellStep').css('display', 'none');
 }
 
 /*
@@ -361,14 +456,6 @@ Form.prototype.onSubmit = function(step) {
         this.validateInput();
         this.sendingForm = false;
         return;
-
-        // @TODO: Upsell system
-        if (this.UPSELL_ENABLED) {
-            $('#mainForm').css('display', 'none');
-            $('#mainForm2').css('display', 'block');
-        } else {
-            this.onSubmit(2);
-        }
     } else if (step == 2) {
         // Upsell & submission
         $("#submit-button").prop("disabled", true);
@@ -414,7 +501,7 @@ Form.prototype.onSubmit = function(step) {
                     window.location.replace(data.redirect);
                 } else {
                     $('#mainForm').css('display', 'none');
-                    $('#mainForm2').css('display', 'none');
+                    $('#upsellStep').css('display', 'none');
                     $('#thankyou-page').css('display', 'block');
                 }
                 this.sendingForm = false;

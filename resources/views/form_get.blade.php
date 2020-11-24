@@ -68,6 +68,82 @@ body {
     border-radius: 8px;
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
 }
+
+.form-button {
+    margin-bottom: 3em;
+    border: 1px solid #e0e0e0;
+    font-size: 25px;
+    padding: 10px;
+    width: 90%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
+    float: none;
+    font-family: "Arial",Sans-serif;
+    ont-weight: 600;
+    text-transform: none;
+    color: #fff;
+    background-color: #eaac00;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
+}
+
+#upsellTable {
+    border-collapse: initial;
+    border-spacing: 10px 0px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+#upsellTable > tbody {
+    color: #333;
+}
+
+#upsellTable .BEST-SELLER {
+    font-size: 11px;
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    background-color: #f3ca66;
+    color: #232f3e;
+    padding: 2px 0 0!important;
+}
+
+#upsellTable td {
+    text-align: center !important;
+    padding: 5px 0px !important;
+}
+
+#upsellTable .product_price_top {
+    border: 1.5px solid #f3ca66;
+    width: 33%;
+    box-shadow: 1px 1px 2px 0 rgba(0,0,0,.16);
+    background-color: #fff6e1;
+    cursor: pointer;
+}
+
+#upsellTable .product_price_basic {
+    border: 1px solid #bfbfbf;
+    width: 33%;
+    cursor: pointer;
+}
+
+#upsellTable .total_price_qty_btns {
+    background-color: #ccc;
+    border: 0;
+    height: 1px;
+    width: 70%;
+}
+
+#upsellTable .total_qty_price {
+    font-size: 15px;
+    color: #a9a9a9;
+    display: block;
+    line-height: 19px;
+    margin-top: 5px;
+}
 </style>
 
 <div id="formContainer">
@@ -105,47 +181,43 @@ body {
             </div>
             -->
         </div>
-		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form">Conferma l'Ordine</button>
+		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Conferma l'Ordine</button>
 	</form>
 
-    <!-- Upsell page -->
-	<div id="mainForm2" style="display: none; padding-bottom: 15px; height: 100%;">
-		<div style="background-color: black; padding: 10px;">
+    <!-- Upsell step -->
+	<div id="upsellStep" style="display: block; padding-bottom: 15px; height: 100%;">
+		<div style="background-color: black; padding: 10px; margin-bottom: 15px;">
 			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px;">
-				<span style="text-decoration: underline; color: #ff0000;"><strong>ATTENZIONE</strong></span>Solo per pochi minuti hai puoi ricevere 
-				<span style="text-decoration: underline;"><strong>2 WiFaster</strong></span> 
+				<span style="text-decoration: underline; color: #ff0000;"><strong>ATTENZIONE!</strong></span> Solo per pochi minuti puoi ricevere 
+				<span style="text-decoration: underline;"><strong>un'offerta</strong></span> 
 				ad un Prezzo Speciale!
 			</p>
 		</div>
-		<div class="row" style="margin-left: 0px; margin-right: 0px;">
-			<div class="col-6">
-				<img class="img" src="http://future-gadget.com/wp-content/uploads/2019/12/small-2-removebg-preview.png" style="width: 100%;">
-			</div>
-			<div class="col-6">
-				<img class="img" src="http://future-gadget.com/wp-content/uploads/2019/12/small-2-removebg-preview.png" style="width: 100%;">
-			</div>
-		</div>
-		<div style="background-color: #23a455; padding: 10px;">
-			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 24px; padding: 0px; margin: 0px;">
-    			<strong>
-    				2 WiFaster
-    			</strong>
-			</p>
-		</div>
-		<div class="row" style="margin-left: 0px; margin-right: 0px; background-color: white;">
-			<div class="col-6" style="margin-bottom: 1em; margin-top: 1em; text-align: center;">
-				<span style="color: #ff0a0a; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 48px; text-decoration: line-through;">
-					379
-    			</span>
-			</div>
-			<div class="col-6" style="margin-bottom: 1em; margin-top: 1em;">
-				<span style="color: #23a454; text-align: left; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 58px;">
-					79&euro;
-    			</span>
-			</div>
-		</div>
-		<button id="submit-button2-ok" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-top: 1em; margin-bottom: 1em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;Ricevi offerta</button>
-		<button id="submit-button2-no" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-bottom: 3em; border: 1px solid #e0e0e0; font-size: 20px; padding: 10px; width: 80%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #888888; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;No grazie</button>
+        <table id="upsellTable">
+            <tbody>
+                <tr>
+                    <td class="product_price_top_up"></td>
+                    <td class="product_price_top_up BEST-SELLER">IL PIÙ VENDUTO</td>
+                    <td class="product_price_top_up"></td>
+                </tr>
+                <tr>
+                    <td class="product_qty mp_product_qty_1 product_price_top">
+                        <b>1</b>x <span class="price_qty">21,99€</span><span class="per_qty">/pz.</span>
+                        <hr class="total_price_qty_btns">
+                        <span class="total_qty_price"> Importo totale: 21,99€ </span>
+                    </td>
+                    <td class="product_qty mp_product_qty_2 product_price_basic"><b>2</b>x <span class="price_qty">17,59€</span><span class="per_qty">/pz.</span>
+                        <hr class="total_price_qty_btns">
+                        <span class="total_qty_price"> Importo totale: 35,18€ </span>
+                    </td>
+                    <td class="product_qty mp_product_qty_3 product_price_basic"><b>3</b>x <span class="price_qty">15,39€</span><span class="per_qty">/pz.</span>
+                        <hr class="total_price_qty_btns">
+                        <span class="total_qty_price"> Importo totale: 46,17€ </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+		<button id="upsell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
 	</div>
 
     <!-- Thankyou page -->
