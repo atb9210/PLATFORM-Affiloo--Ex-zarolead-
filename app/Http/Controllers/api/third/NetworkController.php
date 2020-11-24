@@ -70,6 +70,7 @@ class NetworkController extends Controller
      * @bodyParam state requierd string Customer's state
      * @bodyParam country requierd string Customer's country
      * @bodyParam quantity requierd string Product's quantity
+     * @bodyParam price requierd float Order's price (amount)
      * @bodyParam name requierd string Customer's name
      * @bodyParam weight requierd string Customer's weight
      * @bodyParam sku requierd string Product's sku code
@@ -92,6 +93,7 @@ class NetworkController extends Controller
             'state'          => 'required|string|min:2',
             'country'        => 'required|string|min:2',
             'quantity'       => 'required|string',
+            'price'          => 'required|numeric|min:0',
             'name'           => 'required|string',
             'weight'         => 'required|string',
             'product_name'   => 'required|string',
@@ -106,7 +108,7 @@ class NetworkController extends Controller
         }
 
         $params = $request->query();
-        $logisticUrl = 'http://api.momokacorp.com/send_order.php';
+        $logisticsUrl = 'http://api.momokacorp.com/send_order.php';
 
         $bodyParams = [
             'user_id'        => '11665252',
@@ -124,6 +126,7 @@ class NetworkController extends Controller
             'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
             'quantity'       => $params['quantity'],
             'payment'        => 'Alla consegna',
+            'amount'         => $params['price'],
             'aff_id'         => '2',
             'contactname'    => $params['name'],
             'fullname'       => $params['name'],
@@ -133,7 +136,7 @@ class NetworkController extends Controller
         ];
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $logisticUrl);
+        curl_setopt($ch, CURLOPT_URL, $logisticsUrl);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));

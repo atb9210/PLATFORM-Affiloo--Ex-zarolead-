@@ -44,6 +44,7 @@ class NetworkController extends Controller
             'state'          => 'required|string|min:2',
             'country'        => 'required|string|min:2',
             'quantity'       => 'required|string',
+            'price'          => 'required|numeric|min:0',
             'name'           => 'required|string',
             'weight'         => 'required|string',
             'product_name'   => 'required|string',
@@ -58,7 +59,7 @@ class NetworkController extends Controller
         }
 
         $params = $request->query();
-        $logisticUrl = 'http://zarolead.localhost/api/fake/logistic/momoka';
+        $logisticsUrl = 'http://zarolead.localhost/api/fake/logistic/momoka';
 
         $bodyParams = [
             'user_id'        => '11665252',
@@ -76,6 +77,7 @@ class NetworkController extends Controller
             'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
             'quantity'       => $params['quantity'],
             'payment'        => 'Alla consegna',
+            'amount'         => $params['price'],
             'aff_id'         => '2',
             'contactname'    => $params['name'],
             'fullname'       => $params['name'],
@@ -85,7 +87,7 @@ class NetworkController extends Controller
         ];
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $logisticUrl);
+        curl_setopt($ch, CURLOPT_URL, $logisticsUrl);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
