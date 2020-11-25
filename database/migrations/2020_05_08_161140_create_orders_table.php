@@ -23,6 +23,7 @@ class CreateOrdersTable extends Migration
             $table->json('info')->nullable();
             $table->bigInteger('product_id')->unsigned();
             $table->string('quantity')->nullable();
+			$table->decimal('price', 9, 2)->default(0.0);
 			$table->decimal('commission', 9, 2)->default(0.0);
 			$table->decimal('sub_commission', 9, 2)->default(0.0);
 			$table->bigInteger('network_id')->unsigned();

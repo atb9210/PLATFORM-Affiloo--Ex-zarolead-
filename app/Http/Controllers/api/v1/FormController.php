@@ -81,7 +81,8 @@ class FormController extends Controller
      * @bodyParam network_id int required Form's network id
      * @bodyParam product_id int required Form's product id
      * @bodyParam quantity json required Product's quantity JSON
-     * @bodyParam upsell json required Product's quantity JSON
+     * @bodyParam up_sell json required Form's up sell
+     * @bodyParam cross_sell json required Form's cross sell
      * @bodyParam traffic_source_id int required Form's traffic source id
      * @bodyParam network_params json required Form params depending on the network
      * @bodyParam plugins json Form plugins
@@ -102,7 +103,8 @@ class FormController extends Controller
             'network_id' => 'required|integer|exists:networks,id',
             'product_id' => 'required|integer|exists:products,id',
             'quantity' => 'required|json',
-            'upsell' => 'required|json',
+            'up_sell' => 'required|json',
+            'cross_sell' => 'required|json',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
             'network_params' => 'required|json',
             'plugins' => 'json',
@@ -113,7 +115,8 @@ class FormController extends Controller
         }
 
         $params['quantity'] = json_decode($params['quantity'], TRUE);
-        $params['upsell'] = json_decode($params['upsell'], TRUE);
+        $params['up_sell'] = json_decode($params['up_sell'], TRUE);
+        $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
         $params['network_params'] = json_decode($params['network_params'], TRUE);
         if (isset($params['plugins'])) {
             $params['plugins'] = json_decode($params['plugins'], TRUE);
@@ -131,13 +134,24 @@ class FormController extends Controller
             ], 422);
         }
 
-        // Validate upsell JSON
-        $validator = Validator::make($params['upsell'], [
+        // Validate up_sell JSON
+        $validator = Validator::make($params['up_sell'], [
             'enabled' => 'required|boolean',
         ]);
         if ($validator->fails()) {
             return response([
-                'message' => 'The given data - for the upsell JSON param - was invalid.',
+                'message' => 'The given data - for the up_sell JSON param - was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
+
+        // Validate cross_sell JSON
+        $validator = Validator::make($params['cross_sell'], [
+            'enabled' => 'required|boolean',
+        ]);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data - for the cross_sell JSON param - was invalid.',
                 'errors' => $validator->messages(),
             ], 422);
         }
@@ -187,7 +201,8 @@ class FormController extends Controller
      * @bodyParam network_id int Form's network id
      * @bodyParam product_id int Form's product id
      * @bodyParam quantity json Product's quantity JSON
-     * @bodyParam upsell json Product's quantity JSON
+     * @bodyParam up_sell json Form's up sell
+     * @bodyParam cross_sell json Form's cross sell
      * @bodyParam traffic_source_id int Form's traffic source id
      * @bodyParam network_params json Form params depending on the network
      * @bodyParam plugins json Form plugins
@@ -214,7 +229,8 @@ class FormController extends Controller
             'network_id' => 'integer|exists:networks,id',
             'product_id' => 'integer|exists:products,id',
             'quantity' => 'json',
-            'upsell' => 'json',
+            'up_sell' => 'json',
+            'cross_sell' => 'json',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'network_params' => 'json',
             'plugins' => 'json',
@@ -225,8 +241,11 @@ class FormController extends Controller
         if (isset($params['quantity'])) {
             $params['quantity'] = json_decode($params['quantity'], TRUE);
         }
-        if (isset($params['upsell'])) {
-            $params['upsell'] = json_decode($params['upsell'], TRUE);
+        if (isset($params['up_sell'])) {
+            $params['up_sell'] = json_decode($params['up_sell'], TRUE);
+        }
+        if (isset($params['cross_sell'])) {
+            $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
         }
         if (isset($params['network_params'])) {
             $params['network_params'] = json_decode($params['network_params'], TRUE);
@@ -249,14 +268,27 @@ class FormController extends Controller
             }
         }
 
-        // Validate upsell JSON
-        if (isset($params['upsell'])) {
-            $validator = Validator::make($params['upsell'], [
+        // Validate up_sell JSON
+        if (isset($params['up_sell'])) {
+            $validator = Validator::make($params['up_sell'], [
                 'enabled' => 'required|boolean',
             ]);
             if ($validator->fails()) {
                 return response([
-                    'message' => 'The given data - for the upsell JSON param - was invalid.',
+                    'message' => 'The given data - for the up_sell JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
+
+        // Validate cross_sell JSON
+        if (isset($params['cross_sell'])) {
+            $validator = Validator::make($params['cross_sell'], [
+                'enabled' => 'required|boolean',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the cross_sell JSON param - was invalid.',
                     'errors' => $validator->messages(),
                 ], 422);
             }
@@ -638,7 +670,8 @@ class FormController extends Controller
             'data' => [
                 'input' => $input,
                 'quantity' => $form->quantity,
-                'upsell' => $form->upsell,
+                'up_sell' => $form->up_sell,
+                'cross_sell' => $form->cross_sell,
             ],
         ]);
     }

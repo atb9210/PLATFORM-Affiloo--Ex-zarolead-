@@ -20,7 +20,8 @@ class CreateFormsTable extends Migration
             $table->bigInteger('network_id')->unsigned();
             $table->bigInteger('product_id')->unsigned();
             $table->json('quantity');
-            $table->json('upsell')->nullable();
+            $table->json('up_sell')->nullable();
+            $table->json('cross_sell')->nullable();
             $table->decimal('total_commission', 9, 2)->default(0.0);
             $table->bigInteger('traffic_source_id')->unsigned();
             $table->json('info')->nullable();

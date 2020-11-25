@@ -33,8 +33,17 @@ function Form(id, debug = false, beta = false) {
     this.currentInputStep = -1;
     this.quantity = {};
     this.currentQuantity = '';
-    this.upsell = {};
-    this.upsellEnabled = false;
+    this.upSell = {};
+    this.upSellEnabled = false;
+    this.crossSell = {};
+    this.crossSellEnabled = false;
+    this.crossSellAddedToCart = false;
+    this.crossSellValue = {
+        enabled: false,
+        price: 0,
+        commission: 0,
+        sub_commission: 0,
+    };
 
     this.errors = [];
     this.errorsInStep = 0;
@@ -129,14 +138,23 @@ Form.prototype.initializeInput = function() {
             this.inputSteps = data.data.input;
             this.input = [];
             this.quantity = data.data.quantity;
-            this.upsell = data.data.upsell;
+            this.upSell = data.data.up_sell;
+            this.crossSell = data.data.cross_sell;
 
-            this.upsellEnabled = false;
-            if (this.upsell.hasOwnProperty('enabled')) {
-                this.upsellEnabled = (this.upsell.enabled == true && Object.keys(this.quantity.options).length > 1);
+            this.upSellEnabled = false;
+            if (this.upSell.hasOwnProperty('enabled')) {
+                this.upSellEnabled = (this.upSell.enabled == true && Object.keys(this.quantity.options).length > 1);
             }
-            if (this.upsellEnabled) {
-                this.initializeUpsellStep();
+            if (this.upSellEnabled) {
+                this.initializeUpSellStep();
+            }
+
+            this.crossSellEnabled = false;
+            if (this.crossSell.hasOwnProperty('enabled')) {
+                this.crossSellEnabled = (this.crossSell.enabled == true);
+            }
+            if (this.crossSellEnabled) {
+                this.initializeCrossSellStep();
             }
 
             var inputStepCounter = 0;
@@ -154,8 +172,8 @@ Form.prototype.initializeInput = function() {
             $('#quantity').val(this.currentQuantity);
             $('#price').val(this.quantity.options[this.currentQuantity].price);
 
-            // Set upsell
-            this.upsellEnabled = this.upsell.enabled;
+            // Set up sell
+            this.upSellEnabled = this.upSell.enabled;
 
             // Initialize first input step
             this.goToNextStep();
@@ -168,12 +186,12 @@ Form.prototype.initializeInput = function() {
     });
 }
 
-Form.prototype.initializeUpsellStep = function() {
+Form.prototype.initializeUpSellStep = function() {
     $('#mainForm').css('display', 'none');
-    $('#upsellStep').css('display', 'block');
+    $('#upSellStep').css('display', 'block');
 
-    // Reset upsell table
-    $('#upsellTable').html('');
+    // Reset up sell table
+    $('#upSellTable').html('');
 
     // Initialize headers
     var counter = 0;
@@ -181,8 +199,8 @@ Form.prototype.initializeUpsellStep = function() {
     tr.className = 'header-row';
     for (const [key, value] of Object.entries(this.quantity.options)) {
         var td = document.createElement('td');
-        if (this.upsell.hasOwnProperty('best_seller')) {
-            if (this.upsell.best_seller == key) {
+        if (this.upSell.hasOwnProperty('best_seller')) {
+            if (this.upSell.best_seller == key) {
                 td.className = 'product_price_top_up BEST-SELLER';
                 td.innerHTML = 'IL PIÙ VENDUTO';
             } else {
@@ -199,7 +217,7 @@ Form.prototype.initializeUpsellStep = function() {
         tr.appendChild(td);
         counter++;
     }
-    $('#upsellTable')[0].appendChild(tr);
+    $('#upSellTable')[0].appendChild(tr);
 
     // Initialize columns
     counter = 0;
@@ -231,7 +249,7 @@ Form.prototype.initializeUpsellStep = function() {
         td.onclick = function () {
             $('#quantity').val(key);
 
-            var row = $('#upsellTable tr.real-row')[0];
+            var row = $('#upSellTable tr.real-row')[0];
             var cols = row.children;
             for (var colIndex = 0; colIndex < cols.length; colIndex++) {
                 var col = cols[colIndex];
@@ -250,12 +268,53 @@ Form.prototype.initializeUpsellStep = function() {
         tr.appendChild(td);
         counter++;
     }
-    $('#upsellTable')[0].appendChild(tr);
+    $('#upSellTable')[0].appendChild(tr);
 
-    // Finish upsell button click function binding
-    $('#upsell-done').on('click', function() {
-        this.finishUpsell();
+    // Finish up sell button click function binding
+    $('#up-sell-done').on('click', function() {
+        this.finishUpSell();
     }.bind(this));
+}
+
+Form.prototype.initializeCrossSellStep = function() {
+    var price = 0.0;
+    if (this.crossSell.hasOwnProperty('price')) {
+        price = this.crossSell.price;
+    }
+    var commission = 0.0;
+    if (this.crossSell.hasOwnProperty('commission')) {
+        commission = this.crossSell.commission;
+    }
+    var sub_commission = 0.0;
+    if (this.crossSell.hasOwnProperty('sub_commission')) {
+        sub_commission = this.crossSell.sub_commission;
+    }
+    this.updateCrossSellValue({
+        enabled: false,
+        price: price,
+        commission: commission,
+        sub_commission: sub_commission,
+    });
+
+    this.crossSellAddedToCart = false;
+
+    $('#crossSellPrice').html(formatCurrency(this.crossSell.price));
+    $('#crossSellTitle').html(this.crossSell.title);
+
+    // Finish up sell button click function binding
+    $('#cross-sell-done').on('click', function() {
+        this.finishCrossSell();
+    }.bind(this));
+
+    // Add to cart (cross sell) function binding
+    $('#crossSellAddButton').on('click', function() {
+        this.crossSellAddToCart();
+    }.bind(this));
+}
+
+Form.prototype.updateCrossSellValue = function(val) {
+    this.crossSellValue = val;
+    $('#cross_sell').val(JSON.stringify(this.crossSellValue));
 }
 
 Form.prototype.createInput = function(name, params, stepNum = 0) {
@@ -333,9 +392,38 @@ Form.prototype.goToNextStep = function() {
     }
 }
 
-Form.prototype.finishUpsell = function() {
+Form.prototype.finishUpSell = function() {
+    if (this.crossSellEnabled) {
+        $('#upSellStep').css('display', 'none');
+        $('#crossSellStep').css('display', 'block');
+        $('#mainForm').css('display', 'none');
+    } else {
+        $('#upSellStep').css('display', 'none');
+        $('#crossSellStep').css('display', 'none');
+        $('#mainForm').css('display', 'block');
+    }
+}
+
+Form.prototype.finishCrossSell = function() {
+    $('#upSellStep').css('display', 'none');
+    $('#crossSellStep').css('display', 'none');
     $('#mainForm').css('display', 'block');
-    $('#upsellStep').css('display', 'none');
+}
+
+Form.prototype.crossSellAddToCart = function() {
+    var updatedVal = this.crossSellValue;
+    if (this.crossSellAddedToCart) {
+        $('#crossSellAddButton').removeClass('cross-sell-btn-added');
+        $('#crossSellAddButton').html('Aggiungi');
+        updatedVal.enabled = false;
+        this.updateCrossSellValue(updatedVal);
+    } else {
+        $('#crossSellAddButton').addClass('cross-sell-btn-added');
+        $('#crossSellAddButton').html('Aggiunto!');
+        updatedVal.enabled = true;
+        this.updateCrossSellValue(updatedVal);
+    }
+    this.crossSellAddedToCart = !this.crossSellAddedToCart
 }
 
 Form.prototype.validateInput = function() {
@@ -435,12 +523,12 @@ Form.prototype.inputSetError = function(input, message) {
 Form.prototype.resetForm = function() {
     $("#submit-button").removeAttr("disabled");
     $('#mainForm').css('display', 'block');
-    $('#upsellStep').css('display', 'none');
+    $('#upSellStep').css('display', 'none');
 }
 
 /*
  * Step 1 => form validation
- * Step 2 => upsell & submission
+ * Step 2 => up sell & submission
  */
 Form.prototype.onSubmit = function(step) {
     if (this.sendingForm) return;
@@ -457,7 +545,7 @@ Form.prototype.onSubmit = function(step) {
         this.sendingForm = false;
         return;
     } else if (step == 2) {
-        // Upsell & submission
+        // Up sell & submission
         $("#submit-button").prop("disabled", true);
 
         this.networkData = this.validatedInput;
@@ -501,7 +589,7 @@ Form.prototype.onSubmit = function(step) {
                     window.location.replace(data.redirect);
                 } else {
                     $('#mainForm').css('display', 'none');
-                    $('#upsellStep').css('display', 'none');
+                    $('#upSellStep').css('display', 'none');
                     $('#thankyou-page').css('display', 'block');
                 }
                 this.sendingForm = false;

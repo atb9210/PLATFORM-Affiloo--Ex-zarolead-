@@ -19,7 +19,7 @@ class Order extends Model
         'order_status_id',
         'name', 'phone', 'address', 'email',
         'product_id', 'quantity',
-        'commission', 'sub_commission',
+        'price', 'commission', 'sub_commission',
         'network_id', 'network_data',
     ];
 

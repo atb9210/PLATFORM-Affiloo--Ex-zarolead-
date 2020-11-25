@@ -80,7 +80,7 @@ body {
     display: block;
     float: none;
     font-family: "Arial",Sans-serif;
-    ont-weight: 600;
+    font-weight: 600;
     text-transform: none;
     color: #fff;
     background-color: #eaac00;
@@ -88,18 +88,18 @@ body {
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
 }
 
-#upsellTable {
+#upSellTable {
     border-collapse: initial;
     border-spacing: 10px 0px;
     width: 100%;
     margin-bottom: 30px;
 }
 
-#upsellTable > tbody {
+#upSellTable > tbody {
     color: #333;
 }
 
-#upsellTable .BEST-SELLER {
+#upSellTable .BEST-SELLER {
     font-size: 11px;
     font-weight: 700;
     font-style: normal;
@@ -111,12 +111,12 @@ body {
     padding: 2px 0 0!important;
 }
 
-#upsellTable td {
+#upSellTable td {
     text-align: center !important;
     padding: 5px 0px !important;
 }
 
-#upsellTable .product_price_top {
+#upSellTable .product_price_top {
     border: 1.5px solid #f3ca66;
     width: 33%;
     box-shadow: 1px 1px 2px 0 rgba(0,0,0,.16);
@@ -124,25 +124,43 @@ body {
     cursor: pointer;
 }
 
-#upsellTable .product_price_basic {
+#upSellTable .product_price_basic {
     border: 1px solid #bfbfbf;
     width: 33%;
     cursor: pointer;
 }
 
-#upsellTable .total_price_qty_btns {
+#upSellTable .total_price_qty_btns {
     background-color: #ccc;
     border: 0;
     height: 1px;
     width: 70%;
 }
 
-#upsellTable .total_qty_price {
+#upSellTable .total_qty_price {
     font-size: 15px;
     color: #a9a9a9;
     display: block;
     line-height: 19px;
     margin-top: 5px;
+}
+
+#crossSellStep {
+}
+
+#crossSellStep > div.crossSellProduct {
+    padding: 0px 10px;
+    margin-bottom: 30px;
+}
+
+#crossSellAddButton {
+    width: 100%;
+    margin-bottom: 0em;
+    background-color: #5fba04;
+}
+
+.cross-sell-btn-added {
+    background-color: #9dc476 !important;
 }
 </style>
 
@@ -161,6 +179,7 @@ body {
 		<!-- Frontend -->
 		<input type="hidden" name="quantity" id="quantity" value="1">
 		<input type="hidden" name="price" id="price" value="0">
+		<input type="hidden" name="cross_sell" id="cross_sell" value="{}">
 
         <div id="form-inputs">
             <!--
@@ -185,7 +204,7 @@ body {
 	</form>
 
     <!-- Upsell step -->
-	<div id="upsellStep" style="display: block; padding-bottom: 15px; height: 100%;">
+	<div id="upSellStep" style="display: block; padding-bottom: 15px; height: 100%;">
 		<div style="background-color: black; padding: 10px; margin-bottom: 15px;">
 			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px;">
 				<span style="text-decoration: underline; color: #ff0000;"><strong>ATTENZIONE!</strong></span> Solo per pochi minuti puoi ricevere 
@@ -193,7 +212,7 @@ body {
 				ad un Prezzo Speciale!
 			</p>
 		</div>
-        <table id="upsellTable">
+        <table id="upSellTable">
             <tbody>
                 <tr>
                     <td class="product_price_top_up"></td>
@@ -217,7 +236,37 @@ body {
                 </tr>
             </tbody>
         </table>
-		<button id="upsell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+		<button id="up-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+	</div>
+
+    <!-- Cross-sell step -->
+    <div id="crossSellStep" style="display: none; padding-bottom: 15px; height: 100%;">
+		<div style="background-color: black; padding: 10px; margin-bottom: 15px;">
+			<p style="color: white; text-align: center; font-family: 'Roboto',Sans-serif; font-weight: 400; font-size: 16px;">
+				<span style="text-decoration: underline; color: #ff0000;"><strong>ATTENZIONE!</strong></span> Solo per pochi minuti puoi ricevere 
+				<span style="text-decoration: underline;"><strong>un'offerta</strong></span> 
+				ad un Prezzo Speciale!
+			</p>
+		</div>
+        <div class="crossSellProduct">
+            <div style="width: 100%; border-radius: 5px; box-shadow: 0 0 3px #000; border: 1px solid #555555;">
+                <img style="width: 100%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom: 1px solid #999;" src="https://vigoshop.it/app/uploads/2019/10/twistline.jpg">
+                <div class="row">
+                    <div class="col-6" style="text-align: center; font-size: 32px;">
+                        +<span id="crossSellPrice"></span>€
+                    </div>
+                    <div class="col-6">
+		                <button id="crossSellAddButton" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Aggiungi</button>
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 10px;">
+                    <div class="col-12" style="text-align: center; font-size: 20px;">
+                        <span id="crossSellTitle"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+		<button id="cross-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
 	</div>
 
     <!-- Thankyou page -->

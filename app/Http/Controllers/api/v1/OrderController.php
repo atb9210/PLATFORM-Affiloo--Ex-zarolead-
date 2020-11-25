@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 use App\Order as Order;
 use App\Http\Resources\api\v1\OrderResource;
@@ -100,6 +101,7 @@ class OrderController extends Controller
      * @bodyParam phone string required Customer's phone number
      * @bodyParam address string required Customer's address
      * @bodyParam quantity string required Quantity
+     * @bodyParam cross_sell json Cross sell
      * @bodyParam form_id integer required Form's id
      * @bodyParam network_data json required Network Data in json format
      * @bodyParam landing_id integer Landing's id
@@ -118,6 +120,7 @@ class OrderController extends Controller
             'phone' => 'required|string|min:3',
             'address' => 'required|string|min:3',
             'quantity' => 'required|string|min:1',
+            'cross_sell' => 'json',
 
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
@@ -126,6 +129,23 @@ class OrderController extends Controller
 
             'query_params' => 'json',
         ]);
+
+        // Validate cross_sell JSON
+        if (isset($params['cross_sell'])) {
+            $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
+            $validator = Validator::make($params['cross_sell'], [
+                'enabled' => 'required|boolean',
+                'price' => 'required|numeric',
+                'commission' => 'required|numeric',
+                'sub_commission' => 'required|numeric',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the cross_sell JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
 
         $form = Form::findOrFail($params['form_id']);
         $network_data = json_decode($params['network_data'], TRUE);
@@ -136,18 +156,33 @@ class OrderController extends Controller
         $params['product_id'] = $form->product_id;
         $params['order_status_id'] = OrderStatus::NOT_SENT;
 
+        // Calculate price
         $price = 0.0;
         if (isset($form->quantity['options'][$params['quantity']]['price'])) {
             $price = $form->quantity['options'][$params['quantity']]['price'];
         }
+        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
+            $price += floatval($params['cross_sell']['price']);
+        }
+
+        // Calculate commission
         $commission = 0.0;
         if (isset($form->quantity['options'][$params['quantity']]['commission'])) {
             $commission = $form->quantity['options'][$params['quantity']]['commission'];
         }
+        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
+            $price += floatval($params['cross_sell']['commission']);
+        }
+
+        // Calculate sub_commission
         $sub_commission = 0.0;
         if (isset($form->quantity['options'][$params['quantity']]['sub_commission'])) {
             $sub_commission = $form->quantity['options'][$params['quantity']]['sub_commission'];
         }
+        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
+            $price += floatval($params['cross_sell']['sub_commission']);
+        }
+
         $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
