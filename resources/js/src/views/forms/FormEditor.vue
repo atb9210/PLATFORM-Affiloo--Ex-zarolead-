@@ -1040,34 +1040,38 @@ export default {
 
         // Fetch up sell
         this.upSell = this.form.up_sell.enabled
-        if (this.form.up_sell.hasOwnProperty('best_seller')) {
-          this.upSellBestSeller = this.form.up_sell.best_seller
+        if (this.form.up_sell != null) {
+          if (this.form.up_sell.hasOwnProperty('best_seller')) {
+            this.upSellBestSeller = this.form.up_sell.best_seller
+          }
         }
 
         // Fetch cross sell
-        if (this.form.cross_sell.hasOwnProperty('enabled')) {
-          this.crossSell.enabled = (this.form.cross_sell.enabled == true)
-        }
-        if (this.form.cross_sell.hasOwnProperty('title')) {
-          this.crossSell.title = this.form.cross_sell.title
-        }
-        if (this.form.cross_sell.hasOwnProperty('description')) {
-          this.crossSell.description = this.form.cross_sell.description
-        }
-        if (this.form.cross_sell.hasOwnProperty('img')) {
-          this.crossSell.img = this.form.cross_sell.img
-        }
-        if (this.form.cross_sell.hasOwnProperty('old_price')) {
-          this.crossSell.old_price = this.form.cross_sell.old_price
-        }
-        if (this.form.cross_sell.hasOwnProperty('price')) {
-          this.crossSell.price = this.form.cross_sell.price
-        }
-        if (this.form.cross_sell.hasOwnProperty('commission')) {
-          this.crossSell.commission = this.form.cross_sell.commission
-        }
-        if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
-          this.crossSell.sub_commission = this.form.cross_sell.sub_commission
+        if (this.form.cross_sell != null) {
+          if (this.form.cross_sell.hasOwnProperty('enabled')) {
+            this.crossSell.enabled = (this.form.cross_sell.enabled == true)
+          }
+          if (this.form.cross_sell.hasOwnProperty('title')) {
+            this.crossSell.title = this.form.cross_sell.title
+          }
+          if (this.form.cross_sell.hasOwnProperty('description')) {
+            this.crossSell.description = this.form.cross_sell.description
+          }
+          if (this.form.cross_sell.hasOwnProperty('img')) {
+            this.crossSell.img = this.form.cross_sell.img
+          }
+          if (this.form.cross_sell.hasOwnProperty('old_price')) {
+            this.crossSell.old_price = this.form.cross_sell.old_price
+          }
+          if (this.form.cross_sell.hasOwnProperty('price')) {
+            this.crossSell.price = this.form.cross_sell.price
+          }
+          if (this.form.cross_sell.hasOwnProperty('commission')) {
+            this.crossSell.commission = this.form.cross_sell.commission
+          }
+          if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
+            this.crossSell.sub_commission = this.form.cross_sell.sub_commission
+          }
         }
 
         // Fetch plugins
