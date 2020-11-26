@@ -369,7 +369,7 @@
     </vs-popup>
 
     <!-- Cross sell popup -->
-    <vs-popup title="Cross Sell" :active.sync="showPopup['cross_sell']">
+    <vs-popup title="cross sell" :active.sync="showPopup['cross_sell']">
         <div class="vx-row mb-6">
             <div class="vx-col sm:w-1/3 w-full">
                 <span>Title</span>
@@ -420,7 +420,7 @@
         </div>
         <div class="vx-row mb-6">
             <div class="vx-col sm:w-1/3 w-full">
-                <span>Sub Commission</span>
+                <span>Sub commission</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
                 <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].sub_commission" />
@@ -863,6 +863,7 @@ export default {
 
         data.quantity = JSON.stringify(data.quantity)
         data.up_sell = JSON.stringify(data.up_sell)
+        data.cross_sell = JSON.stringify(data.cross_sell)
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
 

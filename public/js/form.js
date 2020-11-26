@@ -129,6 +129,19 @@ Form.prototype.formVisited = function() {
     this.pluginManager.onVisit();
 }
 
+Form.prototype.initializeFirstStep = function() {
+    $('#upSellStep').css('display', 'none');
+    $('#crossSellStep').css('display', 'none');
+    $('#mainForm').css('display', 'none');
+    if (this.upSellEnabled) {
+        $('#upSellStep').css('display', 'block');
+    } else if (this.crossSellEnabled) {
+        $('#crossSellStep').css('display', 'block');
+    } else {
+        $('#mainForm').css('display', 'block');
+    }
+}
+
 Form.prototype.initializeInput = function() {
     $.ajax({
         url: this.API_URL + 'forms/' + this.FORM_ID + '/initialize',
@@ -172,10 +185,8 @@ Form.prototype.initializeInput = function() {
             $('#quantity').val(this.currentQuantity);
             $('#price').val(this.quantity.options[this.currentQuantity].price);
 
-            // Set up sell
-            this.upSellEnabled = this.upSell.enabled;
-
             // Initialize first input step
+            this.initializeFirstStep();
             this.goToNextStep();
 
             console.log('[i] FORM INPUT INITIALIZED');
@@ -187,9 +198,6 @@ Form.prototype.initializeInput = function() {
 }
 
 Form.prototype.initializeUpSellStep = function() {
-    $('#mainForm').css('display', 'none');
-    $('#upSellStep').css('display', 'block');
-
     // Reset up sell table
     $('#upSellTable').html('');
 
