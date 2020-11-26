@@ -74,10 +74,10 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="upsell"></vs-checkbox>
+                    <vs-checkbox v-model="upSell"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="upsellBestSeller" class="w-full">
+                <vs-select v-model="upSellBestSeller" class="w-full">
                   <vs-select-item :key="index" :value="item.quantity" :text="item.quantity" v-for="(item,index) in quantityOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -431,8 +431,15 @@ export default {
       ],
       quantityDefaultIndex: 0,
 
-      upsell: false,
-      upsellBestSeller: '1',
+      upSell: false,
+      upSellBestSeller: '1',
+      
+      crossSell: {
+        enabled: false,
+        price: '',
+        commission: '',
+        sub_commission: '',
+      },
 
       plugins: {
         'thankyou_redirect': {
@@ -769,10 +776,11 @@ export default {
             options: {},
             default: '',
           },
-          upsell: {
-            enabled: this.upsell,
-            best_seller: this.upsellBestSeller,
+          up_sell: {
+            enabled: this.upSell,
+            best_seller: this.upSellBestSeller,
           },
+          cross_sell: this.crossSell,
           network_params: {},
           plugins: {},
         }
@@ -795,7 +803,8 @@ export default {
         data.plugins = this.plugins
 
         data.quantity = JSON.stringify(data.quantity)
-        data.upsell = JSON.stringify(data.upsell)
+        data.up_sell = JSON.stringify(data.up_sell)
+        data.cross_sell = JSON.stringify(data.cross_sell)
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
 
@@ -907,10 +916,25 @@ export default {
           index++
         }
 
-        // Fetch upsell
-        this.upsell = this.form.upsell.enabled
-        if (this.form.upsell.hasOwnProperty('best_seller')) {
-          this.upsellBestSeller = this.form.upsell.best_seller
+        // Fetch up sell
+        this.upSell = this.form.up_sell.enabled
+        if (this.form.up_sell.hasOwnProperty('best_seller')) {
+          this.upSellBestSeller = this.form.up_sell.best_seller
+        }
+
+        // Fetch cross sell
+        // TODO: Add old_price, titole, description etc...
+        if (this.form.cross_sell.hasOwnProperty('enabled')) {
+          this.crossSell.enabled = (this.form.cross_sell.enabled == true)
+        }
+        if (this.form.cross_sell.hasOwnProperty('price')) {
+          this.crossSell.price = this.form.cross_sell.price
+        }
+        if (this.form.cross_sell.hasOwnProperty('commission')) {
+          this.crossSell.commission = this.form.cross_sell.commission
+        }
+        if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
+          this.crossSell.sub_commission = this.form.cross_sell.sub_commission
         }
 
         // Fetch plugins

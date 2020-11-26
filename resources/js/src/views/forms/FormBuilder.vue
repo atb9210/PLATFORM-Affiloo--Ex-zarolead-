@@ -70,16 +70,27 @@
               <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')">Add option</vs-button> 
             </div>
             <div class="vx-col w-full mt-5">
-              <div class="mb-2">Upsell</div>
+              <div class="mb-2">Up sell</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="upsell"></vs-checkbox>
+                    <vs-checkbox v-model="upSell"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="upsellBestSeller" class="w-full">
+                <vs-select v-model="upSellBestSeller" class="w-full">
                   <vs-select-item :key="index" :value="item.quantity" :text="item.quantity" v-for="(item,index) in quantityOptions" class="w-full" />
                 </vs-select>
+              </vx-input-group>
+            </div>
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Cross sell</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="crossSell.enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input @click="showCrossSellForm" value="Click here to update" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border />
               </vx-input-group>
             </div>
           </div>
@@ -357,6 +368,69 @@
         </div>
     </vs-popup>
 
+    <!-- Cross sell popup -->
+    <vs-popup title="Cross Sell" :active.sync="showPopup['cross_sell']">
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Title</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].title" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Description</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].description" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Image URL</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['cross_sell'].img" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Old price</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].old_price" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Price</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].price" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Commission</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].commission" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Sub Commission</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].sub_commission" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <vs-button class="mt-12 mr-auto ml-auto" @click="setCrossSell" color="primary" type="filled" :disabled="!isValidForm('cross_sell')">Update</vs-button>
+        </div>
+    </vs-popup>
+
   </vx-card>
 </template>
 
@@ -424,8 +498,19 @@ export default {
       ],
       quantityDefaultIndex: 0,
 
-      upsell: false,
-      upsellBestSeller: '1',
+      upSell: false,
+      upSellBestSeller: '1',
+
+      crossSell: {
+        enabled: false,
+        title: '',
+        description: '',
+        img: '',
+        old_price: '',
+        price: '',
+        commission: '',
+        sub_commission: '',
+      },
 
       plugins: {
         'thankyou_redirect': {
@@ -463,6 +548,7 @@ export default {
         'create': false,
         'edit': false,
         'create_forms_style': false,
+        'cross_sell': false,
       },
       newObject: {
         'create': {
@@ -485,6 +571,15 @@ export default {
           name: '',
           type: 'css',
           code: '',
+        },
+        'cross_sell': {
+          title: '',
+          description: '',
+          img: '',
+          old_price: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
         },
       },
       editingQuantityOptionIndex: -1,
@@ -524,13 +619,7 @@ export default {
       }
     },
     showForm(type) {
-      // TODO: to delete
-      console.log("type:", type);
-
       this.showPopup[type] = true
-
-      // TODO: to delete
-      console.log("this.showPopup[type]:", this.showPopup[type]);
     },
     clearForm(type) {
       if (type == 'create_forms_style') {
@@ -538,6 +627,16 @@ export default {
           name: '',
           type: 'css',
           code: '',
+        }
+      } else if (type == 'cross_sell') {
+        this.newObject[type] = {
+          title: '',
+          description: '',
+          img: '',
+          old_price: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
         }
       } else {
         this.newObject[type] = {
@@ -554,6 +653,10 @@ export default {
       let obj = this.newObject[type]
       if (type == 'create_forms_style') {
         return (obj.name != '' && obj.code != '')
+      } else if (type == 'cross_sell') {
+        return (obj.title != '' && obj.description != '' && obj.img != '' &&
+          obj.price != '' && obj.old_price &&
+          obj.commission != '' && obj.sub_commission)
       } else {
         return (obj.quantity != ''
           && obj.price != '' && obj.price >= 0
@@ -732,10 +835,11 @@ export default {
             options: {},
             default: '',
           },
-          upsell: {
-            enabled: this.upsell,
-            best_seller: this.upsellBestSeller,
+          up_sell: {
+            enabled: this.upSell,
+            best_seller: this.upSellBestSeller,
           },
+          cross_sell: this.crossSell,
           network_params: {},
           plugins: {},
         }
@@ -758,7 +862,7 @@ export default {
         data.plugins = this.plugins
 
         data.quantity = JSON.stringify(data.quantity)
-        data.upsell = JSON.stringify(data.upsell)
+        data.up_sell = JSON.stringify(data.up_sell)
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
 
@@ -833,12 +937,36 @@ export default {
           this.clearForm('create_forms_style')
         })
     },
+    showCrossSellForm() {
+      this.newObject['cross_sell'].title = this.crossSell.title
+      this.newObject['cross_sell'].description = this.crossSell.description
+      this.newObject['cross_sell'].img = this.crossSell.img
+      this.newObject['cross_sell'].old_price = this.crossSell.old_price
+      this.newObject['cross_sell'].price = this.crossSell.price
+      this.newObject['cross_sell'].commission = this.crossSell.commission
+      this.newObject['cross_sell'].sub_commission = this.crossSell.sub_commission
+      this.showForm('cross_sell')
+    },
+    setCrossSell() {
+      this.crossSell.title = this.newObject['cross_sell'].title
+      this.crossSell.description = this.newObject['cross_sell'].description
+      this.crossSell.img = this.newObject['cross_sell'].img
+      this.crossSell.old_price = this.newObject['cross_sell'].old_price
+      this.crossSell.price = this.newObject['cross_sell'].price
+      this.crossSell.commission = this.newObject['cross_sell'].commission
+      this.crossSell.sub_commission = this.newObject['cross_sell'].sub_commission
+      this.showPopup['cross_sell'] = false
+      this.clearForm('cross_sell')
+    },
   },
   components: {
     FormWizard,
     TabContent,
   },
   created() {
+    // TODO: to delete
+    console.log("this.newObject:", this.newObject)
+
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }

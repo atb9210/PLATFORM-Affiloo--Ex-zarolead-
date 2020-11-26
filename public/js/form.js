@@ -150,7 +150,7 @@ Form.prototype.initializeInput = function() {
             }
 
             this.crossSellEnabled = false;
-            if (this.crossSell.hasOwnProperty('enabled')) {
+            if (this.crossSell != null && this.crossSell.hasOwnProperty('enabled')) {
                 this.crossSellEnabled = (this.crossSell.enabled == true);
             }
             if (this.crossSellEnabled) {
