@@ -250,7 +250,7 @@ body {
 		</div>
         <div class="crossSellProduct">
             <div style="width: 100%; border-radius: 5px; box-shadow: 0 0 3px #000; border: 1px solid #555555;">
-                <img style="width: 100%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom: 1px solid #999;" src="https://vigoshop.it/app/uploads/2019/10/twistline.jpg">
+                <img id="crossSellImg" style="width: 100%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom: 1px solid #999;" src="https://vigoshop.it/app/uploads/2019/10/twistline.jpg">
                 <div class="row">
                     <div class="col-6" style="text-align: center; font-size: 32px;">
                         +<span id="crossSellPrice"></span>€

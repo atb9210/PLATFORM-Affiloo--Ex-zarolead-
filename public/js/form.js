@@ -308,6 +308,9 @@ Form.prototype.initializeCrossSellStep = function() {
 
     $('#crossSellPrice').html(formatCurrency(this.crossSell.price));
     $('#crossSellTitle').html(this.crossSell.title);
+    if (this.crossSell.hasOwnProperty('img')) {
+      $('#crossSellImg').attr('src', this.crossSell.img);
+    }
 
     // Finish up sell button click function binding
     $('#cross-sell-done').on('click', function() {

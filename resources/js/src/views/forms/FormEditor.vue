@@ -372,6 +372,14 @@
     <vs-popup title="cross sell" :active.sync="showPopup['cross_sell']">
         <div class="vx-row mb-6">
             <div class="vx-col sm:w-1/3 w-full">
+                <span>SKU</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].sku" />
+            </div>
+        </div>
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
                 <span>Title</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
@@ -510,6 +518,7 @@ export default {
       
       crossSell: {
         enabled: false,
+        sku: '',
         title: '',
         description: '',
         img: '',
@@ -579,6 +588,7 @@ export default {
           code: '',
         },
         'cross_sell': {
+          sku: '',
           title: '',
           description: '',
           img: '',
@@ -696,7 +706,8 @@ export default {
       if (type == 'create_forms_style') {
         return (obj.name != '' && obj.code != '')
       } else if (type == 'cross_sell') {
-        return (obj.title != '' && obj.description != '' && obj.img != '' &&
+        return (obj.sku != '' && obj.title != '' && obj.description != '' &&
+          obj.img != '' &&
           obj.price != '' && obj.old_price &&
           obj.commission != '' && obj.sub_commission)
       } else {
@@ -981,6 +992,7 @@ export default {
         })
     },
     showCrossSellForm() {
+      this.newObject['cross_sell'].sku = this.crossSell.sku
       this.newObject['cross_sell'].title = this.crossSell.title
       this.newObject['cross_sell'].description = this.crossSell.description
       this.newObject['cross_sell'].img = this.crossSell.img
@@ -991,6 +1003,7 @@ export default {
       this.showForm('cross_sell')
     },
     setCrossSell() {
+      this.crossSell.sku = this.newObject['cross_sell'].sku
       this.crossSell.title = this.newObject['cross_sell'].title
       this.crossSell.description = this.newObject['cross_sell'].description
       this.crossSell.img = this.newObject['cross_sell'].img
@@ -1050,6 +1063,9 @@ export default {
         if (this.form.cross_sell != null) {
           if (this.form.cross_sell.hasOwnProperty('enabled')) {
             this.crossSell.enabled = (this.form.cross_sell.enabled == true)
+          }
+          if (this.form.cross_sell.hasOwnProperty('sku')) {
+            this.crossSell.sku = this.form.cross_sell.sku
           }
           if (this.form.cross_sell.hasOwnProperty('title')) {
             this.crossSell.title = this.form.cross_sell.title
