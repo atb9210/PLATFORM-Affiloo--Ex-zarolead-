@@ -134,10 +134,10 @@ class OrderController extends Controller
         if (isset($params['cross_sell'])) {
             $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
             $validator = Validator::make($params['cross_sell'], [
-                'enabled' => 'required|boolean',
-                'price' => 'required|numeric',
-                'commission' => 'required|numeric',
-                'sub_commission' => 'required|numeric',
+                'enabled' => 'boolean',
+                'price' => 'numeric',
+                'commission' => 'numeric',
+                'sub_commission' => 'numeric',
             ]);
             if ($validator->fails()) {
                 return response([
@@ -161,8 +161,10 @@ class OrderController extends Controller
         if (isset($form->quantity['options'][$params['quantity']]['price'])) {
             $price = $form->quantity['options'][$params['quantity']]['price'];
         }
-        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
-            $price += floatval($params['cross_sell']['price']);
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            if (isset($params['cross_sell']['price'])) {
+                $price += floatval($params['cross_sell']['price']);
+            }
         }
 
         // Calculate commission
@@ -170,8 +172,10 @@ class OrderController extends Controller
         if (isset($form->quantity['options'][$params['quantity']]['commission'])) {
             $commission = $form->quantity['options'][$params['quantity']]['commission'];
         }
-        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
-            $price += floatval($params['cross_sell']['commission']);
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            if (isset($params['cross_sell']['commission'])) {
+                $commission += floatval($params['cross_sell']['commission']);
+            }
         }
 
         // Calculate sub_commission
@@ -179,8 +183,10 @@ class OrderController extends Controller
         if (isset($form->quantity['options'][$params['quantity']]['sub_commission'])) {
             $sub_commission = $form->quantity['options'][$params['quantity']]['sub_commission'];
         }
-        if (isset($params['cross_sell']) && $params['cross_sell']['enabled']) {
-            $price += floatval($params['cross_sell']['sub_commission']);
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            if (isset($params['cross_sell']['sub_commission'])) {
+                $sub_commission += floatval($params['cross_sell']['sub_commission']);
+            }
         }
 
         $params['price'] = $price;
