@@ -421,6 +421,7 @@ class NetworksTableSeeder extends Seeder
                             'sku' => '{form.sku}',
                             'weight' => '{form.weight}',
                             'transaction_id' => '',
+                            'cross_sell' => '{input.cross_sell}',
                         ],
                         'validation' => [
                             'urlParams' => [
@@ -439,6 +440,7 @@ class NetworksTableSeeder extends Seeder
                                 'sku' => 'required|string',
                                 'weight' => 'required|string',
                                 'transaction_id' => 'required|string|min:0',
+                                'cross_sell' => 'json',
                             ],
                         ],
                     ],

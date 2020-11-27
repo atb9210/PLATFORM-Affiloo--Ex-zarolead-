@@ -99,6 +99,7 @@ class NetworkController extends Controller
             'product_name'   => 'required|string',
             'sku'            => 'required|string',
             'transaction_id' => 'nullable|string',
+            'cross_sell'     => 'json',
         ]);
         if ($validator->fails()) {
             return response([
@@ -108,6 +109,11 @@ class NetworkController extends Controller
         }
 
         $params = $request->query();
+
+        if (isset($params['cross_sell'])) {
+            $params['cross_sell'] = json_decode($params['cross_sell'], true);
+        }
+
         $logisticsUrl = 'http://api.momokacorp.com/send_order.php';
 
         $bodyParams = [
@@ -134,6 +140,15 @@ class NetworkController extends Controller
             'productCode'    => $params['sku'],
             'transaction_id' => $params['transaction_id'],
         ];
+
+        // Change product code if cross sell is enabled (add another sku)
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            if (isset($params['cross_sell']['sku'])) {
+                $bodyParams['productCode'] .= ', ' . $params['cross_sell']['sku'];
+            }
+        }
+
+        // TODO: Change weight if cross sell is enabled?
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $logisticsUrl);

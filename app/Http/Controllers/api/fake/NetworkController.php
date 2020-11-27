@@ -50,6 +50,7 @@ class NetworkController extends Controller
             'product_name'   => 'required|string',
             'sku'            => 'required|string',
             'transaction_id' => 'nullable|string',
+            'cross_sell'     => 'json',
         ]);
         if ($validator->fails()) {
             return response([

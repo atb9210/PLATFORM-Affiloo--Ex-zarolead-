@@ -297,19 +297,29 @@ Form.prototype.initializeCrossSellStep = function() {
     if (this.crossSell.hasOwnProperty('sub_commission')) {
         sub_commission = this.crossSell.sub_commission;
     }
+    var quantity = 1;
+    if (this.crossSell.hasOwnProperty('quantity')) {
+        quantity = parseInt(this.crossSell.quantity);
+    }
     this.updateCrossSellValue({
         enabled: false,
         price: price,
         commission: commission,
         sub_commission: sub_commission,
+        quantity: quantity.toString(),
     });
 
     this.crossSellAddedToCart = false;
 
     $('#crossSellPrice').html(formatCurrency(this.crossSell.price));
-    $('#crossSellTitle').html(this.crossSell.title);
+    if (this.crossSell.hasOwnProperty('title')) {
+        $('#crossSellTitle').html(this.crossSell.title);
+    }
+    if (this.crossSell.hasOwnProperty('description')) {
+        $('#crossSellDescription').html(this.crossSell.description);
+    }
     if (this.crossSell.hasOwnProperty('img')) {
-      $('#crossSellImg').attr('src', this.crossSell.img);
+        $('#crossSellImg').attr('src', this.crossSell.img);
     }
 
     // Finish up sell button click function binding

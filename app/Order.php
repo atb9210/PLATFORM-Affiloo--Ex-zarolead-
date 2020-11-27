@@ -294,17 +294,26 @@ class Order extends Model
             $query = $matches[1][$i];
 
             $obj = explode('.', $query)[0];
-            $field = explode('.', $query)[1];
+            $fields = array_slice(explode('.', $query), 1);
 
-            $value = '';
-            if (isset($context[$obj][$field])) {
-                $value = $context[$obj][$field];
+            $value = $context[$obj];
+            for ($fieldIndex = 0; $fieldIndex < count($fields); $fieldIndex++) {
+                $field = $fields[$fieldIndex];
+                if (isset($value[$field])) {
+                    $value = $value[$field];
+                } else {
+                    $value = '';
+                    break;
+                }
             }
             $lookupTable[$matches[0][$i]] = $value;
         }
 
         $interpreted = $param;
         foreach ($lookupTable as $key => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
             $interpreted = str_replace($key, $value, $interpreted);
         }
         return $interpreted;

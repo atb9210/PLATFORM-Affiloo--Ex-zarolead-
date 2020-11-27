@@ -138,6 +138,8 @@ class OrderController extends Controller
                 'price' => 'numeric',
                 'commission' => 'numeric',
                 'sub_commission' => 'numeric',
+                'quantity' => 'string',
+                'sku' => 'string',
             ]);
             if ($validator->fails()) {
                 return response([
@@ -189,6 +191,17 @@ class OrderController extends Controller
             }
         }
 
+        // Change quantity if cross sell is enabled
+        $quantity = intval($params['quantity']);
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            $qtyToAdd = 1;
+            if (isset($params['cross_sell']['quantity'])) {
+                $qtyToAdd = intval($params['cross_sell']['quantity']);
+            }
+            $quantity += $qtyToAdd;
+            $params['quantity'] = strval($quantity);
+        }
+
         $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
@@ -199,8 +212,10 @@ class OrderController extends Controller
         ];
 
         $network_data['price'] = $price;
-        $network_data['commission'] = $price;
-        $network_data['sub_commission'] = $price;
+        $network_data['commission'] = $commission;
+        $network_data['sub_commission'] = $sub_commission;
+        $network_data['quantity'] = $params['quantity'];
+        $network_data['cross_sell'] = $params['cross_sell'];
         $network_data['ip'] = $request->ip();
 
         // Create order

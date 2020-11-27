@@ -263,6 +263,9 @@ body {
                     <div class="col-12" style="text-align: center; font-size: 20px;">
                         <span id="crossSellTitle"></span>
                     </div>
+                    <div class="col-12" style="text-align: center; font-size: 14px;">
+                        <span id="crossSellDescription"></span>
+                    </div>
                 </div>
             </div>
         </div>
