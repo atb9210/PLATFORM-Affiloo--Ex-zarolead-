@@ -88,6 +88,13 @@ class NetworkController extends Controller
             'transaction_id' => $params['transaction_id'],
         ];
 
+        // Change product code if cross sell is enabled (add another sku)
+        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+            if (isset($params['cross_sell']['sku']) && isset($params['cross_sell']['quantity'])) {
+                $bodyParams['upsell'] = $params['cross_sell']['quantity'] . 'x' . $params['cross_sell']['sku'];
+            }
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $logisticsUrl);
         curl_setopt($ch, CURLOPT_POST, 1);

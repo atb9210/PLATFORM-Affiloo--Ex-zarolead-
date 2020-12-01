@@ -202,6 +202,8 @@ class OrderController extends Controller
         }
 
         // Change quantity if cross sell is enabled
+        // TODO: Maybe it's not needed
+        /*
         $quantity = intval($params['quantity']);
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
             $qtyToAdd = 1;
@@ -211,6 +213,7 @@ class OrderController extends Controller
             $quantity += $qtyToAdd;
             $params['quantity'] = strval($quantity);
         }
+        */
 
         $params['price'] = $price;
         $params['commission'] = $commission;

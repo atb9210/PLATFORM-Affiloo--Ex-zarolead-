@@ -144,8 +144,8 @@ class NetworkController extends Controller
 
         // Change product code if cross sell is enabled (add another sku)
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
-            if (isset($params['cross_sell']['sku'])) {
-                $bodyParams['productCode'] .= ', ' . $params['cross_sell']['sku'];
+            if (isset($params['cross_sell']['sku']) && isset($params['cross_sell']['quantity'])) {
+                $bodyParams['upsell'] = $params['cross_sell']['quantity'] . 'x' . $params['cross_sell']['sku'];
             }
         }
 
