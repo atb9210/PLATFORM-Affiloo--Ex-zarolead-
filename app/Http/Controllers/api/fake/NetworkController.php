@@ -51,6 +51,7 @@ class NetworkController extends Controller
             'sku'            => 'required|string',
             'transaction_id' => 'nullable|string',
             'cross_sell'     => 'json',
+            'delivery'       => 'required|string|min:0',
         ]);
         if ($validator->fails()) {
             return response([
@@ -100,6 +101,7 @@ class NetworkController extends Controller
 
         if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
             $info = $bodyParams;
+            $info['delivery'] = $params['delivery'];
             $order = LogisticsOrder::create([
                 'logistics_system_id' => 1,
                 'order_id' => $params['order_id'],

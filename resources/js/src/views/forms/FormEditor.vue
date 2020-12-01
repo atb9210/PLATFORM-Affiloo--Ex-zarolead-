@@ -93,6 +93,17 @@
                 <vs-input @click="showCrossSellForm" value="Click here to update" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border />
               </vx-input-group>
             </div>
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Delivery</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="delivery.enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input @click="showDeliveryForm" value="Click here to update" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border />
+              </vx-input-group>
+            </div>
           </div>
           </form>
         </tab-content>
@@ -439,6 +450,38 @@
         </div>
     </vs-popup>
 
+    <!-- Delivery popup -->
+    <vs-popup title="Delivery Options" :active.sync="showPopup['delivery']">
+        <div class="vx-row">
+            <div class="vx-col w-full flex items-center">
+                <div class="w-1/3">Name</div>
+                <div class="w-1/3">Days</div>
+                <div class="w-1/3">Price</div>
+            </div>
+        </div>
+        <div class="vx-row mb-6" v-for="(option, index) in newObject['delivery'].options">
+            <div class="vx-col w-full flex items-center">
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-tag" placeholder="Standard delivery" icon-no-border v-model="newObject['delivery'].options[index].name" />
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-globe" placeholder="3" icon-no-border type="number" step="1" min="1" v-model="newObject['delivery'].options[index].days" />
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-dollar-sign" icon-no-border type="number" step="0.01" min="0" v-model="newObject['delivery'].options[index].price" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col md:w-1/3 w-full">
+            </div>
+            <div class="vx-col md:w-2/3 w-full flex items-center">
+                <div class="md:w-1/3"></div>
+                <div class="md:w-1/3"></div>
+                <vs-button class="md:w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewDeliveryOption">Add</vs-button>
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <vs-button class="mt-12 mr-auto ml-auto" @click="setDelivery" color="primary" type="filled" :disabled="!isValidForm('delivery')">Update</vs-button>
+        </div>
+    </vs-popup>
+
   </vx-card>
 </template>
 
@@ -515,7 +558,6 @@ export default {
 
       upSell: false,
       upSellBestSeller: '1',
-      
       crossSell: {
         enabled: false,
         sku: '',
@@ -526,6 +568,10 @@ export default {
         price: '',
         commission: '',
         sub_commission: '',
+      },
+      delivery: {
+        enabled: false,
+        options: [],
       },
 
       plugins: {
@@ -564,6 +610,7 @@ export default {
         'create': false,
         'edit': false,
         'create_forms_style': false,
+        'delivery': false,
       },
       newObject: {
         'create': {
@@ -596,6 +643,13 @@ export default {
           price: '',
           commission: '',
           sub_commission: '',
+        },
+        'delivery': {
+          options: [{
+            name: '',
+            days: 1,
+            price: 0,
+          }],
         },
       },
       editingQuantityOptionIndex: -1,
@@ -690,6 +744,14 @@ export default {
           commission: '',
           sub_commission: '',
         }
+      } else if (type == 'delivery') {
+        this.newObject[type] = {
+          options: [{
+            name: '',
+            days: 1,
+            price: 0,
+          }],
+        }
       } else {
         this.newObject[type] = {
           quantity: '',
@@ -710,6 +772,8 @@ export default {
           obj.img != '' &&
           obj.price != '' && obj.old_price &&
           obj.commission != '' && obj.sub_commission)
+      } else if (type == 'delivery') {
+        return true
       } else {
         return (obj.quantity != ''
           && obj.price != '' && obj.price >= 0
@@ -893,6 +957,7 @@ export default {
             best_seller: this.upSellBestSeller,
           },
           cross_sell: this.crossSell,
+          delivery: this.delivery,
           network_params: {},
           plugins: {},
         }
@@ -917,6 +982,7 @@ export default {
         data.quantity = JSON.stringify(data.quantity)
         data.up_sell = JSON.stringify(data.up_sell)
         data.cross_sell = JSON.stringify(data.cross_sell)
+        data.delivery = JSON.stringify(data.delivery)
         data.network_params = JSON.stringify(data.network_params)
         data.plugins = JSON.stringify(data.plugins)
 
@@ -1014,6 +1080,28 @@ export default {
       this.showPopup['cross_sell'] = false
       this.clearForm('cross_sell')
     },
+    showDeliveryForm() {
+      this.newObject['delivery'].options = this.delivery.options
+      this.showForm('delivery')
+    },
+    setDelivery() {
+      this.delivery.options = []
+      this.newObject['delivery'].options.forEach((opt) => {
+        if (opt.name == '' || opt.days == '' || opt.price == '') {
+          return
+        }
+        this.delivery.options.push(opt)
+      })
+      this.showPopup['delivery'] = false
+      this.clearForm('delivery')
+    },
+    addNewDeliveryOption() {
+      this.newObject['delivery'].options.push({
+        name: '',
+        days: 1,
+        price: 0,
+      })
+    },
   },
   components: {
     FormWizard,
@@ -1087,6 +1175,16 @@ export default {
           }
           if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
             this.crossSell.sub_commission = this.form.cross_sell.sub_commission
+          }
+        }
+
+        // Fetch delivery
+        if (this.form.delivery != null) {
+          if (this.form.delivery.hasOwnProperty('enabled')) {
+            this.delivery.enabled = (this.form.delivery.enabled == true)
+          }
+          if (this.form.delivery.hasOwnProperty('options')) {
+            this.delivery.options = this.form.delivery.options
           }
         }
 

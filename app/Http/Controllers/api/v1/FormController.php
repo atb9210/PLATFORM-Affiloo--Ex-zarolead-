@@ -83,6 +83,7 @@ class FormController extends Controller
      * @bodyParam quantity json required Product's quantity JSON
      * @bodyParam up_sell json required Form's up sell
      * @bodyParam cross_sell json required Form's cross sell
+     * @bodyParam delivery json required Form's delivery
      * @bodyParam traffic_source_id int required Form's traffic source id
      * @bodyParam network_params json required Form params depending on the network
      * @bodyParam plugins json Form plugins
@@ -105,6 +106,7 @@ class FormController extends Controller
             'quantity' => 'required|json',
             'up_sell' => 'required|json',
             'cross_sell' => 'required|json',
+            'delivery' => 'json',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
             'network_params' => 'required|json',
             'plugins' => 'json',
@@ -117,6 +119,9 @@ class FormController extends Controller
         $params['quantity'] = json_decode($params['quantity'], TRUE);
         $params['up_sell'] = json_decode($params['up_sell'], TRUE);
         $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
+        if (isset($params['delivery'])) {
+            $params['delivery'] = json_decode($params['delivery'], TRUE);
+        }
         $params['network_params'] = json_decode($params['network_params'], TRUE);
         if (isset($params['plugins'])) {
             $params['plugins'] = json_decode($params['plugins'], TRUE);
@@ -154,6 +159,19 @@ class FormController extends Controller
                 'message' => 'The given data - for the cross_sell JSON param - was invalid.',
                 'errors' => $validator->messages(),
             ], 422);
+        }
+
+        // Validate delivery JSON
+        if (isset($params['delivery'])) {
+            $validator = Validator::make($params['delivery'], [
+                'enabled' => 'required|boolean',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the delivery JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
         }
 
         // Create form
@@ -203,6 +221,7 @@ class FormController extends Controller
      * @bodyParam quantity json Product's quantity JSON
      * @bodyParam up_sell json Form's up sell
      * @bodyParam cross_sell json Form's cross sell
+     * @bodyParam delivery json required Form's delivery
      * @bodyParam traffic_source_id int Form's traffic source id
      * @bodyParam network_params json Form params depending on the network
      * @bodyParam plugins json Form plugins
@@ -231,6 +250,7 @@ class FormController extends Controller
             'quantity' => 'json',
             'up_sell' => 'json',
             'cross_sell' => 'json',
+            'delivery' => 'json',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'network_params' => 'json',
             'plugins' => 'json',
@@ -246,6 +266,9 @@ class FormController extends Controller
         }
         if (isset($params['cross_sell'])) {
             $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
+        }
+        if (isset($params['delivery'])) {
+            $params['delivery'] = json_decode($params['delivery'], TRUE);
         }
         if (isset($params['network_params'])) {
             $params['network_params'] = json_decode($params['network_params'], TRUE);
@@ -289,6 +312,19 @@ class FormController extends Controller
             if ($validator->fails()) {
                 return response([
                     'message' => 'The given data - for the cross_sell JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
+
+        // Validate delivery JSON
+        if (isset($params['delivery'])) {
+            $validator = Validator::make($params['delivery'], [
+                'enabled' => 'required|boolean',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the delivery JSON param - was invalid.',
                     'errors' => $validator->messages(),
                 ], 422);
             }
@@ -672,6 +708,7 @@ class FormController extends Controller
                 'quantity' => $form->quantity,
                 'up_sell' => $form->up_sell,
                 'cross_sell' => $form->cross_sell,
+                'delivery' => $form->delivery,
             ],
         ]);
     }

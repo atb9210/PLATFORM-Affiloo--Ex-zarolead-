@@ -180,6 +180,7 @@ body {
 		<input type="hidden" name="quantity" id="quantity" value="1">
 		<input type="hidden" name="price" id="price" value="0">
 		<input type="hidden" name="cross_sell" id="cross_sell" value="{}">
+		<input type="hidden" name="delivery" id="delivery" value="">
 
         <div id="form-inputs">
             <!--
@@ -250,7 +251,7 @@ body {
 		</div>
         <div class="crossSellProduct">
             <div style="width: 100%; border-radius: 5px; box-shadow: 0 0 3px #000; border: 1px solid #555555;">
-                <img id="crossSellImg" style="width: 100%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom: 1px solid #999;" src="https://vigoshop.it/app/uploads/2019/10/twistline.jpg">
+                <img id="crossSellImg" style="width: 100%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom: 1px solid #999;" src="">
                 <div class="row">
                     <div class="col-6" style="text-align: center; font-size: 32px;">
                         +<span id="crossSellPrice"></span>€
@@ -270,6 +271,33 @@ body {
             </div>
         </div>
 		<button id="cross-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+	</div>
+
+    <!-- Delivery step -->
+    <div id="deliveryStep" style="display: none; padding: 15px; height: 100%;">
+        <div class="row">
+            <div class="col-12" style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 22px;">Scegli il tipo di spedizione:</span>
+            </div>
+        </div>
+        <div id="deliveryOptions" class="row" style="margin-bottom: 20px;">
+            <div class="col-12">
+                <input type="radio" id="male" name="gender" value="male">
+                <label for="male">Standard delivery 5 giorni +5,00€</label>
+            </div>
+            <div class="col-12">
+                <span>Express delivery 2 giorni +7,00€</span>
+            </div>
+        </div>
+        <div id="cartReview" class="row" style="margin-bottom: 30px; text-align: center; font-size: 22px;">
+            <div class="col-12">
+                Totale ordine: <span id="cartTotalAmount"></span>€
+            </div>
+            <div class="col-12" style="margin-bottom: 20px;">
+                Consegna stimata: entro il <span id="cartDeliveryDay"></span>
+            </div>
+        </div>
+		<button id="delivery-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
 	</div>
 
     <!-- Thankyou page -->

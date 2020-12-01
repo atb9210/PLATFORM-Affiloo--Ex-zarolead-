@@ -22,6 +22,7 @@ class CreateFormsTable extends Migration
             $table->json('quantity');
             $table->json('up_sell')->nullable();
             $table->json('cross_sell')->nullable();
+            $table->json('delivery')->nullable();
             $table->decimal('total_commission', 9, 2)->default(0.0);
             $table->bigInteger('traffic_source_id')->unsigned();
             $table->json('info')->nullable();

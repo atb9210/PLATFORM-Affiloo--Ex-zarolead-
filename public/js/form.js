@@ -18,6 +18,15 @@ function formatCurrency(curr) {
     return parseFloat(curr).toFixed(2).replace('.', ',');
 }
 
+function formatDeliveryDay(d) {
+    var months = [
+        'Gennaio', 'Febbraio', 'Marzo', 'Aprile',
+        'Maggio', 'Giugno', 'Luglio', 'Agosto',
+        'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+    ];
+    return d.getDate() + ' ' + months[d.getMonth()];
+}
+
 function Form(id, debug = false, beta = false) {
     this.DEBUG = true;
     this.BETA = false;
@@ -44,6 +53,11 @@ function Form(id, debug = false, beta = false) {
         commission: 0,
         sub_commission: 0,
     };
+    this.deliveryEnabled = false;
+    this.delivery = [];
+    this.deliveryOption = 0;
+
+    this.currentStep = '';
 
     this.errors = [];
     this.errorsInStep = 0;
@@ -134,10 +148,13 @@ Form.prototype.initializeFirstStep = function() {
     $('#crossSellStep').css('display', 'none');
     $('#mainForm').css('display', 'none');
     if (this.upSellEnabled) {
+        this.currentStep = 'upSell';
         $('#upSellStep').css('display', 'block');
     } else if (this.crossSellEnabled) {
+        this.currentStep = 'crossSell';
         $('#crossSellStep').css('display', 'block');
     } else {
+        this.currentStep = 'input';
         $('#mainForm').css('display', 'block');
     }
 }
@@ -153,6 +170,7 @@ Form.prototype.initializeInput = function() {
             this.quantity = data.data.quantity;
             this.upSell = data.data.up_sell;
             this.crossSell = data.data.cross_sell;
+            this.delivery = data.data.delivery;
 
             this.upSellEnabled = false;
             if (this.upSell.hasOwnProperty('enabled')) {
@@ -168,6 +186,15 @@ Form.prototype.initializeInput = function() {
             }
             if (this.crossSellEnabled) {
                 this.initializeCrossSellStep();
+            }
+
+            this.deliveryEnabled = false;
+            if (this.delivery != null && this.delivery.hasOwnProperty('enabled')) {
+                this.deliveryEnabled = ((this.delivery.enabled == true) && this.delivery.hasOwnProperty('options') &&
+                    Array.isArray(this.delivery.options) && this.delivery.options.length > 0);
+            }
+            if (this.deliveryEnabled) {
+                this.initializeDeliveryStep();
             }
 
             var inputStepCounter = 0;
@@ -333,6 +360,39 @@ Form.prototype.initializeCrossSellStep = function() {
     }.bind(this));
 }
 
+Form.prototype.initializeDeliveryStep = function() {
+    $('#deliveryOptions').html('');
+    for (var i = 0; i < this.delivery.options.length; i++) {
+        var opt = this.delivery.options[i];
+        var deliveryOption = document.createElement('div');
+        deliveryOption.className = 'col-12';
+        var inputRadio = document.createElement('input');
+        inputRadio.type = 'radio';
+        inputRadio.id = 'delivery-' + i;
+        inputRadio.name = 'deliveryRadio';
+        inputRadio.value = i;
+        if (i == 0) {
+            inputRadio.setAttribute('checked', 'true');
+        }
+        var label = document.createElement('label');
+        label.setAttribute('for', inputRadio.id);
+        label.innerHTML = opt.name + ' ' + opt.days + ' giorni +' + formatCurrency(opt.price) + '€';
+        deliveryOption.appendChild(inputRadio);
+        deliveryOption.appendChild(label);
+        $('#deliveryOptions')[0].appendChild(deliveryOption);
+    }
+
+    // Delivery selection function bindings
+    $('input[type=radio][name=deliveryRadio]').change(function(e) {
+        this.setDeliveryOption(parseInt(e.target.value));
+    }.bind(this));
+
+    // Finish delivery button click function binding
+    $('#delivery-done').on('click', function() {
+        this.finishDelivery();
+    }.bind(this));
+}
+
 Form.prototype.updateCrossSellValue = function(val) {
     this.crossSellValue = val;
     $('#cross_sell').val(JSON.stringify(this.crossSellValue));
@@ -399,7 +459,11 @@ Form.prototype.goToInputStep = function(stepNum) {
     if (this.currentInputStep + 1 < this.inputSteps.length) {
         $("#submit-button").html("Continua");
     } else {
-        $("#submit-button").html("Conferma l'ordine");
+        if (!this.deliveryEnabled) {
+            $("#submit-button").html("Conferma l'ordine");
+        } else {
+            $("#submit-button").html("Continua");
+        }
     }
 }
 
@@ -408,27 +472,81 @@ Form.prototype.goToNextStep = function() {
         $("#submit-button").html("Continua");
         this.goToInputStep(this.currentInputStep + 1);
     } else {
-        $("#submit-button").html("Conferma l'ordine");
-        this.onSubmit(1);
+        if (!this.deliveryEnabled) {
+            $("#submit-button").html("Conferma l'ordine");
+        } else {
+            $("#submit-button").html("Continua");
+        }
+        this.finishInput();
     }
+}
+
+Form.prototype.setDeliveryOption = function(index) {
+    if (index < 0 || index >= this.delivery.options.length) return;
+
+    this.deliveryOption = index;
+
+    // Calulate total price (including delivery)
+    var price = parseFloat($('#price').val());
+    price += parseFloat(this.delivery.options[index].price);
+    $('#cartTotalAmount').html(formatCurrency(price.toFixed(2)));
+
+    // Calulate delivery days (excluding Saturday and Sunday)
+    var deliveryDay = new Date();
+    var daysCounter = 0;
+    var tempDate = new Date();
+    while (daysCounter < parseInt(this.delivery.options[index].days)) {
+        tempDate.setDate(tempDate.getDate() + 1);
+        if (tempDate.getDay() != 0 && tempDate.getDay() != 6) {
+            daysCounter++;
+        }
+    }
+    deliveryDay.setDate(deliveryDay.getDate() + daysCounter);
+    $('#cartDeliveryDay').html(formatDeliveryDay(deliveryDay));
 }
 
 Form.prototype.finishUpSell = function() {
     if (this.crossSellEnabled) {
+        this.currentStep = 'crossSell';
         $('#upSellStep').css('display', 'none');
         $('#crossSellStep').css('display', 'block');
         $('#mainForm').css('display', 'none');
+        $('#deliveryStep').css('display', 'none');
     } else {
+        this.currentStep = 'input';
         $('#upSellStep').css('display', 'none');
         $('#crossSellStep').css('display', 'none');
         $('#mainForm').css('display', 'block');
+        $('#deliveryStep').css('display', 'none');
     }
 }
 
 Form.prototype.finishCrossSell = function() {
+    this.currentStep = 'input';
     $('#upSellStep').css('display', 'none');
     $('#crossSellStep').css('display', 'none');
     $('#mainForm').css('display', 'block');
+    $('#deliveryStep').css('display', 'none');
+}
+
+Form.prototype.finishInput = function() {
+    if (!this.deliveryEnabled) {
+        this.currentStep = 'final';
+        this.onSubmit(1);
+    } else {
+        this.onSubmit(1);
+    }
+}
+
+Form.prototype.finishDelivery = function() {
+    var price = parseFloat($('#price').val());
+    price += parseFloat(this.delivery.options[this.deliveryOption].price);
+    $('#price').val(price.toFixed(2));
+
+    $('#delivery').val(this.deliveryOption);
+
+    this.currentStep = 'final';
+    this.onSubmit(1);
 }
 
 Form.prototype.crossSellAddToCart = function() {
@@ -491,7 +609,19 @@ Form.prototype.validateInput = function() {
             console.log('[i] INPUT VALIDATED');
 
             this.validatedInput = this.notValidatedInput;
-            this.onSubmit(2);
+
+            if (this.currentStep == 'final') {
+                this.onSubmit(2);
+            } else {
+                if (this.deliveryEnabled) {
+                    this.currentStep = 'delivery';
+                    $('#upSellStep').css('display', 'none');
+                    $('#crossSellStep').css('display', 'none');
+                    $('#mainForm').css('display', 'none');
+                    $('#deliveryStep').css('display', 'block');
+                    this.setDeliveryOption(0);
+                }
+            }
             $("#submit-button").removeAttr("disabled");
         }.bind(this),
         error: function(response) {
@@ -609,8 +739,10 @@ Form.prototype.onSubmit = function(step) {
                     this.pluginManager.onRedirect();
                     window.location.replace(data.redirect);
                 } else {
-                    $('#mainForm').css('display', 'none');
                     $('#upSellStep').css('display', 'none');
+                    $('#crossSellStep').css('display', 'none');
+                    $('#mainForm').css('display', 'none');
+                    $('#deliveryStep').css('display', 'none');
                     $('#thankyou-page').css('display', 'block');
                 }
                 this.sendingForm = false;

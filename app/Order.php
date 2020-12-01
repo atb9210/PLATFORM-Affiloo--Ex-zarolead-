@@ -17,13 +17,14 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_status_id',
-        'name', 'phone', 'address', 'email',
+        'name', 'phone', 'address', 'email', 'info',
         'product_id', 'quantity',
         'price', 'commission', 'sub_commission',
         'network_id', 'network_data',
     ];
 
     protected $casts = [
+        'info' => 'array',
         'network_data' => 'array',
     ];
     

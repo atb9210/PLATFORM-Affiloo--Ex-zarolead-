@@ -61,6 +61,7 @@ class FormResource extends JsonResource
             'quantity' => json_decode(json_encode($this->quantity), false),
             'up_sell' => $this->up_sell,
             'cross_sell' => $this->cross_sell,
+            'delivery' => $this->delivery,
             'total_commission' => $this->total_commission,
             'traffic_source' => [
                 'id' => $this->traffic_source->id,

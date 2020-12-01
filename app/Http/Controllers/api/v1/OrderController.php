@@ -102,6 +102,7 @@ class OrderController extends Controller
      * @bodyParam address string required Customer's address
      * @bodyParam quantity string required Quantity
      * @bodyParam cross_sell json Cross sell
+     * @bodyParam delivery integer Delivery option
      * @bodyParam form_id integer required Form's id
      * @bodyParam network_data json required Network Data in json format
      * @bodyParam landing_id integer Landing's id
@@ -121,6 +122,7 @@ class OrderController extends Controller
             'address' => 'required|string|min:3',
             'quantity' => 'required|string|min:1',
             'cross_sell' => 'json',
+            'delivery' => 'integer|min:0',
 
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
@@ -168,6 +170,14 @@ class OrderController extends Controller
                 $price += floatval($params['cross_sell']['price']);
             }
         }
+        $deliveryName = '';
+        if (isset($params['delivery']) && is_numeric($params['delivery']) && isset($form->delivery['options'])) {
+            $params['delivery'] = intval($params['delivery']);
+            if ($params['delivery'] >= 0 && $params['delivery'] < count($form->delivery['options'])) {
+                $price += floatval($form->delivery['options'][$params['delivery']]['price']);
+                $deliveryName = $form->delivery['options'][$params['delivery']]['name'];
+            }
+        }
 
         // Calculate commission
         $commission = 0.0;
@@ -209,6 +219,7 @@ class OrderController extends Controller
             'price' => $price,
             'commission' => $commission,
             'sub_commission' => $sub_commission,
+            'delivery' => $deliveryName,
         ];
 
         $network_data['price'] = $price;
@@ -216,6 +227,7 @@ class OrderController extends Controller
         $network_data['sub_commission'] = $sub_commission;
         $network_data['quantity'] = $params['quantity'];
         $network_data['cross_sell'] = $params['cross_sell'];
+        $network_data['delivery'] = $deliveryName;
         $network_data['ip'] = $request->ip();
 
         // Create order
