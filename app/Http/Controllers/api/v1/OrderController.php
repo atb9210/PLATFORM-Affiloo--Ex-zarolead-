@@ -122,7 +122,7 @@ class OrderController extends Controller
             'address' => 'required|string|min:3',
             'quantity' => 'required|string|min:1',
             'cross_sell' => 'json',
-            'delivery' => 'integer|min:0',
+            'delivery' => 'integer|min:0|nullable',
 
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
