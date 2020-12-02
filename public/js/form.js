@@ -715,6 +715,9 @@ Form.prototype.onSubmit = function(step) {
         var query_params = getUrlParams();
         data["query_params"] = JSON.stringify(query_params);
 
+        // TODO: to delete
+        console.log("data:",data);
+
         this.pluginManager.onSubmit();
 
         $.ajax({
