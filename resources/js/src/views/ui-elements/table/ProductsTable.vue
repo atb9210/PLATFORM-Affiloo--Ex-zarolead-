@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <div v-if="canCreateAsAdmin" class="vx-row mb-6">
+            <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Advertiser</span>
                 </div>
@@ -153,7 +153,7 @@
                 </div>
             </div>
 
-            <div v-if="canCreateAsAdmin" class="vx-row mb-6">
+            <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Advertiser</span>
                 </div>
@@ -242,9 +242,6 @@ export default {
     canCreateAndEdit() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
               this.$store.getters.userHasRole('advertiser'))
-    },
-    canCreateAsAdmin() {
-      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
     },
   },
   methods: {
@@ -352,10 +349,8 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       let isValid = (obj.name.length > 0
-        && obj.tag != '' && obj.tag.id >= 1)
-      if (this.canCreateAsAdmin) {
-        isValid = isValid && (obj.advertiser != '' && obj.advertiser.id >= 1)
-      }
+        && obj.tag != '' && obj.tag.id >= 1
+        && obj.advertiser != '' && obj.advertiser.id >= 1)
       return isValid
     },
     createObject() {
@@ -513,28 +508,23 @@ export default {
       })
 
     // Retrieve advertisers
-    if (this.canCreateAsAdmin) {
-      let data = {}
-      data['filter_roles'] = [5],
-      this.$vs.loading()
-      this.$http.get('/api/v1/users/', { headers, params: data })
-        .then((response) => {
-          this.advertisers = []
-          response.data.data.forEach((advertiser) => {
-            this.advertisers.push({
-              id: advertiser.id,
-              label: advertiser.name,
-            })
+    let data = {}
+    data['filter_roles'] = [5],
+    this.$vs.loading()
+    this.$http.get('/api/v1/users/', { headers, params: data })
+      .then((response) => {
+        this.advertisers = []
+        response.data.data.forEach((advertiser) => {
+          this.advertisers.push({
+            id: advertiser.id,
+            label: advertiser.name,
           })
-          this.$vs.loading.close()
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-        })
-    } else {
-      let userInfo = this.$store.getters.getUserInfo()
-      this.myId = userInfo.id
-    }
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
   },
   mounted () {
   }
