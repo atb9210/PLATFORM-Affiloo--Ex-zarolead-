@@ -282,8 +282,13 @@ Form.prototype.initializeUpSellStep = function() {
 
         // Click on td binding
         td.onclick = function () {
+            // Update quantity and price
+            this.currentQuantity = key;
             $('#quantity').val(key);
+            var price = parseFloat(this.quantity.options[key].price);
+            $('#price').val(price.toFixed(2));
 
+            // Update class
             var row = $('#upSellTable tr.real-row')[0];
             var cols = row.children;
             for (var colIndex = 0; colIndex < cols.length; colIndex++) {
@@ -552,15 +557,25 @@ Form.prototype.finishDelivery = function() {
 Form.prototype.crossSellAddToCart = function() {
     var updatedVal = this.crossSellValue;
     if (this.crossSellAddedToCart) {
-        $('#crossSellAddButton').removeClass('cross-sell-btn-added');
-        $('#crossSellAddButton').html('Aggiungi');
+        if (this.crossSell.hasOwnProperty('price')) {
+            var price = parseFloat($('#price').val());
+            price -= parseFloat(this.crossSell.price);
+            $('#price').val(price.toFixed(2));
+        }
         updatedVal.enabled = false;
         this.updateCrossSellValue(updatedVal);
+        $('#crossSellAddButton').removeClass('cross-sell-btn-added');
+        $('#crossSellAddButton').html('Aggiungi');
     } else {
-        $('#crossSellAddButton').addClass('cross-sell-btn-added');
-        $('#crossSellAddButton').html('Aggiunto!');
+        if (this.crossSell.hasOwnProperty('price')) {
+            var price = parseFloat($('#price').val());
+            price += parseFloat(this.crossSell.price);
+            $('#price').val(price.toFixed(2));
+        }
         updatedVal.enabled = true;
         this.updateCrossSellValue(updatedVal);
+        $('#crossSellAddButton').addClass('cross-sell-btn-added');
+        $('#crossSellAddButton').html('Aggiunto!');
     }
     this.crossSellAddedToCart = !this.crossSellAddedToCart
 }
@@ -714,9 +729,6 @@ Form.prototype.onSubmit = function(step) {
         }
         var query_params = getUrlParams();
         data["query_params"] = JSON.stringify(query_params);
-
-        // TODO: to delete
-        console.log("data:",data);
 
         this.pluginManager.onSubmit();
 
