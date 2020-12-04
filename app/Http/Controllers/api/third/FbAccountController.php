@@ -226,10 +226,6 @@ class FbAccountController extends Controller
             $params['info'] = json_decode($params['info'], true);
         }
 
-        if (!isset($params['user_id'])) {
-            $params['user_id'] = Auth::user()->id;
-        }
-
         $options = [];
         if (isset($params['name'])) {
             $options['name'] = $params['name'];
