@@ -971,6 +971,8 @@ export default {
             price: opt.price,
             commission: opt.commission,
             sub_commission: opt.sub_commission,
+            old_price: opt.old_price,
+            discount: opt.discount,
           }
         })
         data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
@@ -1131,6 +1133,8 @@ export default {
             price: value.price,
             commission: value.commission,
             sub_commission: value.sub_commission,
+            old_price: value.old_price,
+            discount: value.discount,
             default: d,
           });
           if (d) {

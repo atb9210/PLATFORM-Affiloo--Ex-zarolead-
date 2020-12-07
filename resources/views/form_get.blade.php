@@ -1,9 +1,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Bootstrap -->
-<!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">-->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
 
 <style>
+/* TODO: to delete this? Check if everything is fine graphically */
+/*
 body {
 	padding: 0px;
 	margin: 0px;
@@ -22,11 +24,10 @@ body {
 * {
   box-sizing: border-box;
 }
+*/
+
 .span-error {
 	display: none;
-
-	/*color: white;*/
-	/*background-color: #eaac00;*/
 	color: #9c0000;
 	background-color: white;
 
@@ -87,6 +88,89 @@ body {
     border-radius: 8px;
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
 }
+
+#upSellOptions {
+    transition: opacity .2s ease;
+    opacity: 1;
+    padding: 5px;
+}
+
+.upSellOption {
+    background: rgb(255, 255, 255);
+    box-shadow: 0 1px 1px rgba(0,0,0,.1), 0 9px 0 -5px #eee, 0 9px 1px -4px rgba(0,0,0,.1), 0 18px 0 -10px #eee, 0 18px 1px -9px rgba(0,0,0,.1);
+    transition: box-shadow .2s cubic-bezier(.4,0,1,1),transform .2s cubic-bezier(.4,0,1,1);
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+    position: relative;
+    margin-bottom: 20px;
+    padding: 10px 0px;
+}
+
+.upSellOptionActive {
+    background: rgb(255, 219, 99);
+    border: 3px solid #444444;
+    border-left-width: 10px;
+}
+
+.upSellOptionBestSeller {
+    border: 1px solid #444444;
+}
+
+.upSellOptionHeader {
+    padding: 0;
+    border: none;
+}
+
+.upSellOptionHeaderBestSeller {
+    background-color: #444444;
+    color: white;
+    text-transform: uppercase;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 10px;
+    padding-left: 5px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+}
+
+.upSellOptionContent {
+    padding: 0;
+    border: none;
+}
+
+.upSellOptionBodyDiscount {
+    font-weight: 600;
+    padding: 5px 8px;
+    margin: 3px 0;
+    display: inline-flex;
+    line-height: 1;
+    font-size: 12px;
+    max-height: 24px;
+    border: 1px solid #484848;
+    flex-shrink: 0!important;
+    color: #484848;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50px;
+    text-transform: uppercase;
+}
+
+.upSellOptionBodyPriceAmount {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.upSellOptionBodyPriceLabel {
+    color: #5f5f5f;
+    font-size: 11px;
+}
+
+.upSellTotalReview {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/********************/
 
 #upSellTable {
     border-collapse: initial;
@@ -213,6 +297,52 @@ body {
 				ad un Prezzo Speciale!
 			</p>
 		</div>
+        <div id="upSellOptions">
+            <!--
+            <div class="upSellOption upSellOptionActive">
+                <div class="upSellOptionHeader w-100">
+                    <span class="upSellOptionHeaderBestSeller">
+                        il più venduto
+                    </span>
+                </div>
+                <div class="upSellOptionContent row w-100">
+                    <div class="col-5 pl-5 pt-2">
+                        1 pezzo
+                    </div>
+                    <div class="col-4 pt-2 pr-0 pl-0">
+                        <span class="upSellOptionBodyDiscount">
+                            RISPARMIA 10%
+                        </span>
+                    </div>
+                    <div class="col-3">
+                        <div class="upSellOptionBodyPriceAmount pt-2">€17,99</div>
+                        <div class="upSellOptionBodyPriceLabel pb-1">al pezzo</div>
+                    </div>
+                </div>
+            </div>
+            <div class="upSellOption">
+                <div class="upSellOptionContent row w-100">
+                    <div class="col-5 pl-5 pt-2">
+                        2 pezzi
+                    </div>
+                    <div class="col-4 pt-2 pr-0 pl-0">
+                        <span class="upSellOptionBodyDiscount">
+                            RISPARMIA 10%
+                        </span>
+                    </div>
+                    <div class="col-3">
+                        <div class="upSellOptionBodyPriceAmount pt-2">€17,99</div>
+                        <div class="upSellOptionBodyPriceLabel pb-1">al pezzo</div>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+        <div class="upSellTotalReview w-100 text-center mb-3">
+            TOTALE €<span id="upSellTotalAmount">17,99</span>
+        </div>
+        <!-- Old up sell -->
+        <!--
         <table id="upSellTable">
             <tbody>
                 <tr>
@@ -237,6 +367,7 @@ body {
                 </tr>
             </tbody>
         </table>
+        -->
 		<button id="up-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
 	</div>
 

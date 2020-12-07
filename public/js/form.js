@@ -225,90 +225,27 @@ Form.prototype.initializeInput = function() {
 }
 
 Form.prototype.initializeUpSellStep = function() {
-    // Reset up sell table
-    $('#upSellTable').html('');
+    // Reset up sell options
+    $('#upSellOptions').html('');
 
-    // Initialize headers
-    var counter = 0;
-    var tr = document.createElement('tr');
-    tr.className = 'header-row';
+    // Create up sell options
+    var activeSetFlag = false;
     for (const [key, value] of Object.entries(this.quantity.options)) {
-        var td = document.createElement('td');
-        if (this.upSell.hasOwnProperty('best_seller')) {
-            if (this.upSell.best_seller == key) {
-                td.className = 'product_price_top_up BEST-SELLER';
-                td.innerHTML = 'IL PIÙ VENDUTO';
+        var bestSeller = (this.upSell.hasOwnProperty('best_seller') && this.upSell.best_seller == key);
+        var activeOption = false;
+        if (!activeSetFlag) {
+            if (this.quantity.hasOwnProperty('default') && (this.quantity.default in this.quantity.options)) {
+                if (key == this.quantity.default) {
+                    activeOption = true;
+                    activeSetFlag = true;
+                }
             } else {
-                td.className = 'product_price_top_up';
-            }
-        } else {
-            if (counter + 1 == Object.keys(this.quantity.options).length) {
-                td.className = 'product_price_top_up BEST-SELLER';
-                td.innerHTML = 'IL PIÙ VENDUTO';
-            } else {
-                td.className = 'product_price_top_up';
+                activeOption = true;
+                activeSetFlag = true;
             }
         }
-        tr.appendChild(td);
-        counter++;
+        this.createUpSellOption(key, value.discount, value.price, activeOption, bestSeller);
     }
-    $('#upSellTable')[0].appendChild(tr);
-
-    // Initialize columns
-    counter = 0;
-    tr = document.createElement('tr');
-    tr.className = 'real-row';
-    for (const [key, value] of Object.entries(this.quantity.options)) {
-        var td = document.createElement('td');
-        td.id = 'upsell_option_' + key;
-
-        if (this.quantity.hasOwnProperty('default') && (this.quantity.default in this.quantity.options)) {
-            if (key == this.quantity.default) {
-                td.className = 'product_qty product_price_top';
-            } else {
-                td.className = 'product_qty product_price_basic';
-            }
-        } else {
-            if (counter == 0) {
-                td.className = 'product_qty product_price_top';
-            } else {
-                td.className = 'product_qty product_price_basic';
-            }
-        }
-        var unitPrice = parseFloat(value.price) / parseInt(key);
-        td.innerHTML = '<b>' + key + '</b>x <span class="price_qty">' + formatCurrency(unitPrice) + '€</span><span class="per_qty">/pz.</span>\
-                        <hr class="total_price_qty_btns">\
-                        <span class="total_qty_price"> Importo totale: ' + formatCurrency(value.price) + '€ </span>';
-
-        // Click on td binding
-        td.onclick = function () {
-            // Update quantity and price
-            this.currentQuantity = key;
-            $('#quantity').val(key);
-            var price = parseFloat(this.quantity.options[key].price);
-            $('#price').val(price.toFixed(2));
-
-            // Update class
-            var row = $('#upSellTable tr.real-row')[0];
-            var cols = row.children;
-            for (var colIndex = 0; colIndex < cols.length; colIndex++) {
-                var col = cols[colIndex];
-                if (col.tagName.toLowerCase() != 'td') {
-                    continue;
-                }
-
-                if (col.id == 'upsell_option_' + key) {
-                    col.className = col.className.replace('product_price_basic', 'product_price_top');
-                } else {
-                    col.className = col.className.replace('product_price_top', 'product_price_basic');
-                }
-            }
-        }.bind(this);
-
-        tr.appendChild(td);
-        counter++;
-    }
-    $('#upSellTable')[0].appendChild(tr);
 
     // Finish up sell button click function binding
     $('#up-sell-done').on('click', function() {
@@ -442,6 +379,83 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
     }
 }
 
+Form.prototype.createUpSellOption = function(quantity, discount, price, active = false, bestSeller = false) {
+    var unitPrice = formatCurrency(parseFloat(price) / parseInt(quantity));
+
+    var upSellOptions = $('#upSellOptions')[0];
+
+    var upSellOption = document.createElement('div');
+    upSellOption.setAttribute('id', 'up_sell_option_' + quantity);
+    upSellOption.className = 'upSellOption';
+    if (active) {
+        upSellOption.className += ' upSellOptionActive';
+    }
+
+    if (bestSeller) {
+        upSellOption.className += ' upSellOptionBestSeller';
+        var upSellOptionHeader = document.createElement('div');
+        upSellOptionHeader.className = 'upSellOptionHeader w-100';
+        var upSellOptionHeaderBestSeller = document.createElement('span');
+        upSellOptionHeaderBestSeller.className = 'upSellOptionHeaderBestSeller';
+        upSellOptionHeaderBestSeller.innerHTML = 'il più venduto ';
+        upSellOptionHeader.appendChild(upSellOptionHeaderBestSeller);
+        upSellOption.appendChild(upSellOptionHeader);
+    }
+
+    var upSellOptionContent = document.createElement('div');
+    upSellOptionContent.className = 'upSellOptionContent row w-100';
+
+    var divPieces = document.createElement('div');
+    divPieces.className = 'col-5 pl-5 pt-2';
+    divPieces.innerHTML = quantity + ' ' + ((quantity == 1) ? 'pezzo' : 'pezzi');
+
+    var divDiscount = document.createElement('div');
+    divDiscount.className = 'col-4 pt-2 pr-0 pl-0';
+    if (typeof discount != 'undefined') {
+        divDiscountLabel = document.createElement('span');
+        divDiscountLabel.className = 'upSellOptionBodyDiscount';
+        divDiscountLabel.innerHTML = 'risparmia ' + discount + '%';
+        divDiscount.appendChild(divDiscountLabel);
+    }
+
+    var divUnitPrice = document.createElement('div');
+    divUnitPrice.className = 'col-3';
+    var divUnitPriceAmount = document.createElement('div');
+    divUnitPriceAmount.className = 'upSellOptionBodyPriceAmount pt-2';
+    divUnitPriceAmount.innerHTML = '€' + unitPrice;
+    var divUnitPriceLabel = document.createElement('div');
+    divUnitPriceLabel.className = 'upSellOptionBodyPriceLabel pb-1';
+    divUnitPriceLabel.innerHTML = 'al pezzo';
+    divUnitPrice.appendChild(divUnitPriceAmount);
+    divUnitPrice.appendChild(divUnitPriceLabel);
+
+    upSellOptionContent.appendChild(divPieces);
+    upSellOptionContent.appendChild(divDiscount);
+    upSellOptionContent.appendChild(divUnitPrice);
+    upSellOption.appendChild(upSellOptionContent);
+    upSellOptions.appendChild(upSellOption);
+
+    // Click on up sell option binding
+    upSellOption.onclick = function () {
+        // Update quantity and price
+        var key = quantity;
+        this.currentQuantity = key;
+        $('#quantity').val(key);
+        var price = parseFloat(this.quantity.options[key].price);
+        $('#price').val(price.toFixed(2));
+
+        // Update active
+        var upSellOptions = $('.upSellOption');
+        $('.upSellOption').each(function(i, obj) {
+            obj.className = 'upSellOption';
+        });
+        $('#up_sell_option_' + quantity)[0].className += ' upSellOptionActive';
+
+        // Update up sell total
+        $('#upSellTotalAmount').html(formatCurrency(price));
+    }.bind(this);
+}
+
 Form.prototype.goToInputStep = function(stepNum) {
     if (stepNum < 0 && stepNum >= this.inputSteps.length) return;
 
@@ -494,7 +508,7 @@ Form.prototype.setDeliveryOption = function(index) {
     // Calulate total price (including delivery)
     var price = parseFloat($('#price').val());
     price += parseFloat(this.delivery.options[index].price);
-    $('#cartTotalAmount').html(formatCurrency(price.toFixed(2)));
+    $('#cartTotalAmount').html(formatCurrency(price));
 
     // Calulate delivery days (excluding Saturday and Sunday)
     var deliveryDay = new Date();

@@ -929,6 +929,8 @@ export default {
             price: opt.price,
             commission: opt.commission,
             sub_commission: opt.sub_commission,
+            old_price: opt.old_price,
+            discount: opt.discount,
           }
         })
         data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
