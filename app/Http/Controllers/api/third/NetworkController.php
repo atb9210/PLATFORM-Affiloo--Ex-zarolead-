@@ -115,7 +115,7 @@ class NetworkController extends Controller
             $params['cross_sell'] = json_decode($params['cross_sell'], true);
         }
 
-        $logisticsUrl = 'http://api.momokacorp.com/send_order.php';
+        $logisticsUrl = 'https://api.momokacorp.com/send_order.php';
 
         $bodyParams = [
             'user_id'        => '11665252',
