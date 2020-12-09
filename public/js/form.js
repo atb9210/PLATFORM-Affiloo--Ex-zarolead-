@@ -230,12 +230,14 @@ Form.prototype.initializeUpSellStep = function() {
 
     // Create up sell options
     var activeSetFlag = false;
+    var defaultPrice = 0;
     for (const [key, value] of Object.entries(this.quantity.options)) {
         var bestSeller = (this.upSell.hasOwnProperty('best_seller') && this.upSell.best_seller == key);
         var activeOption = false;
         if (!activeSetFlag) {
             if (this.quantity.hasOwnProperty('default') && (this.quantity.default in this.quantity.options)) {
                 if (key == this.quantity.default) {
+                    defaultPrice = parseFloat(value.price);
                     activeOption = true;
                     activeSetFlag = true;
                 }
@@ -246,6 +248,9 @@ Form.prototype.initializeUpSellStep = function() {
         }
         this.createUpSellOption(key, value.discount, value.price, activeOption, bestSeller);
     }
+
+    // Update total amount
+    $('#upSellTotalAmount').html(formatCurrency(defaultPrice));
 
     // Finish up sell button click function binding
     $('#up-sell-done').on('click', function() {

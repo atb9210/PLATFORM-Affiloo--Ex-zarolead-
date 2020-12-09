@@ -339,7 +339,7 @@ body {
             -->
         </div>
         <div class="upSellTotalReview w-100 text-center mb-3">
-            TOTALE €<span id="upSellTotalAmount">17,99</span>
+            TOTALE €<span id="upSellTotalAmount"></span>
         </div>
         <!-- Old up sell -->
         <!--
