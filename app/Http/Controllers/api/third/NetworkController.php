@@ -138,14 +138,14 @@ class NetworkController extends Controller
             'contactname'    => $params['name'],
             'fullname'       => $params['name'],
             'weight'         => $params['weight'],
-            'productCode'    => $params['sku'],
+            'productCode'    => $params['quantity'] . ' ' . $params['sku'],
             'transaction_id' => $params['transaction_id'],
         ];
 
         // Change product code if cross sell is enabled (add another sku)
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
             if (isset($params['cross_sell']['sku']) && isset($params['cross_sell']['quantity'])) {
-                $bodyParams['upsell'] = $params['cross_sell']['quantity'] . 'x' . $params['cross_sell']['sku'];
+                $bodyParams['upsell'] = $params['cross_sell']['quantity'] . ' ' . $params['cross_sell']['sku'];
             }
         }
 
