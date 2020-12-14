@@ -109,11 +109,13 @@ class NetworkController extends Controller
         if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
             $info = $bodyParams;
             $info['delivery'] = $params['delivery'];
+
             $order = LogisticsOrder::create([
                 'logistics_system_id' => 1,
                 'order_id' => $params['order_id'],
                 'info' => $info,
             ]);
+
             return response([
                 'status' => 'success',
             ]);

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 use App\FormStats;
 
@@ -13,19 +14,27 @@ class TestController extends Controller
 {
     public function test()
     {
-        return view('test');
-        $s = [];
-        $s[] = 'host::port::user::password';
-        $s[] = 'ciao::2';
-        $s[] = '127.0.0.1::80::user::password';
-        $s[] = '127.0.0.1::80::::';
-        $s[] = '127.0.0.1::80';
-        
-        $regex = "/^[a-zA-Z0-9-.]+::[0-9]+::[a-zA-Z0-9-.]+::.+$/";
-        foreach ($s as $value) {
-            echo $value . " => " . preg_match($regex, $value) . "<br>";
+        $param = [
+            'phone1' => '+(39)388577077', // 9 digits instead of 10
+            'phone2' => '+(393888577077', // incorrect
+            'phone3' => '+393888577077', // incorrect
+            'phone4' => '+(1)1388577077', // correct
+            'phone5' => '+(319)38857707777', // correct
+            'phone6' => '+(39)3885770771', // correct
+        ];
+        $validator = Validator::make($param, [
+            'phone1' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+            'phone2' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+            'phone3' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+            'phone4' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+            'phone5' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+            'phone6' => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
+        ]);
+        if ($validator->fails()) {
+            echo "<pre>".var_export($validator->messages(), true)."</pre>";
+        } else {
+            echo "YES";
         }
-        exit();
     }
 
     public function post(Request $request)

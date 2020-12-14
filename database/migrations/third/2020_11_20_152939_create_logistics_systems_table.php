@@ -20,6 +20,13 @@ class CreateLogisticsSystemsTable extends Migration
             $table->json('settings')->nullable();
             $table->timestamps();
         });
+
+        // TODO: I should make a seeder
+        DB::table('third_logistics_systems')->insert(
+            array(
+                'name' => 'momoka',
+            )
+        );
     }
 
     /**

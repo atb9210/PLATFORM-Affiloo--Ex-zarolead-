@@ -27,6 +27,55 @@ function formatDeliveryDay(d) {
     return d.getDate() + ' ' + months[d.getMonth()];
 }
 
+function formatPhone(val) {
+    var prefix = '+(39)';
+    var regex = /^\+(39) /g;
+
+    var alternative_prefix = '+39';
+
+    val = val.replace(prefix, '');
+    val = val.replace(alternative_prefix, '');
+
+    // Remove all characters other than digits
+    var tmp = val;
+    for (var i = 0; i < tmp.length; i++) {
+        if (tmp[i] < '0' || tmp[i] > '9') {
+            val = val.replace(tmp[i], '');
+        }
+    }
+
+    // Add prefix
+    if (!val.match(regex)) {
+        val = prefix + val;
+    }
+
+    return val;
+}
+
+function forcePhoneFormat(evt) {
+    var prefix = '+(39) ';
+    var regex = /^\+(39) /g;
+
+    var val = (evt.target.value);
+    var newVal = val;
+
+    newVal = newVal.replace(prefix, '');
+    var tmp = newVal;
+    for (var i = 0; i < tmp.length; i++) {
+        if ((tmp[i] != ' ') && (tmp[i] < '0' || tmp[i] > '9')) {
+            newVal = newVal.replace(tmp[i], '');
+        }
+    }
+
+    // Add prefix
+    if (!newVal.match(regex)) {
+        newVal = prefix + newVal;
+    }
+
+    // Update input value
+    evt.target.value = newVal;
+}
+
 function Form(id, debug = false, beta = false) {
     this.DEBUG = true;
     this.BETA = false;
@@ -70,6 +119,8 @@ function Form(id, debug = false, beta = false) {
 
     this.notValidatedInput = {};
     this.validatedInput = {};
+
+    this.forcePhoneFormatIds = [];
 
     console.log("[i] FORM " + id + " CONSTRUCTED");
 
@@ -346,6 +397,14 @@ Form.prototype.updateCrossSellValue = function(val) {
 }
 
 Form.prototype.createInput = function(name, params, stepNum = 0) {
+    var type = params['type'];
+    var isPhone = false;
+
+    if (type == 'phone') {
+        type = 'text';
+        isPhone = true;
+    }
+
     // Create group
     var d = $('<div>', {
         class: 'form-group input-step' + stepNum,
@@ -353,7 +412,7 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
     }).appendTo($('#form-inputs'));
 
     // Create label
-    if (params['type'] != 'hidden') {
+    if (type != 'hidden') {
         var l = $('<label>' + params['label'] + '</label>', {
             class: "font-form",
             style: "line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;",
@@ -364,7 +423,7 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
     var inputData = {
         id: name,
         name: name,
-        type: params['type'],
+        type: type,
         style: 'margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;',
     };
     if ('required' in params) {
@@ -381,6 +440,13 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
             id: name + 'Error',
             class: 'span-error',
         }).appendTo(d);
+    }
+
+    if(isPhone) {
+        this.forcePhoneFormatIds.push(name);
+        $('#' + name).keyup(function(evt) {
+            forcePhoneFormat(evt);
+        });
     }
 }
 
@@ -628,13 +694,21 @@ Form.prototype.validateInput = function() {
             this.notValidatedInput['name'] = n;
             this.notValidatedInput['surname'] = s;
         } else {
-            this.notValidatedInput[i] = $('#' + i).val();
+            var value = $('#' + i).val();
+            
+            // Force phone format
+            if (this.forcePhoneFormatIds.includes(i)) {
+                value = formatPhone(value);
+            }
+
+            this.notValidatedInput[i] = value;
         }
     }
 
     var data = {
         input: JSON.stringify(this.notValidatedInput)
     };
+
     $.ajax({
         url: this.API_URL + 'forms/' + this.FORM_ID + '/input/validate',
         method: 'POST',
@@ -741,8 +815,15 @@ Form.prototype.onSubmit = function(step) {
 
         var data = {};
         $.each($('#mainForm').serializeArray(), function(_, kv) {
-            data[kv.name] = kv.value;
-        });
+            var value = kv.value;
+
+            // Force phone format
+            if (this.forcePhoneFormatIds.includes(kv.name)) {
+                value = formatPhone(value);
+            }
+
+            data[kv.name] = value;
+        }.bind(this));
         if (this.landing_id > 0) {
             data["landing_id"] = this.landing_id;
         }

@@ -86,7 +86,7 @@ class NetworkController extends Controller
         $validator = Validator::make($request->query(), [
             'order_id'       => 'required|integer|exists:orders,id',
             'email'          => 'required|email',
-            'phone'          => 'required|string|min:7',
+            'phone'          => 'required|string|min:10|regex:/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/',
             'address'        => 'required|string|min:4',
             'city'           => 'required|string|min:2',
             'zipcode'        => 'required|string|min:2',

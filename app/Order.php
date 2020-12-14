@@ -114,6 +114,7 @@ class Order extends Model
         $status = (isset($responseStatuses['default'])) ? $responseStatuses['default'] : 'error';
         foreach ($responseStatuses as $key => $value) {
             if ($key == 'default') continue;
+
             $validator = Validator::make($response, $responseStatuses[$key]['validation']);
             if (isset($value['validation']) &&
                 $validator->passes()) {

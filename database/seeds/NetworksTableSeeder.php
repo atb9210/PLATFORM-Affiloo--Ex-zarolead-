@@ -11,6 +11,8 @@ class NetworksTableSeeder extends Seeder
      */
     public function run()
     {
+        $phone_regex = '/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/';
+
         $app_url = env('APP_URL', '');
 
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/worldfilia' : '{form.api_call_url}');
@@ -44,7 +46,7 @@ class NetworksTableSeeder extends Seeder
                                 'aff_sub1' => 'string',
                                 'aff_sub2' => 'string',
                                 'name' => 'required|min:3',
-                                'phone' => 'required|min:8',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
                                 'address' => 'required|min:4',
                                 'quantity' => 'required',
                                 'doubleCheck' => 'in:0,1',
@@ -103,7 +105,7 @@ class NetworksTableSeeder extends Seeder
                                 'label' => 'Nome e cognome',
                             ],
                             'phone' => [
-                                'type' => 'text',
+                                'type' => 'phone',
                                 'required' => '',
                                 'label' => 'Telefono (meglio cellulare)',
                             ],
@@ -137,7 +139,7 @@ class NetworksTableSeeder extends Seeder
                     'validation' => [
                         'input' => [
                             'name' => 'required|string|min:4',
-                            'phone' => 'required|string|min:8',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
                             'address' => 'required|string|min:4',
                         ],
                         'params' => [
@@ -189,7 +191,7 @@ class NetworksTableSeeder extends Seeder
                                 'publisher_id' => 'required|string',
                                 'company_id' => 'required|numeric|min:1',
                                 'source' => 'required|string',
-                                'phone' => 'required|string|min:8',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
                                 'name' => 'required|string|min:3',
                                 'quantity' => 'required',
                                 'price' => 'required|numeric',
@@ -244,7 +246,7 @@ class NetworksTableSeeder extends Seeder
                                 'label' => 'Nome e cognome',
                             ],
                             'phone' => [
-                                'type' => 'text',
+                                'type' => 'phone',
                                 'required' => '',
                                 'label' => 'Telefono (meglio cellulare)',
                             ],
@@ -268,7 +270,7 @@ class NetworksTableSeeder extends Seeder
                     'validation' => [
                         'input' => [
                             'name' => 'required|string|min:4',
-                            'phone' => 'required|string|min:8',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
                             'address' => 'required|string|min:4',
                         ],
                         'params' => [
@@ -306,7 +308,7 @@ class NetworksTableSeeder extends Seeder
                                 'user' => 'required|email',
                                 'password' => 'required',
                                 'offer' => 'required',
-                                'phone' => 'required|string|min:8',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
                                 'nome' => 'required|string|min:3',
                                 'surname' => 'required|string|min:3',
                                 'quantity' => 'required',
@@ -351,7 +353,7 @@ class NetworksTableSeeder extends Seeder
                                 'label' => 'Nome e cognome',
                             ],
                             'phone' => [
-                                'type' => 'text',
+                                'type' => 'phone',
                                 'required' => '',
                                 'label' => 'Telefono (meglio cellulare)',
                             ],
@@ -383,7 +385,7 @@ class NetworksTableSeeder extends Seeder
                         'input' => [
                             'name' => 'required|string|min:4',
                             'surname' => 'required|string|min:4',
-                            'phone' => 'required|string|min:8',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
                             'address' => 'required|string|min:4',
                         ],
                         'params' => [
@@ -426,9 +428,9 @@ class NetworksTableSeeder extends Seeder
                         ],
                         'validation' => [
                             'urlParams' => [
-                                'order_id' => 'required|integer|exists:orders,id',//TODO:
+                                'order_id' => 'required|integer|exists:orders,id',
                                 'email' => 'required|email',
-                                'phone' => 'required|string|min:8',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
                                 'address' => 'required|string|min:4',
                                 'city' => 'required|string',
                                 'zipcode' => 'required|string',
@@ -487,7 +489,7 @@ class NetworksTableSeeder extends Seeder
                                 'label' => 'Nome e cognome',
                             ],
                             'phone' => [
-                                'type' => 'text',
+                                'type' => 'phone',
                                 'required' => '',
                                 'label' => 'Telefono (meglio cellulare)',
                             ],
@@ -545,7 +547,7 @@ class NetworksTableSeeder extends Seeder
                         'input' => [
                             'email' => 'required|email',
                             'name' => 'required|string|min:4',
-                            'phone' => 'required|string|min:8',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
                             'city' => 'required|string|min:2',
                             'state' => 'required|string|min:2',
                             'zipcode' => 'required|string|min:2',
