@@ -186,4 +186,94 @@ class NetworkController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update status of the order in internal network
+     *
+     * @urlParam id required int Order id
+     *
+     * @response {
+     *  "data": order,
+     * }
+     */
+    public function updateStatus($id)
+    {
+        $order = LogisticsOrder::find($id);
+
+        if($order == null) {
+            return response([
+                'message' => 'The order does not exists.',
+            ], 404);
+        }
+
+        if($order->order_id == null) {
+            return response([
+                'response' => 'The order has not the field \'order_id\'.',
+                'status' => 'error',
+            ], 500);
+        }
+
+        $urlParams = [
+            'user_id'        => '11665252',
+            'org_id'         => '1',
+            'advertiser'     => '0030',
+            'order_id'       => $order->order_id,
+        ];
+
+        $logisticsUrl = 'https://api.momokacorp.com/findByOrder2.php';
+        if (env('APP_NETWORK_FAKE_API', false)) {
+            $logisticsUrl = 'http://zarolead.localhost/api/fake/logistic/momoka/find-order/' . $id;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $logisticsUrl . '?' . http_build_query($urlParams));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $server_output = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $momokaStatusLookupTable = [
+            1  => 'Ordinato',
+            32 => 'Nessuna Risposta',
+            2  => 'Confermato',
+            20 => 'Spedire + avanti',
+            27 => 'In preparazione',
+            29 => 'Pick&Pack',
+            4  => 'Spedito',
+            5  => 'Giacenza',
+            6  => 'Consegnato',
+            8  => 'Rientro al mittente',
+            7  => 'Annullato',
+            21 => 'Doppio',
+            22 => 'Test/Fake',
+            30 => 'Dati Incompleti',
+            23 => 'In sospeso',
+            25 => 'Out of stock',
+            34 => 'COVID-19',
+        ];
+
+        $response = json_decode($server_output, true);
+        if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
+            $status = $response['status'];
+            if(!array_key_exists($status, $momokaStatusLookupTable)) {
+                return response([
+                    'response' => 'Status ' . $status . ' does not exist in lookup table.',
+                    'status' => 'error',
+                ], 500);
+            }
+
+            $order->status = $momokaStatusLookupTable[$status];
+            $order->save();
+
+            return response([
+                'data' => new LogisticsOrderResource($order),
+            ]);
+        } else {
+            return response([
+                'response' => $response,
+                'status' => 'error',
+            ], 500);
+        }
+    }
 }

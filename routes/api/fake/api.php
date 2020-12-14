@@ -21,3 +21,4 @@ Route::post('/network/zarolead', 'api\fake\NetworkController@zarolead')->name('n
 
 /* Logistic routes */
 Route::post('/logistic/momoka', 'api\fake\LogisticController@momoka')->name('logistic.momoka');
+Route::get('/logistic/momoka/find-order/{id}', 'api\fake\LogisticController@momokaFindOrder')->name('logistic.momoka.find-order');

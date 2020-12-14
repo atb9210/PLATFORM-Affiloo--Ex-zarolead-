@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="globalUpdateStatus"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -76,6 +77,9 @@
                 <vs-th sort-key="order_id">Order Id</vs-th>
                 <vs-th sort-key="created_at">Date</vs-th>
                 <vs-th sort-key="system.name">System</vs-th>
+                <vs-th sort-key="info.product">Product</vs-th>
+                <vs-th sort-key="info.quantity">Quantity</vs-th>
+                <vs-th sort-key="info.amount">Price</vs-th>
                 <vs-th sort-key="info.name">Customer</vs-th>
                 <vs-th sort-key="info.fullname">Phone</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
@@ -94,6 +98,18 @@
 
                     <vs-td :data="data[indextr].system.name">
                         {{data[indextr].system.name}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].info.product">
+                        {{data[indextr].info.product}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].info.quantity">
+                        {{data[indextr].info.quantity}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].info.amount">
+                        € {{parseFloat(data[indextr].info.amount).toFixed(2)}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].info.fullname">
@@ -122,6 +138,7 @@ export default {
       objects: [],
       selected: [],
       deleted: [],
+      updated: [],
 
       maxItems: 20,
 
@@ -254,6 +271,50 @@ export default {
       
       let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii + ':' + ss;
       return formattedDate;
+    },
+    globalUpdateStatus() {
+      if (this.objects.length == 0) return
+
+      this.updated = []
+
+      this.$vs.loading()
+
+      this.objects.forEach((obj) => {
+        this.$http.get('/api/3rd/network/orders/' + obj.id + '/update-status')
+          .then((response) => {
+            this.updated.push(obj.id)
+            if (this.updated.length == this.objects.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: this.updated.length + ' Order(s) updated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.selected = []
+              this.applyFilters()
+            }
+          })
+          .catch((error) => {
+            // TODO: This is only for debug
+            console.log(error)
+
+            this.updated.push(obj.id)
+            if (this.updated.length == this.objects.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: this.updated.length + ' Order(s) updated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.selected = []
+              this.applyFilters()
+            }
+          })
+      })
     },
   },
   created() {

@@ -796,7 +796,6 @@ export default {
             this.deleted.push(form.id)
             if (this.deleted.length == this.selected.length) {
               this.$vs.loading.close()
-              this.selected = []
               this.$vs.notify({
                 title: 'Success',
                 text: this.deleted.length + ' Form(s) deleted',

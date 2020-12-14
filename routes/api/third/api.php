@@ -18,6 +18,7 @@ Route::apiResource('network', 'api\third\NetworkController')->except([
     'create', 'store', 'edit',
 ])->middleware('auth:api');
 Route::post('/network', 'api\third\NetworkController@store')->name('network');
+Route::get('/network/orders/{id}/update-status', 'api\third\NetworkController@updateStatus')->name('network.update-status');
 
 /* Fb accounts routes */
 Route::apiResource('fb-accounts', 'api\third\FbAccountController')->except([

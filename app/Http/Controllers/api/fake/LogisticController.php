@@ -14,4 +14,13 @@ class LogisticController extends Controller
             'error' => 'false',
         ]);
     }
+
+    public function momokaFindOrder($id)
+    {
+        return response([
+            'success' => 'true',
+            'error' => 'false',
+            'status' => 2,
+        ]);
+    }
 }
