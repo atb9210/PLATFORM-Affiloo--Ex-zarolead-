@@ -11,7 +11,7 @@ class NetworksTableSeeder extends Seeder
      */
     public function run()
     {
-        $phone_regex = '/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{10,}$/';
+        $phone_regex = '/^[+]{1}[(]{1}[0-9]{1,4}[)]{1}[0-9]{9,}$/';
 
         $app_url = env('APP_URL', '');
 

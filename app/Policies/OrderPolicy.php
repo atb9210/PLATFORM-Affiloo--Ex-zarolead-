@@ -91,4 +91,16 @@ class OrderPolicy
     {
         //
     }
+
+    /**
+     * Determine whether the user can see the orders log.
+     *
+     * @param  \App\User  $user
+     * @param  \App\User  $user
+     * @return mixed
+     */
+    public function log(User $user)
+    {
+        return $user->hasPermission('order', 'log');
+    }
 }

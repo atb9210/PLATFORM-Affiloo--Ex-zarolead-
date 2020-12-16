@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 use App\FormStats;
 
@@ -14,6 +15,17 @@ class TestController extends Controller
 {
     public function test()
     {
+        $context = [
+            'field1' => 'value1',
+            'field2' => 'value2',
+        ];
+        Log::channel('orders')->info('this ma test', $context);
+        $c1 = 'ciao';
+        $c2 = 30;
+        echo "<pre>".var_export(json_decode($c1, true), true)."</pre>";
+        echo "<pre>".var_export(json_decode($c2, true), true)."</pre>";
+        exit();
+
         $param = [
             'phone1' => '+(39)388577077', // 9 digits instead of 10
             'phone2' => '+(393888577077', // incorrect

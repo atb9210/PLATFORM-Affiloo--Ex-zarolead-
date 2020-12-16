@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
 
 use App\Order as Order;
 use App\Http\Resources\api\v1\OrderResource;
@@ -461,6 +462,31 @@ class OrderController extends Controller
         return response([
             "message" => "Double order recovered",
             "api_call" => $api_call,
+        ]);
+    }
+
+
+    /**
+     * Get the orders log
+     *
+     * @response 200 {
+     *  "data": orders_log,
+     * }
+     */
+    public function getLog()
+    {
+        $this->authorize('log', 'App\Order');
+
+        $orders_log = '';
+
+        $path = storage_path('logs/orders.log');
+        if(File::exists($path))
+        {
+            $orders_log = File::get($path);
+        }
+
+        return response([
+            "data" => $orders_log,
         ]);
     }
 }

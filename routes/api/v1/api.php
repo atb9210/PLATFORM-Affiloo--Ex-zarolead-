@@ -44,6 +44,7 @@ Route::apiResource('orders', 'api\v1\OrderController')->except([
 Route::post('orders', 'api\v1\OrderController@store')->name('orders.store');
 Route::put('orders/{id}', 'api\v1\OrderController@update')->name('orders.update');
 Route::post('orders/double-recovery', 'api\v1\OrderController@doubleRecovery')->name('orders.double.recovery');
+Route::get('orders-log', 'api\v1\OrderController@getLog')->middleware('auth:api')->name('orders.log'); // NOTE: orders/log does not work
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([

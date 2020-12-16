@@ -83,6 +83,7 @@
                 <vs-th sort-key="info.name">Customer</vs-th>
                 <vs-th sort-key="info.fullname">Phone</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
+                <vs-th>Info</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -124,9 +125,27 @@
                         {{data[indextr].status}}
                     </vs-td>
 
+                    <vs-td>
+                        <div class="flex items-center">
+                            <vs-button @click="showInfo(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-alert-circle"></vs-button>
+                        </div>
+                    </vs-td>
+
                 </vs-tr>
             </template>
         </vs-table>
+
+        <!-- Order info popup -->
+        <vs-popup title="Order info" :active.sync="showPopup['orderInfo']">
+            <div class="vx-row mb-6" :key="index" v-for="(value, name, index) in orderInfo">
+                <div class="vx-col sm:w-1/2 w-full">
+                    <span><b>{{name}}</b></span>
+                </div>
+                <div class="vx-col sm:w-1/2 w-full">
+                    <span>{{value}}</span>
+                </div>
+            </div>
+        </vs-popup>
 
     </vx-card>
 </template>
@@ -141,6 +160,12 @@ export default {
       updated: [],
 
       maxItems: 20,
+
+      showPopup: {
+        'orderInfo': false,
+      },
+
+      orderInfo: {},
 
       dateFormat: 'yyyy-MM-dd',
       showFilters: false,
@@ -315,6 +340,15 @@ export default {
             }
           })
       })
+    },
+    showInfo(index) {
+      this.orderInfo = this.objects[index].info
+
+      // TODO: to delete
+      console.log(this.objects[index].info)
+      console.log(this.orderInfo)
+
+      this.showPopup['orderInfo'] = true
     },
   },
   created() {

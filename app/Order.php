@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 use App\Network;
 
@@ -98,6 +99,11 @@ class Order extends Model
 
             $server_output = curl_exec($ch);
             curl_close($ch);
+
+            if($server_output == null)
+            {
+                Log::channel('orders')->info('(Order ID: ' . $this->id . ') Network ' . $network->name . ' sent us a void response', $context);
+            }
 
             if (strtolower(self::interpretParam($network->getApi('store.response.type'), $context)) == "json") {
                 $response = json_decode($server_output, true);
@@ -209,6 +215,11 @@ class Order extends Model
             $this->order_status_id = OrderStatus::DOUBLE;
         } elseif ($status == 'error') {
             $this->order_status_id = OrderStatus::NOT_SENT;
+
+            if ($server_output == null)
+            {
+                Log::channel('orders')->info('Order ' . $this->id . ' has not been stored by the network ' . $network->name, $context);
+            }
         }
         $this->save();
 
