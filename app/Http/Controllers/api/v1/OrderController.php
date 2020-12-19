@@ -106,7 +106,7 @@ class OrderController extends Controller
      * @bodyParam delivery integer Delivery option
      * @bodyParam form_id integer required Form's id
      * @bodyParam network_data json required Network Data in json format
-     * @bodyParam landing_id integer Landing's id
+     * @bodyParam landing_id integer required Landing's id
      * @bodyParam query_params json Query params
      *
      * @response 201 {
@@ -128,7 +128,7 @@ class OrderController extends Controller
             'form_id' => 'required|integer|exists:forms,id',
             'network_data' => 'required|json',
 
-            'landing_id' => 'integer|exists:landings,id',
+            'landing_id' => 'required|integer|exists:landings,id',
 
             'query_params' => 'json',
         ]);
@@ -156,9 +156,11 @@ class OrderController extends Controller
         $network_data = json_decode($params['network_data'], TRUE);
         $network_params = json_decode(json_encode($form->network_params), TRUE);
 
+        $landing = Landing::findOrFail($params['landing_id']);
+
         $params['user_id'] = $form->user_id;
         $params['network_id'] = $form->network_id;
-        $params['product_id'] = $form->product_id;
+        $params['product_id'] = $landing->product_id;
         $params['order_status_id'] = OrderStatus::NOT_SENT;
 
         // Calculate price
@@ -282,21 +284,16 @@ class OrderController extends Controller
             $formStats->save();
 
             // Landing stats
-            if (isset($params['landing_id'])) {
-                $landing = Landing::find($params['landing_id']);
-                if($landing != null && $landing->form_id == $form->id) {
-                    $stats = LandingStats::getObject($landing->id, $today);
-                    $stats->leads += 1;
-                    $stats->total_commission += $order->commission;
-                    $statsInfo = $stats->info;
-                    if (!isset($statsInfo['total_sub_commission'])) {
-                        $statsInfo['total_sub_commission'] = 0.0;
-                    }
-                    $statsInfo['total_sub_commission'] += $sub_commission;
-                    $stats->info = $statsInfo;
-                    $stats->save();
-                }
+            $stats = LandingStats::getObject($landing->id, $today);
+            $stats->leads += 1;
+            $stats->total_commission += $order->commission;
+            $statsInfo = $stats->info;
+            if (!isset($statsInfo['total_sub_commission'])) {
+                $statsInfo['total_sub_commission'] = 0.0;
             }
+            $statsInfo['total_sub_commission'] += $sub_commission;
+            $stats->info = $statsInfo;
+            $stats->save();
 
             // Total
             $form->leads += 1;
@@ -320,7 +317,7 @@ class OrderController extends Controller
             $timestamp = strtotime($today);
             $month = intval(date('m', $timestamp));
             $year = intval(date('Y', $timestamp));
-            $advertiser = User::findOrFail($form->product->advertiser_id);
+            $advertiser = User::findOrFail($landing->product->advertiser_id);
             $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
             $advReport->leads += 1;
             $advReport->commission += $order->commission;

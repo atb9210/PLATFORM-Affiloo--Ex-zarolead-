@@ -21,13 +21,17 @@ class LandingResource extends JsonResource
                 'id' => $this->user->id,
                 'email' => $this->user->email,
             ],
-            'form' => [
-                'id' => $this->form->id,
-                'name' => $this->form->name,
+            'product' => [
+                'id' => $this->product->id,
+                'name' => $this->product->name,
+                'tag' => [
+                    'id' => $this->product->tag->id,
+                    'name' => $this->product->tag->name,
+                ],
             ],
             'tag' => [
-                'id' => $this->form->product->tag->id,
-                'name' => $this->form->product->tag->name,
+                'id' => $this->product->tag->id,
+                'name' => $this->product->tag->name,
             ],
             'url' => $this->url,
             'country' => $this->country,

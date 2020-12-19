@@ -163,7 +163,7 @@
                     <vs-td>
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
-                            <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
+                            <!--<vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>-->
                             <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                             <vs-button v-if="data[indextr].archived == 1" @click="restoreForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-unlock"></vs-button>
@@ -856,56 +856,6 @@ export default {
         && obj.product != '' && obj.product.id >= 1
         && obj.quantity.length > 0
         && obj.traffic_source != '' && obj.traffic_source.id >= 1)
-    },
-    getFormCode() {
-      let id = this.formCodeId
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let data = {}
-      if (this.codeFilters.landing != '' && this.codeFilters.landing != null && this.codeFilters.landing.hasOwnProperty('id')) {
-        data['landing_id'] = this.codeFilters.landing.id
-      }
-
-      // Retrieve form code
-      this.$http.get('/api/v1/forms/' + id + '/code', { params: data, headers: headers })
-        .then((response) => {
-          this.formCode = response.data.data
-          this.$vs.loading.close()
-          this.showPopup['code'] = true
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
-    showFormCodePopup(id) {
-      this.formCodeId = id
-
-      this.$vs.loading()
-
-      // Retrieve landings
-      this.codeFilters = {
-        landing: '',
-      }
-      this.landingOptions = []
-      let obj = this.allObjects[this.getObjectIndexById(id)]
-      for (let i = 0; i < obj.landings.length; i++) {
-        this.landingOptions.push({
-          id: obj.landings[i].id,
-          label: obj.landings[i].name,
-        });
-      } 
-
-      this.getFormCode()
     },
     createObject() {
       this.$vs.loading()

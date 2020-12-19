@@ -5,7 +5,6 @@ namespace App\Http\Resources\api\v1;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 use App\FormStats as FormStats;
-use App\Http\Resources\api\v1\LandingResource;
 
 class FormResource extends JsonResource
 {
@@ -36,8 +35,6 @@ class FormResource extends JsonResource
         }
         $stats = $stats->orderBy('day', 'desc');
 
-        $landings = LandingResource::collection($this->landings);
-
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -49,15 +46,6 @@ class FormResource extends JsonResource
                 'id' => $this->network->id,
                 'name' => $this->network->name,
             ],
-            'product' => [
-                'id' => $this->product->id,
-                'name' => $this->product->name,
-                'tag' => [
-                    'id' => $this->product->tag->id,
-                    'name' => $this->product->tag->name,
-                ],
-            ],
-            'landings' => $landings,
             'quantity' => json_decode(json_encode($this->quantity), false),
             'up_sell' => $this->up_sell,
             'cross_sell' => $this->cross_sell,

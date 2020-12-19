@@ -12,7 +12,7 @@ class Landing extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'form_id', 'url', 'country'
+        'user_id', 'name', 'product_id', 'url', 'country'
     ];
 
     public function user()
@@ -20,10 +20,10 @@ class Landing extends Model
 		return $this->belongsTo('App\User', 'user_id');
 	}
 
-	public function form()
+	public function product()
     {
-		return $this->belongsTo('App\Form', 'form_id');
-	}
+        return $this->belongsTo('App\Product', 'product_id');
+    }
 
     public function stats()
     {

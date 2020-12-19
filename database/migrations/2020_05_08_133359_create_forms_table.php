@@ -18,7 +18,6 @@ class CreateFormsTable extends Migration
             $table->bigInteger('user_id')->unsigned();
             $table->string('name');
             $table->bigInteger('network_id')->unsigned();
-            $table->bigInteger('product_id')->unsigned();
             $table->json('quantity');
             $table->json('up_sell')->nullable();
             $table->json('cross_sell')->nullable();
@@ -36,7 +35,6 @@ class CreateFormsTable extends Migration
 
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->foreign('network_id')->references('id')->on('networks');
-			$table->foreign('product_id')->references('id')->on('products');
 			$table->foreign('traffic_source_id')->references('id')->on('traffic_sources');
         });
     }

@@ -42,7 +42,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="form.name">Form</vs-th>
+                <vs-th sort-key="product.name">Product</vs-th>
                 <vs-th sort-key="tag.name">Tag</vs-th>
                 <vs-th sort-key="url">URL</vs-th>
                 <vs-th sort-key="country">Country</vs-th>
@@ -60,8 +60,8 @@
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].form.name">
-                        {{data[indextr].form.name}}
+                    <vs-td :data="data[indextr].product.name">
+                        {{data[indextr].product.name}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].tag.name">
@@ -80,6 +80,7 @@
                         <div class="flex items-center">
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url" v-clipboard:success="onUrlCopied"></vs-button>
+                            <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -105,10 +106,10 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Form</span>
+                    <span>Product</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="forms" v-model="newObject['create'].form" />
+                    <v-select :options="products" v-model="newObject['create'].product" />
                 </div>
             </div>
 
@@ -152,10 +153,10 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Form</span>
+                    <span>Products</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="forms" v-model="newObject['edit'].form" />
+                    <v-select :options="products" v-model="newObject['edit'].product" />
                 </div>
             </div>
 
@@ -182,6 +183,25 @@
             </div>
         </vs-popup>
 
+        <!-- Show code popup -->
+        <vs-popup title="Form code snipper" :active.sync="showPopup['code']">
+            <div class="vx-row mb-2">
+                <div class="vx-col w-1/3">
+                </div>
+                <div class="vx-col w-1/3">
+                    <vs-select label="Form" v-model="formCodeId" @input="getFormCode">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in forms" />
+                    </vs-select>
+                </div>
+                <div class="vx-col w-1/3">
+                </div>
+            </div>
+            <vs-textarea v-model="formCode" disabled height="10rem" />
+            <div class="vx-row mt-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -205,17 +225,18 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
+        'code': false,
       },
       newObject: {
         'create': {
           name: '',
-          form: '',
+          product: '',
           url: '',
           country: '',
         },
         'edit': {
           name: '',
-          form: '',
+          product: '',
           url: '',
           country: '',
         },
@@ -223,7 +244,12 @@ export default {
 
       tags: [],
       campaigns: [],
+      products: [],
+
       forms: [],
+      formCodeId: -1,
+      landingCodeId: -1,
+      formCode: '',
     }
   },
   computed: {
@@ -343,7 +369,7 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
-        form: '',
+        product: '',
         url: '',
         country: '',
       }
@@ -351,7 +377,7 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
-        && obj.form != '' && obj.form.id >= 1
+        && obj.product != '' && obj.product.id >= 1
         && obj.url.length > 0)
     },
     createObject() {
@@ -363,7 +389,7 @@ export default {
 
       let data = {
         name: this.newObject['create'].name,
-        form_id: this.newObject['create'].form.id,
+        product_id: this.newObject['create'].product.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
       }
@@ -398,9 +424,9 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
-        form: {
-          id: obj.form.id,
-          label: obj.form.name,
+        product: {
+          id: obj.product.id,
+          label: obj.product.name,
         },
         url: obj.url,
         country: obj.country,
@@ -420,7 +446,7 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
-        form_id: this.newObject['edit'].form.id,
+        product_id: this.newObject['edit'].product.id,
         url: this.newObject['edit'].url,
         country: this.newObject['edit'].country,
       }
@@ -489,6 +515,54 @@ export default {
         color: 'success'
       })
     },
+    getFormCode() {
+      let id = this.formCodeId
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        'landing_id': this.landingCodeId,
+      }
+
+      // Retrieve form code
+      this.$http.get('/api/v1/forms/' + id + '/code', { params: data, headers: headers })
+        .then((response) => {
+          this.formCode = response.data.data
+          this.$vs.loading.close()
+          this.showPopup['code'] = true
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    showFormCodePopup(id) {
+      this.landingCodeId = id
+
+      if (this.formCodeId <= 0 && this.forms.length > 0) {
+        this.formCodeId = this.forms[0].id
+      }
+
+      if(this.formCodeId >= 0) {
+        this.getFormCode()
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'You need at least one form to generate code snippet',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+    },
   },
   created() {
     this.retrieveObjects()
@@ -506,6 +580,23 @@ export default {
           this.tags.push({
             id: tag.id,
             label: tag.name,
+          })
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+
+    // Retrieve products
+    this.$vs.loading()
+    this.$http.get('/api/v1/products/', { headers })
+      .then((response) => {
+        this.products = []
+        response.data.data.forEach((product) => {
+          this.products.push({
+            id: product.id,
+            label: product.name,
           })
         })
         this.$vs.loading.close()

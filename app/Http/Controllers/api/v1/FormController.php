@@ -79,7 +79,6 @@ class FormController extends Controller
      * @bodyParam name string required Form's name
      * @bodyParam user_id int Form's user id
      * @bodyParam network_id int required Form's network id
-     * @bodyParam product_id int required Form's product id
      * @bodyParam quantity json required Product's quantity JSON
      * @bodyParam up_sell json required Form's up sell
      * @bodyParam cross_sell json required Form's cross sell
@@ -102,7 +101,6 @@ class FormController extends Controller
             'name' => 'required|string|min:3',
             'user_id' => 'integer|exists:users,id',
             'network_id' => 'required|integer|exists:networks,id',
-            'product_id' => 'required|integer|exists:products,id',
             'quantity' => 'required|json',
             'up_sell' => 'required|json',
             'cross_sell' => 'required|json',
@@ -177,35 +175,9 @@ class FormController extends Controller
         // Create form
         $form = Form::create($params);
 
-        // Generate HTML
-        $params['form_id'] = $form->id;
-        $params['network'] = $form->network->name;
-
-        $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . route('forms.get', ['id' => $form->id]) . '"></iframe>' . PHP_EOL;
-        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
-        $form_html .= "document.addEventListener(\"DOMContentLoaded\", function(event) {" . PHP_EOL;
-        $form_html .= "var loc = window.location.toString(), params = '', iframe_id = 'buy-frame';" . PHP_EOL;
-        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
-        $form_html .= "params = loc.split('?')[1]," . PHP_EOL;
-        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
-        $form_html .= "iframe_src_url = iframe.src;" . PHP_EOL;
-        $form_html .= "separator = '?';" . PHP_EOL;
-        $form_html .= "if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
-        $form_html .= "separator = '&';" . PHP_EOL;
-        $form_html .= "}" . PHP_EOL;
-        $form_html .= "iframe.src = iframe_src_url + separator + params;" . PHP_EOL;
-        $form_html .= "}" . PHP_EOL;
-        $form_html .= "});" . PHP_EOL;
-        $form_html .= "</script>" . PHP_EOL;
-
-        $output = [
-            'form_html' => $form_html,
-        ];
-
         return response([
             "message" => "Form created",
             "data" => new FormResource($form),
-            "html" => $output['form_html'],
         ], 201);
     }
 
@@ -217,7 +189,6 @@ class FormController extends Controller
      * @bodyParam name string Form's name
      * @bodyParam user_id int Form's user id
      * @bodyParam network_id int Form's network id
-     * @bodyParam product_id int Form's product id
      * @bodyParam quantity json Product's quantity JSON
      * @bodyParam up_sell json Form's up sell
      * @bodyParam cross_sell json Form's cross sell
@@ -246,7 +217,6 @@ class FormController extends Controller
             'name' => 'string|min:3',
             'user_id' => 'integer|exists:users,id',
             'network_id' => 'integer|exists:networks,id',
-            'product_id' => 'integer|exists:products,id',
             'quantity' => 'json',
             'up_sell' => 'json',
             'cross_sell' => 'json',
@@ -457,15 +427,18 @@ class FormController extends Controller
         $report->profit = $report->commission - ($report->cost + $report->extra_cost);
         $report->save();
 
+        // TODO:
         // Update advertiser's report stats
+        /*
         $timestamp = strtotime($stats->day);
         $month = intval(date('m', $timestamp));
         $year = intval(date('Y', $timestamp));
-        $advertiser = User::findOrFail($form->product->advertiser_id);
+        $advertiser = User::findOrFail($landing->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->total_cost += $stats->total_cost - $prev_total_cost;
         $advReport->profit = $advReport->commission - $advReport->total_cost;
         $advReport->save();
+        */
 
         return new FormStatsResource($stats);
     }
@@ -552,9 +525,7 @@ class FormController extends Controller
         $form_url = route('forms.get', ['id' => $form->id]);
         if (isset($params['landing_id'])) {
             $landing = Landing::findOrFail($params['landing_id']);
-            if ($landing->form_id === $form->id) {
-                $form_url .= '?landing=' . $landing->id;
-            }
+            $form_url .= '?landing=' . $landing->id;
         }
 
         $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . $form_url . '"></iframe>' . PHP_EOL;
@@ -584,7 +555,7 @@ class FormController extends Controller
      *
      * @urlParam id int required Form's id
      *
-     * @bodyParam landing_id int Landing id
+     * @bodyParam landing_id int required Landing id
      * @bodyParam query_params json Query params
      *
      * @response {
@@ -595,7 +566,7 @@ class FormController extends Controller
     {
         // Params validation
         $params = $request->validate([
-            'landing_id' => 'integer|exists:landings,id',
+            'landing_id' => 'required|integer|exists:landings,id',
             'query_params' => 'json',
         ]);
 
@@ -630,14 +601,10 @@ class FormController extends Controller
         }
         $formStats->save();
 
-        if (isset($params['landing_id'])) {
-            $landing = Landing::find($params['landing_id']);
-            if($landing != null && $landing->form_id == $form->id) {
-                $landingStats = LandingStats::getObject($landing->id, $today);
-                $landingStats->visits += 1;
-                $landingStats->save();
-            }
-        }
+        $landing = Landing::findOrdFail($params['landing_id']);
+        $landingStats = LandingStats::getObject($landing->id, $today);
+        $landingStats->visits += 1;
+        $landingStats->save();
 
         // Update user's report stats
         $report = UserReport::getObject($form->user->id, $formStats->day);
@@ -648,7 +615,7 @@ class FormController extends Controller
         $timestamp = strtotime($formStats->day);
         $month = intval(date('m', $timestamp));
         $year = intval(date('Y', $timestamp));
-        $advertiser = User::findOrFail($form->product->advertiser_id);
+        $advertiser = User::findOrFail($landing->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->visits += 1;
         $advReport->save();

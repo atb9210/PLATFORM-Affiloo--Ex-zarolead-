@@ -63,7 +63,7 @@ class LandingController extends Controller
      * Create a new landing.
      *
      * @bodyParam name string required Landing's name
-     * @bodyParam form_id int required Landing's form id
+     * @bodyParam product_id int required Landing's product id
      * @bodyParam url string required Landing's URL
      * @bodyParam country string Country
      *
@@ -79,7 +79,7 @@ class LandingController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
-            'form_id' => 'required|integer|exists:forms,id',
+            'product_id' => 'required|integer|exists:products,id',
             'url' => 'required|url',
             'country' => 'string|min:1',
         ]);
@@ -99,7 +99,7 @@ class LandingController extends Controller
      * @urlParam id int required Landing's id
      *
      * @bodyParam name string Landing's name
-     * @bodyParam form_id int Landing's form id
+     * @bodyParam product_id int Landing's product id
      * @bodyParam url string Landing's URL
      * @bodyParam country string Country
      *
@@ -121,7 +121,7 @@ class LandingController extends Controller
         // Param validation
         $params = $request->validate([
             'name' => 'string|min:3',
-            'form_id' => 'integer|exists:forms,id',
+            'product_id' => 'integer|exists:products,id',
             'url' => 'url',
             'country' => 'string|min:1',
         ]);

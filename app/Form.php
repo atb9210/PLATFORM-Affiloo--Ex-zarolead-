@@ -14,7 +14,7 @@ class Form extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'network_id', 'product_id',
+        'user_id', 'name', 'network_id',
         'quantity', 'up_sell', 'cross_sell', 'delivery',
         'tag_id', 'traffic_source_id',
         'info', 'network_params', 'plugins',
@@ -43,19 +43,9 @@ class Form extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public function landings()
-    {
-        return $this->hasMany('App\Landing');
-    }
-
     public function network()
     {
         return $this->belongsTo('App\Network', 'network_id');
-    }
-
-    public function product()
-    {
-        return $this->belongsTo('App\Product', 'product_id');
     }
 
     public function tag()
