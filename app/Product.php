@@ -13,6 +13,11 @@ class Product extends Model
      */
     protected $fillable = [
         'user_id', 'name', 'tag_id', 'advertiser_id', 'country',
+        'quantity',
+    ];
+
+    protected $casts = [
+        'quantity' => 'array',
     ];
 
 	public function advertiser()

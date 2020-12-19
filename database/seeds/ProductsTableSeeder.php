@@ -17,6 +17,16 @@ class ProductsTableSeeder extends Seeder
             'tag_id' => 1,
             'advertiser_id' => 1,
             'country' => 'italy',
+            'quantity' => [
+                'default' => 1,
+                'options' => [
+                    '1' => [
+                        'price' => '59.00',
+                        'commission' => '16.00',
+                        'sub_commission' => '00.00',
+                    ],
+                ],
+            ],
         ]);
         \App\Product::create([
             'name' => 'Foltina Plus Barba',
@@ -24,6 +34,16 @@ class ProductsTableSeeder extends Seeder
             'tag_id' => 2,
             'advertiser_id' => 1,
             'country' => 'italy',
+            'quantity' => [
+                'default' => 1,
+                'options' => [
+                    '1' => [
+                        'price' => '59.00',
+                        'commission' => '16.00',
+                        'sub_commission' => '00.00',
+                    ],
+                ],
+            ],
         ]);
         \App\Product::create([
             'name' => 'Tauro Plus',
@@ -31,6 +51,16 @@ class ProductsTableSeeder extends Seeder
             'tag_id' => 3,
             'advertiser_id' => 2,
             'country' => 'italy',
+            'quantity' => [
+                'default' => 1,
+                'options' => [
+                    '1' => [
+                        'price' => '59.00',
+                        'commission' => '16.00',
+                        'sub_commission' => '00.00',
+                    ],
+                ],
+            ],
         ]);
     }
 }

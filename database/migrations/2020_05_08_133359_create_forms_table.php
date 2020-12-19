@@ -19,7 +19,6 @@ class CreateFormsTable extends Migration
             $table->string('name');
             $table->bigInteger('product_id')->unsigned();
             $table->bigInteger('network_id')->unsigned();
-            $table->json('quantity');
             $table->json('up_sell')->nullable();
             $table->json('cross_sell')->nullable();
             $table->json('delivery')->nullable();

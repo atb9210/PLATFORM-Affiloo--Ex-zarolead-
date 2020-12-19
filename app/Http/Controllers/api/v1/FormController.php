@@ -80,7 +80,6 @@ class FormController extends Controller
      * @bodyParam user_id int Form's user id
      * @bodyParam product_id int required Form's product id
      * @bodyParam network_id int required Form's network id
-     * @bodyParam quantity json required Product's quantity JSON
      * @bodyParam up_sell json required Form's up sell
      * @bodyParam cross_sell json required Form's cross sell
      * @bodyParam delivery json required Form's delivery
@@ -103,7 +102,6 @@ class FormController extends Controller
             'user_id' => 'integer|exists:users,id',
             'product_id' => 'required|integer|exists:products,id',
             'network_id' => 'required|integer|exists:networks,id',
-            'quantity' => 'required|json',
             'up_sell' => 'required|json',
             'cross_sell' => 'required|json',
             'delivery' => 'json',
@@ -116,7 +114,6 @@ class FormController extends Controller
             $params['user_id'] = Auth::user()->id;
         }
 
-        $params['quantity'] = json_decode($params['quantity'], TRUE);
         $params['up_sell'] = json_decode($params['up_sell'], TRUE);
         $params['cross_sell'] = json_decode($params['cross_sell'], TRUE);
         if (isset($params['delivery'])) {
@@ -125,18 +122,6 @@ class FormController extends Controller
         $params['network_params'] = json_decode($params['network_params'], TRUE);
         if (isset($params['plugins'])) {
             $params['plugins'] = json_decode($params['plugins'], TRUE);
-        }
-
-        // Validate quantity JSON
-        $validator = Validator::make($params['quantity'], [
-            'options' => 'required|array',
-            'default' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response([
-                'message' => 'The given data - for the quantity JSON param - was invalid.',
-                'errors' => $validator->messages(),
-            ], 422);
         }
 
         // Validate up_sell JSON
@@ -192,7 +177,6 @@ class FormController extends Controller
      * @bodyParam user_id int Form's user id
      * @bodyParam product_id int Form's product id
      * @bodyParam network_id int Form's network id
-     * @bodyParam quantity json Product's quantity JSON
      * @bodyParam up_sell json Form's up sell
      * @bodyParam cross_sell json Form's cross sell
      * @bodyParam delivery json required Form's delivery
@@ -221,7 +205,6 @@ class FormController extends Controller
             'user_id' => 'integer|exists:users,id',
             'product_id' => 'integer|exists:products,id',
             'network_id' => 'integer|exists:networks,id',
-            'quantity' => 'json',
             'up_sell' => 'json',
             'cross_sell' => 'json',
             'delivery' => 'json',
@@ -231,9 +214,6 @@ class FormController extends Controller
         ]);
         if (isset($params['user_id']) && !Auth::user()->can('changeUser', 'App\Form')) {
             unset($params['user_id']);
-        }
-        if (isset($params['quantity'])) {
-            $params['quantity'] = json_decode($params['quantity'], TRUE);
         }
         if (isset($params['up_sell'])) {
             $params['up_sell'] = json_decode($params['up_sell'], TRUE);
@@ -249,20 +229,6 @@ class FormController extends Controller
         }
         if (isset($params['plugins'])) {
             $params['plugins'] = json_decode($params['plugins'], TRUE);
-        }
-
-        // Validate quantity JSON
-        if (isset($params['quantity'])) {
-            $validator = Validator::make($params['quantity'], [
-                'options' => 'required|array',
-                'default' => 'required',
-            ]);
-            if ($validator->fails()) {
-                return response([
-                    'message' => 'The given data - for the quantity JSON param - was invalid.',
-                    'errors' => $validator->messages(),
-                ], 422);
-            }
         }
 
         // Validate up_sell JSON
@@ -673,7 +639,7 @@ class FormController extends Controller
         return response([
             'data' => [
                 'input' => $input,
-                'quantity' => $form->quantity,
+                'quantity' => $form->product->quantity,
                 'up_sell' => $form->up_sell,
                 'cross_sell' => $form->cross_sell,
                 'delivery' => $form->delivery,

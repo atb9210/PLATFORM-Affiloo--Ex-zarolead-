@@ -15,7 +15,7 @@ class Form extends Model
      */
     protected $fillable = [
         'user_id', 'name', 'product_id', 'network_id',
-        'quantity', 'up_sell', 'cross_sell', 'delivery',
+        'up_sell', 'cross_sell', 'delivery',
         'tag_id', 'traffic_source_id',
         'info', 'network_params', 'plugins',
     ];
@@ -29,7 +29,6 @@ class Form extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'array',
         'up_sell' => 'array',
         'cross_sell' => 'array',
         'delivery' => 'array',

@@ -165,8 +165,8 @@ class OrderController extends Controller
 
         // Calculate price
         $price = 0.0;
-        if (isset($form->quantity['options'][$params['quantity']]['price'])) {
-            $price = $form->quantity['options'][$params['quantity']]['price'];
+        if (isset($form->product->quantity['options'][$params['quantity']]['price'])) {
+            $price = $form->product->quantity['options'][$params['quantity']]['price'];
         }
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
             if (isset($params['cross_sell']['price'])) {
@@ -184,8 +184,8 @@ class OrderController extends Controller
 
         // Calculate commission
         $commission = 0.0;
-        if (isset($form->quantity['options'][$params['quantity']]['commission'])) {
-            $commission = $form->quantity['options'][$params['quantity']]['commission'];
+        if (isset($form->product->quantity['options'][$params['quantity']]['commission'])) {
+            $commission = $form->product->quantity['options'][$params['quantity']]['commission'];
         }
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
             if (isset($params['cross_sell']['commission'])) {
@@ -195,8 +195,8 @@ class OrderController extends Controller
 
         // Calculate sub_commission
         $sub_commission = 0.0;
-        if (isset($form->quantity['options'][$params['quantity']]['sub_commission'])) {
-            $sub_commission = $form->quantity['options'][$params['quantity']]['sub_commission'];
+        if (isset($form->product->quantity['options'][$params['quantity']]['sub_commission'])) {
+            $sub_commission = $form->product->quantity['options'][$params['quantity']]['sub_commission'];
         }
         if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
             if (isset($params['cross_sell']['sub_commission'])) {

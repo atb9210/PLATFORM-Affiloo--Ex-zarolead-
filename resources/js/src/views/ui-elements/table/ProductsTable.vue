@@ -12,7 +12,9 @@
     <vx-card title="Products" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather"
+                :icon="(mode == 'view') ? 'icon-plus' : 'icon-arrow-left'"
+                @click="(mode == 'view') ? beginCreation() : (mode = 'view')"></vs-button>
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
@@ -37,7 +39,7 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table v-if="mode == 'view'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
@@ -73,7 +75,7 @@
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                            <vs-button @click="editForm(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -82,97 +84,211 @@
             </template>
         </vs-table>
 
-        <!-- Create popup -->
-        <vs-popup title="Create Product" :active.sync="showPopup['create']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto" color="primary">{{newObject['create'].name}}</vs-button>
+        <!-- Product create -->
+        <div class="vx-row" v-if="mode == 'create'">
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Name" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
+                <span class="text-danger">{{ errors.first('create.name') }}</span>
             </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
-                </div>
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-select v-model="newObject['create'].tag" class="w-full select-large" label="Tag" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in tags" class="w-full" />
+                </vs-select>
+                <span class="text-danger">{{ errors.first('create.tag_id') }}</span>
             </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Tag</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="tags" v-model="newObject['create'].tag" />
-                </div>
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-select v-model="newObject['create'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in advertisers" class="w-full" />
+                </vs-select>
+                <span class="text-danger">{{ errors.first('create.advertiser_id') }}</span>
             </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Advertiser</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="advertisers" v-model="newObject['create'].advertiser" />
-                </div>
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].country" />
+                <span class="text-danger">{{ errors.first('create.country') }}</span>
             </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].country" />
-                </div>
+            <vs-list class="vx-col w-full mt-5">
+                <vs-list-header icon-pack="feather" icon="icon-hash" title="Quantity Options" ></vs-list-header>
+                <vs-list-item
+                    icon-pack="feather" icon="icon-check"
+                    :title="'Quantity: ' + quantityOption.quantity"
+                    :subtitle="'Price: €' + quantityOption.price + ', Commission: €' + quantityOption.commission + ', Sub Commission: €' + quantityOption.sub_commission"
+                    v-for="(quantityOption, index) in quantityOptions" :key="index">
+                    <div class="flex items-center">
+                        <vs-radio class="mr-4" v-model="quantityDefaultIndex" :vs-value="index" @change="changeQuantityDefault">Default</vs-radio>
+                        <vs-button class="mr-2" icon-pack="feather" icon="icon-edit" type="filled" color="primary" @click="showEditQuantityOptionForm(index)"></vs-button>
+                        <vs-button class="mr-2" icon-pack="feather" icon="icon-trash" type="filled" color="danger" @click="removeQuantityOption(index)"></vs-button>
+                    </div>
+                </vs-list-item>
+            </vs-list>
+            <div class="vx-col w-full mt-2">
+                <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create_qty')">Add option</vs-button> 
             </div>
 
-            <div class="vx-row mb-6">
+            <div class="vx-col w-full flex items-center">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
+            </div>
+        </div>
+
+        <!-- Product edit -->
+        <div class="vx-row" v-if="mode == 'edit'">
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Name" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
+                <span class="text-danger">{{ errors.first('edit.name') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-select v-model="newObject['edit'].tag" class="w-full select-large" label="Tag" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in tags" class="w-full" />
+                </vs-select>
+                <span class="text-danger">{{ errors.first('edit.tag_id') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-select v-model="newObject['edit'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in advertisers" class="w-full" />
+                </vs-select>
+                <span class="text-danger">{{ errors.first('edit.advertiser_id') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].country" />
+                <span class="text-danger">{{ errors.first('edit.country') }}</span>
+            </div>
+
+            <vs-list class="vx-col w-full mt-5">
+                <vs-list-header icon-pack="feather" icon="icon-hash" title="Quantity Options" ></vs-list-header>
+                <vs-list-item
+                    icon-pack="feather" icon="icon-check"
+                    :title="'Quantity: ' + quantityOption.quantity"
+                    :subtitle="'Price: €' + quantityOption.price + ', Commission: €' + quantityOption.commission + ', Sub Commission: €' + quantityOption.sub_commission"
+                    v-for="(quantityOption, index) in quantityOptions" :key="index">
+                    <div class="flex items-center">
+                        <vs-radio class="mr-4" v-model="quantityDefaultIndex" :vs-value="index" @change="changeQuantityDefault">Default</vs-radio>
+                        <vs-button class="mr-2" icon-pack="feather" icon="icon-edit" type="filled" color="primary" @click="showEditQuantityOptionForm(index)"></vs-button>
+                        <vs-button class="mr-2" icon-pack="feather" icon="icon-trash" type="filled" color="danger" @click="removeQuantityOption(index)"></vs-button>
+                    </div>
+                </vs-list-item>
+            </vs-list>
+            <div class="vx-col w-full mt-2">
+                <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create_qty')">Add option</vs-button> 
+            </div>
+
+            <div class="vx-col w-full flex items-center">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateObject" color="primary" type="filled" :disabled="!isValidForm('edit')">Update</vs-button>
+            </div>
+        </div>
+
+        <!-- Create quantity option popup -->
+        <vs-popup title="Create Quantity Option" :active.sync="showPopup['create_qty']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Quantity</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create_qty'].quantity" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Price</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create_qty'].price" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Commission</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create_qty'].commission" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Sub Commission</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create_qty'].sub_commission" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Old price</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create_qty'].old_price" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Discount %</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create_qty'].discount" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createQuantityOption" color="primary" type="filled" :disabled="!isValidForm('create_qty')">Add</vs-button>
             </div>
         </vs-popup>
 
-        <!-- Edit popup -->
-        <vs-popup title="Edit Product" :active.sync="showPopup['edit']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto" color="primary">{{newObject['edit'].name}}</vs-button>
-            </div>
-
+        <!-- Edit quantity option popup -->
+        <vs-popup title="Edit Quantity Option" :active.sync="showPopup['edit_qty']">
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                    <span>Quantity</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit_qty'].quantity" />
                 </div>
             </div>
-
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Tag</span>
+                    <span>Price</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="tags" v-model="newObject['edit'].tag" />
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit_qty'].price" />
                 </div>
             </div>
-
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Advertiser</span>
+                    <span>Commission</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <v-select :options="advertisers" v-model="newObject['edit'].advertiser" />
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit_qty'].commission" />
                 </div>
             </div>
-
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country</span>
+                    <span>Sub Commission</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].country" />
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit_qty'].sub_commission" />
                 </div>
             </div>
-
             <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateObject" color="primary" type="filled" :disabled="!isValidForm('edit')">Update</vs-button>
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Old price</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit_qty'].old_price" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Discount %</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit_qty'].discount" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="editQuantityOption" color="primary" type="filled" :disabled="!isValidForm('edit_qty')">Update</vs-button>
             </div>
         </vs-popup>
 
@@ -188,6 +304,8 @@ export default {
   },
   data () {
     return {
+      mode: 'view',
+
       objects: [],
       selected: [],
       deleted: [],
@@ -199,8 +317,8 @@ export default {
       editingObject: -1,
 
       showPopup: {
-        'create': false,
-        'edit': false,
+        'create_qty': false,
+        'edit_qty': false,
       },
       newObject: {
         'create': {
@@ -215,7 +333,33 @@ export default {
           advertiser: '',
           country: '',
         },
+        'create_qty': {
+          quantity: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
+          old_price: '',
+          discount: '',
+        },
+        'edit_qty': {
+          quantity: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
+          old_price: '',
+          discount: '',
+        },
       },
+      quantityOptions: [
+          {
+            'quantity': '1',
+            'price': 99.99,
+            'commission': 99.99,
+            'sub_commission': 99.99,
+            'default': true,
+          },
+      ],
+      quantityDefaultIndex: 0,
 
       tags: [],
       advertisers: [],
@@ -339,19 +483,36 @@ export default {
       this.showPopup[type] = true
     },
     clearForm(type) {
-      this.newObject[type] = {
-        name: '',
-        tag: '',
-        advertiser: '',
-        country: '',
+      if (type == 'create_qty' || type == 'edit_qty') {
+        this.newObject[type] = {
+          quantity: '',
+          price: '',
+          commission: '',
+          sub_commission: '',
+          old_price: '',
+          discount: '',
+        }
+      } else {
+        this.newObject[type] = {
+          name: '',
+          tag: '',
+          advertiser: '',
+          country: '',
+        }
       }
     },
     isValidForm(type) {
       let obj = this.newObject[type]
-      let isValid = (obj.name.length > 0
-        && obj.tag != '' && obj.tag.id >= 1
-        && obj.advertiser != '' && obj.advertiser.id >= 1)
-      return isValid
+      if (type == 'create_qty' || type == 'edit_qty') {
+        return (obj.quantity != ''
+          && obj.price != '' && obj.price >= 0
+          && obj.commission != '' && obj.commission >= 0
+          && obj.sub_commission != '' && obj.sub_commission >= 0)
+      } else {
+        return (obj.name.length > 0
+          && obj.tag != '' && obj.tag >= 1
+          && obj.advertiser != '' && obj.advertiser >= 1)
+      }
     },
     createObject() {
       this.$vs.loading()
@@ -362,12 +523,28 @@ export default {
 
       let data = {
         name: this.newObject['create'].name,
-        tag_id: this.newObject['create'].tag.id,
-        advertiser_id: this.newObject['create'].advertiser.id,
+        tag_id: this.newObject['create'].tag,
+        advertiser_id: this.newObject['create'].advertiser,
         country: this.newObject['create'].country,
+        quantity: {
+          options: {},
+          default: '',
+        },
       }
 
-      // Retrieve products
+      this.quantityOptions.forEach((opt) => {
+        data.quantity['options'][opt.quantity] = {
+          price: opt.price,
+          commission: opt.commission,
+          sub_commission: opt.sub_commission,
+          old_price: opt.old_price,
+          discount: opt.discount,
+        }
+      })
+      data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
+      data.quantity = JSON.stringify(data.quantity)
+
+      // Create product
       this.$http.post('/api/v1/products', data, { headers: headers })
         .then((response) => {
           this.$vs.loading.close()
@@ -379,36 +556,61 @@ export default {
             color: 'success'
           })
           this.clearForm('create')
-          this.showPopup['create'] = false
+          this.clearForm('create_qty')
+          this.mode = 'view'
           this.retrieveObjects()
         })
         .catch((error) => {
           this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+          for (const [key, value] of Object.entries(error.response.data.errors)) {
+            for (let i = 0; i < value.length; i++) {
+              this.errors.add({
+                scope: 'create',
+                field: key,
+                msg: value[i]
+              })
+            }
+          }
         })
     },
-    editForm(id) {
-      let obj = this.objects[this.getObjectIndexById(id)]
+    editForm(objIndex) {
+      let obj = this.objects[objIndex]
       this.newObject['edit'] = {
         name: obj.name,
-        tag: {
-          id: obj.tag.id,
-          label: obj.tag.name,
-        },
-        advertiser: {
-          id: obj.advertiser.id,
-          label: obj.advertiser.name,
-        },
+        tag: obj.tag.id,
+        advertiser: obj.advertiser.id,
         country: obj.country,
       }
+
+      // TODO: to delete
+      console.log("tags", this.tags)
+      console.log("advertisers", this.advertisers)
+      console.log("obj.tag", obj.tag)
+      console.log("obj.advertiser", obj.advertiser)
+      console.log("obj.quantity", obj.quantity)
+
+      // Fetch quantity options
+      this.quantityOptions = []
+      let index = 0
+      for (const [key, value] of Object.entries(obj.quantity.options)) {
+        let d = (obj.quantity.default == key)
+        this.quantityOptions.push({
+          quantity: key,
+          price: value.price,
+          commission: value.commission,
+          sub_commission: value.sub_commission,
+          old_price: value.old_price,
+          discount: value.discount,
+          default: d,
+        });
+        if (d) {
+          this.quantityDefaultIndex = index
+        }
+        index++
+      }
+
       this.editingObject = obj.id
-      this.showForm('edit')
+      this.mode = 'edit'
     },
     updateObject() {
       if (this.editingObject <= 0) return
@@ -422,11 +624,31 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
-        tag_id: this.newObject['edit'].tag.id,
-        advertiser_id: this.newObject['create'].advertiser.id,
+        tag_id: this.newObject['edit'].tag,
+        advertiser_id: this.newObject['edit'].advertiser,
         country: this.newObject['edit'].country,
+        quantity: {
+          options: {},
+          default: '',
+        },
       }
 
+      this.quantityOptions.forEach((opt) => {
+        data.quantity['options'][opt.quantity] = {
+          price: opt.price,
+          commission: opt.commission,
+          sub_commission: opt.sub_commission,
+          old_price: opt.old_price,
+          discount: opt.discount,
+        }
+      })
+      data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
+      data.quantity = JSON.stringify(data.quantity)
+
+      // TODO: to delete
+      console.log("updateObject() data:", data)
+
+      // Update product
       this.$http.put('/api/v1/products/' + id, data, { headers })
         .then((response) => {
           this.$vs.loading.close()
@@ -437,19 +659,23 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
+          this.clearForm('edit')
+          this.clearForm('edit_qty')
+          this.mode = 'view'
           this.retrieveObjects()
         })
         .catch((error) => {
           this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+          for (const [key, value] of Object.entries(error.response.data.errors)) {
+            for (let i = 0; i < value.length; i++) {
+              this.errors.add({
+                scope: 'edit',
+                field: key,
+                msg: value[i]
+              })
+            }
+          }
         })
-      this.showPopup['edit'] = false
       this.editingObject = -1
     },
     deleteObject(id) {
@@ -481,6 +707,70 @@ export default {
             color: 'danger'
           })
         })
+    },
+    beginCreation() {
+      this.quantityOptions = [
+          {
+            'quantity': '1',
+            'price': 99.99,
+            'commission': 99.99,
+            'sub_commission': 99.99,
+            'default': true,
+            'old_price': 0,
+            'discount': 0,
+          },
+      ]
+      this.quantityDefaultIndex = 0
+      this.mode = 'create'
+    },
+    changeQuantityDefault() {
+      for (let i = 0; i < this.quantityOptions.length; i++) {
+        if (i == this.quantityDefaultIndex) {
+          this.quantityOptions[i].default = true
+        } else {
+          this.quantityOptions[i].default = false
+        }
+      }
+    },
+    showEditQuantityOptionForm(index) {
+      let obj = this.quantityOptions[index]
+      this.newObject['edit_qty'] = {
+        quantity: obj.quantity,
+        price: obj.price,
+        commission: obj.commission,
+        sub_commission: obj.sub_commission,
+        old_price: obj.old_price,
+        discount: obj.discount,
+      }
+      this.editingQuantityOptionIndex = index
+      this.showForm('edit_qty')
+    },
+    editQuantityOption() {
+      this.quantityOptions[this.editingQuantityOptionIndex] = this.newObject['edit_qty']
+      this.clearForm('edit_qty')
+      this.editingQuantityOptionIndex = -1
+      this.showPopup['edit_qty'] = false
+    },
+    removeQuantityOption(index) {
+      if (index >= this.quantityOptions.length) return
+
+      let defaultRemoved = this.quantityOptions[index].default
+      this.quantityOptions = this.quantityOptions.splice(index, 1)
+      if (defaultRemoved && this.quantityOptions.length > 0) {
+        this.quantityOptions[0].default = true
+      }
+    },
+    createQuantityOption() {
+      this.quantityOptions.push({
+        quantity: this.newObject['create_qty'].quantity,
+        price: this.newObject['create_qty'].price,
+        commission: this.newObject['create_qty'].commission,
+        sub_commission: this.newObject['create_qty'].sub_commission,
+        old_price: this.newObject['create_qty'].old_price,
+        discount: this.newObject['create_qty'].discount,
+      })
+      this.showPopup['create_qty'] = false
+      this.clearForm('create_qty')
     },
   },
   created() {

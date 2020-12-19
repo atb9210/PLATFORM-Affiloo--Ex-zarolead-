@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 use App\Product as Product;
 use App\Http\Resources\api\v1\ProductResource;
@@ -63,6 +64,7 @@ class ProductController extends Controller
      * @bodyParam tag_id int required Product's tag id
      * @bodyParam advertiser_id int required Product's advertiser id
      * @bodyParam country string Country
+     * @bodyParam quantity json required Product's quantity JSON
      *
      * @response 201 {
      *  "message": "Product created",
@@ -79,8 +81,23 @@ class ProductController extends Controller
             'tag_id' => 'required|integer|exists:tags,id',
             'advertiser_id' => 'required|integer|exists:users,id',
             'country' => 'string|min:1',
+            'quantity' => 'required|json',
         ]);
         $params['user_id'] = Auth::user()->id;
+
+        $params['quantity'] = json_decode($params['quantity'], TRUE);
+
+        // Validate quantity JSON
+        $validator = Validator::make($params['quantity'], [
+            'options' => 'required|array',
+            'default' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response([
+                'message' => 'The given data - for the quantity JSON param - was invalid.',
+                'errors' => $validator->messages(),
+            ], 422);
+        }
 
         $product = Product::create($params);
 
@@ -101,6 +118,7 @@ class ProductController extends Controller
      * @bodyParam tag_id int Product's new tag ID
      * @bodyParam advertiser_id int Product's new user ID
      * @bodyParam country string Product's new country
+     * @bodyParam quantity json Product's quantity JSON
      *
      * @response {
      *  "data": product,
@@ -118,14 +136,32 @@ class ProductController extends Controller
         }
 
         // Param validation
-        $data = $request->validate([
+        $params = $request->validate([
             'name' => 'string|min:3|max:255',
             'tag_id' => 'integer|min:1|exists:tags,id',
             'advertiser_id' => 'integer|min:1|exists:users,id',
             'country' => 'string|min:1|max:255',
+            'quantity' => 'json',
         ]);
+        if (isset($params['quantity'])) {
+            $params['quantity'] = json_decode($params['quantity'], TRUE);
+        }
 
-        $product->update($data);
+        // Validate quantity JSON
+        if (isset($params['quantity'])) {
+            $validator = Validator::make($params['quantity'], [
+                'options' => 'required|array',
+                'default' => 'required',
+            ]);
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'The given data - for the quantity JSON param - was invalid.',
+                    'errors' => $validator->messages(),
+                ], 422);
+            }
+        }
+
+        $product->update($params);
 
         return new ProductResource($product);
     }
