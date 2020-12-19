@@ -71,6 +71,8 @@ Route::apiResource('landings', 'api\v1\LandingController')->except([
 ])->middleware('auth:api');
 Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware('auth:api')
     ->name('landings.stats');
+Route::get('landings/{id}/code', 'api\v1\LandingController@code')->middleware('auth:api')
+    ->name('landings.code');
 
 /* Flows routes */
 Route::apiResource('flows', 'api\v1\FlowController')->except([
@@ -87,8 +89,10 @@ Route::get('forms/{id}/restore', 'api\v1\FormController@restore')->middleware('a
 Route::post('forms/{id}/clone', 'api\v1\FormController@clone')->middleware('auth:api')
     ->name('forms.clone');
 Route::get('forms/{id}/visited', 'api\v1\FormController@visited')->name('forms.visited');
+/*
 Route::get('forms/{id}/code', 'api\v1\FormController@code')->middleware('auth:api')
     ->name('forms.code');
+*/
 Route::get('forms/{id}/stats', 'api\v1\FormController@stats')->middleware('auth:api')
     ->name('forms.stats');
 Route::get('forms/{id}/landings/stats', 'api\v1\FormController@landingsStats')->middleware('auth:api')

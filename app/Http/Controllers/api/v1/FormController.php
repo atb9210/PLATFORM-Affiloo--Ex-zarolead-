@@ -602,7 +602,7 @@ class FormController extends Controller
         }
         $formStats->save();
 
-        $landing = Landing::findOrdFail($params['landing_id']);
+        $landing = Landing::findOrFail($params['landing_id']);
         $landingStats = LandingStats::getObject($landing->id, $today);
         $landingStats->visits += 1;
         $landingStats->save();

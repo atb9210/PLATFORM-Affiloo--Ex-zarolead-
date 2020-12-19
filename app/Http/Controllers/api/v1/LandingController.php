@@ -189,4 +189,75 @@ class LandingController extends Controller
 
         return LandingStatsResource::collection($stats->get());
     }
+
+    /**
+     * Get form code
+     *
+     * @response {
+     *  "data": code
+     * }
+     */
+    public function code($id, Request $request)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        /*
+        $form_html  = '<iframe scrolling="no" id="buy-frame" width="100%" height="500px" src="' . $form_url . '"></iframe>' . PHP_EOL;
+        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
+        $form_html .= "document.addEventListener(\"DOMContentLoaded\", function(event) {" . PHP_EOL;
+        $form_html .= "var loc = window.location.toString(), params = '', iframe_id = 'buy-frame';" . PHP_EOL;
+        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "params = loc.split('?')[1]," . PHP_EOL;
+        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
+        $form_html .= "iframe_src_url = iframe.src;" . PHP_EOL;
+        $form_html .= "separator = '?';" . PHP_EOL;
+        $form_html .= "if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "separator = '&';" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "iframe.src = iframe_src_url + separator + params;" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "});" . PHP_EOL;
+        $form_html .= "</script>" . PHP_EOL;
+        */
+
+        $form_url = "";
+        if(env('APP_LOCAL', false)) {
+            $form_url = "http://zarolead.localhost";
+        } else if(env('APP_ALPHA', false)) {
+            $form_url = "https://alpha.zarolead.com";
+        } else if(env('APP_BETA', false)) {
+            $form_url = "https://beta2.zarolead.com";
+        }
+
+        $form_html  = "<iframe scrolling=\"no\" id=\"buy-frame\" width=\"100%\" height=\"500px\" src=\"\"></iframe>" . PHP_EOL;
+        $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
+        $form_html .= "document.addEventListener('DOMContentLoaded', function(event) {" . PHP_EOL;
+        $form_html .= "var url_string = window.location.toString();" . PHP_EOL;
+        $form_html .= "var url = new URL(url_string);" . PHP_EOL;
+        $form_html .= "var landing_id = url.searchParam.get('landing');" . PHP_EOL;
+        $form_html .= "var form_id = url.searchParam.get('form');" . PHP_EOL;
+        $form_html .= "var iframe_src = '" . $form_url . "/forms/' + form_id + '/get?landing=' + landing_id;" . PHP_EOL;
+
+        $form_html .= "var loc = window.location.toString(), params = '';" . PHP_EOL;
+        $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "    params = loc.split('?')[1]," . PHP_EOL;
+        $form_html .= "    iframe_src_url = iframe_src;" . PHP_EOL;
+        $form_html .= "    separator = '?';" . PHP_EOL;
+        $form_html .= "    if (iframe_src_url.indexOf('?') > -1) {" . PHP_EOL;
+        $form_html .= "        separator = '&';" . PHP_EOL;
+        $form_html .= "    }" . PHP_EOL;
+        $form_html .= "    iframe_src = iframe_src_url + separator + params;" . PHP_EOL;
+        $form_html .= "}" . PHP_EOL;
+        $form_html .= "" . PHP_EOL;
+        $form_html .= "iframe_id = 'buy-frame';" . PHP_EOL;
+        $form_html .= "iframe = document.getElementById(iframe_id);" . PHP_EOL;
+        $form_html .= "iframe.src = iframe_src;" . PHP_EOL;
+        $form_html .= "});" . PHP_EOL;
+        $form_html .= "</script>" . PHP_EOL;
+
+        return response([
+            'data' => $form_html,
+        ]);
+    }
 }

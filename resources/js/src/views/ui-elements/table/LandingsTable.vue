@@ -184,7 +184,8 @@
         </vs-popup>
 
         <!-- Show code popup -->
-        <vs-popup title="Form code snipper" :active.sync="showPopup['code']">
+        <vs-popup title="Form code snippet" :active.sync="showPopup['code']">
+            <!--
             <div class="vx-row mb-2">
                 <div class="vx-col w-1/3">
                 </div>
@@ -196,6 +197,7 @@
                 <div class="vx-col w-1/3">
                 </div>
             </div>
+            -->
             <vs-textarea v-model="formCode" disabled height="10rem" />
             <div class="vx-row mt-6">
                 <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
@@ -516,18 +518,16 @@ export default {
       })
     },
     getFormCode() {
-      let id = this.formCodeId
+      let id = this.landingCodeId
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      let data = {
-        'landing_id': this.landingCodeId,
-      }
+      let data = {}
 
-      // Retrieve form code
-      this.$http.get('/api/v1/forms/' + id + '/code', { params: data, headers: headers })
+      // Retrieve form code snippet
+      this.$http.get('/api/v1/landings/' + id + '/code', { params: data, headers: headers })
         .then((response) => {
           this.formCode = response.data.data
           this.$vs.loading.close()
@@ -546,22 +546,19 @@ export default {
     },
     showFormCodePopup(id) {
       this.landingCodeId = id
-
       if (this.formCodeId <= 0 && this.forms.length > 0) {
         this.formCodeId = this.forms[0].id
       }
-
-      if(this.formCodeId >= 0) {
-        this.getFormCode()
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'You need at least one form to generate code snippet',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
+      this.getFormCode()
+    },
+    onCodeCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Form code copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   created() {
