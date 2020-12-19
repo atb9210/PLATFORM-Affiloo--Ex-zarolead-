@@ -235,9 +235,8 @@ class LandingController extends Controller
         $form_html .= "document.addEventListener('DOMContentLoaded', function(event) {" . PHP_EOL;
         $form_html .= "var url_string = window.location.toString();" . PHP_EOL;
         $form_html .= "var url = new URL(url_string);" . PHP_EOL;
-        $form_html .= "var landing_id = url.searchParams.get('landing');" . PHP_EOL;
         $form_html .= "var form_id = url.searchParams.get('form');" . PHP_EOL;
-        $form_html .= "var iframe_src = '" . $form_url . "/forms/' + form_id + '/get?landing=' + landing_id;" . PHP_EOL;
+        $form_html .= "var iframe_src = '" . $form_url . "/forms/' + form_id + '/get?landing= + " . $id . "';" . PHP_EOL;
 
         $form_html .= "var loc = window.location.toString(), params = '';" . PHP_EOL;
         $form_html .= "if (loc.indexOf('?') > -1) {" . PHP_EOL;
