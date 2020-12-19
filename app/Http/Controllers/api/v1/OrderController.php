@@ -317,7 +317,7 @@ class OrderController extends Controller
             $timestamp = strtotime($today);
             $month = intval(date('m', $timestamp));
             $year = intval(date('Y', $timestamp));
-            $advertiser = User::findOrFail($landing->product->advertiser_id);
+            $advertiser = User::findOrFail($form->product->advertiser_id);
             $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
             $advReport->leads += 1;
             $advReport->commission += $order->commission;
