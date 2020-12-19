@@ -78,6 +78,7 @@ class FormController extends Controller
      *
      * @bodyParam name string required Form's name
      * @bodyParam user_id int Form's user id
+     * @bodyParam product_id int required Form's product id
      * @bodyParam network_id int required Form's network id
      * @bodyParam quantity json required Product's quantity JSON
      * @bodyParam up_sell json required Form's up sell
@@ -100,6 +101,7 @@ class FormController extends Controller
         $params = $request->validate([
             'name' => 'required|string|min:3',
             'user_id' => 'integer|exists:users,id',
+            'product_id' => 'required|integer|exists:products,id',
             'network_id' => 'required|integer|exists:networks,id',
             'quantity' => 'required|json',
             'up_sell' => 'required|json',
@@ -188,6 +190,7 @@ class FormController extends Controller
      *
      * @bodyParam name string Form's name
      * @bodyParam user_id int Form's user id
+     * @bodyParam product_id int Form's product id
      * @bodyParam network_id int Form's network id
      * @bodyParam quantity json Product's quantity JSON
      * @bodyParam up_sell json Form's up sell
@@ -216,6 +219,7 @@ class FormController extends Controller
         $params = $request->validate([
             'name' => 'string|min:3',
             'user_id' => 'integer|exists:users,id',
+            'product_id' => 'integer|exists:products,id',
             'network_id' => 'integer|exists:networks,id',
             'quantity' => 'json',
             'up_sell' => 'json',
@@ -427,18 +431,15 @@ class FormController extends Controller
         $report->profit = $report->commission - ($report->cost + $report->extra_cost);
         $report->save();
 
-        // TODO:
         // Update advertiser's report stats
-        /*
         $timestamp = strtotime($stats->day);
         $month = intval(date('m', $timestamp));
         $year = intval(date('Y', $timestamp));
-        $advertiser = User::findOrFail($landing->product->advertiser_id);
+        $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->total_cost += $stats->total_cost - $prev_total_cost;
         $advReport->profit = $advReport->commission - $advReport->total_cost;
         $advReport->save();
-        */
 
         return new FormStatsResource($stats);
     }
@@ -615,7 +616,7 @@ class FormController extends Controller
         $timestamp = strtotime($formStats->day);
         $month = intval(date('m', $timestamp));
         $year = intval(date('Y', $timestamp));
-        $advertiser = User::findOrFail($landing->product->advertiser_id);
+        $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
         $advReport->visits += 1;
         $advReport->save();
