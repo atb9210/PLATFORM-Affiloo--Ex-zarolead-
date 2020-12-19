@@ -76,8 +76,9 @@ function forcePhoneFormat(evt) {
     evt.target.value = newVal;
 }
 
-function Form(id, debug = false, beta = false) {
+function Form(id, debug = false, alpha = false, beta = false) {
     this.DEBUG = true;
+    this.ALPHA = false;
     this.BETA = false;
 
     this.FORM_ID = 0;
@@ -126,6 +127,7 @@ function Form(id, debug = false, beta = false) {
 
     this.FORM_ID = id;
     this.DEBUG = debug;
+    this.ALPHA = alpha;
     this.BETA = beta;
 
     this.initialize();
@@ -136,6 +138,8 @@ Form.prototype.initialize = function() {
     var api_url = 'https://';
     if (this.BETA) {
         api_url += 'beta2.';
+    } else if(this.ALPHA) {
+        api_url += 'alpha.';
     }
     if (this.DEBUG) {
         api_url = 'http://';
@@ -925,6 +929,7 @@ Form.prototype.signupNewsletter = function() {
 var this_js_script = $('#form-js');
 var form_id = this_js_script.attr('data-form-id'); 
 var debug = (this_js_script.attr('data-debug') == 'true');
+var alpha = (this_js_script.attr('data-alpha') == 'true'); 
 var beta = (this_js_script.attr('data-beta') == 'true'); 
 var pluginsList = JSON.parse(this_js_script.attr('data-plugins'));
 
@@ -937,7 +942,7 @@ for (const [key, value] of Object.entries(pluginsList)) {
 }
 
 // Create form
-var form = new Form(form_id, debug, beta);
+var form = new Form(form_id, debug, alpha, beta);
 
 // Attach the plugin manager
 form.attachPluginManager(pluginManager);

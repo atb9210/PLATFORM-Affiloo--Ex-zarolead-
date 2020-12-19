@@ -484,6 +484,7 @@ body {
 <?php
 $plugins = json_encode($plugins);
 $debug = env('APP_LOCAL', 'false') ? 'true' : 'false';
+$alpha = env('APP_ALPHA', 'false') ? 'true' : 'false';
 $beta = env('APP_BETA', 'false') ? 'true' : 'false';
 ?>
-<script id="form-js" src="{{ asset('js/form.js') }}" data-form-id="{{ $form_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-beta="{{ $beta }}"></script>
+<script id="form-js" src="{{ asset('js/form.js') }}" data-form-id="{{ $form_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
