@@ -81,6 +81,7 @@
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url" v-clipboard:success="onUrlCopied"></vs-button>
                             <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="showLandingsStats(data[indextr].id)"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
@@ -185,19 +186,17 @@
 
         <!-- Show code popup -->
         <vs-popup title="Form code snippet" :active.sync="showPopup['code']">
-            <!--
             <div class="vx-row mb-2">
                 <div class="vx-col w-1/3">
                 </div>
                 <div class="vx-col w-1/3">
-                    <vs-select label="Form" v-model="formCodeId" @input="getFormCode">
+                    <vs-select label="Default form" v-model="defaultFormId" @input="getFormCode">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in forms" />
                     </vs-select>
                 </div>
                 <div class="vx-col w-1/3">
                 </div>
             </div>
-            -->
             <vs-textarea v-model="formCode" disabled height="10rem" />
             <div class="vx-row mt-6">
                 <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
@@ -252,6 +251,7 @@ export default {
       formCodeId: -1,
       landingCodeId: -1,
       formCode: '',
+      defaultFormId: -1,
     }
   },
   computed: {
@@ -518,13 +518,16 @@ export default {
       })
     },
     getFormCode() {
+      this.$vs.loading()
       let id = this.landingCodeId
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      let data = {}
+      let data = {
+          default_form: this.defaultFormId,
+      }
 
       // Retrieve form code snippet
       this.$http.get('/api/v1/landings/' + id + '/code', { params: data, headers: headers })
@@ -559,6 +562,9 @@ export default {
         icon: 'icon-alert-circle',
         color: 'success'
       })
+    },
+    showLandingsStats(id) {
+      this.$router.push({name: 'landings-stats', params: {landing_id: id}})
     },
   },
   created() {
@@ -612,6 +618,7 @@ export default {
             id: form.id,
             label: form.name,
           })
+          this.defaultFormId = form.id
         })
         this.$vs.loading.close()
       })

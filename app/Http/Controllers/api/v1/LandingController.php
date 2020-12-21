@@ -11,11 +11,14 @@ use App\Landing as Landing;
 use App\LandingStats as LandingStats;
 use App\Form as Form;
 use App\Http\Resources\api\v1\LandingResource;
+use App\Http\Resources\api\v1\LandingStatsResource;
 
 class LandingController extends Controller
 {
     /**
      * Get all landings list.
+     *
+     * @urlParam filter_product int Order's product id
      *
      * @response {
      *  "data": [landings],
@@ -23,14 +26,19 @@ class LandingController extends Controller
      */
     public function index(Request $request)
     {
+        // Param validation
+        $params = $request->validate([
+            'filter_product' => 'integer|exists:products,id',
+        ]);
+
         $landings = Landing::query();
         $landings = $landings->where('archived', 0);
         if (!Auth::user()->can('viewAny', 'App\Landing')) {
-            $landings = $landings->whereIn('form_id', function($query) {
-                $query->select('id')->from('forms')
-                    ->where('user_id', Auth::user()->id);
-            });
-            $landings = $landings->orWhere('user_id', Auth::user()->id);
+            $landings = $landings->where('user_id', Auth::user()->id);
+        }
+
+        if (isset($params['filter_product'])) {
+            $landings = $landings->where('product_id', $params['filter_product']);
         }
 
         return LandingResource::collection($landings->get());
@@ -169,7 +177,7 @@ class LandingController extends Controller
      */
     public function stats($id, Request $request)
     {
-        $form = Landing::findOrFail($id);
+        $landing = Landing::findOrFail($id);
         $this->authorize('view', $landing);
 
         // Param validation
@@ -178,7 +186,7 @@ class LandingController extends Controller
             'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
 
-        $stats = LandingStats::where('form_id', $id);
+        $stats = LandingStats::where('landing_id', $id);
         if (isset($params['filter_date_from'])) {
             $stats = $stats->where('day', '>=', $params['filter_date_from']);
         }
@@ -193,12 +201,20 @@ class LandingController extends Controller
     /**
      * Get form code
      *
+     * @urlParam default_form int Default form's id
+     *
      * @response {
      *  "data": code
      * }
      */
     public function code($id, Request $request)
     {
+        // Param validation
+        $params = $request->validate([
+            'default_form' => 'required|integer|exists:forms,id',
+        ]);
+        $default_form = $params['default_form'];
+
         $landing = Landing::findOrFail($id);
         $this->authorize('view', $landing);
 
@@ -235,7 +251,8 @@ class LandingController extends Controller
         $form_html .= "document.addEventListener('DOMContentLoaded', function(event) {" . PHP_EOL;
         $form_html .= "var url_string = window.location.toString();" . PHP_EOL;
         $form_html .= "var url = new URL(url_string);" . PHP_EOL;
-        $form_html .= "var form_id = url.searchParams.get('form');" . PHP_EOL;
+        $form_html .= "var form_id = url.searchParams.get('id');" . PHP_EOL;
+        $form_html .= "if (form_id == '') { form_id = " . $default_form . "; }" . PHP_EOL;
         $form_html .= "var iframe_src = '" . $form_url . "/forms/' + form_id + '/get?landing=" . $id . "';" . PHP_EOL;
 
         $form_html .= "var loc = window.location.toString(), params = '';" . PHP_EOL;

@@ -164,6 +164,7 @@
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <!--<vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>-->
+                            <vs-button @click="showLandingUrlPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                             <vs-button v-if="data[indextr].archived == 1" @click="restoreForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-unlock"></vs-button>
@@ -212,21 +213,15 @@
             </template>
         </vs-table>
 
-        <!-- Form code popup -->
-        <vs-popup title="Form code" :active.sync="showPopup['code']">
-            <div class="vx-row mb-2">
-                <div class="vx-col w-1/3">
+        <!-- Landing URL popup -->
+        <vs-popup title="Landing URL" :active.sync="showPopup['landing_url']">
+            <div class="vx-row mb-2" v-for="(item, index) in landingUrlObjects">
+                <div class="vx-col w-1/2">
+                    {{item.name}}
                 </div>
-                <div class="vx-col w-1/3">
-                    <label>Landing</label>
-                    <v-select :options="landingOptions" v-model="codeFilters.landing" @input="getFormCode" />
+                <div class="vx-col w-1/2">
+                    <a href="item.url">{{item.url}}</a>
                 </div>
-                <div class="vx-col w-1/3">
-                </div>
-            </div>
-            <vs-textarea v-model="formCode" disabled height="10rem" />
-            <div class="vx-row mt-6">
-                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
             </div>
         </vs-popup>
 
@@ -607,6 +602,7 @@ export default {
         'create': false,
         'edit': false,
         'code': false,
+        'landing_url': false,
       },
       newObject: {
         'create': {
@@ -723,6 +719,8 @@ export default {
           },
         }
       },
+
+      landingUrlObjects: [],
     }
   },
   computed: {
@@ -1273,9 +1271,6 @@ export default {
 
           this.calculateStats()
 
-          // TODO: to delete
-          console.log(this.objects)
-
           this.loadChart()
           this.$vs.loading.close()
         })
@@ -1472,6 +1467,50 @@ export default {
             color: 'success'
           })
           this.applyFilters()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    showLandingUrlPopup(index) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let obj = this.objects[index]
+
+      let data = {}
+      if (this.filters.product != '') {
+        data['filter_product'] = obj.product.id
+      }
+
+      this.landingUrlObjects = []
+      this.$http.get('/api/v1/landings', { headers, params: data })
+        .then((response) => {
+          response.data.data.forEach((landing) => {
+            let url = landing.url
+            let separator = '?'
+            if (url.includes('?')) {
+              separator = '&'
+            }
+            url = url + separator + 'id=' + obj.id
+            this.landingUrlObjects.push({
+              name: landing.name,
+              url: url,
+            })
+          })
+
+          this.$vs.loading.close()
+          this.showPopup['landing_url'] = true
         })
         .catch((error) => {
           this.$vs.loading.close()

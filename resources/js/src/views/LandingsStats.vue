@@ -10,7 +10,7 @@
 
 <template>
     <div id="table-demo">
-        <landings-stats-table :form_id="form_id"></landings-stats-table>
+        <landings-stats-table :landing_id="landing_id"></landings-stats-table>
     </div>
 </template>
 
@@ -23,13 +23,13 @@ export default{
   },
   data() {
       return {
-        form_id: 0,
+        landing_id: 0,
       }
   },
   methods: {
   },
   created() {
-    this.form_id = parseInt(this.$route.params.form_id)
+    this.landing_id = parseInt(this.$route.params.landing_id)
   }
 }
 </script>

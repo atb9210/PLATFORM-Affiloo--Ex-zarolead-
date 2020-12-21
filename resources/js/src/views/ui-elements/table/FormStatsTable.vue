@@ -33,7 +33,7 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showNotes"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshFormStats"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="showLandingsStats(form_id)"></vs-button>
+            <!--<vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="showLandingsStats(form_id)"></vs-button>-->
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(view == 'normal') ? 'icon-facebook' : 'icon-activity'" @click="view = (view == 'normal') ? 'traffic_source' : 'normal'"></vs-button>
         </p>
 
@@ -1356,9 +1356,12 @@ export default {
         },
       }
     },
+    // TODO: This is not useful anymore??
+    /*
     showLandingsStats(id) {
       this.$router.push({name: 'landings-stats', params: {form_id: id}})
     },
+    */
     onFormSwitch(value) {
       this.$parent.switchForm(value)
     },

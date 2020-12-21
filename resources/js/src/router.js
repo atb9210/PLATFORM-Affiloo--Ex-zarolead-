@@ -1430,7 +1430,7 @@ const router = new Router({
           }
         },
         {
-          path: '/dashboard/landings-stats/:form_id',
+          path: '/dashboard/landings/:landing_id/stats/',
           props: true,
           name: 'landings-stats',
           component: () => import('./views/LandingsStats.vue'),
@@ -1438,7 +1438,7 @@ const router = new Router({
             authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
-              { title: 'Forms', url: '/dashboard/forms' },
+              { title: 'Landings', url: '/dashboard/landings' },
               { title: 'Landings Stats', active: true }
             ],
             pageTitle: 'Landings Stats',

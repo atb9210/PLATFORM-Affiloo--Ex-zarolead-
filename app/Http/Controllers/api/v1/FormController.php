@@ -410,6 +410,7 @@ class FormController extends Controller
         return new FormStatsResource($stats);
     }
 
+    // TODO: This is not useful anymore?
     /**
      * Get landings stats (of this form)
      *
@@ -422,6 +423,7 @@ class FormController extends Controller
      *  "data": [stats]
      * }
      */
+    /*
     public function landingsStats($id, Request $request)
     {
         $form = Form::findOrFail($id);
@@ -467,6 +469,7 @@ class FormController extends Controller
             'data' => $data
         ], 200);
     }
+    */
 
     /**
      * Get form code

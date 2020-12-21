@@ -80,7 +80,7 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">ID</vs-th>
-                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="day">day</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>
@@ -96,7 +96,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].day">
-                        {{data[indextr].name}}
+                        {{data[indextr].day}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].visits">
@@ -154,7 +154,7 @@ export default {
     'v-select': vSelect,
   },
   props: {
-    form_id: Number,
+    landing_id: Number,
   },
   data () {
     return {
@@ -250,7 +250,7 @@ export default {
     }
   },
   watch: {
-    form_id: function(newVal, oldVal) {
+    landing_id: function(newVal, oldVal) {
       this.retrieveObjects()
     }
   },
@@ -297,7 +297,7 @@ export default {
       }
 
       // Retrieve landing stats
-      this.$http.get('/api/v1/forms/' + this.form_id + '/landings/stats', { headers })
+      this.$http.get('/api/v1/landings/' + this.landing_id + '/stats', { headers })
         .then((response) => {
           this.objects = response.data.data
           console.log(response.data.data)
@@ -671,7 +671,7 @@ export default {
       }
 
       // Retrieve landing stats
-      this.$http.get('/api/v1/forms/' + this.form_id + '/landings/stats', { headers, params: data })
+      this.$http.get('/api/v1/landings/' + this.landing_id + '/stats', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
           this.calculateStats()
