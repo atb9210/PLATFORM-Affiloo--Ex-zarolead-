@@ -215,7 +215,6 @@ class Order extends Model
             $this->order_status_id = OrderStatus::DOUBLE;
         } elseif ($status == 'error') {
             $this->order_status_id = OrderStatus::NOT_SENT;
-
             Log::channel('orders')->info('Order ' . $this->id . ' has not been stored by the network ' . $network->name, $context);
         }
         $this->save();
