@@ -216,11 +216,14 @@
         <!-- Landing URL popup -->
         <vs-popup title="Landing URL" :active.sync="showPopup['landing_url']">
             <div class="vx-row mb-2" v-for="(item, index) in landingUrlObjects">
-                <div class="vx-col w-1/2">
+                <div class="vx-col w-1/3">
                     {{item.name}}
                 </div>
                 <div class="vx-col w-1/2">
                     <a href="item.url">{{item.url}}</a>
+                </div>
+                <div class="vx-col w-1/6">
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="item.url" v-clipboard:success="onUrlCopied"></vs-button>
                 </div>
             </div>
         </vs-popup>
@@ -1522,6 +1525,15 @@ export default {
             color: 'danger'
           })
         })
+    },
+    onUrlCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Landing URL copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   created() {

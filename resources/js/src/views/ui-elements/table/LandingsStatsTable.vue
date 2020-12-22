@@ -80,7 +80,7 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">ID</vs-th>
-                <vs-th sort-key="day">day</vs-th>
+                <vs-th sort-key="day">Day</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_commission" v-if="canViewStats">Commission</vs-th>

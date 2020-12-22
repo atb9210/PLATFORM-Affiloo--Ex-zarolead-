@@ -168,8 +168,8 @@ class LandingController extends Controller
      *
      * @urlParam id int required Landing's id
      *
-     * @urlParam filter_date_from string From date (Y-m-d format)
-     * @urlParam filter_date_to string To date (Y-m-d format)
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
      *
      * @response {
      *  "data": [stats]
@@ -196,6 +196,22 @@ class LandingController extends Controller
         $stats = $stats->orderBy('day', 'desc');
 
         return LandingStatsResource::collection($stats->get());
+    }
+
+    // TODO: Is this required
+    /**
+     * Get multiple landings stats.
+     *
+     * @bodyParam landings array Landings' ids
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function multipleStats(Request $request)
+    {
     }
 
     /**

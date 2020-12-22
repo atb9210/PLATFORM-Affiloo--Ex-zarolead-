@@ -12,9 +12,52 @@
     <vx-card title="Landings" code-toggler>
 
         <p class="flex items-center mb-4">
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
+
+        <div v-if="showFilters" class="mb-12">
+            <div class="vx-row mb-2">
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>From</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>To</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                </div>
+            </div>
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/3 w-full">
+                    <label>Product</label>
+                    <vs-select v-model="filters.product">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
+                    </vs-select>
+                </div>
+            </div>
+            <div class="vx-row mt-6">
+                <div class="vx-col w-full">
+                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                </div>
+            </div>
+        </div>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
@@ -43,9 +86,11 @@
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="product.name">Product</vs-th>
-                <vs-th sort-key="tag.name">Tag</vs-th>
-                <vs-th sort-key="url">URL</vs-th>
-                <vs-th sort-key="country">Country</vs-th>
+                <vs-th sort-key="visits">Visits</vs-th>
+                <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="epv">EPV</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
@@ -64,16 +109,24 @@
                         {{data[indextr].product.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].tag.name">
-                        {{data[indextr].tag.name}}
+                    <vs-td :data="data[indextr].visits">
+                        {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].url">
-                        <a :href="data[indextr].url">{{data[indextr].url}}</a>
+                    <vs-td :data="data[indextr].leads">
+                        {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].country">
-                        {{data[indextr].country}}
+                    <vs-td :data="data[indextr].total_commission">
+                        € {{data[indextr].total_commission.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr.toFixed(2)}} %
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].epv">
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                     </vs-td>
 
                     <vs-td>
@@ -87,6 +140,29 @@
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>
+                    {{totalStats.visits}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.leads}}
+                </vs-td>
+                <vs-td>
+                    € {{totalStats.total_commission}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.cr}} %
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv}}</vs-chip>
+                </vs-td>
+                <vs-td></vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -242,6 +318,20 @@ export default {
           country: '',
         },
       },
+      dateFormat: 'yyyy-MM-dd',
+      showFilters: false,
+      filters: {
+        date_from: '',
+        date_to: '',
+        product: '',
+      },
+      total_stats: {
+        visits: 0,
+        leads: 0,
+        total_commission: 0,
+        cr: 0,
+        epv: 0,
+      },
 
       tags: [],
       campaigns: [],
@@ -284,20 +374,61 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
+    onPageChanged(val) {
+      this.currentPage = val
+    },
+    resetFilters() {
+      this.filters = {
+        date_from: '',
+        date_to: '',
+        product: '',
+      }
+      this.filterDatesShortcut('this_month')
+    },
+    applyFilters() {
       this.selected = []
+      this.objects = []
       this.$vs.loading()
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+      let data = {}
+      if (this.filters.date_from != '') {
+        data['filter_date_from'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        data['filter_date_to'] = this.filters.date_to
+      }
+      if (this.filters.product != '') {
+        data['filter_product'] = this.filters.product
+      }
 
       // Retrieve landings
-      this.$http.get('/api/v1/landings', { headers })
+      this.$http.get('/api/v1/landings', { headers, params: data })
         .then((response) => {
-          this.objects = response.data.data
+          response.data.data.forEach((obj) => {
+            let toPush = obj
+
+            toPush.visits = 0
+            toPush.leads = 0
+            toPush.total_commission = 0.0
+            toPush.cr = 0.0
+            toPush.epv = 0.0
+
+            obj.daily_stats.forEach((stats) => {
+              toPush.visits += parseInt(stats.visits)
+              toPush.leads += parseInt(stats.visits)
+              toPush.total_commission += parseInt(stats.total_commission)
+            })
+
+            toPush.cr = (toPush.visits > 0) ? (toPush.leads / toPush.visits)*100 : ((toPush.leads > 0) ? 9999.99 : 0)
+            toPush.epv = (toPush.visits > 0) ? (toPush.total_commission / toPush.visits) : (toPush.total_commission)
+            this.objects.push(toPush)
+          })
+
+          this.calculateStats()
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -310,8 +441,51 @@ export default {
           })
         })
     },
-    onPageChanged(val) {
-      this.currentPage = val
+    filterDatesShortcut(period) {
+      let invalidPeriod = false;
+
+      switch (period) {
+        case 'today': {
+          let today = new Date();
+          this.filters.date_from = this.formatDate(today);
+          this.filters.date_to = this.formatDate(today);
+        } break;
+        case 'yesterday': {
+          let dateObj = new Date();
+          dateObj.setDate(dateObj.getDate() - 1);
+          this.filters.date_from = this.formatDate(dateObj);
+          this.filters.date_to = this.formatDate(dateObj);
+        } break;
+        case 'this_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        case 'last_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        default: {
+          invalidPeriod = true;
+        } break;
+      }
+
+      if(!invalidPeriod) {
+        this.applyFilters();
+      }
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0');
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = dateObj.getFullYear();
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd;
+      return formattedDate;
     },
     confirmDeletePopup() {
       if (this.selected.length == 0) return
@@ -350,7 +524,7 @@ export default {
               })
               this.selected = []
               this.deleted = []
-              this.retrieveObjects()
+              this.applyFilters()
             }
           })
           .catch((error) => {
@@ -409,7 +583,7 @@ export default {
           })
           this.clearForm('create')
           this.showPopup['create'] = false
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -463,7 +637,7 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -495,7 +669,7 @@ export default {
             icon: 'icon-alert-circle',
             color: 'success'
           })
-          this.retrieveObjects()
+          this.applyFilters()
         })
         .catch((error) => {
           this.$vs.loading.close()
@@ -566,9 +740,37 @@ export default {
     showLandingsStats(id) {
       this.$router.push({name: 'landings-stats', params: {landing_id: id}})
     },
+    calculateStats() {
+      this.totalStats = {
+        visits: 0,
+        leads: 0,
+        total_commission: 0,
+        cr: 0,
+        epv: 0,
+      }
+
+      let visits = 0
+      let leads = 0
+      let total_commission = 0
+
+      for (let i = 0; i < this.objects.length; i++) {
+        visits += this.objects[i].visits
+        leads += this.objects[i].leads
+        total_commission += this.objects[i].total_commission
+      }
+
+      let cr = (visits > 0) ? (leads / visits)*100 : ((leads > 0) ? 9999.99 : 0)
+      let epv = (visits > 0) ? (total_commission / visits) : (total_commission)
+
+      this.totalStats.visits = visits
+      this.totalStats.leads = leads
+      this.totalStats.total_commission = total_commission
+      this.totalStats.cr = cr
+      this.totalStats.epv = epv
+    },
   },
   created() {
-    this.retrieveObjects()
+    this.resetFilters()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
