@@ -301,7 +301,7 @@ Form.prototype.initializeUpSellStep = function() {
                 activeSetFlag = true;
             }
         }
-        this.createUpSellOption(key, value.discount, value.price, activeOption, bestSeller);
+        this.createUpSellOption(key, value.title, value.discount, value.price, activeOption, bestSeller);
     }
 
     // Update total amount
@@ -454,7 +454,7 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
     }
 }
 
-Form.prototype.createUpSellOption = function(quantity, discount, price, active = false, bestSeller = false) {
+Form.prototype.createUpSellOption = function(quantity, title, discount, price, active = false, bestSeller = false) {
     var unitPrice = formatCurrency(parseFloat(price) / parseInt(quantity));
 
     var upSellOptions = $('#upSellOptions')[0];
@@ -482,11 +482,15 @@ Form.prototype.createUpSellOption = function(quantity, discount, price, active =
 
     var divPieces = document.createElement('div');
     divPieces.className = 'col-5 pl-5 pt-2';
-    divPieces.innerHTML = quantity + ' ' + ((quantity == 1) ? 'pezzo' : 'pezzi');
+    if (title != '' && title != null) {
+        divPieces.innerHTML = title;
+    } else {
+        divPieces.innerHTML = quantity + ' ' + ((quantity == 1) ? 'pezzo' : 'pezzi');
+    }
 
     var divDiscount = document.createElement('div');
     divDiscount.className = 'col-4 pt-2 pr-0 pl-0';
-    if (typeof discount != 'undefined') {
+    if (typeof discount != 'undefined' && discount != '' && parseFloat(discount) > 0) {
         divDiscountLabel = document.createElement('span');
         divDiscountLabel.className = 'upSellOptionBodyDiscount';
         divDiscountLabel.innerHTML = 'risparmia ' + discount + '%';

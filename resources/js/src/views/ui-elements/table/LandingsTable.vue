@@ -418,7 +418,7 @@ export default {
 
             obj.daily_stats.forEach((stats) => {
               toPush.visits += parseInt(stats.visits)
-              toPush.leads += parseInt(stats.visits)
+              toPush.leads += parseInt(stats.leads)
               toPush.total_commission += parseInt(stats.total_commission)
             })
 

@@ -194,6 +194,14 @@
             </div>
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Title</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create_qty'].title" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Price</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -245,6 +253,14 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit_qty'].quantity" />
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Title</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit_qty'].title" />
                 </div>
             </div>
             <div class="vx-row mb-6">
@@ -335,6 +351,7 @@ export default {
         },
         'create_qty': {
           quantity: '',
+          title: '',
           price: '',
           commission: '',
           sub_commission: '',
@@ -343,6 +360,7 @@ export default {
         },
         'edit_qty': {
           quantity: '',
+          title: '',
           price: '',
           commission: '',
           sub_commission: '',
@@ -486,6 +504,7 @@ export default {
       if (type == 'create_qty' || type == 'edit_qty') {
         this.newObject[type] = {
           quantity: '',
+          title: '',
           price: '',
           commission: '',
           sub_commission: '',
@@ -504,7 +523,7 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       if (type == 'create_qty' || type == 'edit_qty') {
-        return (obj.quantity != ''
+        return (obj.quantity != '' && obj.title != ''
           && obj.price != '' && obj.price >= 0
           && obj.commission != '' && obj.commission >= 0
           && obj.sub_commission != '' && obj.sub_commission >= 0)
@@ -534,6 +553,7 @@ export default {
 
       this.quantityOptions.forEach((opt) => {
         data.quantity['options'][opt.quantity] = {
+          title: opt.title,
           price: opt.price,
           commission: opt.commission,
           sub_commission: opt.sub_commission,
@@ -582,13 +602,6 @@ export default {
         country: obj.country,
       }
 
-      // TODO: to delete
-      console.log("tags", this.tags)
-      console.log("advertisers", this.advertisers)
-      console.log("obj.tag", obj.tag)
-      console.log("obj.advertiser", obj.advertiser)
-      console.log("obj.quantity", obj.quantity)
-
       // Fetch quantity options
       this.quantityOptions = []
       let index = 0
@@ -596,6 +609,7 @@ export default {
         let d = (obj.quantity.default == key)
         this.quantityOptions.push({
           quantity: key,
+          title: value.title,
           price: value.price,
           commission: value.commission,
           sub_commission: value.sub_commission,
@@ -635,6 +649,7 @@ export default {
 
       this.quantityOptions.forEach((opt) => {
         data.quantity['options'][opt.quantity] = {
+          title: opt.title,
           price: opt.price,
           commission: opt.commission,
           sub_commission: opt.sub_commission,
@@ -763,6 +778,7 @@ export default {
     createQuantityOption() {
       this.quantityOptions.push({
         quantity: this.newObject['create_qty'].quantity,
+        title: this.newObject['create_qty'].title,
         price: this.newObject['create_qty'].price,
         commission: this.newObject['create_qty'].commission,
         sub_commission: this.newObject['create_qty'].sub_commission,
