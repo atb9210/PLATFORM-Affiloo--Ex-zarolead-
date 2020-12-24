@@ -1118,8 +1118,10 @@ export default {
           let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
+
               let mainAdAccountActive = true
               let totalAmountSpent = 0
               let totalResult = 0
@@ -1216,6 +1218,7 @@ export default {
                 token_status: 'active',
                 info: JSON.stringify(info),
               }
+
               this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
                 .then((response) => {
                   this.$vs.loading.close()
@@ -1240,14 +1243,36 @@ export default {
                 })
             })
             .catch((error) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Error',
-                text: error.message,
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
+              // Update fb account token status
+              let headers = {
+                Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+              }
+              let data = {
+                token_status: 'active',
+              }
+
+              this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+                .then((response) => {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Token is active',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                  this.applyFilters()
+                })
+                .catch((error) => {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: error.message,
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                })
             })
         })
         .catch((error) => {
@@ -1458,13 +1483,36 @@ export default {
                   })
               })
               .catch((error) => {
-                this.$vs.notify({
-                  title: 'Error',
-                  text: error.message,
-                  iconPack: 'feather',
-                  icon: 'icon-alert-circle',
-                  color: 'danger'
-                })
+                // Update fb account token status
+                let headers = {
+                  Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+                }
+                let data = {
+                  token_status: 'active',
+                }
+
+                this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+                  .then((response) => {
+                    this.$vs.loading.close()
+                    this.$vs.notify({
+                      title: 'Success',
+                      text: 'Token is active',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'success'
+                    })
+                    this.applyFilters()
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: error.message,
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  })
               })
           })
           .catch((error) => {
@@ -1909,9 +1957,6 @@ export default {
     showBmInfo(index, bmIndex) {
       this.bmInfoObjIndex = index
       let bm = this.objects[index].info['bm'][bmIndex]
-
-      // TODO: to delete
-      console.log("bm.id", bm.id)
 
       // TODO: HERE
       this.bmInfoObj = bm
