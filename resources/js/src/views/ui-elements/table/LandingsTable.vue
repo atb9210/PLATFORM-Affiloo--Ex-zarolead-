@@ -812,7 +812,13 @@ export default {
 
     // Retrieve forms
     this.$vs.loading()
-    this.$http.get('/api/v1/forms/', { headers })
+    let today = new Date();
+    let d = this.formatDate(today)
+    let data = {
+      filter_date_from: d,
+      filter_date_to: d,
+    }
+    this.$http.get('/api/v1/forms/', { headers, params: data })
       .then((response) => {
         this.forms = []
         response.data.data.forEach((form) => {
