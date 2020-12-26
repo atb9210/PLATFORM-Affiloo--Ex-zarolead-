@@ -164,7 +164,7 @@
                         <div class="flex items-center">
                             <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <!--<vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>-->
-                            <vs-button @click="showLandingUrlPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe"></vs-button>
+                            <vs-button @click="showLandingUrlPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                             <vs-button v-if="data[indextr].archived == 1" @click="restoreForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-unlock"></vs-button>
@@ -1482,7 +1482,9 @@ export default {
           })
         })
     },
-    showLandingUrlPopup(index) {
+    showLandingUrlPopup(id) {
+      let index = this.getObjectIndexById(id)
+
       this.$vs.loading()
 
       let headers = {

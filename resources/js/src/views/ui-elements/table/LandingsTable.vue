@@ -46,7 +46,7 @@
             <div class="vx-row mb-2">
                 <div class="vx-col md:w-1/3 w-full">
                     <label>Product</label>
-                    <vs-select v-model="filters.product">
+                    <vs-select autocomplete v-model="filters.product">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
                     </vs-select>
                 </div>
@@ -266,7 +266,7 @@
                 <div class="vx-col w-1/3">
                 </div>
                 <div class="vx-col w-1/3">
-                    <vs-select label="Default form" v-model="defaultFormId" @input="getFormCode">
+                    <vs-select autocomplete label="Default form" v-model="defaultFormId" @input="getFormCode">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in forms" />
                     </vs-select>
                 </div>

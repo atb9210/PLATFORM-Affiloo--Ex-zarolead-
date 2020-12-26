@@ -53,6 +53,7 @@ class CreateRolesTable extends Migration
                         "create" => true,
                         "update" => true,
                         "delete" => true,
+                        "viewCommission" => true,
                     ],
                     "landing" => [
                         "viewAny" => false,
@@ -133,6 +134,7 @@ class CreateRolesTable extends Migration
                         "create" => false,
                         "update" => false,
                         "delete" => false,
+                        "viewCommission" => true,
                     ],
                     "landing" => [
                         "viewAny" => false,

@@ -174,8 +174,8 @@
 
                         <vs-td>
                             <div class="flex items-center">
-                                <vs-button @click="editBudgetPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
-                                <vs-button @click="editBidPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
+                                <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
+                                <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
 
@@ -285,8 +285,8 @@
 
                         <vs-td>
                             <div class="flex items-center">
-                                <vs-button @click="editBudgetPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
-                                <vs-button @click="editBidPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
+                                <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
+                                <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
 
@@ -386,7 +386,7 @@
 
                         <vs-td>
                             <div class="flex items-center">
-                                <vs-button @click="viewAdPopup(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                                <vs-button @click="viewAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             </div>
                         </vs-td>
 
@@ -1096,16 +1096,16 @@ export default {
       }
       return false
     },
-    editBudgetPopup(index) {
-      this.editingObject = this.objects[index]
+    editBudgetPopup(id) {
+      this.editingObject = this.objects[this.getObjectIndexById(id)]
       this.showPopup['edit_budget'] = true
     },
-    editBidPopup(index) {
-      this.editingObject = this.objects[index]
+    editBidPopup(id) {
+      this.editingObject = this.objects[this.getObjectIndexById(id)]
       this.showPopup['edit_bid'] = true
     },
-    viewAdPopup(index) {
-      this.viewingObject = this.objects[index]
+    viewAdPopup(id) {
+      this.viewingObject = this.objects[this.getObjectIndexById(id)]
       this.showPopup['view_ad'] = true
     },
     editBudget() {

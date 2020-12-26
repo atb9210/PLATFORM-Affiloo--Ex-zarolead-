@@ -150,7 +150,7 @@
                     <vs-td>
                         <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vx-tooltip :text="bm.name + ' (' + bm.id + ')'" v-for="(bm, index) in data[indextr].info['bm']" :key="index">
-                                <vs-avatar size="24px" @click="showBmInfo(indextr, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
+                                <vs-avatar size="24px" @click="showBmInfo(data[indextr].id, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
                             </vx-tooltip>
                         </div>
                     </vs-td>
@@ -175,7 +175,7 @@
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button @click="checkStatus(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                            <vs-button @click="checkStatus(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             <vs-button @click="showAds(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
                             <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
@@ -511,7 +511,7 @@
                 <div class="vx-col w-1/3">
                 </div>
                 <div class="vx-col w-1/3 flex items-center">
-                    <vs-button @click="checkStatus(bmInfoObjIndex)" class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw"></vs-button>
+                    <vs-button @click="checkStatus(bmInfoObjId)" class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw"></vs-button>
                     <vs-button v-clipboard:copy="'https://business.facebook.com/home/accounts?business_id=' + bmInfoObj.id" v-clipboard:success="onCopy" class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
                 </div>
                 <div class="vx-col w-1/3">
@@ -649,7 +649,7 @@ export default {
       pdfDocs: [],
 
       bmInfoObj: {},
-      bmInfoObjIndex: 0,
+      bmInfoObjId: 0,
     }
   },
   computed: {
@@ -1081,7 +1081,8 @@ export default {
           })
         })
     },
-    checkStatus(objIndex) {
+    checkStatus(id) {
+      let objIndex = this.getObjectIndexById(id)
       this.invoices = []
       this.invoicesTotalStats = {
         amount: 0,
@@ -1954,9 +1955,10 @@ export default {
     showAds(id) {
       this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
     },
-    showBmInfo(index, bmIndex) {
-      this.bmInfoObjIndex = index
-      let bm = this.objects[index].info['bm'][bmIndex]
+    showBmInfo(id, bmIndex) {
+      this.bmInfoObjId = id
+      let obj = this.getObjectIndexById(id)
+      let bm = obj.info['bm'][bmIndex]
 
       // TODO: HERE
       this.bmInfoObj = bm
