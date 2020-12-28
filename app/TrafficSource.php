@@ -68,7 +68,7 @@ class TrafficSource extends Model
 
     public function getIconStoragePath() : string
     {
-        $pathname = env('DROPBOX_FOLDER') . '/icons/' . $this->id;
+        $pathname = 'public/icons/' . $this->id;
         return $pathname;
     }
 }

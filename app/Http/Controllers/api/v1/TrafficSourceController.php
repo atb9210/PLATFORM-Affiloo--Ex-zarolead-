@@ -15,20 +15,13 @@ class TrafficSourceController extends Controller
     /**
      * Get all traffic sources list.
      *
-     * @bodyParam icons bool Set when you want icons url
-     *
      * @response {
      *  "data": [traffic_sources],
      * }
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('viewAny', 'App\TrafficSource');
-
-        // Param validation
-        $params = $request->validate([
-            'icons' => 'boolean',
-        ]);
 
         return TrafficSourceResource::collection(TrafficSource::where('archived', 0)->get());
     }
@@ -91,7 +84,7 @@ class TrafficSourceController extends Controller
         // File upload
         if ($request->hasFile('icon')) {
             $file = $request->file('icon');
-            $path = Storage::disk('dropbox')->putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
+            $path = Storage::putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
             $traffic_source->icon = $path;
             $traffic_source->save();
         }
@@ -144,8 +137,8 @@ class TrafficSourceController extends Controller
         // File upload
         if ($request->hasFile('icon')) {
             $file = $request->file('icon');
-            Storage::disk('dropbox')->delete($traffic_source->getIconStoragePath());
-            $path = Storage::disk('dropbox')->putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
+            Storage::delete($traffic_source->getIconStoragePath());
+            $path = Storage::putFileAs($traffic_source->getIconStoragePath(), $file, $file->getClientOriginalName());
             $traffic_source->icon = $path;
             $traffic_source->save();
         }

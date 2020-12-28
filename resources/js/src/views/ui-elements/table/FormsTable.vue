@@ -1558,6 +1558,8 @@ export default {
     },
   },
   created() {
+    this.resetFilters()
+
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
@@ -1619,31 +1621,21 @@ export default {
                               label: user.email,
                             })
                           })
-                          this.resetFilters()
-                          this.$vs.loading.close()
                         })
                         .catch((error) => {
-                          this.$vs.loading.close()
                         })
-                    } else {
-                      this.resetFilters()
-                      this.$vs.loading.close()
                     }
                   })
                   .catch((error) => {
-                    this.$vs.loading.close()
                   })
               })
               .catch((error) => {
-                this.$vs.loading.close()
               })
           })
           .catch((error) => {
-            this.$vs.loading.close()
           })
       })
       .catch((error) => {
-        this.$vs.loading.close()
       })
   },
   mounted () {

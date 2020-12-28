@@ -16,32 +16,15 @@ class TrafficSourceResource extends JsonResource
      */
     public function toArray($request)
     {
-        // Param validation
-        $params = $request->validate([
-            'icons' => 'boolean',
-        ]);
+        $public_url = str_replace("public/", "storage/", $this->icon);
+        $public_url = asset($public_url);
 
-        $toReturn = [
+        return [
             'id' => $this->id,
             'name' => $this->name,
             'custom_params' => $this->custom_params,
             'ad_model' => $this->ad_model,
+            'icon' => $public_url,
         ];
-
-        if (isset($params['icons']) && $params['icons'])
-        {
-            $client = new \Spatie\Dropbox\Client(env('DROPBOX_AUTH_TOKEN', ''));
-            $icon_url = '';
-            if ($this->icon != '' && !is_null($this->icon) && $this->icon != NULL) {
-                try {
-                    $icon_url = $client->getTemporaryLink($this->icon);
-                } catch (\Spatie\Dropbox\Exceptions\BadRequest $e) {
-                }
-            }
-        
-            $toReturn['icon'] = $icon_url;
-        }
-
-        return $toReturn;
     }
 }

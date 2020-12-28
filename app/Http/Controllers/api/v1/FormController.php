@@ -49,18 +49,6 @@ class FormController extends Controller
             $forms = $forms->where('user_id', Auth::user()->id);
         }
 
-        // TODO: HERE
-            /*
-        if (isset($params['get_stats']) && $params['get_stats']) {
-        }
-            $forms = Form::select('forms.*', 'forms_stats.*', DB::raw('SUM(
-            $forms = $forms->join('form_stats', 'form_stats.form_id', '=', 'forms.id');
-            */
-
-    /*
-        return response(['data' => $forms->get()]);
-     */
-
         return FormResource::collection($forms->get());
     }
 
