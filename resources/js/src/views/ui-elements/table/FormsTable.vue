@@ -759,12 +759,12 @@ export default {
   methods: {
     getObjectIndexById(id) {
       var index = -1;
-      this.allObjects.forEach((obj, i) => {
-        if (obj.id == id) {
+      for (let i = 0; i < this.allObjects.length; i++) {
+        if (this.allObjects[i].id == id) {
           index = i
-          return
+          break
         }
-      })
+      }
       return index
     },
     onPageChanged(val) {
@@ -1502,15 +1502,13 @@ export default {
         })
     },
     showLandingUrlPopup(id) {
-      let index = this.getObjectIndexById(id)
-
       this.$vs.loading()
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      let obj = this.objects[index]
+      let obj = this.allObjects[this.getObjectIndexById(id)]
 
       let data = {}
       if (this.filters.product != '') {

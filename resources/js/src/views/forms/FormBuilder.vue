@@ -907,7 +907,7 @@ export default {
 
     // Retrieve users
     this.$vs.loading()
-    this.$http.get('/api/v1/users/', { headers })
+    this.$http.get('/api/v1/users', { headers })
       .then((response) => {
         this.traffic_sources = []
         response.data.data.forEach((user) => {
@@ -919,7 +919,7 @@ export default {
         })
 
         // Retrieve traffic sources
-        this.$http.get('/api/v1/traffic-sources/', { headers })
+        this.$http.get('/api/v1/traffic-sources', { headers })
           .then((response) => {
             this.traffic_sources = []
             response.data.data.forEach((traffic_source) => {
@@ -931,7 +931,7 @@ export default {
             })
 
             // Retrieve products
-            this.$http.get('/api/v1/products/', { headers })
+            this.$http.get('/api/v1/products', { headers })
               .then((response) => {
                 this.products = []
                 response.data.data.forEach((product) => {
@@ -944,7 +944,7 @@ export default {
                 })
 
                 // Retrieve networks
-                this.$http.get('/api/v1/networks/', { headers })
+                this.$http.get('/api/v1/networks', { headers })
                   .then((response) => {
                     this.networks = response.data.data
                     this.networks.forEach((network) => {
@@ -955,8 +955,11 @@ export default {
                       this.network = network.id;
                     })
 
+                    // Close loading here, we don't need forms in the first step
+                    this.$vs.loading.close()
+
                     // Retrieve forms
-                    this.$http.get('/api/v1/forms/', { headers })
+                    this.$http.get('/api/v1/forms', { headers })
                       .then((response) => {
                         this.forms = response.data.data
                         for (let i = 0; i < this.forms.length; i++) {

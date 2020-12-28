@@ -57,8 +57,6 @@ class FormResource extends JsonResource
             'visits' => $this->visits,
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
-            //'stats' => $this->getStats($date_from, $date_to),
-            //'daily_stats' => $stats->get(),
             'notes' => $this->notes,
             'created_at' => $this->created_at,
             'archived' => $this->archived,
