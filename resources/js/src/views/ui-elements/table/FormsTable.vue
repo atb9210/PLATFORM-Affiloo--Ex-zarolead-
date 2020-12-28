@@ -1146,9 +1146,6 @@ export default {
           this.objects[i].stats.total_cost += parseInt(this.objects[i].daily_stats[j].total_cost)
         }
 
-        // TODO: to delete
-        console.log("this.objects[i].stats:",this.objects[i].stats)
-
         let obj = this.objects[i]
 
         let profit = parseFloat(obj.stats.total_commission) - parseFloat(obj.stats.total_cost)
@@ -1215,7 +1212,7 @@ export default {
         status: 'active',
         user: '',
       }
-      this.filterDatesShortcut('this_month')
+      this.filterDatesShortcut('last_7_days')
     },
     applyFilters() {
       this.$vs.loading()
@@ -1317,6 +1314,13 @@ export default {
           dateObj.setDate(dateObj.getDate() - 1);
           this.filters.date_from = this.formatDate(dateObj);
           this.filters.date_to = this.formatDate(dateObj);
+        } break;
+        case 'last_7_days': {
+          let dateObjTo = new Date();
+          let dateObjFrom = new Date();
+          dateObjFrom.setDate(dateObjTo.getDate() - 6)
+          this.filters.date_from = this.formatDate(dateObjFrom);
+          this.filters.date_to = this.formatDate(dateObjTo);
         } break;
         case 'this_month': {
           let dateObj = new Date();
