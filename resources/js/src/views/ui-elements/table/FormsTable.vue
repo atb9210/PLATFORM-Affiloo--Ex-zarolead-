@@ -93,6 +93,47 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
+        <vue-context ref="context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.context_menu.close();showFormStats(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show stats</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close();showLandingUrlPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="GlobeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show URL</span>
+              </a>
+            </li>
+            <li v-if="canCreateAndEdit">
+              <a href="#" @click="$refs.context_menu.close();goToFormEditor(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li v-if="canCreateAndEdit">
+              <a href="#" @click="$refs.context_menu.close();cloneForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Clone</span>
+              </a>
+            </li>
+            <!--
+            <li v-if="data.archived == 1">
+              <a href="#" @click="$refs.context_menu.close();restoreForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="UpdateIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Restore</span>
+              </a>
+            </li>
+            -->
+            <li>
+              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
@@ -107,17 +148,18 @@
                 <vs-th v-if="canViewStats" sort-key="cpv">CPV</vs-th>
                 <vs-th v-if="canViewStats" sort-key="epv">EPV</vs-th>
                 <vs-th sort-key="cpl">CPL</vs-th>
-                <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                     <vs-td :data="data[indextr].name">
-                        <vs-chip>
-                            <vs-avatar :src="data[indextr].traffic_source.icon"/>
-                            {{data[indextr].name}}
-                        </vs-chip>
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                            <vs-chip>
+                                <vs-avatar :src="data[indextr].traffic_source.icon"/>
+                                {{data[indextr].name}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
 
                     <vs-td :data="data[indextr].visits">
@@ -160,18 +202,6 @@
                         € {{data[indextr].cpl.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td>
-                        <div class="flex items-center">
-                            <vs-button @click="showFormStats(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
-                            <!--<vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>-->
-                            <vs-button @click="showLandingUrlPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe"></vs-button>
-                            <vs-button v-if="canCreateAndEdit" @click="goToFormEditor(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button v-if="canCreateAndEdit" @click="cloneForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy"></vs-button>
-                            <vs-button v-if="data[indextr].archived == 1" @click="restoreForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-unlock"></vs-button>
-                            <!--<vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>-->
-                        </div>
-                    </vs-td>
-
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
@@ -206,8 +236,6 @@
                 </vs-td>
                 <vs-td>
                     € {{total_stats.cpl.toFixed(2)}}
-                </vs-td>
-                <vs-td>
                 </vs-td>
                 <!-- END TOTAL STATS-->
             </template>
@@ -584,11 +612,13 @@
 <script>
 import vSelect from 'vue-select'
 import VueApexCharts from 'vue-apexcharts'
+import { VueContext } from 'vue-context'
 
 export default {
   components: {
     'v-select': vSelect,
     VueApexCharts,
+    VueContext,
   },
   data () {
     return {
@@ -1071,41 +1101,17 @@ export default {
       this.showPopup['edit'] = false
       this.editingObject = -1
     },
-    deleteObject(id) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      this.$http.delete('/api/v1/forms/' + id, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Form deleted',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
     showFormStats(id) {
       this.$router.push({name: 'form-stats', params: {form_id: id}})
+        .catch(error => {
+          this.$router.push({name: 'form-stats', params: {form_id: id}})
+        })
     },
     goToFormEditor(id) {
       this.$router.push({name: 'form-editor', params: {form_id: id}})
+        .catch(error => {
+          this.$router.push({name: 'form-editor', params: {form_id: id}})
+        })
     },
     onCodeCopied() {
       this.$vs.notify({

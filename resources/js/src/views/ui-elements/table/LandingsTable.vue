@@ -80,6 +80,41 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
+        <vue-context ref="context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.context_menu.close();showLandingsStats(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show stats</span>
+              </a>
+            </li>
+            <!--
+            <li>
+              <a href="#" v-clipboard:copy="data.url" v-clipboard:success="onUrlCopied" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Copy URL</span>
+              </a>
+            </li>
+            -->
+            <li>
+              <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close();showFormCodePopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CodeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show code</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
@@ -91,7 +126,6 @@
                 <vs-th sort-key="total_commission">Commission</vs-th>
                 <vs-th sort-key="cr">CR</vs-th>
                 <vs-th sort-key="epv">EPV</vs-th>
-                <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -102,7 +136,11 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
-                        {{data[indextr].name}}
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                            <vs-chip>
+                                {{data[indextr].name}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
 
                     <vs-td :data="data[indextr].product.name">
@@ -129,16 +167,6 @@
                         <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                     </vs-td>
 
-                    <vs-td>
-                        <div class="flex items-center">
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="data[indextr].url" v-clipboard:success="onUrlCopied"></vs-button>
-                            <vs-button @click="showFormCodePopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code"></vs-button>
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="showLandingsStats(data[indextr].id)"></vs-button>
-                            <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
-                        </div>
-                    </vs-td>
-
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
@@ -153,13 +181,13 @@
                     {{totalStats.leads}}
                 </vs-td>
                 <vs-td>
-                    € {{totalStats.total_commission}}
+                    € {{totalStats.total_commission.toFixed(2)}}
                 </vs-td>
                 <vs-td>
-                    {{totalStats.cr}} %
+                    {{totalStats.cr.toFixed(2)}} %
                 </vs-td>
                 <vs-td>
-                    <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv}}</vs-chip>
+                    <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
                 </vs-td>
                 <vs-td></vs-td>
                 <!-- END TOTAL STATS-->
@@ -284,10 +312,12 @@
 
 <script>
 import vSelect from 'vue-select'
+import { VueContext } from 'vue-context'
 
 export default {
   components: {
     'v-select': vSelect,
+    VueContext,
   },
   data () {
     return {
@@ -325,7 +355,7 @@ export default {
         date_to: '',
         product: '',
       },
-      total_stats: {
+      totalStats: {
         visits: 0,
         leads: 0,
         total_commission: 0,
@@ -652,37 +682,8 @@ export default {
       this.showPopup['edit'] = false
       this.editingObject = -1
     },
-    deleteObject(id) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      this.$http.delete('/api/v1/landings/' + id, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Landing deleted',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
     onUrlCopied() {
+      this.$refs.context_menu.close()
       this.$vs.notify({
         title: 'Success',
         text: 'URL copied',
@@ -739,6 +740,9 @@ export default {
     },
     showLandingsStats(id) {
       this.$router.push({name: 'landings-stats', params: {landing_id: id}})
+        .catch(error => {
+          this.$router.push({name: 'landings-stats', params: {landing_id: id}})
+        })
     },
     calculateStats() {
       this.totalStats = {

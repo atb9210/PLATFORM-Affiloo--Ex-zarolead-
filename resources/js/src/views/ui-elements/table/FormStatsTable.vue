@@ -119,7 +119,7 @@
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                         <vs-td>
-                            <vs-button radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                            <vs-button size="small" radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
                         </vs-td>
 
                         <vs-td :data="data[indextr].day">
@@ -208,7 +208,7 @@
                         <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv.toFixed(2)}}</vs-chip>
                     </vs-td>
                     <vs-td>
-                        € {{total_stats.cpl}}
+                        € {{total_stats.cpl.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
