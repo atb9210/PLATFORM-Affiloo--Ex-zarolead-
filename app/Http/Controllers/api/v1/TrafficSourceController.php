@@ -21,7 +21,7 @@ class TrafficSourceController extends Controller
      *  "data": [traffic_sources],
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', 'App\TrafficSource');
 
