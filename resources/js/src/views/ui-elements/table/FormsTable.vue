@@ -1565,7 +1565,6 @@ export default {
     }
 
     // Retrieve traffic sources
-    this.$vs.loading()
     this.$http.get('/api/v1/traffic-sources', { headers })
       .then((response) => {
         this.traffic_sources = []
