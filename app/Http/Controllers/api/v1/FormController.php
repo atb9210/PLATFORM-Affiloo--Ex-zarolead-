@@ -27,6 +27,7 @@ class FormController extends Controller
     /**
      * Get all forms list (also the archived ones).
      *
+     * @urlParam get_stats bool Set to 1 if you want to retrieve stats
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
      *
@@ -38,6 +39,7 @@ class FormController extends Controller
     {
         // Param validation
         $params = $request->validate([
+            'get_stats' => 'boolean',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
@@ -46,6 +48,16 @@ class FormController extends Controller
         if (!Auth::user()->can('viewAny', 'App\Form')) {
             $forms = $forms->where('user_id', Auth::user()->id);
         }
+            /*
+        if (isset($params['get_stats']) && $params['get_stats']) {
+        }
+            $forms = Form::select('forms.*', 'forms_stats.*', DB::raw('SUM(
+            $forms = $forms->join('form_stats', 'form_stats.form_id', '=', 'forms.id');
+            */
+
+    /*
+        return response(['data' => $forms->get()]);
+     */
 
         return FormResource::collection($forms->get());
     }

@@ -18,24 +18,12 @@ class FormResource extends JsonResource
     {
         // Param validation
         $params = $request->validate([
+            'get_stats' => 'boolean',
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to' =>   'nullable|date|date_format:Y-m-d',
         ]);
 
-        $date_from = '';
-        $date_to = '';
-        $stats = FormStats::where('form_id', $this->id);
-        if (isset($params['filter_date_from'])) {
-            $date_from = $params['filter_date_from'];
-            $stats = $stats->where('day', '>=', $params['filter_date_from']);
-        }
-        if (isset($params['filter_date_to'])) {
-            $date_to = $params['filter_date_to'];
-            $stats = $stats->where('day', '<=', $params['filter_date_to']);
-        }
-        $stats = $stats->orderBy('day', 'desc');
-
-        return [
+        $toReturn = [
             'id' => $this->id,
             'name' => $this->name,
             'user' => [
@@ -69,11 +57,29 @@ class FormResource extends JsonResource
             'visits' => $this->visits,
             'leads' => $this->leads,
             'total_cost' => $this->total_cost,
-            'stats' => $this->getStats($date_from, $date_to),
-            'daily_stats' => $stats->get(),
+            //'stats' => $this->getStats($date_from, $date_to),
+            //'daily_stats' => $stats->get(),
             'notes' => $this->notes,
             'created_at' => $this->created_at,
             'archived' => $this->archived,
         ];
+
+        if (isset($params['get_stats']) && $params['get_stats']) {
+            $date_from = '';
+            $date_to = '';
+            $stats = FormStats::where('form_id', $this->id);
+            if (isset($params['filter_date_from'])) {
+                $date_from = $params['filter_date_from'];
+                $stats = $stats->where('day', '>=', $params['filter_date_from']);
+            }
+            if (isset($params['filter_date_to'])) {
+                $date_to = $params['filter_date_to'];
+                $stats = $stats->where('day', '<=', $params['filter_date_to']);
+            }
+            $stats = $stats->orderBy('day', 'desc');
+            $toReturn['daily_stats'] = $stats->get();
+        }
+
+        return $toReturn;
     }
 }

@@ -1207,7 +1207,9 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      let data = {}
+      let data = {
+        'get_stats': 1,
+      }
       if (this.filters.date_from != '') {
         data['filter_date_from'] = this.filters.date_from
       }
