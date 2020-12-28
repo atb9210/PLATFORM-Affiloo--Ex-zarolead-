@@ -1130,7 +1130,25 @@ export default {
         cpl: 0,
       }
 
-      for (var i = 0; i < this.objects.length; i++) {
+      for (let i = 0; i < this.objects.length; i++) {
+        this.objects[i].stats = {
+          visits: 0,
+          leads: 0,
+          total_commission: 0,
+          //total_sub_commission: 0, // TODO: Is this useful?
+          total_cost: 0,
+        }
+      
+        for (let j = 0; j < this.objects[i].daily_stats.length; j++) {
+          this.objects[i].stats.visits += parseInt(this.objects[i].daily_stats[j].visits)
+          this.objects[i].stats.leads += parseInt(this.objects[i].daily_stats[j].leads)
+          this.objects[i].stats.total_commission += parseInt(this.objects[i].daily_stats[j].total_commission)
+          this.objects[i].stats.total_cost += parseInt(this.objects[i].daily_stats[j].total_cost)
+        }
+
+        // TODO: to delete
+        console.log("this.objects[i].stats:",this.objects[i].stats)
+
         let obj = this.objects[i]
 
         let profit = parseFloat(obj.stats.total_commission) - parseFloat(obj.stats.total_cost)
@@ -1252,11 +1270,6 @@ export default {
             }
 
             if (flag) {
-                /*
-              this.objects.push({
-                visits: obj.visits,
-              })
-              */
               this.objects.push(obj)
             }
 
@@ -1547,7 +1560,7 @@ export default {
 
     // Retrieve traffic sources
     this.$vs.loading()
-    this.$http.get('/api/v1/traffic-sources/', { headers })
+    this.$http.get('/api/v1/traffic-sources', { headers })
       .then((response) => {
         this.traffic_sources = []
         response.data.data.forEach((traffic_source) => {
@@ -1559,7 +1572,7 @@ export default {
         })
 
         // Retrieve networks
-        this.$http.get('/api/v1/networks/', { headers })
+        this.$http.get('/api/v1/networks', { headers })
           .then((response) => {
             this.networks = []
             response.data.data.forEach((network) => {
@@ -1581,7 +1594,7 @@ export default {
                 })
 
                 // Retrieve products
-                this.$http.get('/api/v1/products/', { headers })
+                this.$http.get('/api/v1/products', { headers })
                   .then((response) => {
                     this.products = []
                     response.data.data.forEach((product) => {
