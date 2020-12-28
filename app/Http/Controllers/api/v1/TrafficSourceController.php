@@ -15,6 +15,8 @@ class TrafficSourceController extends Controller
     /**
      * Get all traffic sources list.
      *
+     * @bodyParam icons bool Set when you want icons url
+     *
      * @response {
      *  "data": [traffic_sources],
      * }
@@ -22,6 +24,11 @@ class TrafficSourceController extends Controller
     public function index()
     {
         $this->authorize('viewAny', 'App\TrafficSource');
+
+        // Param validation
+        $params = $request->validate([
+            'icons' => 'boolean',
+        ]);
 
         return TrafficSourceResource::collection(TrafficSource::where('archived', 0)->get());
     }
