@@ -38,9 +38,6 @@ export default{
   },
   created() {
     this.form_id = parseInt(this.$route.params.form_id)
-
-    // TODO: to delete
-    console.log("AO")
   },
 }
 </script>
