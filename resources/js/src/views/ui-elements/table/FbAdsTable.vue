@@ -128,7 +128,7 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', indextr)">
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
                                 <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
@@ -239,7 +239,7 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('adset', indextr)">
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('adset', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
                                 <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
@@ -349,7 +349,7 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', indextr)">
+                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
                                 <span slot="on" v-else>Review</span>
                                 <span slot="off">Paused</span>
@@ -1008,14 +1008,32 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    switchStatus(what, index) {
-      // TODO: HERE
+    switchStatus(what, id) {
       let obj = {}
+      let index = -1
       if (what == 'campaign') {
+        for (let i = 0; i < this.campaigns.length; i++) {
+          if (this.campaigns[i].id == id) {
+            index = i
+            break
+          }
+        }
         obj = this.campaigns[index]
       } else if (what == 'adset') {
+        for (let i = 0; i < this.adsets.length; i++) {
+          if (this.adsets[i].id == id) {
+            index = i
+            break
+          }
+        }
         obj = this.adsets[index]
       } else if (what == 'ad') {
+        for (let i = 0; i < this.ads.length; i++) {
+          if (this.ads[i].id == id) {
+            index = i
+            break
+          }
+        }
         obj = this.ads[index]
       } else {
         return

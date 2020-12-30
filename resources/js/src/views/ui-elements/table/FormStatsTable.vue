@@ -492,7 +492,7 @@ export default {
         })
 
       // Retrieve forms
-      this.$http.get('/api/v1/forms/', { headers })
+      this.$http.get('/api/v1/forms', { headers })
         .then((response) => {
           let forms = response.data.data
           this.formSwitchOptions = []
@@ -787,74 +787,6 @@ export default {
         && obj.product != '' && obj.product.id >= 1
         && obj.quantity.length > 0
         && obj.traffic_source != '' && obj.traffic_source.id >= 1)
-    },
-    createObject() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let data = {
-        name: this.newObject['create'].name,
-        campaign_id: this.newObject['create'].campaign.id,
-        network_id: this.newObject['create'].network.id,
-        product_id: this.newObject['create'].product.id,
-        quantity: this.newObject['create'].quantity,
-        price: this.newObject['create'].price,
-        commission: this.newObject['create'].commission,
-        sub_commission: this.newObject['create'].sub_commission,
-        traffic_source_id: this.newObject['create'].traffic_source.id,
-        
-        network_params: {
-        }
-      }
-      if (this.newObject['create'].network.label == 'Worldfilia') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          source_id: this.newObject['create'].source_id,
-        }
-      } else if (this.newObject['create'].network.label == 'Amsped') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          sub_id: this.newObject['create'].sub_id,
-          product_reference: this.newObject['create'].product_reference,
-        }
-      } else if (this.newObject['create'].network.label == 'Affiliation Park') {
-        data.network_params = {
-          fb_pixel: this.newObject['create'].fb_pixel,
-          api_call_url: this.newObject['create'].api_call_url,
-          sub_id: this.newObject['create'].sub_id,
-          offer_id: this.newObject['create'].offer_id,
-        }
-      }
-      data.network_params = JSON.stringify(data.network_params)
-
-      // Retrieve forms
-      this.$http.post('/api/v1/forms', data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Form created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.retrieveObjects()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
     },
     editForm(id) {
       let obj = this.objects[this.getObjectIndexById(id)]
@@ -1356,12 +1288,6 @@ export default {
         },
       }
     },
-    // TODO: This is not useful anymore??
-    /*
-    showLandingsStats(id) {
-      this.$router.push({name: 'landings-stats', params: {form_id: id}})
-    },
-    */
     onFormSwitch(value) {
       this.$parent.switchForm(value)
     },

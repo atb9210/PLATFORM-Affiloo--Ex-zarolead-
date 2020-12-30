@@ -790,7 +790,7 @@ class FbAccountController extends Controller
 
             if ($httpCode == 200) {
                 $response = json_decode($response, true);
-                if ($response['success']) {
+                if (isset($response['success']) && $response['success']) {
                     $dolphin_id = $response['data']['account_id'];
                 }
             } else {

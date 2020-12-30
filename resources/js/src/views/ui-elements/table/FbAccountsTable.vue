@@ -98,6 +98,33 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
+        <vue-context ref="context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.context_menu.close();checkStatus(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Check status</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close();showAds(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show ads</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <vs-table v-if="!showInvoicesTableFlag" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
@@ -111,7 +138,6 @@
                 <vs-th sort-key="amount_spent">Spent</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="cpl">CPL</vs-th>
-                <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -126,7 +152,14 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
-                        {{data[indextr].name}}
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                            <vs-chip
+                                transparent
+                                :color="(data[indextr].info.hasOwnProperty('ad_accounts') && data[indextr].info.ad_accounts.length > 0 &&
+                                    data[indextr].info.ad_accounts[0].status == 1) ? 'success' : 'danger'">
+                                {{data[indextr].name}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
 
                     <vs-td :data="data[indextr].product.name">
@@ -135,7 +168,7 @@
 
                     <vs-td>
                         <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
-                            <vs-chip v-for="(card, index) in getCardsArray(data[indextr].info['bm'])" :key="index">
+                            <vs-chip v-for="(card, index) in getCardsArray(data[indextr].info)" :key="index">
                                 <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
                             </vs-chip>
                         </div>
@@ -170,15 +203,6 @@
                     <vs-td>
                         <div v-if="typeof data[indextr].cpl != 'undefined'">
                             {{data[indextr].cpl.toFixed(2)}}
-                        </div>
-                    </vs-td>
-
-                    <vs-td>
-                        <div class="flex items-center">
-                            <vs-button @click="checkStatus(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
-                            <vs-button @click="showAds(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity"></vs-button>
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
                     </vs-td>
 
@@ -546,6 +570,8 @@
 import JSZip from 'jszip'
 import { generateInvoicePDF } from '@assets/utils/fb-invoice'
 
+import { VueContext } from 'vue-context'
+
 function generateInvoices(invoices) {
   // Generate PDFs
   return new Promise((resolve, reject) => {
@@ -558,6 +584,9 @@ function generateInvoices(invoices) {
 }
 
 export default {
+  components: {
+    VueContext,
+  },
   data () {
     return {
       objects: [],
@@ -993,36 +1022,6 @@ export default {
       this.showPopup['edit'] = false
       this.editingObject = -1
     },
-    deleteObject(id) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      this.$http.delete('/api/3rd/fb-accounts/' + id, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Tag deleted',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
     firstCharacters(str, numOfCharacters) {
       if (typeof str != 'string') {
         return ''
@@ -1108,6 +1107,7 @@ export default {
               funding_sources: [],
             }
           })
+          let adAccounts = []
 
           // Get FB ad accounts
           let since = this.filters.date_from
@@ -1122,23 +1122,34 @@ export default {
 
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
-
-              let mainAdAccountActive = true
               let totalAmountSpent = 0
               let totalResult = 0
               let transactions = []
               response.data.data.forEach((adAccount) => {
+                let adAccountToPush = {
+                  id: adAccount.account_id,
+                  name: adAccount.name,
+                  funding_sources: [],
+                  status: adAccount.account_status,
+                }
+
+                let adAccountHasBusiness = false
                 if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                     (adAccount.business.id in businesses)) {
+                  adAccountHasBusiness = true
                   businesses[adAccount.business.id].total += 1
                   if (adAccount.account_status == 1) {
                     businesses[adAccount.business.id].active += 1
                   }
                 }
-                if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string') &&
-                  (adAccount.business.id in businesses)) {
-                  if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
-                    businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
+                if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
+                  if (adAccountHasBusiness && (adAccount.business.id in businesses)) {
+                    if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                      businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
+                    }
+                  }
+                  if (!adAccountToPush.funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                    adAccountToPush.funding_sources.push(adAccount.funding_source_details.display_string)
                   }
                 }
                 if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
@@ -1166,8 +1177,10 @@ export default {
 
                     if (t.status == 'completed') {
                       let fSource = 'Credit card payment'
-                      if ((adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
+                      if (adAccountHasBusiness && (adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
                         fSource = businesses[adAccount.business.id].funding_sources[0]
+                      } else if (adAccountToPush.funding_sources.length > 0) {
+                        fSource = adAccountToPush.funding_sources[0]
                       }
                       this.invoices.push({
                         'id': t.id,
@@ -1188,6 +1201,8 @@ export default {
                     }
                   }
                 }
+
+                adAccounts.push(adAccountToPush)
               })
 
               this.dynamicStats["id" + obj.id] = {
@@ -1210,6 +1225,7 @@ export default {
               for (const [key, value] of Object.entries(businesses)) {
                 info["bm"].push(value)
               }
+              info["ad_accounts"] = adAccounts
 
               // Update fb account object (token status and businesses status)
               let headers = {
@@ -1244,6 +1260,8 @@ export default {
                 })
             })
             .catch((error) => {
+              // TODO: This is maybe not useful anymore
+                /*
               // Update fb account token status
               let headers = {
                 Authorization: 'Bearer ' + localStorage.getItem('accessToken')
@@ -1274,6 +1292,11 @@ export default {
                     color: 'danger'
                   })
                 })
+                */
+
+              // TODO: to delete
+              console.log("My fkin error")
+              console.log(error)
             })
         })
         .catch((error) => {
@@ -1349,6 +1372,7 @@ export default {
                 funding_sources: [],
               }
             })
+            let adAccounts = []
 
             // Get FB ad accounts
             let since = this.filters.date_from
@@ -1360,24 +1384,37 @@ export default {
             let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
             fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
               .then((response) => {
-                let mainAdAccountActive = true
                 let totalAmountSpent = 0
                 let totalResult = 0
                 let transactions = []
                 response.data.data.forEach((adAccount) => {
+                  let adAccountToPush = {
+                    id: adAccount.account_id,
+                    name: adAccount.name,
+                    funding_sources: [],
+                    status: adAccount.account_status,
+                  }
+
+                  let adAccountHasBusiness = false
                   if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
                       (adAccount.business.id in businesses)) {
+                    adAccountHasBusiness = true
                     businesses[adAccount.business.id].total += 1
                     if (adAccount.account_status == 1) {
                       businesses[adAccount.business.id].active += 1
                     }
                   }
-                  if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string') &&
-                    (adAccount.business.id in businesses)) {
-                    if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
-                      businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
+                  if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
+                    if (adAccountHasBusiness && (adAccount.business.id in businesses)) {
+                      if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                        businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
+                      }
+                    }
+                    if (!adAccountToPush.funding_sources.includes(adAccount.funding_source_details.display_string)) {
+                      adAccountToPush.funding_sources.push(adAccount.funding_source_details.display_string)
                     }
                   }
                   if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
@@ -1405,8 +1442,10 @@ export default {
 
                       if (t.status == 'completed') {
                         let fSource = 'Credit card payment'
-                        if ((adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
+                        if (adAccountHasBusiness && (adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
                           fSource = businesses[adAccount.business.id].funding_sources[0]
+                        } else if (adAccountToPush.funding_sources.length > 0) {
+                          fSource = adAccountToPush.funding_sources[0]
                         }
                         this.invoices.push({
                           'id': t.id,
@@ -1427,6 +1466,8 @@ export default {
                       }
                     }
                   }
+
+                  adAccounts.push(adAccountToPush)
                 })
 
                 this.dynamicStats["id" + obj.id] = {
@@ -1449,6 +1490,7 @@ export default {
                 for (const [key, value] of Object.entries(businesses)) {
                   info["bm"].push(value)
                 }
+                info["ad_accounts"] = adAccounts
 
                 // Update fb account object (token status and businesses status)
                 let headers = {
@@ -1720,19 +1762,38 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
     },
-    getCardsArray(bm) {
+    getCardsArray(info) {
       let cardsArray = []
-      for (let i = 0; i < bm.length; i++) {
-        if (!bm[i].hasOwnProperty('funding_sources')) {
-          continue
-        }
-        for (let j = 0; j < bm[i].funding_sources.length; j++) {
-          if (cardsArray.includes(bm[i].funding_sources[j])) {
+
+      if (info.hasOwnProperty('bm')) {
+        let bm = info["bm"]
+        for (let i = 0; i < bm.length; i++) {
+          if (!bm[i].hasOwnProperty('funding_sources')) {
             continue
           }
-          cardsArray.push(bm[i].funding_sources[j])
+          for (let j = 0; j < bm[i].funding_sources.length; j++) {
+            if (cardsArray.includes(bm[i].funding_sources[j])) {
+              continue
+            }
+            cardsArray.push(bm[i].funding_sources[j])
+          }
         }
       }
+
+      if (info.hasOwnProperty('ad_accounts')) {
+        for (let i = 0; i < info.ad_accounts.length; i++) {
+          if (!info.ad_accounts[i].hasOwnProperty('funding_sources')) {
+            continue
+          }
+          for (let j = 0; j < info.ad_accounts[i].funding_sources.length; j++) {
+            if (cardsArray.includes(info.ad_accounts[i].funding_sources[j])) {
+              continue
+            }
+            cardsArray.push(info.ad_accounts[i].funding_sources[j])
+          }
+        }
+      }
+
       return cardsArray
     },
     getCardIcon(card) {
@@ -1954,6 +2015,9 @@ export default {
     },
     showAds(id) {
       this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
+        .catch(error => {
+          this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
+        })
     },
     showBmInfo(id, bmIndex) {
       this.bmInfoObjId = id
