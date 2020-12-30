@@ -155,8 +155,8 @@
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip
                                 transparent
-                                :color="(data[indextr].info.hasOwnProperty('ad_accounts') && data[indextr].info.ad_accounts.length > 0 &&
-                                    data[indextr].info.ad_accounts[0].status == 1) ? 'success' : 'danger'">
+                                :color="(data[indextr].info == null) ? '' : ((data[indextr].info.hasOwnProperty('ad_accounts') && data[indextr].info.ad_accounts.length > 0 &&
+                                    data[indextr].info.ad_accounts[0].status == 1) ? 'success' : 'danger')">
                                 {{data[indextr].name}}
                             </vs-chip>
                         </div>
