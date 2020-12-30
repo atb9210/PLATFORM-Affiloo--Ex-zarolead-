@@ -564,6 +564,7 @@ export default {
         this.objects[i].epv = epv
         this.objects[i].cpl = cpl
 
+        /*
         if (obj.custom_params_stats !== undefined && obj.custom_params_stats !== null) {
           for (const [param, valueStats] of Object.entries(obj.custom_params_stats)) {
             if (!this.customParamsStats.hasOwnProperty(param)) {
@@ -609,6 +610,7 @@ export default {
             }
           }
         }
+        */
       }
 
       // Total stats
