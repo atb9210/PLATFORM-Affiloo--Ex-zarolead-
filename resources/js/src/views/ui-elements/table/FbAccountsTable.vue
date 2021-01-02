@@ -155,8 +155,7 @@
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip
                                 transparent
-                                :color="(data[indextr].info == null) ? '' : ((data[indextr].info.hasOwnProperty('ad_accounts') && data[indextr].info.ad_accounts.length > 0 &&
-                                    data[indextr].info.ad_accounts[0].status == 1) ? 'success' : 'danger')">
+                                :color="(data[indextr].token_status == 'active' && isAdAccountActive(data[indextr].info) ? 'success' : 'danger')">
                                 {{data[indextr].name}}
                             </vs-chip>
                         </div>
@@ -181,7 +180,7 @@
                     </vs-td>
 
                     <vs-td>
-                        <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
+                        <div class="bm-badge flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vx-tooltip :text="bm.name + ' (' + bm.id + ')'" v-for="(bm, index) in data[indextr].info['bm']" :key="index">
                                 <vs-avatar size="24px" @click="showBmInfo(data[indextr].id, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
                             </vx-tooltip>
@@ -1505,14 +1504,14 @@ export default {
                     this.deleted.push(obj.id)
                     if (this.deleted.length == this.selected.length) {
                       this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Success',
+                        text: 'Status checked',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'success'
+                      })
                     }
-                    this.$vs.notify({
-                      title: 'Success',
-                      text: 'Token is active',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'success'
-                    })
                     this.applyFilters()
                   })
                   .catch((error) => {
@@ -1537,13 +1536,6 @@ export default {
                 this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
                   .then((response) => {
                     this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Success',
-                      text: 'Token is active',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'success'
-                    })
                     this.applyFilters()
                   })
                   .catch((error) => {
@@ -1588,13 +1580,6 @@ export default {
                 if (this.deleted.length == this.selected.length) {
                   this.$vs.loading.close()
                 }
-                this.$vs.notify({
-                  title: 'Error',
-                  text: 'Token is disabled',
-                  iconPack: 'feather',
-                  icon: 'icon-alert-circle',
-                  color: 'danger'
-                })
                 this.applyFilters()
               })
               .catch((error) => {
@@ -2021,10 +2006,9 @@ export default {
     },
     showBmInfo(id, bmIndex) {
       this.bmInfoObjId = id
-      let obj = this.getObjectIndexById(id)
+      let objIndex = this.getObjectIndexById(id)
+      let obj = this.objects[objIndex]
       let bm = obj.info['bm'][bmIndex]
-
-      // TODO: HERE
       this.bmInfoObj = bm
       this.showPopup['bm_info'] = true
     },
@@ -2036,6 +2020,18 @@ export default {
         icon: 'icon-alert-circle',
         color: 'success'
       })
+    },
+    isAdAccountActive(info) {
+      let result = false
+      if (info != null && info.hasOwnProperty('ad_accounts') && info.ad_accounts.length > 0) {
+        for (let i = 0; i < info.ad_accounts.length; i++) {
+          if (info.ad_accounts[i].status == 1) {
+            result = true
+            break
+          }
+        }
+      }
+      return result
     },
   },
   created() {
@@ -2101,3 +2097,10 @@ export default {
 }
 
 </script>
+
+<style>
+.bm-badge > .con-vs-tooltip > .con-vs-avatar {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+</style>

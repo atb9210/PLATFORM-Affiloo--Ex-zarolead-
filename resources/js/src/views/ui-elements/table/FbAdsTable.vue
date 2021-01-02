@@ -676,12 +676,12 @@ export default {
   methods: {
     getObjectIndexById(objects, id) {
       var index = -1
-      objects.forEach((obj, i) => {
-        if (obj.id == id) {
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].id == id) {
           index = i
-          return
+          break
         }
-      })
+      }
       return index
     },
     calculateStats() {
@@ -749,7 +749,7 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,daily_budget'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
       fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
@@ -846,7 +846,7 @@ export default {
                           name: ad.name,
                           status: ad.status,
                           spent: adSpent,
-                          result: ad.result,
+                          result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
                           cpa: adCpa,
                           impressions: ad.impressions,
                           clicks: ad.clicks,
@@ -891,7 +891,7 @@ export default {
                       name: adset.name,
                       status: adset.status,
                       spent: adsetSpent,
-                      result: adset.result,
+                      result: (campaign.objective == 'PAGE_LIKES') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
                       cpa: adsetCpa,
                       impressions: adset.impressions,
                       clicks: adset.clicks,
@@ -916,7 +916,7 @@ export default {
                   name: campaign.name,
                   status: campaign.status,
                   spent: spent,
-                  result: campaign.result,
+                  result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
                   cpa: cpa,
                   impressions: campaign.impressions,
                   clicks: campaign.clicks,
@@ -932,11 +932,6 @@ export default {
               }
             }
           }
-
-          // TODO: to delete
-          console.log(this.campaigns)
-          console.log(this.adsets)
-          console.log(this.ads)
 
           this.calculateStats()
           this.$vs.loading.close()
@@ -1115,15 +1110,15 @@ export default {
       return false
     },
     editBudgetPopup(id) {
-      this.editingObject = this.objects[this.getObjectIndexById(id)]
+      this.editingObject = this.objects[this.getObjectIndexById(this.objects, id)]
       this.showPopup['edit_budget'] = true
     },
     editBidPopup(id) {
-      this.editingObject = this.objects[this.getObjectIndexById(id)]
+      this.editingObject = this.objects[this.getObjectIndexById(this.objects, id)]
       this.showPopup['edit_bid'] = true
     },
     viewAdPopup(id) {
-      this.viewingObject = this.objects[this.getObjectIndexById(id)]
+      this.viewingObject = this.objects[this.getObjectIndexById(this.objects, id)]
       this.showPopup['view_ad'] = true
     },
     editBudget() {
