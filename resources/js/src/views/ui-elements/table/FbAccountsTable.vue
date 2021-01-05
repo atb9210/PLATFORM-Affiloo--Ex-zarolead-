@@ -189,7 +189,7 @@
 
                     <vs-td>
                         <div v-if="typeof data[indextr].amount_spent != 'undefined'">
-                            {{formatFbCurrency(data[indextr].amount_spent)}}
+                            {{data[indextr].amount_spent.toFixed(2)}}
                         </div>
                     </vs-td>
 
@@ -206,6 +206,34 @@
                     </vs-td>
 
                 </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                </vs-td>
+                <vs-td>
+                    {{totalStats.amount_spent.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.leads.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.cpl.toFixed(2)}}
+                </vs-td>
+                <!-- END TOTAL STATS -->
             </template>
         </vs-table>
 
@@ -666,6 +694,11 @@ export default {
         'date_from': '',
         'date_to': '',
       },
+      totalStats: {
+        amount_spent: 0,
+        leads: 0,
+        cpl: 0,
+      },
       checked: [],
 
       showInvoicesTableFlag: false,
@@ -770,6 +803,7 @@ export default {
               }
             }
           }
+          this.calculateStats()
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -1211,10 +1245,10 @@ export default {
                 transactions: [],
               }
 
-              this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
-              this.dynamicStats["id" + obj.id].leads = totalResult
-              this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
-              this.dynamicStats["id" + obj.id].transactions = transactions
+              this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent/100)
+              this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
+              this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent/100)/totalResult) : parseFloat(totalAmountSpent/100))
+              this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
 
               let info = obj.info
               if (info == null) {
@@ -1476,10 +1510,10 @@ export default {
                   transactions: [],
                 }
 
-                this.dynamicStats["id" + obj.id].amount_spent = totalAmountSpent
-                this.dynamicStats["id" + obj.id].leads = totalResult
-                this.dynamicStats["id" + obj.id].cpl = (totalResult > 0) ? ((totalAmountSpent/100)/totalResult) : (totalAmountSpent)
-                this.dynamicStats["id" + obj.id].transactions = transactions
+                this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent/100)
+                this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
+                this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent/100)/totalResult) : parseFloat(totalAmountSpent/100))
+                this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
 
                 let info = obj.info
                 if (info == null) {
@@ -1697,9 +1731,6 @@ export default {
             color: 'danger'
           })
         })
-    },
-    formatFbCurrency(integerNumber) {
-      return (integerNumber / 100).toFixed(2)
     },
     filterDatesShortcut(period) {
       let invalidPeriod = false;
@@ -2032,6 +2063,25 @@ export default {
         }
       }
       return result
+    },
+    calculateStats() {
+      this.totalStats =  {
+        amount_spent: 0,
+        leads: 0,
+        cpl: 0,
+      }
+
+      for (let i = 0; i < this.objects.length; i++) {
+        if (this.objects[i].hasOwnProperty('amount_spent')) {
+          this.totalStats.amount_spent += this.objects[i].amount_spent
+        }
+        if (this.objects[i].hasOwnProperty('leads')) {
+          this.totalStats.leads += this.objects[i].leads
+        }
+        if (this.objects[i].hasOwnProperty('cpl')) {
+          this.totalStats.cpl += this.objects[i].cpl
+        }
+      }
     },
   },
   created() {
