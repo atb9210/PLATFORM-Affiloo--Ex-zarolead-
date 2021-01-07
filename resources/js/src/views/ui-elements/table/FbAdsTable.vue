@@ -770,6 +770,11 @@ export default {
               for (let i = 0; i < adAccount.campaigns.data.length; i++) {
                 let campaign = adAccount.campaigns.data[i]
 
+                let campaignEffectiveStatus = campaign.effective_status
+                if (campaignEffectiveStatus == 'ACTIVE') {
+                  campaignEffectiveStatus = 'IN_PROCESS'
+                }
+
                 if (this.filters.status != '') {
                   if (this.filters.status == 'REVIEW') {
                     if (campaign.effective_status != 'IN_PROCESS') {
@@ -803,11 +808,20 @@ export default {
                   for (let adsetIndex = 0; adsetIndex < campaign.adsets.data.length; adsetIndex++) {
                     let adset = campaign.adsets.data[adsetIndex]
 
+                    let adsetEffectiveStatus = adset.effective_status
+                    if (adsetEffectiveStatus == 'ACTIVE') {
+                      adsetEffectiveStatus = 'IN_PROCESS'
+                    }
+
                     // Get ads
                     let ads = []
                     if (adset.hasOwnProperty('ads')) {
                       for (let adIndex = 0; adIndex < adset.ads.data.length; adIndex++) {
                         let ad = adset.ads.data[adIndex]
+
+                        if (adsetEffectiveStatus == 'IN_PROCESS' && ad.effective_status == 'ACTIVE') {
+                          adsetEffectiveStatus = 'ACTIVE'
+                        }
 
                         let adSpent = parseFloat(ad.spent/100)
                         let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
@@ -884,12 +898,16 @@ export default {
                       adsetBidStrategy = adset.bid_strategy
                     }
 
+                    if (campaignEffectiveStatus == 'IN_PROCESS' && adsetEffectiveStatus == 'ACTIVE') {
+                      campaignEffectiveStatus = 'ACTIVE'
+                    }
+
                     let adsetToPush = {
                       object_type: 'adset',
                       campaign_id: campaign.id,
                       id: adset.id,
                       name: adset.name,
-                      status: adset.effective_status,
+                      status: adsetEffectiveStatus,
                       spent: adsetSpent,
                       result: (campaign.objective == 'PAGE_LIKES') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
                       cpa: adsetCpa,
@@ -914,7 +932,7 @@ export default {
                   account_id: adAccount.id,
                   id: campaign.id,
                   name: campaign.name,
-                  status: campaign.effective_status,
+                  status: campaignEffectiveStatus,
                   spent: spent,
                   result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
                   cpa: cpa,
