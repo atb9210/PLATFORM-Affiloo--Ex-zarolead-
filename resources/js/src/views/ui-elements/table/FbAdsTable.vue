@@ -772,10 +772,10 @@ export default {
 
                 if (this.filters.status != '') {
                   if (this.filters.status == 'REVIEW') {
-                    if (campaigns.effective_status != 'IN_PROCESS') {
+                    if (campaign.effective_status != 'IN_PROCESS') {
                       continue
                     }
-                  } else if (campaign.status != this.filters.status) {
+                  } else if (campaign.effective_status != this.filters.status) {
                     continue
                   }
                 }
@@ -844,7 +844,7 @@ export default {
                           adset_id: adset.id,
                           id: ad.id,
                           name: ad.name,
-                          status: ad.status,
+                          status: ad.effective_status,
                           spent: adSpent,
                           result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
                           cpa: adCpa,
@@ -889,7 +889,7 @@ export default {
                       campaign_id: campaign.id,
                       id: adset.id,
                       name: adset.name,
-                      status: adset.status,
+                      status: adset.effective_status,
                       spent: adsetSpent,
                       result: (campaign.objective == 'PAGE_LIKES') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
                       cpa: adsetCpa,
@@ -914,7 +914,7 @@ export default {
                   account_id: adAccount.id,
                   id: campaign.id,
                   name: campaign.name,
-                  status: campaign.status,
+                  status: campaign.effective_status,
                   spent: spent,
                   result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
                   cpa: cpa,

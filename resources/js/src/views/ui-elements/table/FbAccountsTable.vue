@@ -155,7 +155,7 @@
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip
                                 transparent
-                                :color="(data[indextr].token_status == 'active' && isAdAccountActive(data[indextr].info) ? 'success' : 'danger')">
+                                :color="((data[indextr].token_status == 'active') ? (adAccountStatusColors[getAdAccountStatus(data[indextr].info)]) : 'danger')">
                                 {{data[indextr].name}}
                             </vs-chip>
                         </div>
@@ -682,6 +682,10 @@ export default {
 
       profileIds: '',
 
+      adAccountStatusColors: {
+        'active': 'success',
+        'unsettled': 'warning',
+      },
       statusColors: {
         'setup': 'primary',
         'warm': 'dark',
@@ -2052,13 +2056,16 @@ export default {
         color: 'success'
       })
     },
-    isAdAccountActive(info) {
-      let result = false
+    getAdAccountStatus(info) {
+      let result = 'disabled'
       if (info != null && info.hasOwnProperty('ad_accounts') && info.ad_accounts.length > 0) {
         for (let i = 0; i < info.ad_accounts.length; i++) {
           if (info.ad_accounts[i].status == 1) {
-            result = true
+            result = 'active'
             break
+          }
+          if(info.ad_accounts[i].status == 3) {
+            result = 'unsettled'
           }
         }
       }
