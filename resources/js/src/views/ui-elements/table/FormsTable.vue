@@ -1156,6 +1156,7 @@ export default {
 
         let profit = parseFloat(obj.stats.total_commission) - parseFloat(obj.stats.total_cost)
         let roi = parseFloat((obj.stats.total_cost > 0 && profit > 0) ? (profit/parseFloat(obj.stats.total_cost))*100 : ((profit == 0) ? 0 : 9999))
+        if (profit < 0) roi = -roi
         let cr = 0.0
         if (obj.stats.leads == 0) cr = 0.0
         else if (obj.stats.visits == 0) cr = 100.0
@@ -1195,6 +1196,7 @@ export default {
 
       let profit = obj.total_commission - obj.total_cost
       let roi = parseFloat((obj.total_cost > 0 && profit > 0) ? (profit/obj.total_cost)*100 : ((profit == 0) ? 0 : 9999))
+      if (profit < 0) roi = -roi
       let cr = 0.0
       if (obj.leads == 0) cr = 0.0
       else if (obj.visits == 0) cr = 100.0

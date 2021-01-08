@@ -412,6 +412,57 @@ class FormController extends Controller
         return new FormStatsResource($stats);
     }
 
+    /**
+     * Add to form stats cost
+     *
+     * @urlParam id int required Form's id
+     *
+     * @bodyParam day string required Form stats date
+     * @bodyParam cost_to_add float required Form stats value to add to cost
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function addToCostStats($id, Request $request)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('update', $form);
+
+        // Param validation
+        $params = $request->validate([
+            'day' => 'required|date|date_format:Y-m-d',
+            'cost_to_add' => 'required|numeric|min:0',
+        ]);
+
+        $stats = FormStats::getObject($id, $params['day']);
+
+        // Update total cost
+        $stats->total_cost += $params['cost_to_add'];
+        $form->total_cost += $params['cost_to_add'];
+
+        $form->save();
+        $stats->save();
+
+        // Update user's report stats
+        $report = UserReport::getObject($form->user->id, $stats->day);
+        $report->cost += $params['cost_to_add'];
+        $report->profit = $report->commission - $params['cost_to_add'];
+        $report->save();
+
+        // Update advertiser's report stats
+        $timestamp = strtotime($stats->day);
+        $month = intval(date('m', $timestamp));
+        $year = intval(date('Y', $timestamp));
+        $advertiser = User::findOrFail($form->product->advertiser_id);
+        $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+        $advReport->total_cost += $params['cost_to_add'];
+        $advReport->profit = $advReport->commission - $advReport->total_cost;
+        $advReport->save();
+
+        return new FormStatsResource($stats);
+    }
+
     // TODO: This is not useful anymore?
     /**
      * Get landings stats (of this form)

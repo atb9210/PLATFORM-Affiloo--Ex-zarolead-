@@ -37,6 +37,7 @@
                 <vs-button @click="changeView('adsets')" :color="(view == 'adsets') ? 'success' : 'primary'">Adsets</vs-button>
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
             </span>
+            <vs-button :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -104,7 +105,7 @@
             </vs-dropdown>
 
             <!-- Campaigns table -->
-            <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
@@ -215,7 +216,7 @@
             </vs-table>
 
             <!-- Adsets table -->
-            <vs-table v-if="view == 'adsets'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table v-if="view == 'adsets'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
@@ -326,7 +327,7 @@
             </vs-table>
 
             <!-- Ads table -->
-            <vs-table v-if="view == 'ads'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
@@ -553,6 +554,45 @@
                 
             </vs-popup>
 
+            <!-- Update form cost popup -->
+            <vs-popup title="Update form cost" :active.sync="showPopup['update_form_cost']">
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Total amount spent</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        € {{this.updateFormTotalCost.toFixed(2)}}
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Form</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select
+                          autocomplete
+                          v-model="updateFormId"
+                          class="w-full">
+                            <vs-select-item :key="index" :value="item.id" :text="item.id + ' - ' + item.name" v-for="(item, index) in forms" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Date</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="updateFormDate" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateFormCost" color="primary" type="filled" :disabled="!isValidForm('update_form_cost')">Update Form Cost</vs-button>
+                </div>
+            </vs-popup>
+
         </div>
 
     </vx-card>
@@ -576,7 +616,10 @@ export default {
 
       fb_account: {},
 
-      selected: [],
+      selectedCampaigns: [],
+      selectedAdsets: [],
+      selectedAds: [],
+
       deleted: [],
 
       maxItems: 20,
@@ -623,6 +666,7 @@ export default {
         'edit_budget': false,
         'edit_bid': false,
         'view_ad': false,
+        'update_form_cost': false,
       },
       bidOptions: [
         { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
@@ -630,6 +674,12 @@ export default {
         { value:'COST_CAP',                 label: 'Cost cap' },
       ],
       editingBidAmount: 0,
+
+      updateFormId: '',
+      updateFormTotalCost: 0,
+      updateFormDate: '',
+      formsLoaded: false,
+      forms: [],
 
       noImageUrl: '',
     }
@@ -737,7 +787,9 @@ export default {
     applyFilters() {
       this.$vs.loading()
 
-      this.selected = []
+      this.selectedCampaigns = []
+      this.selectedAdsets = []
+      this.selectedAds = []
 
       let timeRange = {}
       if (this.filters.date_from != '') {
@@ -1124,6 +1176,11 @@ export default {
           return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
                   (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingBidAmount > 0)
         }
+      } else if (type == 'update_form_cost') {
+        if (this.updateFormId != '' && this.updateFormId > 0 &&
+            this.updateFormTotalCost > 0 && this.updateFormDate != '') {
+          return true
+        }
       }
       return false
     },
@@ -1464,6 +1521,83 @@ export default {
     },
     saveAd(ad) {
       // TODO: to do
+    },
+    showUpdateFormCost() {
+      if (this.selectedCampaigns.length == 0) {
+        return
+      }
+
+      this.updateFormTotalCost = 0
+      this.selectedCampaigns.forEach((selCampaign) => {
+        this.updateFormTotalCost += parseFloat(selCampaign.spent)
+      })
+      this.updateFormDate = this.filters.date_to
+
+      if (!this.formsLoaded) {
+        this.$vs.loading()
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+
+        // Retrieve forms
+        this.$http.get('/api/v1/forms', { headers })
+          .then((response) => {
+            this.$vs.loading.close()
+            this.forms = response.data.data
+            if (this.forms.length > 0) {
+              this.updateFormId = this.forms[0].id
+            }
+            this.formsLoaded = true
+            this.showPopup['update_form_cost'] = true
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      } else {
+        this.showPopup['update_form_cost'] = true
+      }
+    },
+    updateFormCost() {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        day: this.updateFormDate,
+        cost_to_add: this.updateFormTotalCost,
+      }
+
+      // Retrieve forms
+      this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Form total cost updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.showPopup['update_form_cost'] = false
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
   },
   created() {
