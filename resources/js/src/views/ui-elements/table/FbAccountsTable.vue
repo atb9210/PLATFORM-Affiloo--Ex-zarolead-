@@ -12,14 +12,21 @@
     <vx-card title="FB Accounts" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal" v-if="!showInvoicesTableFlag"></vs-button>
-            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-download" @click="downloadInvoices" v-else></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="showInvoicesTableFlag ? 'icon-users' : 'icon-book-open'" @click="showInvoicesTable"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+            <span class="btn-group flex items-center mr-2">
+                <vs-button @click="changeView('accounts')" :color="(view == 'accounts') ? 'success' : 'primary'">Accounts</vs-button>
+                <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
+                <vs-button @click="changeView('invoices')" :color="(view == 'invoices') ? 'success' : 'primary'">Invoices</vs-button>
+            </span>
+        </p>
+
+        <p class="flex items-center mb-4">
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-download" @click="downloadInvoices" v-if="view == 'invoices'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" v-if="view == 'accounts'"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -77,7 +84,7 @@
             </div>
         </div>
 
-        <vs-dropdown v-if="!showInvoicesTableFlag" vs-trigger-click class="cursor-pointer">
+        <vs-dropdown v-if="(view != 'invoices')" vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                 <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
                 <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
@@ -125,7 +132,8 @@
             </li>
         </vue-context>
 
-        <vs-table v-if="!showInvoicesTableFlag" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+        <!-- Accounts table -->
+        <vs-table v-if="view == 'accounts'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="user.email">User</vs-th>
@@ -237,7 +245,8 @@
             </template>
         </vs-table>
 
-        <vs-table v-else stripe multiple v-model="selectedInvoices" search :data="invoices" ref="invoicesTable">
+        <!-- Invoices table -->
+        <vs-table v-if="view == 'invoices'" stripe multiple v-model="selectedInvoices" search :data="invoices" ref="invoicesTable">
             <template slot="thead">
                 <vs-th sort-key="time">Date</vs-th>
                 <vs-th sort-key="id">Invoice ID</vs-th>
@@ -292,6 +301,103 @@
                 <vs-td>
                 </vs-td>
 
+            </template>
+        </vs-table>
+
+        <!-- Ads table -->
+        <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
+
+            <template slot="thead">
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="spent">Spent</vs-th>
+                <vs-th sort-key="result">Result</vs-th>
+                <vs-th sort-key="cpa">CPA</vs-th>
+                <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="cpm">CPM</vs-th>
+                <vs-th sort-key="ctr">CTR</vs-th>
+                <vs-th sort-key="cpc">CPC</vs-th>
+                <vs-th>Actions</vs-th>
+            </template>
+
+            <template slot-scope="{data}">
+                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td :data="data[indextr].name">
+                        {{data[indextr].name}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].status">
+                        <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', data[indextr].id)">
+                            <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
+                            <span slot="on" v-else>Review</span>
+                            <span slot="off">Paused</span>
+                        </vs-switch>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].spent">
+                        € {{data[indextr].spent.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].result">
+                        {{data[indextr].result}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpa">
+                        € {{data[indextr].cpa.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr.toFixed(2)}}%
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpm">
+                        € {{data[indextr].cpm.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].ctr">
+                        {{data[indextr].ctr.toFixed(2)}}%
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpc">
+                        € {{data[indextr].cpc.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td>
+                        <div class="flex items-center">
+                            <vs-button @click="viewAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
+                        </div>
+                    </vs-td>
+
+                </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>{{data.length}}</vs-td>
+                <vs-td>
+                    € {{total_ads_stats.spent.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.result}}
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpa.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.cr.toFixed(2)}}%
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpm.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.ctr.toFixed(2)}}%
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpc.toFixed(2)}}
+                </vs-td>
+                <vs-td></vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -590,6 +696,72 @@
             </div>
         </vs-popup>
 
+        <!-- View ad popup -->
+        <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{viewingObject.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/4 w-full mt-2">
+                </div>
+                <div class="vx-col sm:w-1/2 w-full mt-2">
+                    <img v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
+                    <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                </div>
+                <div class="vx-col sm:w-1/4 w-full mt-2">
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span>{{viewingObject.body}}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span><b>{{viewingObject.title}}</b></span>
+                </div>
+            </div>
+            
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
+                        <template slot="thead">
+                            <vs-th sort-key="ctr">CTR</vs-th>
+                            <vs-th sort-key="cpc">CPC</vs-th>
+                            <vs-th sort-key="cpa">CPA</vs-th>
+                            <vs-th>Actions</vs-th>
+                        </template>
+
+                        <template slot-scope="{data}">
+                            <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
+                                <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
+                                    {{data[indextr].ctr.toFixed(2)}}%
+                                </vs-td>
+                                <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
+                                    € {{data[indextr].cpc.toFixed(2)}}
+                                </vs-td>
+                                <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
+                                    € {{data[indextr].cpa.toFixed(2)}}
+                                </vs-td>
+                                <vs-td>
+                                    <div class="flex items-center">
+                                        <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
+                                        <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
+                                        <vs-button @click="saveAd(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
+                                    </div>
+                                </vs-td>
+                            </vs-tr>
+                        </template>
+                        
+                    </vs-table>
+                </div>
+            </div>
+            
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -616,9 +788,14 @@ export default {
   },
   data () {
     return {
+      view: 'accounts',
+
       objects: [],
-      selected: [],
       deleted: [],
+
+      selected: [],
+      selectedInvoices: [],
+      selectedAds: [],
 
       maxItems: 20,
 
@@ -645,6 +822,7 @@ export default {
         'edit': false,
         'import': false,
         'bm_info': false,
+        'view_ad': false,
       },
       newObject: {
         'create': {
@@ -705,16 +883,30 @@ export default {
       },
       checked: [],
 
-      showInvoicesTableFlag: false,
       invoices: [],
       invoicesTotalStats: {
         amount: 0,
       },
-      selectedInvoices: [],
       pdfDocs: [],
 
       bmInfoObj: {},
       bmInfoObjId: 0,
+
+      ads: [],
+      total_ads_stats: {
+        spent: 0,
+        result: 0,
+        cpa: 0,
+        impressions: 0,
+        clicks: 0,
+        cr: 0,
+        cpm: 0,
+        ctr: 0,
+        cpc: 0,
+        daily_budget: 0,
+      },
+
+      viewingObject: {},
     }
   },
   computed: {
@@ -1123,6 +1315,7 @@ export default {
       this.invoicesTotalStats = {
         amount: 0,
       }
+      this.ads = []
 
       let obj = this.objects[objIndex]
       if (obj.token == null || obj.token == '') {
@@ -1155,7 +1348,10 @@ export default {
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
           let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-          fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+          //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+          fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+          fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
+          fields += '\}'
 
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
             .then((response) => {
@@ -1239,6 +1435,79 @@ export default {
                   }
                 }
 
+                // Collect ads
+                if (adAccount.hasOwnProperty('ads')) {
+                  for (let adIndex = 0; adIndex < adAccount.ads.data.length; adIndex++) {
+                    let ad = adAccount.ads.data[adIndex]
+
+                    let adSpent = parseFloat(ad.spent/100)
+                    let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
+                    let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
+                    let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
+                    let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
+                    let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
+
+                    let adDailyBudget = 0
+                    let adBidStrategy = ''
+                    if (ad.hasOwnProperty('daily_budget')) {
+                      adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                    }
+                    if (ad.hasOwnProperty('bid_strategy')) {
+                      adBidStrategy = ad.bid_strategy
+                    }
+
+                    let adUrl = ''
+                    if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+                      adUrl = ad.creative.object_url
+                    }
+                    let adLinkUrl = ''
+                    if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                      adLinkUrl = ad.creative.link_url
+                    }
+                    let adImageUrl = ''
+                    if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                      adImageUrl = ad.creative.image_url
+                    }
+
+                    let adAlreadyExists = false
+                    for (let j = 0; j < this.ads.length; j++) {
+                      if (this.ads[j].id == ad.id) {
+                        adAlreadyExists = true
+                        break
+                      }
+                    }
+
+                    if (!adAlreadyExists) {
+                      let adToPush = {
+                        object_type: 'ad',
+                        fb_account_token: obj.token,
+                        account_id: adAccount.id,
+                        id: ad.id,
+                        name: ad.name,
+                        status: ad.effective_status,
+                        spent: adSpent,
+                        result: ad.result,
+                        cpa: adCpa,
+                        impressions: ad.impressions,
+                        clicks: ad.clicks,
+                        cr: adCr,
+                        cpm: adCpm,
+                        ctr: adCtr,
+                        cpc: adCpc,
+                        daily_budget: adDailyBudget,
+                        bid_strategy: adBidStrategy,
+                        image_url: adImageUrl,
+                        body: ad.creative.body,
+                        title: ad.creative.title,
+                        call_to_action_type: ad.creative.call_to_action_type,
+                        url: adUrl,
+                        post_url: adLinkUrl,
+                      }
+                      this.ads.push(adToPush)
+                    }
+                  }
+                }
+
                 adAccounts.push(adAccountToPush)
               })
 
@@ -1275,6 +1544,7 @@ export default {
 
               this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
                 .then((response) => {
+                  this.calculateStats()
                   this.$vs.loading.close()
                   this.$vs.notify({
                     title: 'Success',
@@ -1389,8 +1659,11 @@ export default {
       this.invoicesTotalStats = {
         amount: 0,
       }
+      this.ads = []
 
       if (this.selected.length == 0) return
+
+      let accountsChecked = 0
 
       // Check FB API token status and get business accounts
       this.$vs.loading()
@@ -1420,7 +1693,10 @@ export default {
             let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
             let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-            fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+            //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
+            fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+            fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
+            fields += '\}'
 
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
               .then((response) => {
@@ -1504,6 +1780,78 @@ export default {
                     }
                   }
 
+                  // Collect ads
+                  if (adAccount.hasOwnProperty('ads')) {
+                    for (let adIndex = 0; adIndex < adAccount.ads.data.length; adIndex++) {
+                      let ad = adAccount.ads.data[adIndex]
+
+                      let adSpent = parseFloat(ad.spent/100)
+                      let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
+                      let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
+                      let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
+                      let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
+                      let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
+
+                      let adDailyBudget = 0
+                      let adBidStrategy = ''
+                      if (ad.hasOwnProperty('daily_budget')) {
+                        adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                      }
+                      if (ad.hasOwnProperty('bid_strategy')) {
+                        adBidStrategy = ad.bid_strategy
+                      }
+
+                      let adUrl = ''
+                      if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+                        adUrl = ad.creative.object_url
+                      }
+                      let adLinkUrl = ''
+                      if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                        adLinkUrl = ad.creative.link_url
+                      }
+                      let adImageUrl = ''
+                      if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                        adImageUrl = ad.creative.image_url
+                      }
+
+                      let adAlreadyExists = false
+                      for (let j = 0; j < this.ads.length; j++) {
+                        if (this.ads[j].id == ad.id) {
+                          adAlreadyExists = true
+                          break
+                        }
+                      }
+
+                      if (!adAlreadyExists) {
+                        let adToPush = {
+                          object_type: 'ad',
+                          fb_account_token: obj.token,
+                          id: ad.id,
+                          name: ad.name,
+                          status: ad.effective_status,
+                          spent: adSpent,
+                          result: ad.result,
+                          cpa: adCpa,
+                          impressions: ad.impressions,
+                          clicks: ad.clicks,
+                          cr: adCr,
+                          cpm: adCpm,
+                          ctr: adCtr,
+                          cpc: adCpc,
+                          daily_budget: adDailyBudget,
+                          bid_strategy: adBidStrategy,
+                          image_url: adImageUrl,
+                          body: ad.creative.body,
+                          title: ad.creative.title,
+                          call_to_action_type: ad.creative.call_to_action_type,
+                          url: adUrl,
+                          post_url: adLinkUrl,
+                        }
+                        this.ads.push(adToPush)
+                      }
+                    }
+                  }
+
                   adAccounts.push(adAccountToPush)
                 })
 
@@ -1539,8 +1887,8 @@ export default {
                 }
                 this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
                   .then((response) => {
-                    this.deleted.push(obj.id)
-                    if (this.deleted.length == this.selected.length) {
+                    accountsChecked += 1
+                    if (accountsChecked == this.selected.length) {
                       this.$vs.loading.close()
                       this.$vs.notify({
                         title: 'Success',
@@ -1549,17 +1897,22 @@ export default {
                         icon: 'icon-alert-circle',
                         color: 'success'
                       })
+                      this.applyFilters()
                     }
-                    this.applyFilters()
                   })
                   .catch((error) => {
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: error.message,
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
+                    accountsChecked += 1
+                    if (accountsChecked == this.selected.length) {
+                      this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Success',
+                        text: 'Status checked',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'success'
+                      })
+                      this.applyFilters()
+                    }
                   })
               })
               .catch((error) => {
@@ -1573,18 +1926,32 @@ export default {
 
                 this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
                   .then((response) => {
-                    this.$vs.loading.close()
-                    this.applyFilters()
+                    accountsChecked += 1
+                    if (accountsChecked == this.selected.length) {
+                      this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Success',
+                        text: 'Status checked',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'success'
+                      })
+                      this.applyFilters()
+                    }
                   })
                   .catch((error) => {
-                    this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: error.message,
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
+                    accountsChecked += 1
+                    if (accountsChecked == this.selected.length) {
+                      this.$vs.loading.close()
+                      this.$vs.notify({
+                        title: 'Success',
+                        text: 'Status checked',
+                        iconPack: 'feather',
+                        icon: 'icon-alert-circle',
+                        color: 'success'
+                      })
+                      this.applyFilters()
+                    }
                   })
               })
           })
@@ -1614,21 +1981,32 @@ export default {
             }
             this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
               .then((response) => {
-                this.deleted.push(obj.id)
-                if (this.deleted.length == this.selected.length) {
+                accountsChecked += 1
+                if (accountsChecked == this.selected.length) {
                   this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Status checked',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                  this.applyFilters()
                 }
-                this.applyFilters()
               })
               .catch((error) => {
-                this.$vs.loading.close()
-                this.$vs.notify({
-                  title: 'Error',
-                  text: error.message,
-                  iconPack: 'feather',
-                  icon: 'icon-alert-circle',
-                  color: 'danger'
-                })
+                accountsChecked += 1
+                if (accountsChecked == this.selected.length) {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Success',
+                    text: 'Status checked',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'success'
+                  })
+                  this.applyFilters()
+                }
               })
           })
       })
@@ -1846,13 +2224,6 @@ export default {
           window.open(doc.output('bloburl'), '_blank')
         }, 100)
       })
-    },
-    showInvoicesTable() {
-      if (!this.showInvoicesTableFlag) {
-        this.showInvoicesTableFlag = true
-      } else {
-        this.showInvoicesTableFlag = false
-      }
     },
     downloadInvoices() {
       this.$vs.loading()
@@ -2089,6 +2460,133 @@ export default {
           this.totalStats.cpl += this.objects[i].cpl
         }
       }
+    },
+    changeView(view) {
+      this.$vs.loading()
+
+      // TODO: to fix
+      //this.onPageChanged(1)
+      //this.gridApi.paginationGoToPage(0)
+
+      this.view = view
+      this.calculateStats()
+      this.$nextTick(() => {
+        this.$vs.loading.close()
+      })
+    },
+    calculateAdsStats() {
+      let spent = 0
+      let result = 0
+      let cpa = 0
+      let impressions = 0
+      let clicks = 0
+      let cr = 0
+      let cpm = 0
+      let ctr = 0
+      let cpc = 0
+      let daily_budget = 0
+
+      for (let i = 0; i < this.ads.length; i++) {
+        let obj = this.ads[i]
+        spent += obj.spent
+        result += obj.result
+        impressions += obj.impressions
+        clicks += obj.clicks
+        daily_budget += obj.daily_budget
+      }
+      cpa = (result > 0) ? (spent/result) : spent
+      cr = (clicks > 0) ? ((result/clicks)*100) : ((result > 0) ? 9999.99 : 0)
+      cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
+      ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
+      cpc = (clicks > 0) ? (spent/clicks) : spent
+
+      this.total_ads_stats = {
+        spent: spent,
+        result: result,
+        cpa: cpa,
+        impressions: impressions,
+        clicks: clicks,
+        cr: cr,
+        cpm: cpm,
+        ctr: ctr,
+        cpc: cpc,
+        daily_budget: daily_budget,
+      }
+    },
+    switchStatus(what, id) {
+      let obj = {}
+      let index = -1
+      if (what == 'ad') {
+        for (let i = 0; i < this.ads.length; i++) {
+          if (this.ads[i].id == id) {
+            index = i
+            break
+          }
+        }
+        obj = this.ads[index]
+      } else {
+        return
+      }
+
+      let fb_account_token = obj.fb_account_token
+      if (fb_account_token == '') {
+          return
+      }
+
+      let oldStatus = obj.status
+      let status = (obj.status == 'ACTIVE') ? 'PAUSED' : 'ACTIVE'
+      if (what == 'ad') {
+        this.ads[index].status = status
+      }
+
+      // Change fb campaign/adset/ad status
+      this.$http.post('https://graph.facebook.com/v9.0/' + obj.id + '?status=' + obj.status + '&access_token=' + fb_account_token)
+        .then((response) => {
+          if (response.data.success) {
+            if (what == 'ad') {
+              this.ads[index].status = status
+            }
+          } else {
+            if (what == 'ad') {
+              this.ads[index].status = oldStatus
+            }
+          }
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: what.charAt(0).toUpperCase() + what.slice(1) + ' status updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          if (what == 'ad') {
+            this.ads[index].status = oldStatus
+          }
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    viewAdPopup(id) {
+      let adIndex = -1
+      for (let i = 0; i < this.ads.length; i++) {
+        if (this.ads[i].id == id) {
+          adIndex = i
+          break
+        }
+      }
+
+      if (adIndex == -1) return
+
+      this.viewingObject = this.ads[adIndex]
+      this.showPopup['view_ad'] = true
     },
   },
   created() {
