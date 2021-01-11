@@ -53,10 +53,12 @@ export default [
     ]
   },
   */
+
+  // Dashboard
   {
-    header: 'Apps',
+    header: 'Dashboard',
     icon: 'PackageIcon',
-    i18n: 'Apps',
+    i18n: 'Dashboard',
     roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertisers', 'account_manager'],
     items: [
       {
@@ -67,14 +69,16 @@ export default [
         i18n: 'Dashboard',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
-      {
-        url: '/dashboard/users',
-        name: 'Users',
-        slug: 'users',
-        icon: 'UserIcon',
-        i18n: 'Users',
-        roles: ['developer', 'admin'],
-      },
+    ],
+  },
+
+  // Administration
+  {
+    header: 'Administration',
+    icon: 'PackageIcon',
+    i18n: 'Administration',
+    roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertisers', 'account_manager'],
+    items: [
       {
         url: '/dashboard/orders',
         name: 'Orders',
@@ -83,103 +87,23 @@ export default [
         i18n: 'Orders',
         roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
-      {
-        url: '/dashboard/advertisers',
-        name: 'Advertisers',
-        slug: 'advertisers',
-        icon: 'LayersIcon',
-        i18n: 'Advertisers',
-        roles: ['developer', 'admin'],
-      },
-      {
-        url: '/dashboard/networks',
-        name: 'Networks',
-        slug: 'networks',
-        icon: 'GlobeIcon',
-        i18n: 'Networks',
-        roles: ['developer', 'admin'],
-      },
-      {
-        url: '/dashboard/tags',
-        name: 'Tags',
-        slug: 'tags',
-        icon: 'TagIcon',
-        i18n: 'Tags',
-        roles: ['developer', 'admin'],
-      },
-      {
-        url: '/dashboard/products',
-        name: 'Products',
-        slug: 'products',
-        icon: 'CodesandboxIcon',
-        i18n: 'Products',
-        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
-      },
-      {
-        url: '/dashboard/traffic-sources',
-        name: 'Traffic Sources',
-        slug: 'traffic-sources',
-        icon: 'RadioIcon',
-        i18n: 'Traffic Sources',
-        roles: ['developer', 'admin'],
-      },
-      {
-        url: '/dashboard/fb-accounts',
-        name: 'FB accounts',
-        slug: 'fb-accounts',
-        icon: 'FacebookIcon',
-        i18n: 'FB accounts',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
-      },
-      {
-        url: '/dashboard/logistics-orders',
-        name: 'Logistics Orders',
-        slug: 'logistics-orders',
-        icon: 'PackageIcon',
-        i18n: 'Logistics Orders',
-        roles: ['developer', 'admin'],
-      },
-      {
-        url: '/dashboard/forms',
-        name: 'Forms',
-        slug: 'forms',
-        icon: 'ClipboardIcon',
-        i18n: 'Forms',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-      },
-      {
-        url: '/dashboard/landings',
-        name: 'Landings',
-        slug: 'landings',
-        icon: 'LayoutIcon',
-        i18n: 'Landings',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-      },
-      {
-        url: '/dashboard/domains',
-        name: 'Domains',
-        slug: 'domains',
-        icon: 'LinkIcon',
-        i18n: 'Domains',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-      },
-      {
-        url: '/dashboard/flows',
-        name: 'Flows',
-        slug: 'flows',
-        icon: 'GitBranchIcon',
-        i18n: 'Flows',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-      },
 
-      /* Reports for mediabuyer and buyer */
       {
-        url: '/dashboard/my-reports',
-        name: 'My Reports',
-        slug: 'my-reports',
-        icon: 'PieChartIcon',
-        i18n: 'My Reports',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
+        url: null,
+        name: 'Accounting',
+        icon: 'SlidersIcon',
+        i18n: 'Accounting',
+        roles: ['developer', 'admin', 'mediabuyer', 'account_manager'],
+        submenu: [
+          {
+            url: '/dashboard/invoices',
+            name: 'Invoices',
+            slug: 'invoices',
+            icon: 'FileTextIcon',
+            i18n: 'Invoices',
+            roles: ['developer', 'admin', 'mediabuyer', 'account_manager'],
+          },
+        ]
       },
 
       /* Reports for admin */
@@ -236,30 +160,177 @@ export default [
           },
         ]
       },
+
       {
-        url: '/dashboard/product-medias',
-        name: 'Product Medias',
-        slug: 'product-medias',
-        icon: 'ImageIcon',
-        i18n: 'Product Medias',
+        url: '/dashboard/logistics-orders',
+        name: 'Logistics Orders',
+        slug: 'logistics-orders',
+        icon: 'PackageIcon',
+        i18n: 'Logistics Orders',
+        roles: ['developer', 'admin'],
+      },
+    ],
+  },
+
+  {
+    header: 'Workspace',
+    icon: 'PackageIcon',
+    i18n: 'Workspace',
+    roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertisers', 'account_manager'],
+    items: [
+      {
+        url: '/dashboard/fb-accounts',
+        name: 'FB accounts',
+        slug: 'fb-accounts',
+        icon: 'FacebookIcon',
+        i18n: 'FB accounts',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+      },
+
+      {
+        url: '/dashboard/forms',
+        name: 'Forms',
+        slug: 'forms',
+        icon: 'ClipboardIcon',
+        i18n: 'Campaigns',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
+
       {
-        url: '/dashboard/ads',
-        name: 'Ads',
-        slug: 'ads',
-        icon: 'ArrowUpIcon',
-        i18n: 'Ads',
+        url: null,
+        name: 'Landings',
+        icon: 'LayoutIcon',
+        i18n: 'Landings',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        submenu: [
+          {
+            url: '/dashboard/landings',
+            name: 'Landings',
+            slug: 'landings',
+            icon: 'LayoutIcon',
+            i18n: 'Landings',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+          {
+            url: '/dashboard/flows',
+            name: 'Flows',
+            slug: 'flows',
+            icon: 'GitBranchIcon',
+            i18n: 'Flows',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+        ]
+      },
+
+      {
+        url: null,
+        name: 'Cloud',
+        icon: 'CloudIcon',
+        i18n: 'Cloud',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        submenu: [
+          {
+            url: '/dashboard/product-medias',
+            name: 'Product Medias',
+            slug: 'product-medias',
+            icon: 'ImageIcon',
+            i18n: 'Product Medias',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+          {
+            url: '/dashboard/ads',
+            name: 'Ads',
+            slug: 'ads',
+            icon: 'ArrowUpIcon',
+            i18n: 'Ads',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+        ]
+      },
+    ],
+  },
+
+  {
+    header: 'Settings',
+    icon: 'PackageIcon',
+    i18n: 'Settings',
+    roles: ['developer', 'admin'],
+    items: [
+      {
+        url: '/dashboard/users',
+        name: 'Users',
+        slug: 'users',
+        icon: 'UserIcon',
+        i18n: 'Users',
+        roles: ['developer', 'admin'],
+      },
+
+      {
+        url: '/dashboard/products',
+        name: 'Products',
+        slug: 'products',
+        icon: 'CodesandboxIcon',
+        i18n: 'Products',
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
+      },
+
+      {
+        url: '/dashboard/advertisers',
+        name: 'Advertisers',
+        slug: 'advertisers',
+        icon: 'LayersIcon',
+        i18n: 'Advertisers',
+        roles: ['developer', 'admin'],
+      },
+
+      {
+        url: '/dashboard/networks',
+        name: 'Networks',
+        slug: 'networks',
+        icon: 'GlobeIcon',
+        i18n: 'Networks',
+        roles: ['developer', 'admin'],
+      },
+
+      {
+        url: '/dashboard/tags',
+        name: 'Tags',
+        slug: 'tags',
+        icon: 'TagIcon',
+        i18n: 'Tags',
+        roles: ['developer', 'admin'],
+      },
+
+      {
+        url: '/dashboard/traffic-sources',
+        name: 'Traffic Sources',
+        slug: 'traffic-sources',
+        icon: 'RadioIcon',
+        i18n: 'Traffic Sources',
+        roles: ['developer', 'admin'],
+      },
+
+      {
+        url: '/dashboard/domains',
+        name: 'Domains',
+        slug: 'domains',
+        icon: 'LinkIcon',
+        i18n: 'Domains',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
+
+      /* Reports for mediabuyer and buyer */
+      /*
       {
-        url: '/dashboard/invoices',
-        name: 'Invoices',
-        slug: 'invoices',
-        icon: 'FileTextIcon',
-        i18n: 'Invoices',
-        roles: ['developer', 'admin', 'mediabuyer', 'account_manager'],
+        url: '/dashboard/my-reports',
+        name: 'My Reports',
+        slug: 'my-reports',
+        icon: 'PieChartIcon',
+        i18n: 'My Reports',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
+      */
+
       /*
       {
         url: '/apps/email',

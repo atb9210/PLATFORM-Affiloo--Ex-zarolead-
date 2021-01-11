@@ -129,9 +129,14 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', data[indextr].id)">
+                            <vs-switch
+                                :color="statusColors[data[indextr].status]"
+                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatus('campaign', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else>Review</span>
+                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -240,9 +245,14 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('adset', data[indextr].id)">
+                            <vs-switch
+                                :color="statusColors[data[indextr].status]"
+                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatus('adset', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else>Review</span>
+                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -350,9 +360,14 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].status">
-                            <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', data[indextr].id)">
+                            <vs-switch
+                                :color="statusColors[data[indextr].status]"
+                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatus('ad', data[indextr].id)">
                                 <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else>Review</span>
+                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -629,6 +644,11 @@ export default {
       ads: [],
 
       statusOptions: ['ACTIVE', 'PAUSED', 'REVIEW'],
+      statusColors: {
+        'ACTIVE': 'success',
+        'REVIEW': 'warning',
+        'DISABLED': 'danger',
+      },
 
       total_stats: {
         spent: 0,
@@ -824,12 +844,15 @@ export default {
 
                 let campaignEffectiveStatus = campaign.effective_status
                 if (campaignEffectiveStatus == 'ACTIVE') {
-                  campaignEffectiveStatus = 'PENDING_REVIEW'
+                  campaignEffectiveStatus = 'REVIEW'
+                }
+                if (adAccount.account_status == 2) {
+                  campaignEffectiveStatus = 'DISABLED'
                 }
 
                 if (this.filters.status != '') {
                   if (this.filters.status == 'REVIEW') {
-                    if (campaign.effective_status != 'PENDING_REVIEW') {
+                    if (campaign.effective_status != 'REVIEW') {
                       continue
                     }
                   } else if (campaign.effective_status != this.filters.status) {
@@ -861,8 +884,11 @@ export default {
                     let adset = campaign.adsets.data[adsetIndex]
 
                     let adsetEffectiveStatus = adset.effective_status
+                    if (adAccount.account_status == 2) {
+                      adsetEffectiveStatus = 'DISABLED'
+                    }
                     if (adsetEffectiveStatus == 'ACTIVE') {
-                      adsetEffectiveStatus = 'PENDING_REVIEW'
+                      adsetEffectiveStatus = 'REVIEW'
                     }
 
                     // Get ads
@@ -871,7 +897,11 @@ export default {
                       for (let adIndex = 0; adIndex < adset.ads.data.length; adIndex++) {
                         let ad = adset.ads.data[adIndex]
 
-                        if (adsetEffectiveStatus == 'PENDING_REVIEW' && ad.effective_status == 'ACTIVE') {
+                        let adEffectiveStatus = ad.effective_status
+                        if (adAccount.account_status == 2) {
+                          adEffectiveStatus = 'DISABLED'
+                        }
+                        if (adsetEffectiveStatus == 'REVIEW' && adEffectiveStatus == 'ACTIVE') {
                           adsetEffectiveStatus = 'ACTIVE'
                         }
 
@@ -910,7 +940,7 @@ export default {
                           adset_id: adset.id,
                           id: ad.id,
                           name: ad.name,
-                          status: ad.effective_status,
+                          status: adEffectiveStatus,
                           spent: adSpent,
                           result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
                           cpa: adCpa,
@@ -950,7 +980,7 @@ export default {
                       adsetBidStrategy = adset.bid_strategy
                     }
 
-                    if (campaignEffectiveStatus == 'PENDING_REVIEW' && adsetEffectiveStatus == 'ACTIVE') {
+                    if (campaignEffectiveStatus == 'REVIEW' && adsetEffectiveStatus == 'ACTIVE') {
                       campaignEffectiveStatus = 'ACTIVE'
                     }
 
@@ -1105,7 +1135,17 @@ export default {
       }
 
       let oldStatus = obj.status
-      let status = (obj.status == 'ACTIVE') ? 'PAUSED' : 'ACTIVE'
+      if (oldStatus == 'DISABLED') return
+
+      let status = 'PAUSED'
+      if (oldStatus == 'REVIEW' || oldStatus == 'ACTIVE') {
+        status = 'PAUSED'
+      } else if (oldStatus == 'PAUSED') {
+        status = 'ACTIVE'
+      } else {
+        return
+      }
+
       if (what == 'campaign') {
         this.campaigns[index].status = status
       } else if (what == 'adset') {
