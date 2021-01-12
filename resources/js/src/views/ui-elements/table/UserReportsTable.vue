@@ -79,10 +79,10 @@
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="tq">TQ</vs-th>
-                <vs-th sort-key="commission" v-if="canViewStats">Commission</vs-th>
+                <vs-th sort-key="commission" v-if="isAdmin">Commission</vs-th>
                 <vs-th sort-key="cost">Cost</vs-th>
                 <vs-th sort-key="extra_cost" v-if="canViewStats">Extra Cost</vs-th>
-                <vs-th sort-key="profit" v-if="canViewStats">Profit</vs-th>
+                <vs-th sort-key="profit" v-if="isAdmin">Profit</vs-th>
                 <vs-th></vs-th>
             </template>
 
@@ -105,12 +105,12 @@
                         {{data[indextr].tq}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission" v-if="canViewStats">
-                        {{data[indextr].commission}} €
+                    <vs-td :data="data[indextr].commission" v-if="isAdmin">
+                        € {{data[indextr].commission}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].cost">
-                        {{data[indextr].cost}} €
+                        € {{data[indextr].cost}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].extra_cost" v-if="canViewStats">
@@ -118,7 +118,7 @@
                         <span v-else>{{data[indextr].extra_cost}} € <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit" v-if="canViewStats">
+                    <vs-td :data="data[indextr].profit" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
@@ -134,10 +134,10 @@
                 <vs-td>{{total_stats.visits}}</vs-td>
                 <vs-td>{{total_stats.leads}}</vs-td>
                 <vs-td>{{total_stats.tq}}</vs-td>
-                <vs-td v-if="canViewStats">{{total_stats.commission}}</vs-td>
+                <vs-td v-if="isAdmin">€ {{total_stats.commission}}</vs-td>
                 <vs-td>{{total_stats.cost}}</vs-td>
-                <vs-td v-if="canViewStats">{{total_stats.extra_cost}}</vs-td>
-                <vs-td v-if="canViewStats">{{total_stats.profit}}</vs-td>
+                <vs-td v-if="canViewStats">€ {{total_stats.extra_cost}}</vs-td>
+                <vs-td v-if="isAdmin">€ {{total_stats.profit}}</vs-td>
                 <vs-td></vs-td>
                 <!-- END TOTAL STATS-->
             </template>
@@ -216,7 +216,10 @@ export default {
     },
     canViewStats() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
-              this.$store.getters.userHasRole('mediabuyer'))
+              this.$store.getters.userHasRole('mediabuyer') || this.$store.getters.userHasRole('buyer'))
+    },
+    isAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
     },
   },
   methods: {
