@@ -793,6 +793,85 @@ export default {
         daily_budget: daily_budget,
       }
     },
+    sortByStatus() {
+      let arr = []
+      let orderedArr = []
+
+      // Sort campaigns
+      arr = this.campaigns
+      orderedArr = []
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'ACTIVE') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'REVIEW') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'PAUSED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'DISABLED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      this.campaigns = orderedArr
+
+      // Sort adsets
+      arr = this.adsets
+      orderedArr = []
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'ACTIVE') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'REVIEW') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'PAUSED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'DISABLED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      this.adsets = orderedArr
+
+      // Sort ads
+      arr = this.ads
+      orderedArr = []
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'ACTIVE') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'REVIEW') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'PAUSED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].status == 'DISABLED') {
+          orderedArr.push(arr[i])
+        }
+      }
+      this.ads = orderedArr
+    },
     onPageChanged(val) {
       this.currentPage = val
     },
@@ -820,7 +899,7 @@ export default {
       }
       timeRange = JSON.stringify(timeRange)
       
-      let fields = 'id,name'
+      let fields = 'id,name,account_status'
       fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
       fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
@@ -1034,6 +1113,7 @@ export default {
           }
 
           this.calculateStats()
+          this.sortByStatus()
           this.$vs.loading.close()
         })
         .catch((error) => {
