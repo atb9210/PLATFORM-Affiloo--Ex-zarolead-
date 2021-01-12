@@ -65,7 +65,7 @@ class FormPolicy
      */
     public function delete(User $user, Form $form)
     {
-        return $user->hasPermission('form', 'delete') || ($user->id === $form->user_id && !$form->archived);
+        return $user->hasPermission('form', 'delete') || ($user->id === $form->user_id);
     }
 
     /**

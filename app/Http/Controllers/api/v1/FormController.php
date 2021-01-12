@@ -48,6 +48,7 @@ class FormController extends Controller
         if (!Auth::user()->can('viewAny', 'App\Form')) {
             $forms = $forms->where('user_id', Auth::user()->id);
         }
+        $forms = $forms->orderBy('archived', 'ASC');
 
         return FormResource::collection($forms->get());
     }

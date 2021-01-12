@@ -138,6 +138,7 @@
 
             <template slot="thead">
                 <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="archived">Status</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_cost">Cost</vs-th>
@@ -160,6 +161,17 @@
                                 {{data[indextr].name}}
                             </vs-chip>
                         </div>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].archived">
+                        <vs-switch
+                            :color="(data[indextr].archived == 0) ? 'success' : 'danger'"
+                            v-model="data[indextr].archived == 0"
+                            vs-icon-off="pause" vs-icon-on="done"
+                            @input="switchArchivedPopup(data[indextr].id)">
+                            <span slot="on">Active</span>
+                            <span slot="off">Archived</span>
+                        </vs-switch>
                     </vs-td>
 
                     <vs-td :data="data[indextr].visits">
@@ -205,6 +217,7 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
+                <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td>
@@ -805,10 +818,78 @@ export default {
       this.$vs.dialog({
         type: 'confirm',
         color: 'danger',
-        title: 'Delete confirmation',
-        text: 'Are you sure you want to delete ' + this.selected.length + ' object(s)?',
+        title: 'Archive confirmation',
+        text: 'Are you sure you want to archive ' + this.selected.length + ' object(s)?',
         accept: this.deleteSelected
       })
+    },
+    switchArchivedPopup(id) {
+      let obj = this.allObjects[this.getObjectIndexById(id)]
+      if (obj.archived == 0) {
+        this.deleteObject(id)
+      } else {
+        this.restoreObject(id)
+      }
+    },
+    deleteObject(id) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$http.delete('/api/v1/forms/' + id, { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Form archived',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.applyFilters()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    restoreObject(id) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$http.get('/api/v1/forms/' + id + '/restore', { headers })
+        .then((response) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Form restored',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.applyFilters()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
     deleteSelected() {
       if (this.selected.length == 0) return
@@ -829,7 +910,7 @@ export default {
               this.$vs.loading.close()
               this.$vs.notify({
                 title: 'Success',
-                text: this.deleted.length + ' Form(s) deleted',
+                text: this.deleted.length + ' Form(s) archived',
                 iconPack: 'feather',
                 icon: 'icon-alert-circle',
                 color: 'success'
