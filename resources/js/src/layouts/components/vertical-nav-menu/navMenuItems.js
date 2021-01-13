@@ -69,6 +69,15 @@ export default [
         i18n: 'Dashboard',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
+
+      {
+        url: '/dashboard/my-reports',
+        name: 'My Reports',
+        slug: 'my-reports',
+        icon: 'PieChartIcon',
+        i18n: 'My Reports',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
+      },
     ],
   },
 
@@ -318,18 +327,6 @@ export default [
         i18n: 'Domains',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
-
-      /* Reports for mediabuyer and buyer */
-      /*
-      {
-        url: '/dashboard/my-reports',
-        name: 'My Reports',
-        slug: 'my-reports',
-        icon: 'PieChartIcon',
-        i18n: 'My Reports',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
-      },
-      */
 
       /*
       {
