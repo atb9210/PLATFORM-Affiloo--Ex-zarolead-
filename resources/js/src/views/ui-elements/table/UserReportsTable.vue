@@ -106,16 +106,18 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].commission" v-if="isAdmin">
-                        € {{data[indextr].commission}}
+                        <vs-input v-if="isAdmin && isEditingCommission && editingObjectId == data[indextr].id" :ref="'editCommissionInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCommissionValue" @keyup.enter="editCommission" @keyup.escape="dontEditCommission" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <span v-else>€ {{data[indextr].commission}} <span v-if="isAdmin" class="underline" @click="showEditCommissionInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].cost">
-                        € {{data[indextr].cost}}
+                        <vs-input v-if="isAdmin && isEditingCost && editingObjectId == data[indextr].id" :ref="'editCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" @keyup.escape="dontEditCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <span v-else>€ {{data[indextr].cost}} <span v-if="isAdmin" class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].extra_cost" v-if="canViewStats">
-                        <vs-input v-if="isEditingCost && editingObjectId == data[indextr].id" :ref="'editCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" @keyup.escape="dontEditCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
-                        <span v-else>{{data[indextr].extra_cost}} € <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
+                        <vs-input v-if="isEditingExtraCost && editingObjectId == data[indextr].id" :ref="'editExtraCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingExtraCostValue" @keyup.enter="editExtraCost" @keyup.escape="dontEditExtraCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                        <span v-else>€ {{data[indextr].extra_cost}} <span class="underline" @click="showEditExtraCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
                     <vs-td :data="data[indextr].profit" v-if="isAdmin">
@@ -135,7 +137,7 @@
                 <vs-td>{{total_stats.leads}}</vs-td>
                 <vs-td>{{total_stats.tq}}</vs-td>
                 <vs-td v-if="isAdmin">€ {{total_stats.commission}}</vs-td>
-                <vs-td>{{total_stats.cost}}</vs-td>
+                <vs-td>€ {{total_stats.cost}}</vs-td>
                 <vs-td v-if="canViewStats">€ {{total_stats.extra_cost}}</vs-td>
                 <vs-td v-if="isAdmin">€ {{total_stats.profit}}</vs-td>
                 <vs-td></vs-td>
@@ -182,8 +184,12 @@ export default {
       editingObjectId: -1,
       editingObject: null,
       notes: '',
+      isEditingCommission: false,
+      editingCommissionValue: 0,
       isEditingCost: false,
       editingCostValue: 0,
+      isEditingExtraCost: false,
+      editingExtraCostValue: 0,
 
       total_stats: {
         visits: 0,
@@ -376,11 +382,65 @@ export default {
     editNoteCancel() {
       this.notes = this.editingObject.notes
     },
+    showEditCommissionInput(id) {
+      let index = this.getObjectIndexById(id)
+
+      this.isEditingCommission = true
+      this.editingCommissionValue = this.objects[index].commission
+      this.editingObjectId = id
+      this.editingObject = this.objects[index]
+
+      let refValue = 'editCommissionInput' + id
+      this.$nextTick(() => {
+        let inputEl = this.$refs[refValue][0].$el.querySelector('input')
+        inputEl.focus()
+      });
+    },
+    editCommission() {
+      this.$vs.loading()
+
+      let index = this.getObjectIndexById(this.editingObjectId)
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        day: this.editingObject.day,
+        commission: this.editingCommissionValue,
+      }
+      this.$http.put('/api/v1/my-reports', data, { headers })
+        .then((response) => {
+          this.objects[index].commission = this.editingCommissionValue
+          this.objects[index].profit = response.data.data.profit
+          this.isEditingCommission = false
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Commission updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    dontEditCommission() {
+      this.isEditingCommission = false
+    },
     showEditCostInput(id) {
       let index = this.getObjectIndexById(id)
 
       this.isEditingCost = true
-      this.editingCostValue = this.objects[index].extra_cost
+      this.editingCostValue = this.objects[index].cost
       this.editingObjectId = id
       this.editingObject = this.objects[index]
 
@@ -400,17 +460,17 @@ export default {
       }
       let data = {
         day: this.editingObject.day,
-        extra_cost: this.editingCostValue,
+        cost: this.editingCostValue,
       }
       this.$http.put('/api/v1/my-reports', data, { headers })
         .then((response) => {
-          this.objects[index].extra_cost = this.editingCostValue
+          this.objects[index].cost = this.editingCostValue
           this.objects[index].profit = response.data.data.profit
           this.isEditingCost = false
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Success',
-            text: 'Total cost updated',
+            text: 'Cost updated',
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'success'
@@ -429,6 +489,60 @@ export default {
     },
     dontEditCost() {
       this.isEditingCost = false
+    },
+    showEditExtraCostInput(id) {
+      let index = this.getObjectIndexById(id)
+
+      this.isEditingExtraCost = true
+      this.editingExtraCostValue = this.objects[index].extra_cost
+      this.editingObjectId = id
+      this.editingObject = this.objects[index]
+
+      let refValue = 'editExtraCostInput' + id
+      this.$nextTick(() => {
+        let inputEl = this.$refs[refValue][0].$el.querySelector('input')
+        inputEl.focus()
+      });
+    },
+    editExtraCost() {
+      this.$vs.loading()
+
+      let index = this.getObjectIndexById(this.editingObjectId)
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        day: this.editingObject.day,
+        extra_cost: this.editingExtraCostValue,
+      }
+      this.$http.put('/api/v1/my-reports', data, { headers })
+        .then((response) => {
+          this.objects[index].extra_cost = this.editingExtraCostValue
+          this.objects[index].profit = response.data.data.profit
+          this.isEditingExtraCost = false
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Extra cost updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    dontEditExtraCost() {
+      this.isEditingExtraCost = false
     },
     calculateStats() {
       this.total_stats = {

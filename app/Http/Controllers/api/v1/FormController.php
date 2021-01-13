@@ -400,6 +400,23 @@ class FormController extends Controller
         $report->profit = $report->commission - ($report->cost + $report->extra_cost);
         $report->save();
 
+        // Update admin's user report
+        $adminRoleId = 2;
+        $users = User::query();
+        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+            ->whereIn('role_user.role_id', [$adminRoleId]);
+        $users = $users->get();
+        foreach ($users as $user) {
+            // Skip if it is already updated
+            if ($user->id == $form->user->id) {
+                continue;
+            }
+            $report = UserReport::getObject($user->id, $stats->day);
+            $report->cost += $stats->total_cost - $prev_total_cost;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+            $report->save();
+        }
+
         // Update advertiser's report stats
         $timestamp = strtotime($stats->day);
         $month = intval(date('m', $timestamp));
@@ -450,6 +467,23 @@ class FormController extends Controller
         $report->cost += $params['cost_to_add'];
         $report->profit = $report->commission - $params['cost_to_add'];
         $report->save();
+
+        // Update admin's user report
+        $adminRoleId = 2;
+        $users = User::query();
+        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+            ->whereIn('role_user.role_id', [$adminRoleId]);
+        $users = $users->get();
+        foreach ($users as $user) {
+            // Skip if it is already updated
+            if ($user->id == $form->user->id) {
+                continue;
+            }
+            $report = UserReport::getObject($user->id, $stats->day);
+            $report->cost += $params['cost_to_add'];
+            $report->profit = $report->commission - $params['cost_to_add'];
+            $report->save();
+        }
 
         // Update advertiser's report stats
         $timestamp = strtotime($stats->day);
@@ -634,6 +668,22 @@ class FormController extends Controller
         $report = UserReport::getObject($form->user->id, $formStats->day);
         $report->visits += 1;
         $report->save();
+
+        // Update admin's user report
+        $adminRoleId = 2;
+        $users = User::query();
+        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+            ->whereIn('role_user.role_id', [$adminRoleId]);
+        $users = $users->get();
+        foreach ($users as $user) {
+            // Skip if it is already updated
+            if ($user->id == $form->user->id) {
+                continue;
+            }
+            $report = UserReport::getObject($user->id, $stats->day);
+            $report->visits += 1;
+            $report->save();
+        }
 
         // Update advertiser's report stats
         $timestamp = strtotime($formStats->day);

@@ -252,6 +252,8 @@ class UserController extends Controller
      * Update the user's report fields.
      *
      * @bodyParam day required string User's report day
+     * @bodyParam commission float User's report commission
+     * @bodyParam cost float User's report cost
      * @bodyParam extra_cost float User's report extra cost
      * @bodyParam notes string User's report notes
      *
@@ -264,6 +266,8 @@ class UserController extends Controller
         // Param validation
         $data = $request->validate([
             'day' => 'required|date|date_format:Y-m-d',
+            'commission' => 'numeric|numeric|min:0',
+            'cost' => 'numeric|numeric|min:0',
             'extra_cost' => 'numeric|numeric|min:0',
             'notes' => 'nullable|string|min:0',
         ]);

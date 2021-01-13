@@ -313,6 +313,24 @@ class OrderController extends Controller
             $report->profit = $report->commission - ($report->cost + $report->extra_cost);
             $report->save();
 
+            // Update admin's user report
+            $adminRoleId = 2;
+            $users = User::query();
+            $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+                ->whereIn('role_user.role_id', [$adminRoleId]);
+            $users = $users->get();
+            foreach ($users as $user) {
+                // Skip if it is already updated
+                if ($user->id == $form->user->id) {
+                    continue;
+                }
+                $report = UserReport::getObject($user->id, $today);
+                $report->leads += 1;
+                $report->commission += $order->commission;
+                $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+                $report->save();
+            }
+
             // Update advertiser's report stats
             $timestamp = strtotime($today);
             $month = intval(date('m', $timestamp));
