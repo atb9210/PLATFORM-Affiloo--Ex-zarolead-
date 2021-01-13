@@ -142,9 +142,9 @@
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
                 <vs-th sort-key="total_cost">Cost</vs-th>
-                <vs-th v-if="canViewStats" sort-key="total_commission">Commission</vs-th>
-                <vs-th v-if="canViewStats" sort-key="profit">Profit</vs-th>
-                <vs-th v-if="canViewStats" sort-key="roi">ROI</vs-th>
+                <vs-th v-if="isAdmin" sort-key="total_commission">Commission</vs-th>
+                <vs-th v-if="isAdmin" sort-key="profit">Profit</vs-th>
+                <vs-th v-if="isAdmin" sort-key="roi">ROI</vs-th>
                 <vs-th sort-key="cr">CR</vs-th>
                 <vs-th v-if="canViewStats" sort-key="cpv">CPV</vs-th>
                 <vs-th v-if="canViewStats" sort-key="epv">EPV</vs-th>
@@ -186,15 +186,15 @@
                         <span>€ {{data[indextr].total_cost.toFixed(2)}}</span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                    <vs-td :data="data[indextr].total_commission" v-if="isAdmin">
                         € {{data[indextr].total_commission.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit" v-if="canViewStats">
+                    <vs-td :data="data[indextr].profit" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit.toFixed(2)}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roi" v-if="canViewStats">
+                    <vs-td :data="data[indextr].roi" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi.toFixed(2)}} %</vs-chip>
                     </vs-td>
 
@@ -229,13 +229,13 @@
                 <vs-td>
                     € {{total_stats.total_cost.toFixed(2)}}
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td v-if="isAdmin">
                     € {{total_stats.total_commission.toFixed(2)}}
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td v-if="isAdmin">
                     <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit.toFixed(2)}}</vs-chip>
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td v-if="isAdmin">
                     <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi.toFixed(2)}} %</vs-chip>
                 </vs-td>
                 <vs-td>
@@ -786,6 +786,9 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       },
+    },
+    isAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
     },
     canViewStats() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
