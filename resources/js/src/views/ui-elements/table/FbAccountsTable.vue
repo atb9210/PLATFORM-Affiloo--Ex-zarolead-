@@ -14,6 +14,7 @@
         <p class="flex items-center mb-4">
             <span class="btn-group flex items-center mr-2">
                 <vs-button @click="changeView('accounts')" :color="(view == 'accounts') ? 'success' : 'primary'">Accounts</vs-button>
+                <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
                 <vs-button @click="changeView('invoices')" :color="(view == 'invoices') ? 'success' : 'primary'">Invoices</vs-button>
             </span>
@@ -197,7 +198,7 @@
 
                     <vs-td>
                         <div v-if="typeof data[indextr].amount_spent != 'undefined'">
-                            {{data[indextr].amount_spent.toFixed(2)}}
+                            € {{data[indextr].amount_spent.toFixed(2)}}
                         </div>
                     </vs-td>
 
@@ -209,7 +210,7 @@
 
                     <vs-td>
                         <div v-if="typeof data[indextr].cpl != 'undefined'">
-                            {{data[indextr].cpl.toFixed(2)}}
+                            € {{data[indextr].cpl.toFixed(2)}}
                         </div>
                     </vs-td>
 
@@ -233,13 +234,13 @@
                 <vs-td>
                 </vs-td>
                 <vs-td>
-                    {{totalStats.amount_spent.toFixed(2)}}
+                    € {{totalStats.amount_spent.toFixed(2)}}
                 </vs-td>
                 <vs-td>
-                    {{totalStats.leads.toFixed(2)}}
+                    {{totalStats.leads}}
                 </vs-td>
                 <vs-td>
-                    {{totalStats.cpl.toFixed(2)}}
+                    € {{totalStats.cpl.toFixed(2)}}
                 </vs-td>
                 <!-- END TOTAL STATS -->
             </template>
@@ -301,6 +302,114 @@
                 <vs-td>
                 </vs-td>
 
+            </template>
+        </vs-table>
+
+        <!-- Campaigns table -->
+        <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
+
+            <template slot="thead">
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="spent">Spent</vs-th>
+                <vs-th sort-key="result">Result</vs-th>
+                <vs-th sort-key="cpa">CPA</vs-th>
+                <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="cpm">CPM</vs-th>
+                <vs-th sort-key="ctr">CTR</vs-th>
+                <vs-th sort-key="cpc">CPC</vs-th>
+                <vs-th sort-key="daily_budget">Budget</vs-th>
+                <vs-th>Actions</vs-th>
+            </template>
+
+            <template slot-scope="{data}">
+                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td :data="data[indextr].name">
+                        {{data[indextr].name}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].status">
+                        <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', data[indextr].id)">
+                            <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
+                            <span slot="on" v-else>Review</span>
+                            <span slot="off">Paused</span>
+                        </vs-switch>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].spent">
+                        € {{data[indextr].spent.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].result">
+                        {{data[indextr].result}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpa">
+                        € {{data[indextr].cpa.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr.toFixed(2)}}%
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpm">
+                        € {{data[indextr].cpm.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].ctr">
+                        {{data[indextr].ctr.toFixed(2)}}%
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].cpc">
+                        € {{data[indextr].cpc.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].daily_budget">
+                        <span v-if="data[indextr].cbo">
+                            € {{data[indextr].daily_budget.toFixed(2)}}
+                        </span>
+                        <span v-else>
+                            Adset budget
+                        </span>
+                    </vs-td>
+
+                    <vs-td>
+                        <div class="flex items-center">
+                            <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
+                            <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
+                        </div>
+                    </vs-td>
+
+                </vs-tr>
+
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>{{data.length}}</vs-td>
+                <vs-td>
+                    € {{total_ads_stats.spent.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.result}}
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpa.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.cr.toFixed(2)}}%
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpm.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{total_ads_stats.ctr.toFixed(2)}}%
+                </vs-td>
+                <vs-td>
+                    € {{total_ads_stats.cpc.toFixed(2)}}
+                </vs-td>
+                <vs-td></vs-td>
+                <!-- END TOTAL STATS-->
             </template>
         </vs-table>
 
@@ -696,6 +805,72 @@
             </div>
         </vs-popup>
 
+        <!-- Edit budget popup -->
+        <vs-popup title="Edit budget" :active.sync="showPopup['edit_budget']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{editingCampaign.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Daily Budget</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingCampaign.daily_budget" />
+                </div>
+                <div class="vx-col w-full mt-2" v-if="(editingCampaign.object_type == 'campaign') && (editingCampaign.hasOwnProperty('cbo')) && (!editingCampaign.cbo)">
+                    <span>* This campaign is non-CBO: this daily budget will be assigned to every adset of this campaign.</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="editBudget" color="primary" type="filled" :disabled="!isValidForm('edit_budget')">Update budget</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Edit bid popup -->
+        <vs-popup title="Edit budget" :active.sync="showPopup['edit_bid']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{editingCampaign.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6" v-if="((editingCampaign.object_type == 'adset') && (editingCampaign.hasOwnProperty('cbo')) && (editingCampaign.cbo))">
+                <div class="vx-col w-full mt-2">
+                    <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
+                </div>
+            </div>
+            <div class="vx-row mb-6" v-else>
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid Type</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="editingCampaign.bid_strategy" class="w-full">
+                        <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in bidOptions" />
+                    </vs-select>
+                </div>
+            </div>
+            
+            <div class="vx-row mb-6" v-if="editingCampaign.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid Amount</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingBidAmount" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full mt-2" v-if="(editingCampaign.object_type == 'campaign') && (editingCampaign.hasOwnProperty('cbo')) && (!editingCampaign.cbo)">
+                    <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="editBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+            </div>
+        </vs-popup>
+
+
         <!-- View ad popup -->
         <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
             <div class="vx-row mb-6 flex items-center">
@@ -815,6 +990,13 @@ export default {
       myId: 0,
 
       editingObject: -1,
+      editingCampaign: {},
+      bidOptions: [
+        { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+      editingBidAmount: 0,
 
       showPopup: {
         'create': false,
@@ -822,6 +1004,8 @@ export default {
         'edit': false,
         'import': false,
         'bm_info': false,
+        'edit_budget': false,
+        'edit_bid': false,
         'view_ad': false,
       },
       newObject: {
@@ -892,6 +1076,7 @@ export default {
       bmInfoObj: {},
       bmInfoObjId: 0,
 
+      campaigns: [],
       ads: [],
       total_ads_stats: {
         spent: 0,
@@ -933,9 +1118,9 @@ export default {
     },
   },
   methods: {
-    getObjectIndexById(id) {
+    getObjectIndexById(objs, id) {
       let index = -1;
-      this.objects.forEach((obj, i) => {
+      objs.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
           return
@@ -1108,6 +1293,15 @@ export default {
           }
         }
         return flag
+      } else if (type == 'edit_budget') {
+        isValid = (this.editingCampaign.hasOwnProperty('daily_budget') &&
+            this.editingCampaign.daily_budget > 0)
+      } else if (type == 'edit_bid') {
+        if (this.editingCampaign.hasOwnProperty('bid_strategy') &&
+            this.editingCampaign.bid_strategy != '') {
+          return ((this.editingCampaign.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
+                  (this.editingCampaign.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingBidAmount > 0)
+        }
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
@@ -1178,7 +1372,7 @@ export default {
         })
     },
     editForm(id) {
-      let obj = this.objects[this.getObjectIndexById(id)]
+      let obj = this.objects[this.getObjectIndexById(this.objects, id)]
       this.newObject['edit'] = {
         name: obj.name,
         product: obj.product.id,
@@ -1310,11 +1504,13 @@ export default {
         })
     },
     checkStatus(id) {
-      let objIndex = this.getObjectIndexById(id)
+      let objIndex = this.getObjectIndexById(this.objects, id)
       this.invoices = []
       this.invoicesTotalStats = {
         amount: 0,
       }
+
+      this.campaigns = []
       this.ads = []
 
       let obj = this.objects[objIndex]
@@ -1348,9 +1544,11 @@ export default {
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
           let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
+          fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
           //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
           fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
           fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
+          fields += '\}'
           fields += '\}'
 
           this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
@@ -1358,6 +1556,13 @@ export default {
               let totalAmountSpent = 0
               let totalResult = 0
               let transactions = []
+              this.dynamicStats["id" + obj.id] = {
+                amount_spent: 0,
+                leads: 0,
+                cpl: 0,
+                transactions: [],
+              }
+
               response.data.data.forEach((adAccount) => {
                 let adAccountToPush = {
                   id: adAccount.account_id,
@@ -1385,6 +1590,7 @@ export default {
                     adAccountToPush.funding_sources.push(adAccount.funding_source_details.display_string)
                   }
                 }
+                /*
                 if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
                   for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
                     if (adAccount.ads.data[adsIndex].hasOwnProperty('spent')) {
@@ -1395,6 +1601,7 @@ export default {
                     }
                   }
                 }
+                */
                 if (adAccount.hasOwnProperty('transactions') && adAccount.transactions.hasOwnProperty('data') && Array.isArray(adAccount.transactions.data)) {
                   for (let tIndex = 0; tIndex < adAccount.transactions.data.length; tIndex++) {
                     let t = adAccount.transactions.data[tIndex]
@@ -1435,75 +1642,134 @@ export default {
                   }
                 }
 
-                // Collect ads
-                if (adAccount.hasOwnProperty('ads')) {
-                  for (let adIndex = 0; adIndex < adAccount.ads.data.length; adIndex++) {
-                    let ad = adAccount.ads.data[adIndex]
+                // Collect campaigns
+                if (adAccount.hasOwnProperty('campaigns')) {
+                  for (let adIndex = 0; adIndex < adAccount.campaigns.data.length; adIndex++) {
+                    let campaign = adAccount.campaigns.data[adIndex]
+ 
+                    let spent = parseFloat(campaign.spent/100)
+                    let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
+                    let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
+                    let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
+                    let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
+                    let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
 
-                    let adSpent = parseFloat(ad.spent/100)
-                    let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
-                    let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
-                    let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                    let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
-                    let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
-
-                    let adDailyBudget = 0
-                    let adBidStrategy = ''
-                    if (ad.hasOwnProperty('daily_budget')) {
-                      adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                    let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
+                    let daily_budget = 0
+                    let bid_strategy = ''
+                    if (campaign.hasOwnProperty('daily_budget')) {
+                      daily_budget = parseFloat(parseInt(campaign.daily_budget) / 100)
                     }
-                    if (ad.hasOwnProperty('bid_strategy')) {
-                      adBidStrategy = ad.bid_strategy
-                    }
-
-                    let adUrl = ''
-                    if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
-                      adUrl = ad.creative.object_url
-                    }
-                    let adLinkUrl = ''
-                    if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
-                      adLinkUrl = ad.creative.link_url
-                    }
-                    let adImageUrl = ''
-                    if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
-                      adImageUrl = ad.creative.image_url
+                    if (campaign.hasOwnProperty('bid_strategy')) {
+                      bid_strategy = campaign.bid_strategy
                     }
 
                     let adAlreadyExists = false
-                    for (let j = 0; j < this.ads.length; j++) {
-                      if (this.ads[j].id == ad.id) {
+                    for (let j = 0; j < this.campaigns.length; j++) {
+                      if (this.campaigns[j].id == campaign.id) {
                         adAlreadyExists = true
                         break
                       }
                     }
 
                     if (!adAlreadyExists) {
-                      let adToPush = {
-                        object_type: 'ad',
+                      let campaignToPush = {
+                        object_type: 'campaign',
                         fb_account_token: obj.token,
                         account_id: adAccount.id,
-                        id: ad.id,
-                        name: ad.name,
-                        status: ad.effective_status,
-                        spent: adSpent,
-                        result: ad.result,
-                        cpa: adCpa,
-                        impressions: ad.impressions,
-                        clicks: ad.clicks,
-                        cr: adCr,
-                        cpm: adCpm,
-                        ctr: adCtr,
-                        cpc: adCpc,
-                        daily_budget: adDailyBudget,
-                        bid_strategy: adBidStrategy,
-                        image_url: adImageUrl,
-                        body: ad.creative.body,
-                        title: ad.creative.title,
-                        call_to_action_type: ad.creative.call_to_action_type,
-                        url: adUrl,
-                        post_url: adLinkUrl,
+                        id: campaign.id,
+                        name: campaign.name,
+                        status: campaign.effective_status,
+                        spent: spent,
+                        result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
+                        cpa: cpa,
+                        impressions: campaign.impressions,
+                        clicks: campaign.clicks,
+                        cr: cr,
+                        cpm: cpm,
+                        ctr: ctr,
+                        cpc: cpc,
+                        cbo: cbo,
+                        daily_budget: daily_budget,
+                        bid_strategy: bid_strategy,
                       }
-                      this.ads.push(adToPush)
+                      this.campaigns.push(campaignToPush)
+                    }
+
+                    // Collect ads
+                    if (campaign.hasOwnProperty('ads')) {
+                      for (let adIndex = 0; adIndex < campaign.ads.data.length; adIndex++) {
+                        let ad = campaign.ads.data[adIndex]
+
+                        let adSpent = parseFloat(ad.spent/100)
+                        let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
+                        let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
+                        let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
+                        let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
+                        let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
+
+                        let adDailyBudget = 0
+                        let adBidStrategy = ''
+                        if (ad.hasOwnProperty('daily_budget')) {
+                          adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                        }
+                        if (ad.hasOwnProperty('bid_strategy')) {
+                          adBidStrategy = ad.bid_strategy
+                        }
+
+                        let adUrl = ''
+                        if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+                          adUrl = ad.creative.object_url
+                        }
+                        let adLinkUrl = ''
+                        if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                          adLinkUrl = ad.creative.link_url
+                        }
+                        let adImageUrl = ''
+                        if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                          adImageUrl = ad.creative.image_url
+                        }
+
+                        let adAlreadyExists = false
+                        for (let j = 0; j < this.ads.length; j++) {
+                          if (this.ads[j].id == ad.id) {
+                            adAlreadyExists = true
+                            break
+                          }
+                        }
+
+                        if (!adAlreadyExists) {
+                          let adToPush = {
+                            object_type: 'ad',
+                            fb_account_token: obj.token,
+                            account_id: adAccount.id,
+                            id: ad.id,
+                            name: ad.name,
+                            status: ad.effective_status,
+                            spent: adSpent,
+                            result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
+                            cpa: adCpa,
+                            impressions: ad.impressions,
+                            clicks: ad.clicks,
+                            cr: adCr,
+                            cpm: adCpm,
+                            ctr: adCtr,
+                            cpc: adCpc,
+                            daily_budget: adDailyBudget,
+                            bid_strategy: adBidStrategy,
+                            image_url: adImageUrl,
+                            body: ad.creative.body,
+                            title: ad.creative.title,
+                            call_to_action_type: ad.creative.call_to_action_type,
+                            url: adUrl,
+                            post_url: adLinkUrl,
+                          }
+                          this.ads.push(adToPush)
+
+                          totalAmountSpent += parseFloat(adToPush.spent)
+                          totalResult += parseInt(adToPush.result)
+                        }
+                      }
                     }
                   }
                 }
@@ -1511,16 +1777,9 @@ export default {
                 adAccounts.push(adAccountToPush)
               })
 
-              this.dynamicStats["id" + obj.id] = {
-                amount_spent: 0,
-                leads: 0,
-                cpl: 0,
-                transactions: [],
-              }
-
-              this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent/100)
+              this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
               this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
-              this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent/100)/totalResult) : parseFloat(totalAmountSpent/100))
+              this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
               this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
 
               let info = obj.info
@@ -1659,6 +1918,7 @@ export default {
       this.invoicesTotalStats = {
         amount: 0,
       }
+      this.campaigns = []
       this.ads = []
 
       if (this.selected.length == 0) return
@@ -1693,9 +1953,11 @@ export default {
             let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
             let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
+            fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
             //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
             fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
             fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
+            fields += '\}'
             fields += '\}'
 
             this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
@@ -1703,6 +1965,13 @@ export default {
                 let totalAmountSpent = 0
                 let totalResult = 0
                 let transactions = []
+                this.dynamicStats["id" + obj.id] = {
+                  amount_spent: 0,
+                  leads: 0,
+                  cpl: 0,
+                  transactions: [],
+                }
+
                 response.data.data.forEach((adAccount) => {
                   let adAccountToPush = {
                     id: adAccount.account_id,
@@ -1730,6 +1999,7 @@ export default {
                       adAccountToPush.funding_sources.push(adAccount.funding_source_details.display_string)
                     }
                   }
+                  /*
                   if (adAccount.hasOwnProperty('ads') && adAccount.ads.hasOwnProperty('data') && Array.isArray(adAccount.ads.data)) {
                     for (let adsIndex = 0; adsIndex < adAccount.ads.data.length; adsIndex++) {
                       if (adAccount.ads.data[adsIndex].hasOwnProperty('spent')) {
@@ -1740,6 +2010,7 @@ export default {
                       }
                     }
                   }
+                  */
                   if (adAccount.hasOwnProperty('transactions') && adAccount.transactions.hasOwnProperty('data') && Array.isArray(adAccount.transactions.data)) {
                     for (let tIndex = 0; tIndex < adAccount.transactions.data.length; tIndex++) {
                       let t = adAccount.transactions.data[tIndex]
@@ -1780,74 +2051,133 @@ export default {
                     }
                   }
 
-                  // Collect ads
-                  if (adAccount.hasOwnProperty('ads')) {
-                    for (let adIndex = 0; adIndex < adAccount.ads.data.length; adIndex++) {
-                      let ad = adAccount.ads.data[adIndex]
+                  // Collect campaigns
+                  if (adAccount.hasOwnProperty('campaigns')) {
+                    for (let adIndex = 0; adIndex < adAccount.campaigns.data.length; adIndex++) {
+                      let campaign = adAccount.campaigns.data[adIndex]
+ 
+                      let spent = parseFloat(campaign.spent/100)
+                      let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
+                      let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
+                      let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
+                      let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
+                      let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
 
-                      let adSpent = parseFloat(ad.spent/100)
-                      let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
-                      let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
-                      let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                      let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
-                      let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
-
-                      let adDailyBudget = 0
-                      let adBidStrategy = ''
-                      if (ad.hasOwnProperty('daily_budget')) {
-                        adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                      let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
+                      let daily_budget = 0
+                      let bid_strategy = ''
+                      if (campaign.hasOwnProperty('daily_budget')) {
+                        daily_budget = parseFloat(parseInt(campaign.daily_budget) / 100)
                       }
-                      if (ad.hasOwnProperty('bid_strategy')) {
-                        adBidStrategy = ad.bid_strategy
-                      }
-
-                      let adUrl = ''
-                      if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
-                        adUrl = ad.creative.object_url
-                      }
-                      let adLinkUrl = ''
-                      if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
-                        adLinkUrl = ad.creative.link_url
-                      }
-                      let adImageUrl = ''
-                      if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
-                        adImageUrl = ad.creative.image_url
+                      if (campaign.hasOwnProperty('bid_strategy')) {
+                        bid_strategy = campaign.bid_strategy
                       }
 
                       let adAlreadyExists = false
-                      for (let j = 0; j < this.ads.length; j++) {
-                        if (this.ads[j].id == ad.id) {
+                      for (let j = 0; j < this.campaigns.length; j++) {
+                        if (this.campaigns[j].id == campaign.id) {
                           adAlreadyExists = true
                           break
                         }
                       }
 
                       if (!adAlreadyExists) {
-                        let adToPush = {
-                          object_type: 'ad',
+                        let campaignToPush = {
+                          object_type: 'campaign',
                           fb_account_token: obj.token,
-                          id: ad.id,
-                          name: ad.name,
-                          status: ad.effective_status,
-                          spent: adSpent,
-                          result: ad.result,
-                          cpa: adCpa,
-                          impressions: ad.impressions,
-                          clicks: ad.clicks,
-                          cr: adCr,
-                          cpm: adCpm,
-                          ctr: adCtr,
-                          cpc: adCpc,
-                          daily_budget: adDailyBudget,
-                          bid_strategy: adBidStrategy,
-                          image_url: adImageUrl,
-                          body: ad.creative.body,
-                          title: ad.creative.title,
-                          call_to_action_type: ad.creative.call_to_action_type,
-                          url: adUrl,
-                          post_url: adLinkUrl,
+                          account_id: adAccount.id,
+                          id: campaign.id,
+                          name: campaign.name,
+                          status: campaign.effective_status,
+                          spent: spent,
+                          result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
+                          cpa: cpa,
+                          impressions: campaign.impressions,
+                          clicks: campaign.clicks,
+                          cr: cr,
+                          cpm: cpm,
+                          ctr: ctr,
+                          cpc: cpc,
+                          cbo: cbo,
+                          daily_budget: daily_budget,
+                          bid_strategy: bid_strategy,
                         }
-                        this.ads.push(adToPush)
+                        this.campaigns.push(campaignToPush)
+                      }
+
+                      // Collect ads
+                      if (campaign.hasOwnProperty('ads')) {
+                        for (let adIndex = 0; adIndex < campaign.ads.data.length; adIndex++) {
+                          let ad = campaign.ads.data[adIndex]
+
+                          let adSpent = parseFloat(ad.spent/100)
+                          let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
+                          let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
+                          let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
+                          let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
+                          let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
+
+                          let adDailyBudget = 0
+                          let adBidStrategy = ''
+                          if (ad.hasOwnProperty('daily_budget')) {
+                            adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
+                          }
+                          if (ad.hasOwnProperty('bid_strategy')) {
+                            adBidStrategy = ad.bid_strategy
+                          }
+
+                          let adUrl = ''
+                          if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+                            adUrl = ad.creative.object_url
+                          }
+                          let adLinkUrl = ''
+                          if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                            adLinkUrl = ad.creative.link_url
+                          }
+                          let adImageUrl = ''
+                          if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                            adImageUrl = ad.creative.image_url
+                          }
+
+                          let adAlreadyExists = false
+                          for (let j = 0; j < this.ads.length; j++) {
+                            if (this.ads[j].id == ad.id) {
+                              adAlreadyExists = true
+                              break
+                            }
+                          }
+
+                          if (!adAlreadyExists) {
+                            let adToPush = {
+                              object_type: 'ad',
+                              fb_account_token: obj.token,
+                              id: ad.id,
+                              name: ad.name,
+                              status: ad.effective_status,
+                              spent: adSpent,
+                              result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
+                              cpa: adCpa,
+                              impressions: ad.impressions,
+                              clicks: ad.clicks,
+                              cr: adCr,
+                              cpm: adCpm,
+                              ctr: adCtr,
+                              cpc: adCpc,
+                              daily_budget: adDailyBudget,
+                              bid_strategy: adBidStrategy,
+                              image_url: adImageUrl,
+                              body: ad.creative.body,
+                              title: ad.creative.title,
+                              call_to_action_type: ad.creative.call_to_action_type,
+                              url: adUrl,
+                              post_url: adLinkUrl,
+                            }
+                            this.ads.push(adToPush)
+
+                            totalAmountSpent += parseFloat(adToPush.spent)
+                            totalResult += parseInt(adToPush.result)
+                          }
+                        }
                       }
                     }
                   }
@@ -1855,16 +2185,9 @@ export default {
                   adAccounts.push(adAccountToPush)
                 })
 
-                this.dynamicStats["id" + obj.id] = {
-                  amount_spent: 0,
-                  leads: 0,
-                  cpl: 0,
-                  transactions: [],
-                }
-
-                this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent/100)
+                this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
                 this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
-                this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent/100)/totalResult) : parseFloat(totalAmountSpent/100))
+                this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
                 this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
 
                 let info = obj.info
@@ -2412,7 +2735,7 @@ export default {
     },
     showBmInfo(id, bmIndex) {
       this.bmInfoObjId = id
-      let objIndex = this.getObjectIndexById(id)
+      let objIndex = this.getObjectIndexById(this.objects, id)
       let obj = this.objects[objIndex]
       let bm = obj.info['bm'][bmIndex]
       this.bmInfoObj = bm
@@ -2456,10 +2779,9 @@ export default {
         if (this.objects[i].hasOwnProperty('leads')) {
           this.totalStats.leads += this.objects[i].leads
         }
-        if (this.objects[i].hasOwnProperty('cpl')) {
-          this.totalStats.cpl += this.objects[i].cpl
-        }
       }
+
+      this.totalStats.cpl = ((this.totalStats.leads > 0) ? (parseFloat(this.totalStats.amount_spent)/this.totalStats.leads) : parseFloat(this.totalStats.amount_spent))
     },
     changeView(view) {
       this.$vs.loading()
@@ -2516,7 +2838,15 @@ export default {
     switchStatus(what, id) {
       let obj = {}
       let index = -1
-      if (what == 'ad') {
+      if (what == 'campaign') {
+        for (let i = 0; i < this.campaigns.length; i++) {
+          if (this.campaigns[i].id == id) {
+            index = i
+            break
+          }
+        }
+        obj = this.ads[index]
+      } else if (what == 'ad') {
         for (let i = 0; i < this.ads.length; i++) {
           if (this.ads[i].id == id) {
             index = i
@@ -2535,7 +2865,9 @@ export default {
 
       let oldStatus = obj.status
       let status = (obj.status == 'ACTIVE') ? 'PAUSED' : 'ACTIVE'
-      if (what == 'ad') {
+      if (what == 'campaign') {
+        this.campaigns[index].status = status
+      } else if (what == 'ad') {
         this.ads[index].status = status
       }
 
@@ -2543,11 +2875,15 @@ export default {
       this.$http.post('https://graph.facebook.com/v9.0/' + obj.id + '?status=' + obj.status + '&access_token=' + fb_account_token)
         .then((response) => {
           if (response.data.success) {
-            if (what == 'ad') {
+            if (what == 'campaign') {
+              this.campaigns[index].status = status
+            } else if (what == 'ad') {
               this.ads[index].status = status
             }
           } else {
-            if (what == 'ad') {
+            if (what == 'campaign') {
+              this.campaigns[index].status = oldStatus
+            } else if (what == 'ad') {
               this.ads[index].status = oldStatus
             }
           }
@@ -2561,7 +2897,9 @@ export default {
           })
         })
         .catch((error) => {
-          if (what == 'ad') {
+          if (what == 'campaign') {
+            this.campaigns[index].status = oldStatus
+          } else if (what == 'ad') {
             this.ads[index].status = oldStatus
           }
           this.$vs.loading.close()
@@ -2587,6 +2925,319 @@ export default {
 
       this.viewingObject = this.ads[adIndex]
       this.showPopup['view_ad'] = true
+    },
+    editBudgetPopup(id) {
+      this.editingCampaign = this.campaigns[this.getObjectIndexById(this.campaigns, id)]
+      this.showPopup['edit_budget'] = true
+    },
+    editBidPopup(id) {
+      this.editingCampaign = this.campaigns[this.getObjectIndexById(this.campaigns, id)]
+      this.showPopup['edit_bid'] = true
+    },
+    editBudget() {
+      let dailyBudget = parseInt(this.editingCampaign.daily_budget * 100)
+
+      this.$vs.loading()
+
+      if (this.editingCampaign.object_type == 'campaign') {
+        if (this.editingCampaign.hasOwnProperty('cbo') && this.editingCampaign.cbo) {
+          // Change campaign daily budget
+          this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?daily_budget=' + dailyBudget + '&access_token=' + this.fb_account.token)
+            .then((response) => {
+              this.editingCampaign = {}
+              this.showPopup['edit_budget'] = false
+              this.$vs.loading.close()
+              //this.applyFilters() // TODO: What about this?
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Campaign daily budget updated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+            })
+            .catch((error) => {
+              this.editingCampaign = {}
+              this.showPopup['edit_budget'] = false
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: 'Campaign daily budget cannot be modified',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
+        } else {
+          // Change all adsets daily budget of this campaign
+          let adsetCounter = 0
+          let errorCounter = 0
+          for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+            let adset = this.editingCampaign.adsets[i]
+            this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + '?daily_budget=' + dailyBudget + '&access_token=' + this.fb_account.token)
+              .then((response) => {
+                adsetCounter++
+                if (adsetCounter == this.editingCampaign.adsets.length) {
+                  this.editingCampaign = {}
+                  this.showPopup['edit_budget'] = false
+                  this.$vs.loading.close()
+                  //this.applyFilters() // TODO: What about this?
+                  if (errorCounter == 0) {
+                    this.$vs.notify({
+                      title: 'Success',
+                      text: 'Adsets daily budget updated',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'success'
+                    })
+                  } else {
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: errorCounter + ' errors occured while updating adsets daily buget',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  }
+                }
+              })
+              .catch((error) => {
+                adsetCounter++
+                errorCounter++
+                if (adsetCounter == this.editingCampaign.adsets.length) {
+                  this.editingCampaign = {}
+                  this.showPopup['edit_budget'] = false
+                  this.$vs.loading.close()
+                  //this.applyFilters() // TODO: What about this
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: errorCounter + ' errors occured while updating adsets daily buget',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                }
+              })
+          }
+        }
+      } else if (this.editingCampaign.object_type == 'adset') {
+        // Edit adset daily budget
+        this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?daily_budget=' + dailyBudget + '&access_token=' + this.fb_account.token)
+          .then((response) => {
+            this.editingCampaign = {}
+            this.showPopup['edit_budget'] = false
+            this.$vs.loading.close()
+            //this.applyFilters() // TODO: What about this
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Adset daily budget updated',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+          })
+          .catch((error) => {
+            this.editingCampaign = {}
+            this.showPopup['edit_budget'] = false
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: 'Adset daily budget cannot be modified',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      } else {
+        this.$vs.loading.close()
+      }
+    },
+    editBid() {
+      let bidAmount = parseInt(this.editingBidAmount * 100)
+      let bidStrategy = this.editingCampaign.bid_strategy
+
+      this.$vs.loading()
+      if (this.editingCampaign.object_type == 'campaign') {
+        if (this.editingCampaign.cbo) {
+          // Change campaign bid_strategy
+          this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + '?bid_strategy=' + bidStrategy + '&access_token=' + this.fb_account.token)
+            .then((response) => {
+              // Change all adsets bid amount of this campaign
+              if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+                let adsetCounter = 0
+                let errorCounter = 0
+                for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+                  let adset = this.editingCampaign.adsets[i]
+
+                  let params = ''
+                  params += '?bid_amount=' + bidAmount
+                  params += '&access_token=' + this.fb_account.token
+                  this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+                    .then((response) => {
+                      adsetCounter++
+                      if (adsetCounter == this.editingCampaign.adsets.length) {
+                        this.editingCampaign = {}
+                        this.showPopup['edit_bid'] = false
+                        this.$vs.loading.close()
+                        //this.applyFilters() // TODO: What about this
+                        if (errorCounter == 0) {
+                          this.$vs.notify({
+                            title: 'Success',
+                            text: 'Adsets bid updated',
+                            iconPack: 'feather',
+                            icon: 'icon-alert-circle',
+                            color: 'success'
+                          })
+                        } else {
+                          this.$vs.notify({
+                            title: 'Error',
+                            text: errorCounter + ' errors occured while updating adsets bid',
+                            iconPack: 'feather',
+                            icon: 'icon-alert-circle',
+                            color: 'danger'
+                          })
+                        }
+                      }
+                    })
+                    .catch((error) => {
+                      adsetCounter++
+                      errorCounter++
+                      if (adsetCounter == this.editingCampaign.adsets.length) {
+                        this.editingCampaign = {}
+                        this.showPopup['edit_bid'] = false
+                        this.$vs.loading.close()
+                        //this.applyFilters() // TODO: What about this
+                        this.$vs.notify({
+                          title: 'Error',
+                          text: errorCounter + ' errors occured while updating adsets bid',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'danger'
+                        })
+                      }
+                    })
+                }
+              }
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: 'Campaign daily budget cannot be modified',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
+        } else {
+          // Change all adsets bid amount and bid strategy of this campaign
+          let adsetCounter = 0
+          let errorCounter = 0
+          for (let i = 0; i < this.editingCampaign.adsets.length; i++) {
+            let adset = this.editingCampaign.adsets[i]
+
+            let params = ''
+            params += '?bid_strategy=' + bidStrategy
+            if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+              params += '&bid_amount=' + bidAmount
+            }
+            params += '&access_token=' + this.fb_account.token
+            this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+              .then((response) => {
+                adsetCounter++
+                if (adsetCounter == this.editingCampaign.adsets.length) {
+                  this.editingCampaign = {}
+                  this.showPopup['edit_bid'] = false
+                  this.$vs.loading.close()
+                  //this.applyFilters() // TODO: What about this
+                  if (errorCounter == 0) {
+                    this.$vs.notify({
+                      title: 'Success',
+                      text: 'Adsets bid updated',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'success'
+                    })
+                  } else {
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: errorCounter + ' errors occured while updating adsets bid',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  }
+                }
+              })
+              .catch((error) => {
+                adsetCounter++
+                errorCounter++
+                if (adsetCounter == this.editingCampaign.adsets.length) {
+                  this.editingCampaign = {}
+                  this.showPopup['edit_bid'] = false
+                  this.$vs.loading.close()
+                  //this.applyFilters() // TODO: What about this
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: errorCounter + ' errors occured while updating adsets bid',
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                }
+              })
+          }
+        }
+      } else if (this.editingCampaign.object_type == 'adset') {
+        let params = ''
+        params += '?access_token=' + this.fb_account.token
+        if (!this.editingCampaign.cbo) {
+          params += '&bid_strategy=' + bidStrategy
+          if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+            params += '&bid_amount=' + bidAmount
+          }
+        } else {
+          params += '&bid_amount=' + bidAmount
+        }
+        let doRequestFlag = true
+        let campaign = this.campaigns[this.getObjectIndexById(this.campaigns, this.editingCampaign.campaign_id)]
+        if (campaign.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') {
+          doRequestFlag = false
+        }
+        if (doRequestFlag) {
+          this.$http.post('https://graph.facebook.com/v9.0/' + this.editingCampaign.id + params)
+            .then((response) => {
+              this.editingCampaign = {}
+              this.showPopup['edit_bid'] = false
+              this.$vs.loading.close()
+              //this.applyFilters() // TODO: What about this
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Adset bid updated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+            })
+            .catch((error) => {
+              this.editingCampaign = {}
+              this.showPopup['edit_bid'] = false
+              this.$vs.loading.close()
+              //this.applyFilters() // TODO: What about this
+              this.$vs.notify({
+                title: 'Error',
+                text: 'An error occured while updating adsets bid',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
+        } else {
+          this.$vs.loading.close()
+        }
+      } else {
+        this.$vs.loading.close()
+      }
     },
   },
   created() {
