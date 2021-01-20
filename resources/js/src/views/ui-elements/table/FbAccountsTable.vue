@@ -2483,6 +2483,21 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
     },
+    formatDateTime(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0') //January is 0!
+      let yyyy = dateObj.getFullYear()
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd
+
+      let hh = String(dateObj.getHours()).padStart(2, '0')
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      let ss = String(dateObj.getSeconds()).padStart(2, '0')
+
+      let formattedDateTime = formattedDate + ' ' + hh + ':' + ii + ':' + ss
+
+      return formattedDateTime;
+    },
     getCardsArray(info) {
       let cardsArray = []
 
@@ -2561,7 +2576,7 @@ export default {
         let invoice = this.selectedInvoices[i]
 
         let d = new Date(invoice.time * 1000)
-        let invoiceDate = this.formatDate(d) + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds()
+        let invoiceDate = this.formatDateTime(d)
 
         let info = {
           'ad_account_name': invoice.ad_account_name,
@@ -2578,7 +2593,7 @@ export default {
           'number': invoice.vat_invoice_id,
           'language': 'eng',
           'status': 'paid',
-          'amount': invoice.amount,
+          'amount': parseFloat(invoice.amount),
           'currency': invoice.currency.toLowerCase(),
           'info': JSON.stringify(info)
         }
