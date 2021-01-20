@@ -800,6 +800,39 @@
                 </div>
             </div>
 
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    Ad accounts:
+                </div>
+                <table class="vx-col w-full">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Limit</th>
+                        <th>Cards</th>
+                    </tr>
+                    </thead>
+
+                    <tr v-for="(item, indextr) in bmInfoObj.ad_accounts">
+                        <td>
+                            <vs-td :data="item.status">
+                                <vs-chip transparent :color="statusColors[item.status]">{{item.name}}</vs-chip>
+                            </vs-td>
+                        </td>
+                        <td>{{item.spend_cap}}</td>
+                        <td>
+                            <div class="flex items-center">
+                                <vs-chip v-for="(card, index) in item.funding_sources" :key="index">
+                                    <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
+                                </vs-chip>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
@@ -1531,6 +1564,7 @@ export default {
               warning: 0,
               total: 0,
               funding_sources: [],
+              ad_accounts: [],
             }
           })
           let adAccounts = []
@@ -1542,7 +1576,7 @@ export default {
           let untilDate = new Date(until + ' 23:59:59')
           let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
+          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,spend_cap'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
           //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
@@ -1568,7 +1602,9 @@ export default {
                   id: adAccount.account_id,
                   name: adAccount.name,
                   funding_sources: [],
+                  business: adAccount.business,
                   status: adAccount.account_status,
+                  spend_cap: adAccount.spend_cap,
                 }
 
                 let adAccountHasBusiness = false
@@ -1775,6 +1811,10 @@ export default {
                 }
 
                 adAccounts.push(adAccountToPush)
+
+                if (adAccountHasBusiness) {
+                  businesses[adAccount.business.id].ad_accounts.push(adAccountToPush)
+                }
               })
 
               this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
@@ -1940,6 +1980,7 @@ export default {
                 warning: 0,
                 total: 0,
                 funding_sources: [],
+                ad_accounts: [],
               }
             })
             let adAccounts = []
@@ -1978,6 +2019,7 @@ export default {
                     name: adAccount.name,
                     funding_sources: [],
                     status: adAccount.account_status,
+                    spend_cap: adAccount.spend_cap,
                   }
 
                   let adAccountHasBusiness = false
@@ -2183,6 +2225,10 @@ export default {
                   }
 
                   adAccounts.push(adAccountToPush)
+
+                  if (adAccountHasBusiness) {
+                    businesses[adAccount.business.id].ad_accounts.push(adAccountToPush)
+                  }
                 })
 
                 this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
@@ -2962,7 +3008,7 @@ export default {
               this.editingCampaign = {}
               this.showPopup['edit_budget'] = false
               this.$vs.loading.close()
-              //this.applyFilters() // TODO: What about this?
+              //this.applyFilters() // TODO: What about this
               this.$vs.notify({
                 title: 'Success',
                 text: 'Campaign daily budget updated',
