@@ -95,7 +95,7 @@
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                 <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                (total: € {{ total_amount }})&nbsp;
+                (total: € {{ total_amount.toFixed(2) }})&nbsp;
                 <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
             </div>
 
@@ -186,7 +186,7 @@
                 <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
-                <vs-td>{{total_amount}}</vs-td>
+                <vs-td>{{total_amount.toFixed(2)}}</vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
                 <vs-td></vs-td>
@@ -386,12 +386,6 @@ export default {
       this.$http.get('/api/v1/invoices', { headers })
         .then((response) => {
           this.objects = response.data.data
-
-          this.total_amount = 0.0
-          this.objects.forEach((obj) => {
-            this.total_amount += parseFloat(obj.amount)
-          })
-          this.total_amount = this.total_amount.toFixed(2)
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -625,6 +619,7 @@ export default {
       this.$http.get('/api/v1/invoices', { headers, params: data })
         .then((response) => {
           this.objects = response.data.data
+          this.calculateStats()
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -1046,6 +1041,12 @@ export default {
               })
             })
         }, 100)
+      })
+    },
+    calculateStats() {
+      this.total_amount = 0.0
+      this.objects.forEach((obj) => {
+        this.total_amount += parseFloat(obj.amount)
       })
     },
   },

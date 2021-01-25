@@ -161,7 +161,7 @@
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
-                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])" @click="showAdAccounts(data[indextr].id)">
                             <vs-chip
                                 transparent
                                 :color="((data[indextr].token_status == 'active') ? (adAccountStatusColors[getAdAccountStatus(data[indextr].info)]) : 'danger')">
@@ -818,10 +818,52 @@
                     <tr v-for="(item, indextr) in bmInfoObj.ad_accounts">
                         <td>
                             <vs-td :data="item.status">
-                                <vs-chip transparent :color="statusColors[item.status]">{{item.name}}</vs-chip>
+                                <vs-chip transparent :color="item.status == 2 ? 'danger' : 'success'">{{item.name}}</vs-chip>
                             </vs-td>
                         </td>
-                        <td>{{item.spend_cap}}</td>
+                        <td>{{item.adtrust_dsl}}</td>
+                        <td>
+                            <div class="flex items-center">
+                                <vs-chip v-for="(card, index) in item.funding_sources" :key="index">
+                                    <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
+                                </vs-chip>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Ad accounts popup -->
+        <vs-popup title="Business manager info" :active.sync="showPopup['ad_accounts']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">Ad accounts</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    Ad accounts:
+                </div>
+                <table class="vx-col w-full">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Limit</th>
+                        <th>Cards</th>
+                    </tr>
+                    </thead>
+
+                    <tr v-for="(item, indextr) in adAccounts">
+                        <td>
+                            <vs-td :data="item.status">
+                                <vs-chip transparent :color="item.status == 2 ? 'danger' : 'success'">{{item.name}}</vs-chip>
+                            </vs-td>
+                        </td>
+                        <td>{{item.adtrust_dsl}}</td>
                         <td>
                             <div class="flex items-center">
                                 <vs-chip v-for="(card, index) in item.funding_sources" :key="index">
@@ -1037,6 +1079,7 @@ export default {
         'edit': false,
         'import': false,
         'bm_info': false,
+        'ad_accounts': false,
         'edit_budget': false,
         'edit_bid': false,
         'view_ad': false,
@@ -1108,6 +1151,7 @@ export default {
 
       bmInfoObj: {},
       bmInfoObjId: 0,
+      adAccounts: [],
 
       campaigns: [],
       ads: [],
@@ -1576,7 +1620,7 @@ export default {
           let untilDate = new Date(until + ' 23:59:59')
           let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,spend_cap'
+          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
           //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
@@ -1604,7 +1648,7 @@ export default {
                   funding_sources: [],
                   business: adAccount.business,
                   status: adAccount.account_status,
-                  spend_cap: adAccount.spend_cap,
+                  adtrust_dsl: adAccount.adtrust_dsl,
                 }
 
                 let adAccountHasBusiness = false
@@ -2019,7 +2063,7 @@ export default {
                     name: adAccount.name,
                     funding_sources: [],
                     status: adAccount.account_status,
-                    spend_cap: adAccount.spend_cap,
+                    adtrust_dsl: adAccount.adtrust_dsl,
                   }
 
                   let adAccountHasBusiness = false
@@ -2801,6 +2845,14 @@ export default {
       let bm = obj.info['bm'][bmIndex]
       this.bmInfoObj = bm
       this.showPopup['bm_info'] = true
+    },
+    showAdAccounts(id) {
+      let objIndex = this.getObjectIndexById(this.objects, id)
+      let obj = this.objects[objIndex]
+      console.log("YE")
+      this.adAccounts = obj.info['ad_accounts']
+      console.log("YE2")
+      this.showPopup['ad_accounts'] = true
     },
     onCopy() {
       this.$vs.notify({
