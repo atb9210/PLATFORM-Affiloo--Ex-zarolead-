@@ -49,10 +49,10 @@ class InvoiceController extends Controller
             $invoices = $invoices->where('user_id', Auth::user()->id);
         }
         if (isset($params['filter_date_from'])) {
-            $invoices = $invoices->where('invoice_date', '>=', $params['filter_date_from']);
+            $invoices = $invoices->where('invoice_date', '>=', $params['filter_date_from'] . ' 00:00:00');
         }
         if (isset($params['filter_date_to'])) {
-            $invoices = $invoices->where('invoice_date', '<=', $params['filter_date_to']);
+            $invoices = $invoices->where('invoice_date', '<=', $params['filter_date_to'] . ' 23:59:59');
         }
         if (isset($params['filter_min_amount'])) {
             $invoices = $invoices->where('amount', '>=', $params['filter_min_amount']);
