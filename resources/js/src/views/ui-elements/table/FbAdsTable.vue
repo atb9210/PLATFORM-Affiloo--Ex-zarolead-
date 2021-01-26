@@ -903,7 +903,7 @@ export default {
       fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
       fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
+      fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       fields += '\}'
       fields += '\}'
       fields += '\}'
@@ -912,7 +912,7 @@ export default {
       this.campaigns = []
       this.adsets = []
       this.ads = []
-      this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
+      this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields + '&thumbnail_width=512&thumbnail_height=512')
         .then((response) => {
           for (let j = 0; j < response.data.data.length; j++) {
             let adAccount = response.data.data[j]
@@ -1008,9 +1008,20 @@ export default {
                         if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
                           adLinkUrl = ad.creative.link_url
                         }
+                        if (adLinkUrl == '') {
+                          adLinkUrl = 'https://www.facebook.com/' + ad.creative.effective_object_story_id
+                        }
+
                         let adImageUrl = ''
                         if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
                           adImageUrl = ad.creative.image_url
+                        }
+                        let thumbnailUrl = ''
+                        if (ad.creative.hasOwnProperty('thumbnail_url') && ad.creative.thumbnail_url != null && ad.creative.thumbnail_url != '') {
+                          thumbnailUrl = ad.creative.thumbnail_url
+                        }
+                        if (adImageUrl == '') {
+                          adImageUrl = thumbnailUrl
                         }
 
                         let adToPush = {
