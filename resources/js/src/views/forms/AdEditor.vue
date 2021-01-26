@@ -115,8 +115,8 @@
             <div class="w-full flex">
               <span class="text-danger">{{ errors.first('step-2.product_media_id') }}</span>
             </div>
-            <div class="w-full flex">
-              <div class="vx-col md:w-1/4 w-full mb-2 mr-2" v-for="(object, index) in productMediasOptions.filter(filterByType)" :key="index">
+            <div class="w-full flex vx-row">
+              <div class="vx-col md:w-1/6 w-full pb-2 pr-2" v-for="(object, index) in productMediasOptions.filter(filterByType)" :key="index">
                 <vs-card class="cardx" :class="(object.id == productMedia) ? 'selected-product-media' : ''" @click.native="selectProductMedia(object.id)">
                   <div slot="media">
                     <img :src="(object.type == 'image') ? object.url_preview : videoThumbnail">
@@ -131,8 +131,8 @@
             <div class="vx-col w-full mb-2" vs-justify="center" vs-align="center" v-if="type == 'video'">
               <h3 class="mt-5 mb-4" vs-justify="center">Preview</h3>
             </div>
-            <div class="w-full flex" v-if="type == 'video'">
-              <div class="vx-col md:w-1/4 w-full mb-2 mr-2" v-for="(object, index) in productMediasOptions.filter(filterOnlyImages)" :key="index">
+            <div class="w-full flex vx-row" v-if="type == 'video'">
+              <div class="vx-col md:w-1/6 w-full pb-2 pr-2" v-for="(object, index) in productMediasOptions.filter(filterOnlyImages)" :key="index">
                 <vs-card class="cardx" :class="(object.id == productMediaPreview) ? 'selected-product-media' : ''" @click.native="selectProductMediaPreview(object.id)">
                   <div slot="media">
                     <img :src="object.url_preview">

@@ -23,6 +23,9 @@
         <div v-if="showFilters" class="mb-12">
             <div class="vx-row mb-2">
                 <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('lifetime')" icon-pack="feather" icon="icon-calendar">Lifetime</vs-button>
+                </div>
+                <div class="vx-col">
                     <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
                 </div>
                 <div class="vx-col">
@@ -407,7 +410,7 @@ export default {
         traffic_source: '',
         product: '',
       }
-      this.filterDatesShortcut('this_month')
+      this.applyFilters()
     },
     applyFilters() {
       this.$vs.loading()
@@ -454,6 +457,10 @@ export default {
       let invalidPeriod = false;
 
       switch (period) {
+        case 'lifetime': {
+          this.filters.date_from = '';
+          this.filters.date_to = '';
+        } break;
         case 'today': {
           let today = new Date();
           this.filters.date_from = this.formatDate(today);
