@@ -498,6 +498,75 @@ class FormController extends Controller
         return new FormStatsResource($stats);
     }
 
+    /**
+     * Edit form stats cost
+     *
+     * @urlParam id int required Form's id
+     *
+     * @bodyParam day string required Form stats date
+     * @bodyParam total_cost float required Form stats total_cost new value
+     *
+     * @response {
+     *  "data": [stats]
+     * }
+     */
+    public function editCostStats($id, Request $request)
+    {
+        $form = Form::findOrFail($id);
+        $this->authorize('update', $form);
+
+        // Param validation
+        $params = $request->validate([
+            'day' => 'required|date|date_format:Y-m-d',
+            'total_cost' => 'required|numeric|min:0',
+        ]);
+
+        $stats = FormStats::getObject($id, $params['day']);
+
+        // Update total cost
+        $prev_total_cost = $stats->total_cost;
+        $stats->total_cost = $params['total_cost'];
+        $form->total_cost += $stats->total_cost - $prev_total_cost;
+
+        $form->save();
+        $stats->save();
+
+        // Update user's report stats
+        $report = UserReport::getObject($form->user->id, $stats->day);
+        $report->cost += $stats->total_cost - $prev_total_cost;
+        $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+        $report->save();
+
+        // Update admin's user report
+        $adminRoleId = 2;
+        $users = User::query();
+        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+            ->whereIn('role_user.role_id', [$adminRoleId]);
+        $users = $users->get();
+        foreach ($users as $user) {
+            // Skip if it is already updated
+            if ($user->id == $form->user->id) {
+                continue;
+            }
+            $report = UserReport::getObject($user->id, $stats->day);
+            $report->cost += $stats->total_cost - $prev_total_cost;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+            $report->save();
+        }
+
+        // Update advertiser's report stats
+        $timestamp = strtotime($stats->day);
+        $month = intval(date('m', $timestamp));
+        $year = intval(date('Y', $timestamp));
+        $advertiser = User::findOrFail($form->product->advertiser_id);
+        $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+        $advReport->total_cost += $stats->total_cost - $prev_total_cost;
+        $advReport->profit = $advReport->commission - $advReport->total_cost;
+        $advReport->save();
+
+        return new FormStatsResource($stats);
+    }
+
     // TODO: This is not useful anymore?
     /**
      * Get landings stats (of this form)

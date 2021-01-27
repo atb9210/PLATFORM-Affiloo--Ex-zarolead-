@@ -17,6 +17,7 @@
             <RouterLink to="/dashboard/forms/builder" v-if="canCreateAndEdit">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
             </RouterLink>
+            <vs-button :disabled="selected.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
@@ -619,6 +620,31 @@
             </div>
         </vs-popup>
 
+        <!-- Update form cost popup -->
+        <vs-popup title="Update form cost" :active.sync="showPopup['update_cost']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Cost</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingCostValue" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Date</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="editingCostDay" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateFormCost" color="primary" type="filled" :disabled="!isValidForm('update_cost')">Update</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -649,6 +675,7 @@ export default {
         'edit': false,
         'code': false,
         'landing_url': false,
+        'update_cost': false,
       },
       newObject: {
         'create': {
@@ -767,6 +794,9 @@ export default {
       },
 
       landingUrlObjects: [],
+
+      editingCostValue: 0.0,
+      editingCostDay: '',
     }
   },
   computed: {
@@ -966,11 +996,15 @@ export default {
     },
     isValidForm(type) {
       let obj = this.newObject[type]
-      return (obj.name.length > 0
-        && obj.network != '' && obj.network.id >= 1
-        && obj.product != '' && obj.product.id >= 1
-        && obj.quantity.length > 0
-        && obj.traffic_source != '' && obj.traffic_source.id >= 1)
+      if (type == 'update_cost') {
+        return (this.editingCostValue != '' && this.editingCostDay != '')
+      } else {
+        return (obj.name.length > 0
+          && obj.network != '' && obj.network.id >= 1
+          && obj.product != '' && obj.product.id >= 1
+          && obj.quantity.length > 0
+          && obj.traffic_source != '' && obj.traffic_source.id >= 1)
+      }
     },
     createObject() {
       this.$vs.loading()
@@ -1232,8 +1266,8 @@ export default {
         for (let j = 0; j < this.objects[i].daily_stats.length; j++) {
           this.objects[i].stats.visits += parseInt(this.objects[i].daily_stats[j].visits)
           this.objects[i].stats.leads += parseInt(this.objects[i].daily_stats[j].leads)
-          this.objects[i].stats.total_commission += parseInt(this.objects[i].daily_stats[j].total_commission)
-          this.objects[i].stats.total_cost += parseInt(this.objects[i].daily_stats[j].total_cost)
+          this.objects[i].stats.total_commission += parseFloat(this.objects[i].daily_stats[j].total_commission)
+          this.objects[i].stats.total_cost += parseFloat(this.objects[i].daily_stats[j].total_cost)
         }
 
         let obj = this.objects[i]
@@ -1644,6 +1678,58 @@ export default {
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
+      })
+    },
+    showUpdateFormCost() {
+      this.editingCostValue = 0.0
+      this.editingCostDay = this.formatDate(new Date())
+      this.showPopup['update_cost'] = true
+    },
+    updateFormCost() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        day: this.editingCostDay,
+        total_cost: this.editingCostValue,
+      }
+
+      let counter = 0
+      this.selected.forEach((obj) => {
+        this.$http.put('/api/v1/forms/' + obj.id + '/stats-edit', data, { headers })
+          .then((response) => {
+            counter += 1
+            if (counter >= this.selected.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Forms cost upadated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.showPopup['update_cost'] = false
+              this.applyFilters()
+            }
+          })
+          .catch((error) => {
+            counter += 1
+            if (counter >= this.selected.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Forms cost upadated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+              this.showPopup['update_cost'] = false
+              this.applyFilters()
+            }
+          })
       })
     },
   },

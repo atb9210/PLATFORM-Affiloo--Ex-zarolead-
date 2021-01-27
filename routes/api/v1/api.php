@@ -101,6 +101,8 @@ Route::put('forms/{id}/stats', 'api\v1\FormController@updateStats')->middleware(
     ->name('forms.stats.update');
 Route::put('forms/{id}/stats-add', 'api\v1\FormController@addToCostStats')->middleware('auth:api')
     ->name('forms.stats.add');
+Route::put('forms/{id}/stats-edit', 'api\v1\FormController@editCostStats')->middleware('auth:api')
+    ->name('forms.stats.edit');
 Route::post('forms/{id}/notes', 'api\v1\FormController@createNote')->middleware('auth:api')
     ->name('forms.notes.store');
 Route::put('forms/notes/{id}', 'api\v1\FormController@editNote')->middleware('auth:api')
