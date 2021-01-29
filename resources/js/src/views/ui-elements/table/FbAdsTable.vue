@@ -505,65 +505,160 @@
 
             <!-- View ad popup -->
             <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
-                <div class="vx-row mb-6 flex items-center">
-                    <vs-button class="mr-auto ml-auto">{{viewingObject.name}}</vs-button>
+
+                <div v-if="!viewAdSaving">
+                    <div class="vx-row mb-6 flex items-center">
+                        <vs-button class="mr-auto ml-auto">{{viewingObject.name}}</vs-button>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <img v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
+                            <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <span>{{viewingObject.body}}</span>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <span><b>{{viewingObject.title}}</b></span>
+                        </div>
+                    </div>
+                    
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
+                                <template slot="thead">
+                                    <vs-th sort-key="ctr">CTR</vs-th>
+                                    <vs-th sort-key="cpc">CPC</vs-th>
+                                    <vs-th sort-key="cpa">CPA</vs-th>
+                                    <vs-th>Actions</vs-th>
+                                </template>
+
+                                <template slot-scope="{data}">
+                                    <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
+                                        <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
+                                            {{data[indextr].ctr.toFixed(2)}}%
+                                        </vs-td>
+                                        <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
+                                            € {{data[indextr].cpc.toFixed(2)}}
+                                        </vs-td>
+                                        <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
+                                            € {{data[indextr].cpa.toFixed(2)}}
+                                        </vs-td>
+                                        <vs-td>
+                                            <div class="flex items-center">
+                                                <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
+                                                <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
+                                                <vs-button @click="saveAdBegin(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
+                                            </div>
+                                        </vs-td>
+                                    </vs-tr>
+                                </template>
+                                
+                            </vs-table>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                <div v-else>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="viewAdSaving = false"></vs-button>
+                        </div>
                     </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <img v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
-                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <span>{{viewingObject.body}}</span>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <vs-select v-model="viewAdSavingProduct" class="w-full select-large" label="Product" v-validate="'required'" autocomplete>
+                                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productsOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
                     </div>
-                </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <span><b>{{viewingObject.title}}</b></span>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <vs-select v-model="viewAdSavingType" class="w-full select-large" label="Type" v-validate="'required'">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in typesOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
                     </div>
-                </div>
-                
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
-                            <template slot="thead">
-                                <vs-th sort-key="ctr">CTR</vs-th>
-                                <vs-th sort-key="cpc">CPC</vs-th>
-                                <vs-th sort-key="cpa">CPA</vs-th>
-                                <vs-th>Actions</vs-th>
-                            </template>
 
-                            <template slot-scope="{data}">
-                                <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
-                                    <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
-                                        {{data[indextr].ctr.toFixed(2)}}%
-                                    </vs-td>
-                                    <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
-                                        € {{data[indextr].cpc.toFixed(2)}}
-                                    </vs-td>
-                                    <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
-                                        € {{data[indextr].cpa.toFixed(2)}}
-                                    </vs-td>
-                                    <vs-td>
-                                        <div class="flex items-center">
-                                            <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
-                                            <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
-                                            <vs-button @click="saveAd(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
-                                        </div>
-                                    </vs-td>
-                                </vs-tr>
-                            </template>
-                            
-                        </vs-table>
+                    <div class="vx-row mb-6" v-if="viewAdSavingType == 'video'">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker('main')">Upload media</vs-button>
+                            <div class="vx-col w-full flex items-center">
+                                <span class="ml-auto mr-auto">{{ (fileToUpload.length == 0) ? 'No file selected' : fileToUpload.name }}</span>
+                            </div>
+                            <div class="vx-col w-full flex items-center">
+                                <span class="text-danger">{{ errors.first('file') }}</span>
+                            </div>
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <input type="file" ref="fileUpload" class="hidden" :accept="viewAdSavingType + '/*'" @change="onFileUploadChange">
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            {{ (viewAdSavingType == 'video') ? 'Preview' : 'Media' }}
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <img ref="viewAdSavingImg" v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
+                            <img ref="viewAdSavingImg" v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            CTR
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            CPC
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            CPA
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCtr" />
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpc" />
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full mt-2">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpa" />
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="adSave" color="primary" type="filled" :disabled="true">Save Ad</vs-button>
                     </div>
                 </div>
                 
@@ -702,6 +797,22 @@ export default {
       forms: [],
 
       noImageUrl: '',
+
+      productsOptions: [],
+      productsLoaded: false,
+      typesOptions: ['image', 'video'],
+      fileToUpload: '',
+      viewAdSaving: false,
+      viewAdSavingTrafficSource: '',
+      viewAdSavingProduct: '',
+      viewAdSavingType: '',
+      viewAdSavingMedia: '',
+      viewAdSavingPreview: '',
+      viewAdSavingTitle: '',
+      viewAdSavingText: '',
+      viewAdSavingCtr: 0,
+      viewAdSavingCpc: 0,
+      viewAdSavingCpa: 0,
     }
   },
   watch: {
@@ -1650,8 +1761,41 @@ export default {
         window.open(url)
       }
     },
-    saveAd(ad) {
-      // TODO: to do
+    saveAdBegin(ad) {
+      this.viewAdSavingTrafficSource = 1
+      this.viewAdSavingType = 'image' // TODO: What about the type?
+      this.viewAdSavingMedia = ''
+      this.viewAdSavingPreview = ''
+      this.viewAdSavingTitle = this.viewingObject.title
+      this.viewAdSavingText = this.viewingObject.body
+      this.viewAdSavingCtr = parseFloat(this.viewingObject.ctr.toFixed(2))
+      this.viewAdSavingCpc = parseFloat(this.viewingObject.cpc.toFixed(2))
+      this.viewAdSavingCpa = parseFloat(this.viewingObject.cpa.toFixed(2))
+
+      if (!this.productsLoaded) {
+        this.$vs.loading()
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        this.$http.get('/api/v1/products', { headers })
+          .then((response) => {
+            this.productsOptions = []
+            response.data.data.forEach((product) => {
+              this.productsOptions.push({
+                id: product.id,
+                label: product.id + ' - ' + product.name,
+              })
+              this.viewAdSavingProduct = product.id
+            })
+            this.productsLoaded = true
+            this.$vs.loading.close()
+            this.viewAdSaving = true
+          })
+          .catch((error) => {
+          })
+      } else {
+        this.viewAdSaving = true
+      }
     },
     showUpdateFormCost() {
       if (this.selectedCampaigns.length == 0) {
@@ -1729,6 +1873,153 @@ export default {
             color: 'danger'
           })
         })
+    },
+    adSave() {
+      this.$vs.loading()
+
+      let pmId = 0
+      let pmPreviewId = 0
+
+      let img = this.$refs["viewAdSavingImg"]
+      let url = img.src
+      fetch(url)
+        .then(r => r.blob())
+        .then((blob) => {
+          let fileToUpload = new File([blob], "file_to_upload.jpg")
+
+          let headers = {
+            'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+            'Content-Type': 'multipart/form-data',
+          }
+          let config = {
+            headers: headers,
+          }
+
+          let formData = new FormData()
+          formData.append('product_id', this.viewAdSavingProduct)
+          formData.append('type', 'image')
+          formData.append('file', fileToUpload)
+          this.$http.post('/api/v1/product-medias', formData, config)
+            .then((response) => {
+              pmId = response.data.data.id
+
+              if (this.viewAdSavingType == 'video') {
+                pmPreviewId = pmId
+
+                let formData = new FormData()
+                formData.append('product_id', 1)
+                formData.append('type', this.viewAdSavingType)
+                formData.append('file', this.fileToUpload)
+                this.$http.post('/api/v1/product-medias', formData, config)
+                  .then((response) => {
+                    pmId = response.data.data.id
+
+                    let headers = {
+                      'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+                    }
+                    let data = {}
+                    data['traffic_source_id'] = this.viewAdSavingTrafficSource
+                    data['product_id'] = this.viewAdSavingProduct
+                    data['product_media_id'] = pmId
+                    data['ctr'] = this.viewAdSavingCtr
+                    data['cpc'] = this.viewAdSavingCpc
+                    data['cpa'] = this.viewAdSavingCpa
+                    data['info'] = JSON.stringify({
+                      title: this.viewAdSavingTitle,
+                      text: this.viewAdSavingText,
+                    })
+                    data['product_media_preview_id'] = pmPreviewId
+                    this.$http.post('/api/v1/ads', data, { headers })
+                      .then((response) => {
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Success',
+                          text: 'Ad saved',
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'success'
+                        })
+                        this.viewAdSaving = false
+                        this.showPopup['view_ad'] = false
+                      })
+                      .catch((error) => {
+                        this.$vs.loading.close()
+                        this.$vs.notify({
+                          title: 'Error',
+                          text: error.message,
+                          iconPack: 'feather',
+                          icon: 'icon-alert-circle',
+                          color: 'danger'
+                        })
+                      })
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: error.message,
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  })
+              } else {
+                let headers = {
+                  'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+                }
+                let data = {}
+                data['traffic_source_id'] = this.viewAdSavingTrafficSource
+                data['product_id'] = this.viewAdSavingProduct
+                data['product_media_id'] = pmId
+                data['ctr'] = this.viewAdSavingCtr
+                data['cpc'] = this.viewAdSavingCpc
+                data['cpa'] = this.viewAdSavingCpa
+                data['info'] = JSON.stringify({
+                  title: this.viewAdSavingTitle,
+                  text: this.viewAdSavingText,
+                })
+                this.$http.post('/api/v1/ads', data, { headers })
+                  .then((response) => {
+                    this.$vs.loading.close()
+                    this.$vs.notify({
+                      title: 'Success',
+                      text: 'Ad saved',
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'success'
+                    })
+                    this.viewAdSaving = false
+                    this.showPopup['view_ad'] = false
+                  })
+                  .catch((error) => {
+                    this.$vs.loading.close()
+                    this.$vs.notify({
+                      title: 'Error',
+                      text: error.message,
+                      iconPack: 'feather',
+                      icon: 'icon-alert-circle',
+                      color: 'danger'
+                    })
+                  })
+              }
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            })
+        })
+    },
+    showFilePicker() {
+      this.$refs.fileUpload.click()
+    },
+    onFileUploadChange(event) {
+      this.fileToUpload = event.target.files[0]
     },
   },
   created() {
