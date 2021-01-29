@@ -658,7 +658,7 @@
                     </div>
 
                     <div class="vx-row mb-6">
-                        <vs-button class="mt-12 mr-auto ml-auto" @click="adSave" color="primary" type="filled" :disabled="true">Save Ad</vs-button>
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="adSave" color="primary" type="filled" :disabled="!isValidForm('save_ad')">Save Ad</vs-button>
                     </div>
                 </div>
                 
@@ -1422,6 +1422,14 @@ export default {
         if (this.updateFormId != '' && this.updateFormId > 0 &&
             this.updateFormTotalCost > 0 && this.updateFormDate != '') {
           return true
+        }
+      } else if (type == 'save_ad') {
+        if (viewAdSavingType != 'video') {
+          return true
+        } else {
+          if (fileToUpload != '') {
+            return true
+          }
         }
       }
       return false
