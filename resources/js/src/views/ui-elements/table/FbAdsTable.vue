@@ -1424,10 +1424,10 @@ export default {
           return true
         }
       } else if (type == 'save_ad') {
-        if (viewAdSavingType != 'video') {
+        if (this.viewAdSavingType != 'video') {
           return true
         } else {
-          if (fileToUpload != '') {
+          if (this.fileToUpload != '') {
             return true
           }
         }
