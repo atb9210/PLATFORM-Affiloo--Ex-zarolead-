@@ -16,13 +16,6 @@ class TestController extends Controller
 {
     public function test()
     {
-        $users = User::query();
-        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
-            ->whereIn('role_user.role_id', [2]);
-        $users = $users->get();
-        foreach ($users as $user) {
-            echo $user->name . "<br>";
-        }
     }
 
     public function post(Request $request)
