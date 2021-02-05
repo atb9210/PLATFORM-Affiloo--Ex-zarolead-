@@ -3536,6 +3536,8 @@ export default {
     launchAd() {
       this.$vs.loading()
 
+      let counter = 0
+
       // TODO: HERE
       let accessToken = this.currentAccessToken
 
@@ -3639,6 +3641,11 @@ export default {
 
                                     // TODO: to delete
                                     console.log("ad response", response)
+
+                                    counter += 1
+                                    if (counter == this.selectedAdAccounts.length) {
+                                      this.$vs.loading.close()
+                                    }
                                   })
                                   .catch((error) => {
                                     // TODO: Log the error
