@@ -1012,6 +1012,24 @@
                         </vs-select>
                     </div>
                 </div>
+                <div class="vx-row mb-6" v-if="launchAdCampaignObjective == 'CONVERSIONS'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Pixel ID</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="launchAdPixelId" />
+                    </div>
+                </div>
+                <div class="vx-row mb-6" v-if="launchAdCampaignObjective == 'CONVERSIONS'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Conversion event</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="launchAdConversionEvent" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in launchAdConversionEventOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
                 <div class="vx-row mb-6">
                     <div class="vx-col sm:w-1/3 w-full">
                         <span>Budget</span>
@@ -1312,6 +1330,16 @@ export default {
         { value: 'REACH', label: 'Reach' },
       ],
       launchAdCampaignObjective: 'LINK_CLICKS',
+      launchAdPixelId: '',
+      launchAdConversionEventOptions: [
+        { value: 'SUBSCRIBE', label: 'Subscribe' },
+        { value: 'ADD_TO_CART', label: 'Add to cart' },
+        { value: 'PURCHASE', label: 'Purchase' },
+        { value: 'LEAD', label: 'Lead' },
+        { value: 'COMPLETE_REGISTRATION', label: 'Complete registration' },
+      ],
+      launchAdConversionEvent: 'PURCHASE',
+
       launchAdCampaignBudgetStrategyOptions: [ 'CBO', 'Adset' ],
       launchAdCampaignBudgetStrategy: 'Adset',
       launchAdCampaignBudget: 0,
@@ -3573,6 +3601,7 @@ export default {
               data.bid_amount = this.launchAdCampaignBid
             }
             if (this.launchAdCampaignBudgetStrategy != 'CBO') {
+              data.bid_strategy = this.launchAdCampaignBidStrategy
               data.daily_budget = this.launchAdCampaignBudget*100
             }
             if (this.launchAdTargetingAgeMin > 0) {
@@ -3583,6 +3612,18 @@ export default {
             }
             data.targeting.geo_locations = { countries: [] }
             data.targeting.geo_locations.countries.push(this.launchAdTargetingCountry)
+            if (this.launchAdTargetingGender == 'Male') {
+              data.targeting.genders = [1]
+            } else if (this.launchAdTargetingGender == 'Female') {
+              data.targeting.genders = [2]
+            }
+
+            if (this.launchAdCampaignObjective == 'CONVERSIONS') {
+              data.promoted_obj = {
+                custom_event_type: this.launchAdConversionEvent,
+                pixel_id: this.launchAdPixelId,
+              }
+            }
 
             this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
               .then((response) => {
