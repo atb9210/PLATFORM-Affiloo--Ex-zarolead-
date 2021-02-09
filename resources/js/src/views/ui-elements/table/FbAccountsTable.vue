@@ -3781,7 +3781,7 @@ export default {
                               // TODO: Log the error
                               console.log("error:", error)
                             })
-                        }, 3000)
+                        }.bind(this), 3000)
                       })
                       .catch((error) => {
                         // TODO: Log the error
