@@ -3771,9 +3771,9 @@ export default {
                         let intervalFunction = setInterval(function() {
                           this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                             .then((response) => {
+                              clearInterval(intervalFunction)
                               counter += 1
                               if (counter == this.selectedAdAccounts.length) {
-                                clearInterval(intervalFunction)
                                 this.$vs.loading.close()
                               }
                             })
