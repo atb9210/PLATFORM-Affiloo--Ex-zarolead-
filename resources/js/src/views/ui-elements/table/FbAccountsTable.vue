@@ -3756,10 +3756,10 @@ export default {
                         data.creative = {
                           name: 'ad creative',
                           object_story_spec: {
-                            link_data: {
+                            video_data: {
                               call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
                               link: this.launchAdUrl,
-                              name: this.launchAdTitle,
+                              title: this.launchAdTitle,
                               message: this.launchAdText,
                               video_id: videoId,
                               image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
