@@ -3913,7 +3913,9 @@ export default {
           }
         })
         .catch((error) => {
-          this.createAd(accountId, data)
+          setTimeout(function() {
+            this.createAd(accountId, data)
+          }.bind(this), 3000)
         })
     },
   },
