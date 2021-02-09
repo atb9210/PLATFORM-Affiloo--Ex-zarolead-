@@ -1097,7 +1097,6 @@
 
                 <hr>
 
-                <!-- TODO: HERE -->
                 <div class="vx-row mb-6 mt-6">
                     <div class="vx-col sm:w-1/3 w-full">
                         <span>Title</span>
@@ -1385,6 +1384,8 @@ export default {
       productMedias: [],
       selectedProductMedias: [],
       videoThumbnail: 'data:image/png;base64,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',
+
+      adCounter: 0,
     }
   },
   computed: {
@@ -3635,7 +3636,7 @@ export default {
 
       this.$vs.loading()
 
-      let counter = 0
+      this.adCounter = 0
 
       let accessToken = this.currentAccessToken
 
@@ -3701,8 +3702,6 @@ export default {
                 let adsetId = response.data.id
 
                 // Create ad images and ad videos
-
-                // TODO: HERE
                 this.selectedProductMedias.forEach((pmIndex) => {
                   let productMedia = this.productMedias[pmIndex]
 
@@ -3733,8 +3732,8 @@ export default {
                     }
                     this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                       .then((response) => {
-                        counter += 1
-                        if (counter == this.selectedAdAccounts.length) {
+                        this.adCounter += 1
+                        if (this.adCounter == this.selectedAdAccounts.length) {
                           this.$vs.loading.close()
                         }
                       })
@@ -3757,7 +3756,7 @@ export default {
                         data.creative = {
                           name: 'ad creative',
                           object_story_spec: {
-                            video_data: {
+                            link_data: {
                               call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
                               link: this.launchAdUrl,
                               name: this.launchAdTitle,
@@ -3768,20 +3767,8 @@ export default {
                             page_id: pageId,
                           },
                         }
-                        let intervalFunction = setInterval(function() {
-                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                            .then((response) => {
-                              clearInterval(intervalFunction)
-                              counter += 1
-                              if (counter == this.selectedAdAccounts.length) {
-                                this.$vs.loading.close()
-                              }
-                            })
-                            .catch((error) => {
-                              // TODO: Log the error
-                              console.log("error:", error)
-                            })
-                        }.bind(this), 3000)
+
+                        this.createAd(adAccount.id, data)
                       })
                       .catch((error) => {
                         // TODO: Log the error
@@ -3870,8 +3857,8 @@ export default {
                                   }
                                   this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                     .then((response) => {
-                                      counter += 1
-                                      if (counter == this.selectedAdAccounts.length) {
+                                      this.adCounter += 1
+                                      if (this.adCounter == this.selectedAdAccounts.length) {
                                         this.$vs.loading.close()
                                       }
                                     })
@@ -3916,7 +3903,19 @@ export default {
       } else {
         this.selectedProductMedias.push(index)
       }
-    }
+    },
+    createAd(accountId, data) {
+      this.$http.post('https://graph.facebook.com/v9.0/act_' + accountId + '/ads', data)
+        .then((response) => {
+          this.adCounter += 1
+          if (this.adCounter == this.selectedAdAccounts.length) {
+            this.$vs.loading.close()
+          }
+        })
+        .catch((error) => {
+          this.createAd(accountId, data)
+        })
+    },
   },
   created() {
     // TODO: to delete
