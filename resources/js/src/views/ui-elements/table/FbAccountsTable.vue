@@ -1127,12 +1127,21 @@
                         <span>Image/Video</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="launchAdView = 'upload'">Choose medias</vs-button>
+                        <div>
+                            <!--<span class="ml-auto mr-auto">{{ (launchAdFilesToUpload.length == 0) ? 'No file selected' : ((launchAdFilesToUpload.length == 1) ? launchAdFilesToUpload[0].name : launchAdFilesToUpload.length + ' files') }}</span>-->
+                            <span class="ml-auto mr-auto">{{ (selectedProductMedias.length == 0) ? 'No media selected' : selectedProductMedias.length + ' media(s) selected' }}</span>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="vx-col sm:w-2/3 w-full">
                         <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker">Upload</vs-button>
                         <div>
                             <span class="ml-auto mr-auto">{{ (launchAdFilesToUpload.length == 0) ? 'No file selected' : ((launchAdFilesToUpload.length == 1) ? launchAdFilesToUpload[0].name : launchAdFilesToUpload.length + ' files') }}</span>
                         </div>
                         <input type="file" ref="adFileUpload" class="hidden" :accept="'image/*,video/*'" multiple @change="onFilesUploadChange">
                     </div>
+                    -->
                 </div>
 
                 <div class="vx-row mb-6">
@@ -1141,8 +1150,14 @@
             </div>
 
             <div v-if="launchAdView == 'upload'">
-                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="launchAdView = 'normal'"></vs-button>
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedProductMedias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="launchAdView = 'normal'"></vs-button>
                 <!-- TODO: Upload from product medias -->
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full" :class="productMediaIsSelected(index) ? 'selected-product-media' : ''" v-for="(item, index) in productMedias" @click="selectProductMedia(index)">
+                        <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+                        <center>{{item.type}} ({{item.pathname}})</center>
+                    </div>
+                </div>
             </div>
 
         </vs-popup>
@@ -1316,7 +1331,7 @@ export default {
       currentAccessToken: '',
       launchAdView: 'normal',
 
-      launchPageId: '',
+      launchAdPageId: '',
 
       launchAdCampaignName: '',
       launchAdCampaignStatus: 'ACTIVE',
@@ -1366,6 +1381,10 @@ export default {
       launchAdUrl: '',
 
       launchAdFilesToUpload: [],
+
+      productMedias: [],
+      selectedProductMedias: [],
+      videoThumbnail: 'data:image/png;base64,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',
     }
   },
   computed: {
@@ -1528,7 +1547,6 @@ export default {
       })
     },
     showForm(type) {
-      this.showPopup[type] = true
       if (type == 'multi_create') {
         for (let i = 0; i < 3; i++) {
           this.multiCreate.push({
@@ -1537,6 +1555,33 @@ export default {
             token: '',
           })
         }
+        this.showPopup[type] = true
+      } else if (type == 'launch_ad') {
+        this.launchAdView = 'normal'
+
+        // Retrieve product medias
+        this.$vs.loading()
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        this.$http.get('/api/v1/product-medias', { headers })
+          .then((response) => {
+            this.productMedias = response.data.data
+            this.showPopup[type] = true
+            this.$vs.loading.close()
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      } else {
+        this.showPopup[type] = true
       }
     },
     clearForm(type) {
@@ -1581,7 +1626,8 @@ export default {
                 this.launchAdCampaignBudget > 0 && this.launchAdCampaignBid >= 0 &&
                 this.launchAdTargetingAgeMin >= 0 && this.launchAdTargetingAgeMax >= 0 &&
                 this.launchAdTitle != '' && this.launchAdText != '' &&
-                this.launchAdFilesToUpload.length > 0)
+                this.selectedProductMedias.length > 0)
+                //this.launchAdFilesToUpload.length > 0)
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
@@ -3561,12 +3607,36 @@ export default {
     onFilesUploadChange(event) {
       this.launchAdFilesToUpload = event.target.files
     },
+    getFileType(f) {
+      return f.type.split("/")[0]
+    },
     launchAd() {
+      // TODO: to delete
+      /*
+      let videoUrl = 'https://beta2.zarolead.com/storage/product_medias/product_109/V1.mp4'
+      let adAccount = this.selectedAdAccounts[0]
+      let tok = this.currentAccessToken
+      console.log("adAccount", adAccount)
+      let fileToUpload = this.launchAdFilesToUpload[0]
+      toBase64(fileToUpload)
+        .then((result) => {
+          let toSearch = 'base64,'
+          let fileBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+          let data = {
+            access_token: tok,
+            name: fileToUpload.name,
+            file_url: videoUrl,
+            //video_file_chuck: fileBase64,
+          }
+        })
+      return
+      */
+
+
       this.$vs.loading()
 
       let counter = 0
 
-      // TODO: HERE
       let accessToken = this.currentAccessToken
 
       this.selectedAdAccounts.forEach((adAccount) => {
@@ -3592,7 +3662,7 @@ export default {
               access_token: accessToken,
               name: 'Adset',
               optimization_goal: this.launchAdCampaignObjective,
-              billing_event: 'IMPRESSIONS', // TODO:
+              billing_event: 'IMPRESSIONS', // TODO: What about this?
               campaign_id: campaignId,
               targeting: {},
               status: this.launchAdCampaignStatus,
@@ -3619,92 +3689,207 @@ export default {
             }
 
             if (this.launchAdCampaignObjective == 'CONVERSIONS') {
-              data.promoted_obj = {
+              data.promoted_object = {
                 custom_event_type: this.launchAdConversionEvent,
                 pixel_id: this.launchAdPixelId,
               }
+              data.optimization_goal = 'OFFSITE_CONVERSIONS'
             }
 
             this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
               .then((response) => {
                 let adsetId = response.data.id
 
-                // Create ad images
-                let imageHashes = []
+                // Create ad images and ad videos
+
+                // TODO: HERE
+                this.selectedProductMedias.forEach((pmIndex) => {
+                  let productMedia = this.productMedias[pmIndex]
+
+                  let pageId = this.launchAdPageId // TODO: Better
+                  let data = {
+                    access_token: accessToken,
+                    adset_id: adsetId,
+                    name: 'ad',
+                    status: this.launchAdCampaignStatus,
+                  }
+
+                  if (productMedia.type == 'image') {
+                    // TODO: to delete
+                    console.log("Image")
+
+                    data.creative = {
+                      name: 'ad creative',
+                      object_story_spec: {
+                        link_data: {
+                          call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
+                          link: this.launchAdUrl,
+                          name: this.launchAdTitle,
+                          message: this.launchAdText,
+                          image_url: productMedia.url,
+                        },
+                        page_id: pageId,
+                      },
+                    }
+                    this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                      .then((response) => {
+                        counter += 1
+                        if (counter == this.selectedAdAccounts.length) {
+                          this.$vs.loading.close()
+                        }
+                      })
+                      .catch((error) => {
+                        // TODO: Log the error
+                        console.log("error:", error)
+                      })
+                  } else if (productMedia.type == 'video') {
+                    // TODO: to delete
+                    console.log("Video")
+
+                    let videoData = {
+                      access_token: accessToken,
+                      //name: fileToUpload.name,
+                      file_url: productMedia.url,
+                    }
+                    this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/advideos', videoData)
+                      .then((response) => {
+                        let videoId = response.data.id
+                        data.creative = {
+                          name: 'ad creative',
+                          object_story_spec: {
+                            video_data: {
+                              call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
+                              link: this.launchAdUrl,
+                              name: this.launchAdTitle,
+                              message: this.launchAdText,
+                              video_id: videoId,
+                            },
+                            page_id: pageId,
+                          },
+                        }
+                        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                          .then((response) => {
+                            counter += 1
+                            if (counter == this.selectedAdAccounts.length) {
+                              this.$vs.loading.close()
+                            }
+                          })
+                          .catch((error) => {
+                            // TODO: Log the error
+                            console.log("error:", error)
+                          })
+                      })
+                      .catch((error) => {
+                        // TODO: Log the error
+                        console.log("error:", error)
+                      })
+                  } else {
+                    // TODO: to delete
+                    console.log("None")
+
+                    return
+                  }
+                })
+
+                /*
+                // TODO: This is for file upload
+                let medias = []
                 this.launchAdFilesToUpload.forEach((fileToUpload) => {
-                  toBase64(fileToUpload)
-                    .then((result) => {
-                      let toSearch = 'base64,'
-                      let imageBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
-                      let data = {
-                        access_token: accessToken,
-                        name: fileToUpload.name,
-                        bytes: imageBase64,
-                      }
-                      this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', data)
-                        .then((response) => {
+                  if (this.getFileType(fileToUpload) == 'image') {
+                    toBase64(fileToUpload)
+                      .then((result) => {
+                        let toSearch = 'base64,'
+                        let imageBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+                        let data = {
+                          access_token: accessToken,
+                          name: fileToUpload.name,
+                          bytes: imageBase64,
+                        }
+                        let apiDest = ''
+                        if (this.getFileType(fileToUpload) == 'image') {
+                          apiDest = 'adimages'
+                        } else if (this.getFileType(fileToUpload) == 'video') {
+                          apiDest = 'advideos'
+                        } else {
+                          // TODO: log error
+                          console.log('Invalid file type')
+                          return
+                        }
+                        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/' + apiDest, data)
+                          .then((response) => {
 
-                            // TODO: to delete
-                            console.log("response", response)
+                              // TODO: to delete
+                              console.log("response", response)
 
-                            for (const [key, value] of Object.entries(response.data.images)) {
-                              imageHashes.push(value.hash)
-                            }
-
-                            // TODO: to delete
-                            console.log("imageHashes", imageHashes)
-
-                            // TODO: HERE
-                            if (imageHashes.length == this.launchAdFilesToUpload.length) {
-                              imageHashes.forEach((imageHash) => {
-                                let pageId = this.launchAdPageId // TODO: Better
-                                let data = {
-                                  access_token: accessToken,
-                                  adset_id: adsetId,
-                                  name: 'ad',
-                                  creative: {
-                                    name: 'ad creative',
-                                    object_story_spec: {
-                                      link_data: {
-                                        call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                        link: this.launchAdUrl,
-                                        name: this.launchAdTitle,
-                                        message: this.launchAdText,
-                                        image_hash: imageHash,
-                                      },
-                                      page_id: pageId,
-                                    },
-                                  },
-                                  status: this.launchAdCampaignStatus,
+                              if (this.getFileType(fileToUpload) == 'image') {
+                                for (const [key, value] of Object.entries(response.data.images)) {
+                                  medias.push({
+                                    type: 'image',
+                                    hash: value.hash,
+                                  })
                                 }
-                                this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                                  .then((response) => {
+                              } else if (this.getFileType(fileToUpload) == 'video') {
+                                media.push({
+                                  type: 'video',
+                                  id: response.data.id,
+                                })
+                              }
 
-                                    // TODO: to delete
-                                    console.log("ad response", response)
+                              if (medias.length == this.launchAdFilesToUpload.length) {
+                                medias.forEach((media) => {
+                                  let pageId = this.launchAdPageId // TODO: Better
+                                  let data = {
+                                    access_token: accessToken,
+                                    adset_id: adsetId,
+                                    name: 'ad',
+                                    creative: {
+                                      name: 'ad creative',
+                                      object_story_spec: {
+                                        link_data: {
+                                          call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
+                                          link: this.launchAdUrl,
+                                          name: this.launchAdTitle,
+                                          message: this.launchAdText,
+                                        },
+                                        page_id: pageId,
+                                      },
+                                    },
+                                    status: this.launchAdCampaignStatus,
+                                  }
 
-                                    counter += 1
-                                    if (counter == this.selectedAdAccounts.length) {
-                                      this.$vs.loading.close()
-                                    }
-                                  })
-                                  .catch((error) => {
-                                    // TODO: Log the error
-                                    console.log("error:", error)
-                                  })
-                              })
-                            }
-                        })
-                  .catch((error) => {
-                    // TODO: Log the error
-                    console.log("error:", error)
-                  })
-                    })
+                                  if (media.type == 'image') {
+                                    data.creative.object_story_spec.link_data.image_hash = media.hash
+                                  } else if (media.type == 'video') {
+                                    // TODO: HERE
+                                  } else {
+                                    return
+                                  }
+                                  this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                                    .then((response) => {
+                                      counter += 1
+                                      if (counter == this.selectedAdAccounts.length) {
+                                        this.$vs.loading.close()
+                                      }
+                                    })
+                                    .catch((error) => {
+                                      // TODO: Log the error
+                                      console.log("error:", error)
+                                    })
+                                })
+                              }
+                          })
                     .catch((error) => {
                       // TODO: Log the error
                       console.log("error:", error)
                     })
+                      })
+                      .catch((error) => {
+                        // TODO: Log the error
+                        console.log("error:", error)
+                      })
+                  }
                 })
+                */
               })
               .catch((error) => {
                 // TODO: Log the error
@@ -3717,6 +3902,17 @@ export default {
           })
       })
     },
+    productMediaIsSelected(index) {
+      return this.selectedProductMedias.includes(index)
+    },
+    selectProductMedia(index) {
+      if (this.selectedProductMedias.includes(index)) {
+        let toRemove = this.selectedProductMedias.indexOf(index)
+        this.selectedProductMedias.splice(toRemove, 1);
+      } else {
+        this.selectedProductMedias.push(index)
+      }
+    }
   },
   created() {
     // TODO: to delete
@@ -3893,5 +4089,8 @@ export default {
 .bm-badge > .con-vs-tooltip > .con-vs-avatar {
   margin-top: 0px;
   margin-bottom: 0px;
+}
+.selected-product-media {
+    border: 3px solid red;
 }
 </style>
