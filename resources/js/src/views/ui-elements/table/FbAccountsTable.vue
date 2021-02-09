@@ -3763,21 +3763,25 @@ export default {
                               name: this.launchAdTitle,
                               message: this.launchAdText,
                               video_id: videoId,
+                              image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
                             },
                             page_id: pageId,
                           },
                         }
-                        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                          .then((response) => {
-                            counter += 1
-                            if (counter == this.selectedAdAccounts.length) {
-                              this.$vs.loading.close()
-                            }
-                          })
-                          .catch((error) => {
-                            // TODO: Log the error
-                            console.log("error:", error)
-                          })
+                        let intervalFunction = setInterval(function() {
+                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                            .then((response) => {
+                              counter += 1
+                              if (counter == this.selectedAdAccounts.length) {
+                                clearInterval(intervalFunction)
+                                this.$vs.loading.close()
+                              }
+                            })
+                            .catch((error) => {
+                              // TODO: Log the error
+                              console.log("error:", error)
+                            })
+                        }, 3000)
                       })
                       .catch((error) => {
                         // TODO: Log the error
