@@ -145,7 +145,6 @@
         <vs-table v-if="view == 'accounts'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="user.email">User</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="product.name">Product</vs-th>
@@ -159,10 +158,6 @@
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-
-                    <vs-td :data="data[indextr].user.email">
-                        {{data[indextr].user.email}}
-                    </vs-td>
 
                     <vs-td :data="data[indextr].status">
                         <vs-chip transparent :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
@@ -1149,10 +1144,20 @@
             </div>
 
             <div v-if="launchAdView == 'upload'">
-                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedProductMedias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="launchAdView = 'normal'"></vs-button>
-                <!-- TODO: Upload from product medias -->
                 <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/3 w-full" :class="productMediaIsSelected(index) ? 'selected-product-media' : ''" v-for="(item, index) in productMedias" @click="selectProductMedia(index)">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedProductMedias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="launchAdView = 'normal'"></vs-button>
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-select autocomplete v-model="productMediasFilterProductId" class="w-full select-large" @change="changeProductMediaFilterProductId">
+                            <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                    </div>
+                </div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full" :class="productMediaIsSelected(index) ? 'selected-product-media' : ''" v-for="(item, index) in productMediasFiltered" @click="selectProductMedia(index)" @dblclick="openProductMedia(index)">
                         <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
                         <center>{{item.type}} ({{item.pathname}})</center>
                     </div>
@@ -1382,6 +1387,9 @@ export default {
       launchAdFilesToUpload: [],
 
       productMedias: [],
+      productMediasFiltered: [],
+      productMediasFilterProductId: '',
+
       selectedProductMedias: [],
       videoThumbnail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX///8EAgQAAAD29vby8vJubm7MzMzv7+/b29u7u7v7+/tTU1MzNTM3NzfOzs739/epqqmcnJzU1NTk5OR/f39lZmVISUiOjo6JiYkxMTEWFRZgYWDn5+coKSi4ubh3d3dBQUGfn59aWVpRUFEgHyAPDg/DxMOTlJOoqaiDg4MrKisjIyM9PD0LCwt5enlFRUUd5XBlAAAIIklEQVR4nO2da1savRaG42KAYdzAAAoKyEERtKL9//9uz1BAxAGyTsnwXnk+tB9au3KXkMM6xZigoKCgoKCgoKCgoKCgoKCgoKCgoNIo6sW1dHX3Va1Wn/v97Nfp3aDTiOOx74FJKF4ORrMFFOu1+TJNa5HvMZLVbqxmO5abIu3+cFFNe74Hi1bUepidYfsN+llN674Hba/6pDq0g/uJ2V/FvodupeU9lu4Astkp+ycZvxPxDj7JRuKb4qSSyS0Hb085HJRzG2nPH/l4W0aodn3j/FJ7cCPEt2V8KRdjpSMwPY8Zb0u0sqavwnxbyGpJDgLLpgbfBhEefMNlqt8r8W0Zl74B54p8/xifvU7VXl8ZcMP45g8w1efbID57umBFt04AN4wNH4C1T0d8G8R394DaS8wxY9/1pWPkFjD/GJ0e48b/c8y3QUzdAXYX7gFzxIErwKXrGbpHrLoBbHgCzBlvXQC++QPMEfU3f8e7xC/EWeW/DZghNnUdVRPfgPnerwnocZE5QBzpAbbKAJghqm0avXIAZohKzo3Iy0mmUEoHuNvSAGanm5YC4Ht5ADPEV/nLVFomwAzxURqwNKvMTuK3/mbJAG+kPal3ZQPMED8lv4q+boRnJXmVqgxLCCi6K1bxgG5cxVLztEYBdDGvpc7gySOBMH5wgCjlC+8QhgqR6T07iNp8SFyH65SBQu5rmEiHvgvsdAQICcvMltAkd9qIEotNjzRG2PqLutoBRoHbMO3OBHuPWKo7VQG4GRtEx8U3oYk0A/2ZpXsmIfHaC4dezdpaNZmB9yFSfU8/CE3S0UTkfRPviSODI8/0WG9zBODk+dEW0pvfhNn1RCVvamPri0H4JUdoEq1zHAD9YJOQx1RAaEz8osMIczLhG3lAhYRamyP8IRPSnTMnCE1lqoJYIwJ26aM5RZjtPwqbI3nDYPiATxNqhCDhhhYZbn/oEJq6+OYIExIhwXnxbfJ8LHoplfS+M0dzZ3B8pBcITXsligjQphC+KhJmxyXRzZHksOlyBnCZ0JjGUI6RdIdaaROaipyTA4BAyIrFWBFm8+SvFCMhZBqxbFsSbjZHEUaC023JMmxNaKKqCCK8oAkfHBEKbY6wQB9r+s4ITSKxOaLdNXVeQA1FaMyYn/aPrsqIeRaRhNnm+IfJCFOkxYljQtNmOjnQCX3M7Bk8YTZtZhxGwJocuSdk1jECrgIsYZYb0AhNxHByIA/fvBMNmdCYFnlzRHrc6szFm0yYh5yJwSBcSibvzMYipFalItNruHl6HMLs/5eyOcITygYlO0GO0CQDPCLyijjwS0iqv8URTn0TZl+UBZIRULcLatxQkNBE78gWN6g44qwEhMZ0UZsjzpHBraCUIdyUkVmPBBefKQuhqds7Oa6U0Jia7eZ4tYS559ZqNFdMaOInm+FcM+HAKoRyvYRdy/4310pov5jiCJ/LQohon4JzYzDdNFKEqPRU3KnN+91iI1z0DXe3YAUPhQgbOM8b8n44906ITvWHIerfZ7q8+YT4YA3MUAaYYQsuYe2D4MXABS68+UtzjUlBU1ihjFSYddscwjmtLAxbyfbiizCm9ijEdlliuqKohPTABeAcUWyHKZFwQs/Dgj/IXOiWB8KYE+tGZ0Uxq9MphEjn4bFFdK8MXnk6nnDJzHLDF6/zfMJYwjG3OAqQIWDDjT4hCfm5X7DGAmbnNid5bblaTwJdwAmFM6yCcwQhwud7ziAhhZZUHYsnTEW6GZCqZVkXKFvCHiuH5sBeEw9oKqz8HSvCCm8LPLRHqunm+NusCBvYGOgZe6RCUnpdlxXhWLDJK3xQAGmtBqwJB5JlbNTOpoxpeonQOmRmZ41a7cxYTc8T0twUZ6xRWylW6P2szxJiQtd21shd2+kX/TOEtqEkhDF6cwy6T/EkYaTQDIRTkb+mjuYUIToNyMoYo9N3Q5ZwrFLMTTqx7WUVQC+yWkDYJqTjWdlitVKinmsKCNn1BqdM8TooUn3fvwj1Hmvhdm0jhtmOCfVaSMMjsxlWQtv1fxK2tF4TuuF/hFSP1CFhXaWPws4QvWPEXqRv4gGhbqMoiR6fpLT9PSGv1OeyHXxhZYEol6gtYUW5tyC/09dGFM/pP8KGgCP0vJk7CUBSwWxOKFA2ecnKUCr1Cr/YQKTa32tnRewZKHwPEJgrndF+GHmWAqR0xHLSvVSwVTKlSau6ZJ8qYzRU0hKrTVuBuKVe4kJnJlwUM8FGWkJ7/aES6nVfRUDsDHVWvKCwsHReCyzBO0E7ab3dxU0cFhMsSI2vLERuhSkr0a3+SNzCSxEpLKPfSkrwmg6Q+0DayftbJeqvPFe49bNsQIWN8Kcir4gOAI3Xl610XrL6LW5RFAPQ1Yu56k8enAD8cPfMugMfTAHg2uWzzu6fRwL2EwFI9RxvjCDyGglKbd1HHY4BP3UPMsVy9zAwwF/9Z4CLRC7gQQM6n6F7uXnUaa14l7goevMxe0BnL6qf0Eo3AAozd7v8Kak+PzLUeTQWq6VOnDebHAM/S2iBUsHW3N98Vc4DMuKay0abMr6RzxW0SMmb3LKa8U3LxpcrafRF1tX8+1eq+XmoeApMyOzHmxPpqJKokrRPh8x+cPFQxul5pF6HBJn9yNPUxw2CpHF6DwjKzd99XLW0ohFKanX+Alzk/Pc3hl8Tlx4KQXUn0/4H7HXElet1PerUrpRup6jXTR+mo/UBaf6pPd1W7zrL+MrhDpW0o6hej+JWq579FlVKvSMEBQUFBQUFBQUFBQUFBQUFBQUF/db/Afm8kjbo5XSmAAAAAElFTkSuQmCC',
 
@@ -1568,6 +1576,14 @@ export default {
         this.$http.get('/api/v1/product-medias', { headers })
           .then((response) => {
             this.productMedias = response.data.data
+
+            this.productMediasFiltered = []
+            for (let i = 0; i < this.productMedias.length; i++) {
+              if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
+                this.productMediasFiltered.push(this.productMedias[i])
+              }
+            }
+
             this.showPopup[type] = true
             this.$vs.loading.close()
           })
@@ -3703,7 +3719,7 @@ export default {
 
                 // Create ad images and ad videos
                 this.selectedProductMedias.forEach((pmIndex) => {
-                  let productMedia = this.productMedias[pmIndex]
+                  let productMedia = this.productMediasFiltered[pmIndex]
 
                   let pageId = this.launchAdPageId // TODO: Better
                   let data = {
@@ -3723,7 +3739,6 @@ export default {
                       let result = base64Img
                       result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
 
-                      // TODO: HERE
                       let dataAdImage = {
                         access_token: accessToken,
                         name: 'testimg.png',
@@ -3928,6 +3943,10 @@ export default {
         this.selectedProductMedias.push(index)
       }
     },
+    openProductMedia(index) {
+      let pm = this.productMediasFiltered[index]
+      window.open(pm.url, '_blank')
+    },
     createAd(accountId, data) {
       this.$http.post('https://graph.facebook.com/v9.0/act_' + accountId + '/ads', data)
         .then((response) => {
@@ -3958,16 +3977,22 @@ export default {
       };
       img.src = url;
     },
+    changeProductMediaFilterProductId() {
+      this.productMediasFiltered = []
+      for (let i = 0; i < this.productMedias.length; i++) {
+        if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
+          this.productMediasFiltered.push(this.productMedias[i])
+        }
+      }
+
+      // TODO: to delete
+      console.log("this.productMediasFilterProductId", this.productMediasFilterProductId)
+      console.log("this.productMedias", this.productMedias)
+      console.log("this.productMediasFiltered", this.productMediasFiltered)
+    },
   },
   created() {
     // TODO: to delete
-    let accessToken = 'EAABsbCS1iHgBAI2cionMU0DazQwHqPma1qQJMZArxWG5BpQTDqdX0OxvxSpKRZCmZAV7o5nFgctQQX9tiZAIK1qdXehn5v6CsJP0TCKW9qAz8GGYORCqIwpfqyZAwHNo2XOnEDZAfc6fE4T6m5Tgtp5ymBAhnVT9GZBfm41Ge5O2qiGEZBNIzSp7'
-    let accountId = '300688817943793'
-    let pmUrl = 'http://zarolead.localhost/storage/product_medias/product_4/F3.jpg'
-    this.convertImgToBase64(pmUrl, function(base64Img) {
-      console.log("base64Img", base64Img)
-    }.bind(this))
-
     /*
     this.$http.get('https://graph.facebook.com/v4.0/me/adaccounts?fields=promote_pages{Baccess_token,id}&access_token=' + accessToken)
       .then((response) => {

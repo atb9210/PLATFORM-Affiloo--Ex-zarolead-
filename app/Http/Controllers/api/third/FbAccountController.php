@@ -157,6 +157,8 @@ class FbAccountController extends Controller
         $options['os'] = 'win';
         $options['browserType'] = 'chrome';
         $options['googleServicesEnabled'] = true;
+
+        /*
         $gologin_id = $this->gologinCreate($options);
         if ($gologin_id == '' || $gologin_id == null) {
             return response([
@@ -166,6 +168,7 @@ class FbAccountController extends Controller
         }
 
         $params['gologin_id'] = $gologin_id;
+        */
         $fb_account = FbAccount::create($params);
 
         if (isset($params['token']) && $params['token'] != '' && $params['token'] != null) {
@@ -267,6 +270,7 @@ class FbAccountController extends Controller
             }
         }
         $params['profile'] = $profile;
+        /*
         if (!empty($options)) {
             if (!($fb_account->gologin_id != '' && $fb_account->gologin_id != null && $this->gologinUpdate($fb_account->gologin_id, $options))) {
                 return response([
@@ -275,6 +279,7 @@ class FbAccountController extends Controller
                 ], 401);
             }
         }
+        */
         $fb_account->update($params);
 
         if ($fb_account->dolphin_id == null && isset($params['token']) && $params['token'] != '' && $params['token'] != null && $params['token'] != $fb_account->token) {
@@ -304,14 +309,14 @@ class FbAccountController extends Controller
         //$this->authorize('delete', $tag);
 
         if ($fb_account->gologin_id != null) {
+            /*
             if (!$this->gologinDelete($fb_account->gologin_id)) {
-                /*
-                return response([
-                    "message" => "Fb account cannot be deleted on GoLogin",
-                    "gologin_errors" => $this->gologinGetErrors(),
-                ], 401);
-                */
+                //return response([
+                //    "message" => "Fb account cannot be deleted on GoLogin",
+                //    "gologin_errors" => $this->gologinGetErrors(),
+                //], 401);
             }
+            */
         }
         $fb_account->delete();
 
@@ -350,15 +355,16 @@ class FbAccountController extends Controller
                 continue;
             }
 
-            $profile = $this->gologinGetProfile($gologin_id);
+            //$profile = $this->gologinGetProfile($gologin_id);
+            $profile = [];
             if (empty($profile) || !isset($profile['id']) || !isset($profile['name'])) {
                 continue;
             }
 
             $data = [
                 'user_id' => $user_id,
-                'name' => $profile['name'],
-                'gologin_id' => $profile['id'],
+                //'name' => $profile['name'],
+                //'gologin_id' => $profile['id'],
                 'profile' => [
                     'proxy_enabled' => false,
                 ],
@@ -492,6 +498,7 @@ class FbAccountController extends Controller
             $options['os'] = 'win';
             $options['browserType'] = 'chrome';
             $options['googleServicesEnabled'] = true;
+            /*
             $gologin_id = $this->gologinCreate($options);
             if ($gologin_id == '' || $gologin_id == null) {
                 return response([
@@ -501,6 +508,7 @@ class FbAccountController extends Controller
             }
 
             $params['gologin_id'] = $gologin_id;
+            */
             $fb_account = FbAccount::create($params);
 
             if (isset($params['token']) && $params['token'] != '' && $params['token'] != null) {
