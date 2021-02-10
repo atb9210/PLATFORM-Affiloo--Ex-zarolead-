@@ -3717,30 +3717,54 @@ export default {
                     // TODO: to delete
                     console.log("Image")
 
-                    data.creative = {
-                      name: 'ad creative',
-                      object_story_spec: {
-                        link_data: {
-                          call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                          link: this.launchAdUrl,
-                          name: this.launchAdTitle,
-                          message: this.launchAdText,
-                          image_url: productMedia.url,
-                        },
-                        page_id: pageId,
-                      },
-                    }
-                    this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                      .then((response) => {
-                        this.adCounter += 1
-                        if (this.adCounter == this.selectedAdAccounts.length) {
-                          this.$vs.loading.close()
-                        }
-                      })
-                      .catch((error) => {
-                        // TODO: Log the error
-                        console.log("error:", error)
-                      })
+                    this.convertImgToBase64(productMedia.url, function(base64Img) {
+                      console.log("base64Img", base64Img)
+                      let toSearch = 'base64,'
+                      let result = base64Img
+                      result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+
+                      // TODO: HERE
+                      let dataAdImage = {
+                        access_token: accessToken,
+                        name: 'testimg.png',
+                        bytes: result,
+                      }
+                      this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
+                        .then((response) => {
+                          let imageHash = ''
+                          for (const [key, value] of Object.entries(response.data.images)) {
+                            imageHash = value.hash
+                          }
+                          data.creative = {
+                            name: 'ad creative',
+                            object_story_spec: {
+                              link_data: {
+                                call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
+                                link: this.launchAdUrl,
+                                name: this.launchAdTitle,
+                                message: this.launchAdText,
+                                image_hash: imageHash,
+                              },
+                              page_id: pageId,
+                            },
+                          }
+                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                            .then((response) => {
+                              this.adCounter += 1
+                              if (this.adCounter == this.selectedAdAccounts.length) {
+                                this.$vs.loading.close()
+                              }
+                            })
+                            .catch((error) => {
+                              // TODO: Log the error
+                              console.log("error:", error)
+                            })
+                        })
+                        .catch((error) => {
+                          // TODO: Log the error
+                          console.log("error:", error)
+                        })
+                    }.bind(this))
                   } else if (productMedia.type == 'video') {
                     // TODO: to delete
                     console.log("Video")
@@ -3918,11 +3942,31 @@ export default {
           }.bind(this), 3000)
         })
     },
+    convertImgToBase64(url, callback, outputFormat){
+      var canvas = document.createElement('CANVAS');
+      var ctx = canvas.getContext('2d');
+      var img = new Image;
+      img.crossOrigin = 'Anonymous';
+      img.onload = function(){
+        canvas.height = img.height;
+        canvas.width = img.width;
+        ctx.drawImage(img,0,0);
+        var dataURL = canvas.toDataURL(outputFormat || 'image/png');
+        callback.call(this, dataURL);
+        // Clean up
+        canvas = null; 
+      };
+      img.src = url;
+    },
   },
   created() {
     // TODO: to delete
     let accessToken = 'EAABsbCS1iHgBAI2cionMU0DazQwHqPma1qQJMZArxWG5BpQTDqdX0OxvxSpKRZCmZAV7o5nFgctQQX9tiZAIK1qdXehn5v6CsJP0TCKW9qAz8GGYORCqIwpfqyZAwHNo2XOnEDZAfc6fE4T6m5Tgtp5ymBAhnVT9GZBfm41Ge5O2qiGEZBNIzSp7'
     let accountId = '300688817943793'
+    let pmUrl = 'http://zarolead.localhost/storage/product_medias/product_4/F3.jpg'
+    this.convertImgToBase64(pmUrl, function(base64Img) {
+      console.log("base64Img", base64Img)
+    }.bind(this))
 
     /*
     this.$http.get('https://graph.facebook.com/v4.0/me/adaccounts?fields=promote_pages{Baccess_token,id}&access_token=' + accessToken)
