@@ -638,6 +638,62 @@
                 </div>
             </div>
 
+            <hr>
+
+            <div class="vx-row mb-6 mt-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Email</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-at-sign" icon-no-border v-model="newObject['create'].email" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Password</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="newObject['create'].password" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Date of birth</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="newObject['create'].dateBirth" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Phone</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-phone" icon-no-border v-model="newObject['create'].phone" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>2FA</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="newObject['create'].twoFactor" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Photos</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-camera" icon-no-border v-model="newObject['create'].photos" />
+                </div>
+            </div>
+
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
@@ -768,6 +824,63 @@
                     <span class="text-danger">{{ errors.first('edit.proxy') }}</span>
                 </div>
             </div>
+
+            <hr>
+
+            <div class="vx-row mb-6 mt-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Email</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-at-sign" icon-no-border v-model="newObject['edit'].email" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Password</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="newObject['edit'].password" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Date of birth</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="newObject['edit'].dateBirth" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Phone</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-phone" icon-no-border v-model="newObject['edit'].phone" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>2FA</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="newObject['edit'].twoFactor" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Photos</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-camera" icon-no-border v-model="newObject['edit'].photos" />
+                </div>
+            </div>
+
 
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="updateObject" color="primary" type="filled" :disabled="!isValidForm('edit')">Update</vs-button>
@@ -1220,8 +1333,8 @@ export default {
         product: '',
       },
 
-      statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'ban'],
-      statusOptions: ['setup', 'warm', 'ready', 'run', 'ban'],
+      statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'request', 'ban'],
+      statusOptions: ['setup', 'warm', 'ready', 'run', 'request', 'ban'],
       userOptions: [],
       productOptions: [],
       myId: 0,
@@ -1257,6 +1370,12 @@ export default {
           userAgent: '',
           proxyEnabled: false,
           proxy: '',
+          email: '',
+          password: '',
+          dateBirth: '',
+          phone: '',
+          twoFactor: '',
+          photos: '',
         },
         'edit': {
           user: '',
@@ -1268,6 +1387,12 @@ export default {
           userAgent: '',
           proxyEnabled: false,
           proxy: '',
+          email: '',
+          password: '',
+          dateBirth: '',
+          phone: '',
+          twoFactor: '',
+          photos: '',
         },
       },
       multiCreate: [],
@@ -1291,6 +1416,7 @@ export default {
         'warm': 'dark',
         'ready': 'warning',
         'run': 'success',
+        'request': 'warning',
         'ban': 'danger',
       },
 
@@ -1612,6 +1738,12 @@ export default {
           user: '',
           notes: '',
           token: '',
+          email: '',
+          password: '',
+          dateBirth: '',
+          phone: '',
+          twoFactor: '',
+          photos: '',
         }
         if (this.canCreateAsAdmin) {
           this.newObject[type].user = this.myId
@@ -1679,6 +1811,16 @@ export default {
         data.user_agent = this.newObject['create'].userAgent
       }
 
+      data.info = {
+        email: this.newObject['create'].email,
+        password: this.newObject['create'].password,
+        date_birth: this.newObject['create'].dateBirth,
+        phone: this.newObject['create'].phone,
+        two_factor: this.newObject['create'].twoFactor,
+        photos: this.newObject['create'].photos,
+      }
+      data.info = JSON.stringify(data.info)
+
       // Create fb account
       this.$http.post('/api/3rd/fb-accounts', data, { headers: headers })
         .then((response) => {
@@ -1726,6 +1868,12 @@ export default {
         userAgent: '',
         proxyEnabled: false,
         proxy: '',
+        email: '',
+        password: '',
+        dateBirth: '',
+        phone: '',
+        twoFactor: '',
+        photos: '',
       }
       if (obj.profile.hasOwnProperty('user_agent')) {
         this.newObject['edit'].userAgent = obj.profile['user_agent']
@@ -1736,6 +1884,26 @@ export default {
       if (obj.profile.hasOwnProperty('proxy')) {
         this.newObject['edit'].proxy = obj.profile['proxy']
       }
+
+      if (obj.info.hasOwnProperty('email')) {
+        this.newObject['edit'].email = obj.info.email
+      }
+      if (obj.info.hasOwnProperty('password')) {
+        this.newObject['edit'].password = obj.info.password
+      }
+      if (obj.info.hasOwnProperty('date_birth')) {
+        this.newObject['edit'].dateBirth = obj.info.date_birth
+      }
+      if (obj.info.hasOwnProperty('phone')) {
+        this.newObject['edit'].phone = obj.info.phone
+      }
+      if (obj.info.hasOwnProperty('two_factor')) {
+        this.newObject['edit'].twoFactor = obj.info.two_factor
+      }
+      if (obj.info.hasOwnProperty('photos')) {
+        this.newObject['edit'].photos = obj.info.photos
+      }
+
       this.editingObject = obj.id
       this.showForm('edit')
     },
@@ -1762,6 +1930,16 @@ export default {
       if (this.newObject['edit'].product != '' && this.newObject['edit'].product > 0) {
         data.product_id = this.newObject['edit'].product
       }
+      
+      data.info = {
+        email: this.newObject['edit'].email,
+        password: this.newObject['edit'].password,
+        date_birth: this.newObject['edit'].dateBirth,
+        phone: this.newObject['edit'].phone,
+        two_factor: this.newObject['edit'].twoFactor,
+        photos: this.newObject['edit'].photos,
+      }
+      data.info = JSON.stringify(data.info)
 
       this.$http.put('/api/3rd/fb-accounts/' + id, data, { headers })
         .then((response) => {
