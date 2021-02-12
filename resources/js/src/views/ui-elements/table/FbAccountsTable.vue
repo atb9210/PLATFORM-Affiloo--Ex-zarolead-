@@ -147,8 +147,7 @@
             <template slot="thead">
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="product.name">Product</vs-th>
-                <vs-th sort-key="">Cards</vs-th>
+                <!--<vs-th sort-key="">Cards</vs-th>-->
                 <vs-th sort-key="token_status">Token Status</vs-th>
                 <vs-th sort-key="">BM</vs-th>
                 <vs-th sort-key="amount_spent">Spent</vs-th>
@@ -160,7 +159,15 @@
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                     <vs-td :data="data[indextr].status">
-                        <vs-chip transparent :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
+                        <!--<vs-chip transparent :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>-->
+                        <vs-switch
+                            :color="statusColors[data[indextr].status]"
+                            v-model="data[indextr].status == 'run'"
+                            vs-icon-off="pause" vs-icon-on="done"
+                            @input="switchFbAccountStatus(data[indextr].id)">
+                            <span slot="on">{{data[indextr].status}}</span>
+                            <span slot="off">{{data[indextr].status}}</span>
+                        </vs-switch>
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
@@ -173,10 +180,7 @@
                         </div>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].product.name">
-                        {{data[indextr].product.name}}
-                    </vs-td>
-
+                    <!--
                     <vs-td>
                         <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vs-chip v-for="(card, index) in getCardsArray(data[indextr].info)" :key="index">
@@ -184,6 +188,7 @@
                             </vs-chip>
                         </div>
                     </vs-td>
+                    -->
 
                     <vs-td :data="data[indextr].token_status">
                         <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">
@@ -220,12 +225,6 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td>
-                </vs-td>
-                <vs-td>
-                </vs-td>
-                <vs-td>
-                </vs-td>
                 <vs-td>
                 </vs-td>
                 <vs-td>
@@ -4167,6 +4166,48 @@ export default {
       console.log("this.productMediasFilterProductId", this.productMediasFilterProductId)
       console.log("this.productMedias", this.productMedias)
       console.log("this.productMediasFiltered", this.productMediasFiltered)
+    },
+    switchFbAccountStatus(id) {
+      this.$vs.loading()
+
+      let obj = this.objects[this.getObjectIndexById(this.objects, id)]
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let newStatus = 'run'
+      if (obj.status == 'run') {
+        newStatus = 'ready'
+      }
+
+      let data = {
+        status: newStatus,
+      }
+
+      this.$http.put('/api/3rd/fb-accounts/' + id, data, { headers })
+        .then((response) => {
+          this.objects[this.getObjectIndexById(this.objects, id)].status = newStatus
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Status changed to: ' + newStatus,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+          this.applyFilters()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
     },
   },
   created() {
