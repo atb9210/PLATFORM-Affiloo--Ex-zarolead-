@@ -1143,7 +1143,7 @@ export default {
                           name: ad.name,
                           status: adEffectiveStatus,
                           spent: adSpent,
-                          result: (campaign.objective == 'PAGE_LIKES') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
+                          result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
                           cpa: adCpa,
                           impressions: ad.impressions,
                           clicks: ad.clicks,
@@ -1192,7 +1192,7 @@ export default {
                       name: adset.name,
                       status: adsetEffectiveStatus,
                       spent: adsetSpent,
-                      result: (campaign.objective == 'PAGE_LIKES') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
+                      result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
                       cpa: adsetCpa,
                       impressions: adset.impressions,
                       clicks: adset.clicks,
@@ -1217,7 +1217,7 @@ export default {
                   name: campaign.name,
                   status: campaignEffectiveStatus,
                   spent: spent,
-                  result: (campaign.objective == 'PAGE_LIKES') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
+                  result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
                   cpa: cpa,
                   impressions: campaign.impressions,
                   clicks: campaign.clicks,
