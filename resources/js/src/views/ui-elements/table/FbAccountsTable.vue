@@ -30,6 +30,7 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-map-pin" @click="switchFbAccountsStatus()" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-play" @click="showForm('launch_ad')" v-if="view == 'ad_accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="createPixels" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" v-if="view == 'accounts'"></vs-button>
         </p>
 
@@ -532,6 +533,7 @@
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="adtrust_dsl">Limit</vs-th>
                 <vs-th>Cards</vs-th>
+                <vs-th>Pixel</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -547,6 +549,7 @@
                             </vs-chip>
                         </div>
                     </vs-td>
+                    <vs-td>{{tr.pixel}}</vs-td>
                 </vs-tr>
             </template>
         </vs-table>
@@ -1098,10 +1101,12 @@
             <div v-if="launchAdView == 'normal'">
                 <div class="vx-row mb-6">
                     <div class="vx-col sm:w-1/3 w-full">
-                        <span>Page ID</span>
+                        <span>Page</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
-                        <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="launchAdPageId" />
+                        <vs-select autocomplete v-model="launchAdPageId" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in fbAccountPages" class="w-full" />
+                        </vs-select>
                     </div>
                 </div>
                 <div class="vx-row mb-6">
@@ -1137,7 +1142,7 @@
                         <span>Pixel ID</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
-                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="launchAdPixelId" />
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="launchAdPixelId" disabled />
                     </div>
                 </div>
                 <div class="vx-row mb-6" v-if="launchAdCampaignObjective == 'CONVERSIONS'">
@@ -1239,6 +1244,7 @@
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
                         <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="launchAdUrl" />
+                        <span>Final URL: {{launchAdUrl}}?pi={pixel_id}</span>
                     </div>
                 </div>
                 <div class="vx-row mb-6">
@@ -1521,6 +1527,7 @@ export default {
 
       viewingObject: {},
 
+      currentObjectId: '',
       currentAccessToken: '',
       launchAdView: 'normal',
 
@@ -1538,7 +1545,7 @@ export default {
         { value: 'REACH', label: 'Reach' },
       ],
       launchAdCampaignObjective: 'LINK_CLICKS',
-      launchAdPixelId: '',
+      launchAdPixelId: 'AUTOMATIC',
       launchAdConversionEventOptions: [
         { value: 'SUBSCRIBE', label: 'Subscribe' },
         { value: 'ADD_TO_CART', label: 'Add to cart' },
@@ -1777,8 +1784,29 @@ export default {
               }
             }
 
-            this.showPopup[type] = true
-            this.$vs.loading.close()
+            this.fbAccountPages = []
+            this.$http.get('https://graph.facebook.com/v9.0/me/accounts?access_token=' + this.currentAccessToken)
+              .then((response) => {
+                response.data.data.forEach((page) => {
+                  this.fbAccountPages.push({
+                    id: page.id,
+                    name: page.name,
+                  })
+                })
+                this.$vs.loading.close()
+                this.showPopup[type] = true
+              })
+              .catch((error) => {
+                this.$vs.notify({
+                  title: 'Error',
+                  text: 'Cannot retrieve pages list! Error: ' + error.message,
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'danger'
+                })
+                this.$vs.loading.close()
+                this.showPopup[type] = true
+              })
           })
           .catch((error) => {
             this.$vs.loading.close()
@@ -2131,7 +2159,7 @@ export default {
           let untilDate = new Date(until + ' 23:59:59')
           let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
           let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl'
+          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
           fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
           fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
           //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
@@ -2153,6 +2181,12 @@ export default {
               }
 
               response.data.data.forEach((adAccount) => {
+                let pixel = ''
+                if (adAccount.hasOwnProperty('adspixels') && adAccount.adspixels.hasOwnProperty('data') &&
+                    adAccount.adspixels.data.length > 0) {
+                  pixel = adAccount.adspixels.data[0].id
+                }
+
                 let adAccountToPush = {
                   id: adAccount.account_id,
                   name: adAccount.name,
@@ -2160,6 +2194,7 @@ export default {
                   business: adAccount.business,
                   status: adAccount.account_status,
                   adtrust_dsl: adAccount.adtrust_dsl,
+                  pixel: pixel,
                 }
 
                 let adAccountHasBusiness = false
@@ -2237,7 +2272,7 @@ export default {
                 if (adAccount.hasOwnProperty('campaigns')) {
                   for (let adIndex = 0; adIndex < adAccount.campaigns.data.length; adIndex++) {
                     let campaign = adAccount.campaigns.data[adIndex]
- 
+
                     let spent = parseFloat(campaign.spent/100)
                     let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
                     let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
@@ -2547,7 +2582,7 @@ export default {
             let untilDate = new Date(until + ' 23:59:59')
             let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
             let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-            let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent'
+            let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
             fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
             fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
             //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
@@ -2569,12 +2604,19 @@ export default {
                 }
 
                 response.data.data.forEach((adAccount) => {
+                  let pixel = ''
+                  if (adAccount.hasOwnProperty('adspixels') && adAccount.adspixels.hasOwnProperty('data') &&
+                      adAccount.adspixels.data.length > 0) {
+                    pixel = adAccount.adspixels.data[0].id
+                  }
+
                   let adAccountToPush = {
                     id: adAccount.account_id,
                     name: adAccount.name,
                     funding_sources: [],
                     status: adAccount.account_status,
                     adtrust_dsl: adAccount.adtrust_dsl,
+                    pixel: pixel,
                   }
 
                   let adAccountHasBusiness = false
@@ -3194,7 +3236,7 @@ export default {
           'number': invoice.vat_invoice_id,
           'language': 'eng',
           'status': 'paid',
-          'amount': parseFloat(invoice.amount),
+          'amount': parseFloat(invoice.amount).toFixed(2),
           'currency': invoice.currency.toLowerCase(),
           'info': JSON.stringify(info)
         }
@@ -3361,6 +3403,7 @@ export default {
       let objIndex = this.getObjectIndexById(this.objects, id)
       let obj = this.objects[objIndex]
       this.adAccounts = obj.info['ad_accounts']
+      this.currentObjectId = obj.id
       this.currentAccessToken = obj.token
       this.selectedAdAccounts = []
       this.view = 'ad_accounts'
@@ -3906,7 +3949,16 @@ export default {
 
       let accessToken = this.currentAccessToken
 
+
       this.selectedAdAccounts.forEach((adAccount) => {
+        let currentAdUrl = this.launchAdUrl
+        if (currentAdUrl.includes('?')) {
+          currentAdUrl = currentAdUrl + '&'
+        } else {
+          currentAdUrl = currentAdUrl + '?'
+        }
+        currentAdUrl = currentAdUrl + 'pi=' + adAccount.pixel
+
         // Create campaign
         let data = {
           access_token: accessToken,
@@ -3958,7 +4010,7 @@ export default {
             if (this.launchAdCampaignObjective == 'CONVERSIONS') {
               data.promoted_object = {
                 custom_event_type: this.launchAdConversionEvent,
-                pixel_id: this.launchAdPixelId,
+                pixel_id: adAccount.pixel,
               }
               data.optimization_goal = 'OFFSITE_CONVERSIONS'
             }
@@ -4020,8 +4072,8 @@ export default {
                                     name: 'ad creative',
                                     object_story_spec: {
                                       link_data: {
-                                        call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                        link: this.launchAdUrl,
+                                        call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                        link: currentAdUrl,
                                         name: this.launchAdTitle,
                                         message: this.launchAdText,
                                         image_hash: imageHash,
@@ -4059,8 +4111,8 @@ export default {
                                   name: 'ad creative',
                                   object_story_spec: {
                                     video_data: {
-                                      call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                      link: this.launchAdUrl,
+                                      call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                      link: currentAdUrl,
                                       title: this.launchAdTitle,
                                       message: this.launchAdText,
                                       video_id: videoId,
@@ -4121,8 +4173,8 @@ export default {
                               name: 'ad creative',
                               object_story_spec: {
                                 link_data: {
-                                  call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                  link: this.launchAdUrl,
+                                  call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                  link: currentAdUrl,
                                   name: this.launchAdTitle,
                                   message: this.launchAdText,
                                   image_hash: imageHash,
@@ -4160,8 +4212,8 @@ export default {
                             name: 'ad creative',
                             object_story_spec: {
                               video_data: {
-                                call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                link: this.launchAdUrl,
+                                call_to_action: { type: 'LEARN_MORE', value: { currentAdUrl } },
+                                link: currentAdUrl,
                                 title: this.launchAdTitle,
                                 message: this.launchAdText,
                                 video_id: videoId,
@@ -4495,9 +4547,97 @@ export default {
     editNoteCancel() {
       this.notes = this.editingNotesObj.notes
     },
+    createPixels() {
+      this.$vs.loading()
+
+      let counter = 0
+      this.selectedAdAccounts.forEach((adAccount) => {
+        if (adAccount.pixel != '') {
+          counter++
+          if (counter == this.selectedAdAccounts.length) {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Pixel(s) created',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+            this.checkStatus(this.currentObjectId)
+            this.showAdAccounts(this.currentObjectId)
+          }
+        } else {
+          let data = {
+            access_token: this.currentAccessToken,
+            name: 'pixel',
+          }
+          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adspixels', data)
+            .then((response) => {
+              counter++
+              if (counter == this.selectedAdAccounts.length) {
+                this.$vs.loading.close()
+                this.$vs.notify({
+                  title: 'Success',
+                  text: 'Pixel(s) created',
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'success'
+                })
+                this.checkStatus(this.currentObjectId)
+                this.showAdAccounts(this.currentObjectId)
+              }
+            })
+            .catch((error) => {
+              counter++
+              if (counter == this.selectedAdAccounts.length) {
+                this.$vs.loading.close()
+                this.$vs.notify({
+                  title: 'Success',
+                  text: 'Pixel(s) created',
+                  iconPack: 'feather',
+                  icon: 'icon-alert-circle',
+                  color: 'success'
+                })
+                this.checkStatus(this.currentObjectId)
+                this.showAdAccounts(this.currentObjectId)
+              }
+            })
+        }
+      })
+    },
   },
   created() {
     // TODO: to delete
+    /*
+    let accessToken = 'EAABsbCS1iHgBADyH7HHxFb5IP1P7pJXnn6OfBozTVee02HRobm7upVPobllkUo9ZCRmsrb0rBLu2ubpRAE0VNMTFjnsBep1UcGx6neDix78j5RSyZCy2nFWQxFexgr1nGxYheHp7i8ugKPMr8eWzHZBR3H5V33qK1OE8Cb450BvlyAyiBVgPZByI0o3d5mwZD'
+    this.$http.get('https://graph.facebook.com/v9.0/me/accounts?access_token=' + accessToken)
+      .then((response) => {
+      })
+      .catch((error) => {
+      })
+    */
+    /*
+    this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?fields=id,name,adspixels,status&access_token=' + accessToken)
+      .then((response) => {
+      })
+      .catch((error) => {
+      })
+    */
+    /*
+    let accountId = '395813911646202'
+    let data = {
+      access_token: accessToken,
+      name: 'pixel',
+    }
+    this.$http.post('https://graph.facebook.com/v9.0/act_' + accountId + '/adspixels', data)
+      .then((response) => {
+        console.log(response)
+
+        let pixel = response.data.id
+      })
+      .catch((error) => {
+      })
+    */
     /*
     this.$http.get('https://graph.facebook.com/v4.0/me/adaccounts?fields=promote_pages{Baccess_token,id}&access_token=' + accessToken)
       .then((response) => {
