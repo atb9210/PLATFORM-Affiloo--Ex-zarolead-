@@ -16,6 +16,7 @@
             <!--<vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-upload-cloud" @click="showForm('create')">Upload invoices</vs-button>-->
             <!--<vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" :disabled="selected.length == 0" @click="downloadInvoicesZip">Download invoices (ZIP)</vs-button>-->
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-download" :disabled="selected.length == 0" @click="downloadInvoices">Download invoices (ZIP)</vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file" :disabled="selected.length == 0" @click="downloadInvoicesXML">Download invoices (XML)</vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="">Delete</vs-button>
         </p>
 
@@ -1040,6 +1041,179 @@ export default {
                 color: 'danger'
               })
             })
+        }, 100)
+      })
+    },
+    downloadInvoicesXML() {
+      this.$vs.loading()
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.invoices = []
+          for (let i = 0; i < this.selected.length; i++) {
+            let invoiceD = new Date(this.selected[i].invoice_date)
+            let invoice = {
+              'id': this.selected[i].transaction_id,
+              'ad_account_name': this.selected[i].info['ad_account_name'],
+              'ad_account_id': this.selected[i].info['ad_account_id'],
+              'time': parseInt(invoiceD.getTime() / 1000),
+              'date': this.selected[i].invoice_date,
+              'funding_source': this.selected[i].info['funding_source'],
+              'reference_number': this.selected[i].info['reference_number'],
+              'amount': this.selected[i].amount,
+              'currency': this.selected[i].currency,
+              'billing_reason': this.selected[i].info['billing_reason'],
+              'billing_start_time': this.selected[i].info['billing_start_time'],
+              'billing_end_time': this.selected[i].info['billing_end_time'],
+              'vat_invoice_id': this.selected[i].number,
+            }
+            this.invoices.push(invoice)
+          }
+
+          let XMLContent = `
+<?xml version="1.0" encoding="UTF-8"?>
+<p:FatturaElettronica xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2 http://www.fatturapa.gov.it/export/fatturazione/sdi/fatturapa/v1.2/Schema_del_file_xml_FatturaPA_versione_1.2.xsd" versione="FPR12">
+  <FatturaElettronicaHeader>
+    <DatiTrasmissione>
+      <IdTrasmittente>
+        <IdPaese>IT</IdPaese>
+        <IdCodice>05051410263</IdCodice>
+      </IdTrasmittente>
+      <ProgressivoInvio>64425</ProgressivoInvio>
+      <FormatoTrasmissione>FPR12</FormatoTrasmissione>
+      <CodiceDestinatario>5RUO82D</CodiceDestinatario>
+    </DatiTrasmissione>
+    <CedentePrestatore>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IE</IdPaese>
+          <IdCodice>9692928F</IdCodice>
+        </IdFiscaleIVA>
+        <Anagrafica>
+          <Denominazione>Facebook Ireland Limited</Denominazione>
+        </Anagrafica>
+        <RegimeFiscale>RF01</RegimeFiscale>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>4 Grand Canal Square, Grand Canal Harbour</Indirizzo>
+        <CAP>00000</CAP>
+        <Comune>Dublin 2</Comune>
+        <Nazione>IE</Nazione>
+      </Sede>
+    </CedentePrestatore>
+    <CessionarioCommittente>
+      <DatiAnagrafici>
+        <IdFiscaleIVA>
+          <IdPaese>IT</IdPaese>
+          <IdCodice>05051410263</IdCodice>
+        </IdFiscaleIVA>
+        <Anagrafica>
+          <Denominazione>Zaro S.r.l.s.</Denominazione>
+        </Anagrafica>
+      </DatiAnagrafici>
+      <Sede>
+        <Indirizzo>Via Francia 6</Indirizzo>
+        <CAP>31033</CAP>
+        <Comune>Castelfranco Veneto</Comune>
+        <Nazione>IT</Nazione>
+      </Sede>
+    </CessionarioCommittente>
+  </FatturaElettronicaHeader>
+  <FatturaElettronicaBody>
+    <DatiGenerali>
+      <DatiGeneraliDocumento>
+        <TipoDocumento>TD01</TipoDocumento>
+        <Divisa>[[CURRENCY]]</Divisa>
+        <Data>[[DATE]]</Data>
+        <Numero>[[NUMBER]]</Numero>
+        <ImportoTotaleDocumento>[[AMOUNT]]</ImportoTotaleDocumento>
+        <Arrotondamento>0.00</Arrotondamento>
+        <FatturaPrincipale>
+          <NumeroFatturaPrincipale>[[NUMBER]]</NumeroFatturaPrincipale>
+          <DataFatturaPrincipale>[[DATE]]</DataFatturaPrincipale>
+        </FatturaPrincipale>
+      </DatiGeneraliDocumento>
+      <DatiRicezione>
+        <IdDocumento>[[NUMBER]]</IdDocumento>
+        <Data>[[DATE]]</Data>
+      </DatiRicezione>
+    </DatiGenerali>
+    <DatiBeniServizi>
+      <DettaglioLinee>
+        <NumeroLinea>1</NumeroLinea>
+        <Descrizione>Spese pubblicitarie</Descrizione>
+        <Quantita>1</Quantita>
+        <PrezzoUnitario>[[AMOUNT]]</PrezzoUnitario>
+        <PrezzoTotale>[[AMOUNT]]</PrezzoTotale>
+        <AliquotaIVA>0.00</AliquotaIVA>
+        <Natura>N6</Natura>
+      </DettaglioLinee>
+      <DatiRiepilogo>
+        <AliquotaIVA>0.00</AliquotaIVA>
+        <Natura>N6</Natura>
+        <Arrotondamento>0.00</Arrotondamento>
+        <ImponibileImporto>[[AMOUNT]]</ImponibileImporto>
+        <Imposta>0.00</Imposta>
+      </DatiRiepilogo>
+    </DatiBeniServizi>
+    <DatiPagamento>
+      <CondizioniPagamento>TP02</CondizioniPagamento>
+      <DettaglioPagamento>
+        <ModalitaPagamento>MP08</ModalitaPagamento>
+        <DataScadenzaPagamento>[[DATE]]</DataScadenzaPagamento>
+        <ImportoPagamento>[[AMOUNT]]</ImportoPagamento>
+      </DettaglioPagamento>
+    </DatiPagamento>
+  </FatturaElettronicaBody>
+</p:FatturaElettronica>`
+
+
+          let zip = new JSZip()
+          for (let i = 0; i < this.invoices.length; i++) {
+            let invoice = this.invoices[i]
+
+            let fContent = XMLContent
+            fContent = fContent.replace('[[CURRENCY]]', invoice.currency)
+            fContent = fContent.replace('[[NUMBER]]', invoice.reference_number)
+            fContent = fContent.replace('[[AMOUNT]]', invoice.amount)
+            fContent = fContent.replace('[[DATE]]', invoice.date)
+
+            let buf = new ArrayBuffer(fContent.length*2); // 2 bytes for each char
+            let bufView = new Uint16Array(buf);
+            for (let j = 0; j < fContent.length; j++) {
+              bufView[j] = fContent.charCodeAt(j);
+            }
+
+            let d = new Date(invoice.time * 1000)
+            let filename = ''
+            filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
+            filename += ' Transaction #' + invoice.id
+            filename += '.xml'
+
+            zip.folder(d.getFullYear().toString())
+              .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+              .file(filename, buf)
+          }
+
+          // Create zip file and download
+          zip.generateAsync({type:"blob"}).then(function (blob) {
+            let url = window.URL.createObjectURL(blob)
+            let a = document.createElement("a")
+            document.body.appendChild(a)
+            a.style = "display: none"
+            a.href = url
+            a.download = "invoices.zip"
+            a.click()
+            window.URL.revokeObjectURL(url)
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Success',
+              text: this.invoices.length + ' invoices downloaded',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+          })
+
         }, 100)
       })
     },
