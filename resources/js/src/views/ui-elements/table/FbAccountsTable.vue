@@ -2410,7 +2410,7 @@ export default {
               this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
               this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
               this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
-              this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
+              this.dynamicStats["id" + obj.id].transactions = parseInt(transactions.length)
 
               let info = obj.info
               if (info == null) {
@@ -2831,7 +2831,7 @@ export default {
                 this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
                 this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
                 this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
-                this.dynamicStats["id" + obj.id].transactions = parseInt(transactions)
+                this.dynamicStats["id" + obj.id].transactions = parseInt(transactions.length)
 
                 let info = obj.info
                 if (info == null) {
