@@ -101,6 +101,7 @@ class NetworkController extends Controller
             'transaction_id' => 'nullable|string',
             'cross_sell'     => 'json',
             'delivery'       => 'nullable|string|min:0',
+            'system'         => 'nullable|in:momoka,physom',
         ]);
         if ($validator->fails()) {
             return response([
@@ -115,75 +116,114 @@ class NetworkController extends Controller
             $params['cross_sell'] = json_decode($params['cross_sell'], true);
         }
 
-        $logisticsUrl = 'https://api.momokacorp.com/send_order.php';
-
-        $bodyParams = [
-            'user_id'        => '11665252',
-            'org_id'         => '1',
-            'advertiser'     => '0030',
-            'pipeline_id'    => '1',
-            'order_id'       => $params['order_id'],
-            'email'          => $params['email'],
-            'phone'          => $params['phone'],
-            'address'        => $params['address'],
-            'city'           => $params['city'],
-            'zipcode'        => $params['zipcode'],
-            'state'          => $params['state'],
-            'country'        => $params['country'],
-            'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
-            'quantity'       => $params['quantity'],
-            'payment'        => 'Alla consegna',
-            'amount'         => $params['price'],
-            'aff_id'         => '2',
-            'contactname'    => $params['name'],
-            'fullname'       => $params['name'],
-            'weight'         => $params['weight'],
-            'productCode'    => $params['quantity'] . ' ' . $params['sku'],
-            'transaction_id' => $params['transaction_id'],
-        ];
-
-        // Change product code if cross sell is enabled (add another sku)
-        if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
-            if (isset($params['cross_sell']['sku']) && isset($params['cross_sell']['quantity'])) {
-                $bodyParams['upsell'] = $params['cross_sell']['quantity'] . ' ' . $params['cross_sell']['sku'];
-            }
+        $system = 'momoka';
+        if (isset($params['system'])) {
+            $system = $params['system'];
         }
 
-        // TODO: Change weight if cross sell is enabled?
+        if ($system == 'momoka') {
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $logisticsUrl);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $server_output = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        $response = json_decode($server_output, true);
+            $logisticsUrl = 'https://api.momokacorp.com/send_order.php';
 
-        if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
-            $info = $bodyParams;
-            if (isset($params['delivery'])) {
-                $info['delivery'] = $params['delivery'];
-            } else {
-                $info['delivery'] = '';
+            $bodyParams = [
+                'user_id'        => '11665252',
+                'org_id'         => '1',
+                'advertiser'     => '0030',
+                'pipeline_id'    => '1',
+                'order_id'       => $params['order_id'],
+                'email'          => $params['email'],
+                'phone'          => $params['phone'],
+                'address'        => $params['address'],
+                'city'           => $params['city'],
+                'zipcode'        => $params['zipcode'],
+                'state'          => $params['state'],
+                'country'        => $params['country'],
+                'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
+                'quantity'       => $params['quantity'],
+                'payment'        => 'Alla consegna',
+                'amount'         => $params['price'],
+                'aff_id'         => '2',
+                'contactname'    => $params['name'],
+                'fullname'       => $params['name'],
+                'weight'         => $params['weight'],
+                'productCode'    => $params['quantity'] . ' ' . $params['sku'],
+                'transaction_id' => $params['transaction_id'],
+            ];
+
+            // Change product code if cross sell is enabled (add another sku)
+            if (isset($params['cross_sell']) && isset($params['cross_sell']['enabled']) && $params['cross_sell']['enabled']) {
+                if (isset($params['cross_sell']['sku']) && isset($params['cross_sell']['quantity'])) {
+                    $bodyParams['upsell'] = $params['cross_sell']['quantity'] . ' ' . $params['cross_sell']['sku'];
+                }
             }
+
+            // TODO: Change weight if cross sell is enabled?
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $logisticsUrl);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $server_output = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            $response = json_decode($server_output, true);
+
+            if ($httpCode == 200 && isset($response['success']) && $response['success'] == true) {
+                $info = $bodyParams;
+                if (isset($params['delivery'])) {
+                    $info['delivery'] = $params['delivery'];
+                } else {
+                    $info['delivery'] = '';
+                }
+                $order = LogisticsOrder::create([
+                    'logistics_system_id' => 1,
+                    'order_id' => $params['order_id'],
+                    'info' => $info,
+                ]);
+                return response([
+                    'response' => $response,
+                    'order' => $order,
+                    'status' => 'success',
+                ]);
+            } else {
+                return response([
+                    'response' => $response,
+                    'status' => 'error',
+                ], 500);
+            }
+        } else if ($system == 'physom') {
+            $bodyParams = [
+                'order_id'       => $params['order_id'],
+                'email'          => $params['email'],
+                'phone'          => $params['phone'],
+                'address'        => $params['address'],
+                'city'           => $params['city'],
+                'zipcode'        => $params['zipcode'],
+                'state'          => $params['state'],
+                'country'        => $params['country'],
+                'product'        => $params['quantity'] . ' ' . $params['sku'] . ' ' . $params['product_name'],
+                'quantity'       => $params['quantity'],
+                'amount'         => $params['price'],
+                'contactname'    => $params['name'],
+                'fullname'       => $params['name'],
+                'weight'         => $params['weight'],
+            ];
+
+            $info = $bodyParams;
+
             $order = LogisticsOrder::create([
                 'logistics_system_id' => 1,
                 'order_id' => $params['order_id'],
                 'info' => $info,
             ]);
+
             return response([
                 'response' => $response,
                 'order' => $order,
                 'status' => 'success',
             ]);
-        } else {
-            return response([
-                'response' => $response,
-                'status' => 'error',
-            ], 500);
         }
     }
 
