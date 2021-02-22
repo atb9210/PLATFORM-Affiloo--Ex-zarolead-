@@ -214,7 +214,7 @@ class NetworkController extends Controller
             $info = $bodyParams;
 
             $order = LogisticsOrder::create([
-                'logistics_system_id' => 1,
+                'logistics_system_id' => 2,
                 'order_id' => $params['order_id'],
                 'info' => $info,
             ]);
