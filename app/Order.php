@@ -180,8 +180,8 @@ class Order extends Model
 
                 curl_setopt($postback_ch, CURLOPT_URL, $postbackUrl);
                 if (strtolower($postbackMethod) == "post") {
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postbackBodyParams));
+                    curl_setopt($postback_ch, CURLOPT_POST, 1);
+                    curl_setopt($postback_ch, CURLOPT_POSTFIELDS, http_build_query($postbackBodyParams));
                 }
                 curl_setopt($postback_ch, CURLOPT_RETURNTRANSFER, 1);
 
@@ -233,6 +233,7 @@ class Order extends Model
             'status' => $status,
             'message' => $message,
             'postback' => $postbackFlag,
+            'postback_response' => $postback_response,
             'redirect' => $redirectFlag,
             'redirect_url' => $redirectUrl,
             'response' => $response,

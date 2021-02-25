@@ -577,6 +577,14 @@ class NetworksTableSeeder extends Seeder
                             'Accept: application/json',
                             'Authorization: Bearer 7|tIuiQ3C6GuFekt46mlAZbwrpx9KXLYYFO0xVSXSqvC2HTrYh9KNRZyCyeltBvaurg6AtWAY24OzXxYCD',
                         ],
+                        'urlParams' => [
+                            'offer_id' => '{form.offer_id}',
+                            'nome' => '{input.name}',
+                            'cognome' => '{input.name}',
+                            'email' => '{input.email}',
+                            'telefono' => '{input.phone}',
+                            'qta' => '{input.quantity}',
+                        ],
                         'bodyParams' => [
                             'offer_id' => '{form.offer_id}',
                             'nome' => '{input.name}',
@@ -617,11 +625,23 @@ class NetworksTableSeeder extends Seeder
                     'postback' => [
                         [
                             'on' => 'success',
-                            'url' => 'http://ztrk37.com/postback',
+                            'url' => env('APP_URL') . '/api/3rd/finapsy',
                             'method' => 'post',
+                            'urlParams' => [
+                                'order_id' => '{order.id}',
+                                'name' => '{input.name}',
+                                'email' => '{input.email}',
+                                'phone' => '{input.phone}',
+                                'offer_id' => '{form.offer_id}',
+                                'quantity' => '{input.quantity}',
+                            ],
                             'bodyParams' => [
-                                'cid' => '{input.sub_id}',
-                                'payout' => '{order.commission}',
+                                'order_id' => '{order.id}',
+                                'name' => '{input.name}',
+                                'email' => '{input.email}',
+                                'phone' => '{input.phone}',
+                                'offer_id' => '{form.offer_id}',
+                                'quantity' => '{input.quantity}',
                             ],
                         ],
                     ],
