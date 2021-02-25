@@ -125,4 +125,11 @@ class NetworkController extends Controller
             ], 500);
         }
     }
+
+    public function finapsy(Request $request)
+    {
+        return response([
+            'message' => 'ordine inviato correttamente!',
+        ]);
+    }
 }

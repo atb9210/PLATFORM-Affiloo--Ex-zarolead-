@@ -78,6 +78,7 @@ class Order extends Model
         $apiRequestMethod = self::interpretParam($network->getApi('store.request.method'), $context);
         $apiRequestType = self::interpretParam($network->getApi('store.request.type'), $context);
 
+        $headers = self::interpretParams($network->getApi('store.request.headers'), $context);
         $urlParams = self::interpretParams($network->getApi('store.request.urlParams'), $context);
         $bodyParams = self::interpretParams($network->getApi('store.request.bodyParams'), $context);
 
@@ -90,6 +91,11 @@ class Order extends Model
             $ch = curl_init();
 
             curl_setopt($ch, CURLOPT_URL, $url);
+
+            if (!empty($headers)) {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            }
+
             if (strtolower($apiRequestMethod) == "post") {
                 curl_setopt($ch, CURLOPT_POST, 1);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));

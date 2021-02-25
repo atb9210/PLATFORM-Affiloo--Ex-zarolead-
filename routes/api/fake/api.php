@@ -18,6 +18,7 @@ Route::post('/network/worldfilia', 'api\fake\NetworkController@worldfilia')->nam
 Route::post('/network/amsped', 'api\fake\NetworkController@amsped')->name('network.amsped');
 Route::get('/network/affiliation-park', 'api\fake\NetworkController@affiliationPark')->name('network.affiliation-park');
 Route::post('/network/zarolead', 'api\fake\NetworkController@zarolead')->name('network.zarolead');
+Route::post('/network/finapsy', 'api\fake\NetworkController@finapsy')->name('network.finapsy');
 
 /* Logistic routes */
 Route::post('/logistic/momoka', 'api\fake\LogisticController@momoka')->name('logistic.momoka');

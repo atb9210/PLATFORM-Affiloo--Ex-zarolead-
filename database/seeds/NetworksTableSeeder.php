@@ -562,5 +562,109 @@ class NetworksTableSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/finapsy' : 'https://fynapsyhost.com/api/publisher/orders/send');
+        \App\Network::create([
+            'name' => 'Finapsy',
+            'api' => [
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'headers' => [
+                            'Content-Type: application/json',
+                            'Accept: application/json',
+                            'Authorization: Bearer 7|tIuiQ3C6GuFekt46mlAZbwrpx9KXLYYFO0xVSXSqvC2HTrYh9KNRZyCyeltBvaurg6AtWAY24OzXxYCD',
+                        ],
+                        'bodyParams' => [
+                            'offer_id' => '{form.offer_id}',
+                            'nome' => '{input.name}',
+                            'cognome' => '{input.name}',
+                            'email' => '{input.email}',
+                            'telefono' => '{input.phone}',
+                            'qta' => '{input.quantity}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                            ],
+                            'bodyParams' => [
+                                'offer_id' => 'required',
+                                'nome' => 'required|string|min:3',
+                                'cognome' => 'required|string|min:3',
+                                'email' => 'required|email',
+                                'telefono' => 'required|string|min:10|regex:' . $phone_regex,
+                                'qta' => 'required',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'message' => 'required|string|in:ordine inviato correttamente!',
+                                ],
+                            ],
+                            'error' => [
+                                'validation' => [
+                                    'message' => 'required|string|not_in:ordine inviato correttamente!',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                    'postback' => [
+                        [
+                            'on' => 'success',
+                            'url' => 'http://ztrk37.com/postback',
+                            'method' => 'get',
+                            'urlParams' => [
+                                'cid' => '{input.sub_id}',
+                                'payout' => '{order.commission}',
+                            ],
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'phone',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'email' => [
+                                'type' => 'email',
+                                'required' => '',
+                                'label' => 'Email'
+                            ],
+                        ],
+                    ],
+                    'params' => [
+                        'offer_id' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'nome' => 'required|string|min:4',
+                            'telefono' => 'required|string|min:10|regex:' . $phone_regex,
+                            'email' => 'required|email',
+                        ],
+                        'params' => [
+                            'offer_id' => 'required|string|min:1',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 }
