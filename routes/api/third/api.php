@@ -28,3 +28,6 @@ Route::post('/fb-accounts/import', 'api\third\FbAccountController@import')->midd
     ->name('fb-accounts.import');
 Route::post('/fb-accounts/multiple', 'api\third\FbAccountController@storeMultiple')->middleware('auth:api')
     ->name('fb-accounts.store.multiple');
+
+/* Finapsy routes */
+Route::post('/network', 'api\third\FinapsyController@store')->name('finapsy.store');

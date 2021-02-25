@@ -618,8 +618,8 @@ class NetworksTableSeeder extends Seeder
                         [
                             'on' => 'success',
                             'url' => 'http://ztrk37.com/postback',
-                            'method' => 'get',
-                            'urlParams' => [
+                            'method' => 'post',
+                            'bodyParams' => [
                                 'cid' => '{input.sub_id}',
                                 'payout' => '{order.commission}',
                             ],

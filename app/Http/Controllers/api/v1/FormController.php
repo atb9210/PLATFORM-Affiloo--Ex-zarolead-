@@ -749,7 +749,7 @@ class FormController extends Controller
             if ($user->id == $form->user->id) {
                 continue;
             }
-            $report = UserReport::getObject($user->id, $stats->day);
+            $report = UserReport::getObject($user->id, $formStats->day);
             $report->visits += 1;
             $report->save();
         }
