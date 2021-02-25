@@ -655,8 +655,8 @@ class NetworksTableSeeder extends Seeder
                     ],
                     'validation' => [
                         'input' => [
-                            'nome' => 'required|string|min:4',
-                            'telefono' => 'required|string|min:10|regex:' . $phone_regex,
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
                             'email' => 'required|email',
                         ],
                         'params' => [

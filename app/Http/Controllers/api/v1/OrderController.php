@@ -100,7 +100,7 @@ class OrderController extends Controller
      *
      * @bodyParam name string required Customer's name
      * @bodyParam phone string required Customer's phone number
-     * @bodyParam address string required Customer's address
+     * @bodyParam address string Customer's address
      * @bodyParam quantity string required Quantity
      * @bodyParam cross_sell json Cross sell
      * @bodyParam delivery integer Delivery option
@@ -120,7 +120,7 @@ class OrderController extends Controller
         $params = $request->validate([
             'name' => 'required|string|min:3',
             'phone' => 'required|string|min:3',
-            'address' => 'required|string|min:3',
+            'address' => 'string|min:3',
             'quantity' => 'required|string|min:1',
             'cross_sell' => 'json',
             'delivery' => 'integer|min:0|nullable',
