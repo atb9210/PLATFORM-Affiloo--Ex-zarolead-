@@ -118,6 +118,10 @@ class Order extends Model
             }
         }
 
+        if ($response == null) {
+            $response = [];
+        }
+
         // Add response to the context
         $context['response'] = $response;
 
