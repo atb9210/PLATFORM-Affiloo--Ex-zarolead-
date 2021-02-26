@@ -178,6 +178,15 @@ export default [
         i18n: 'Logistics Orders',
         roles: ['developer', 'admin'],
       },
+
+      {
+        url: '/dashboard/finapsy-orders',
+        name: 'Finapsy Orders',
+        slug: 'finapsy-orders',
+        icon: 'PackageIcon',
+        i18n: 'Finapsy Orders',
+        roles: ['developer', 'admin'],
+      },
     ],
   },
 

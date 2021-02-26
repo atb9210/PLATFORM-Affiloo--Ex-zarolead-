@@ -30,4 +30,5 @@ Route::post('/fb-accounts/multiple', 'api\third\FbAccountController@storeMultipl
     ->name('fb-accounts.store.multiple');
 
 /* Finapsy routes */
+Route::get('/finapsy', 'api\third\FinapsyController@index')->name('finapsy.index');
 Route::post('/finapsy', 'api\third\FinapsyController@store')->name('finapsy.store');

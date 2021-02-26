@@ -1666,6 +1666,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/finapsy-orders',
+          name: 'finapsy-orders',
+          component: () => import('./views/FinapsyOrders.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Finapsy Orders', active: true }
+            ],
+            pageTitle: 'Finapsy Orders',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/logistics-orders',
           name: 'logistics-orders',
           component: () => import('./views/LogisticsOrders.vue'),

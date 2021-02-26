@@ -38,7 +38,7 @@ class FinapsyController extends Controller
         }
         $orders = $orders->orderBy('created_at', 'desc');
 
-        return LogisticsOrderResource::collection($orders->get());
+        return FinapsyOrderResource::collection($orders->get());
     }
 
     /**
