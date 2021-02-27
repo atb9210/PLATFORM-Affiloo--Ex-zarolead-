@@ -4033,7 +4033,11 @@ export default {
             let adsetIds = []
 
             // TODO: HERE
-            for (let adsetIndexTmp = 0; adsetIndexTmp < this.selectedProductMedias.length; adsetIndexTmp++) {
+            let adsetsToCreate = 1
+            if (this.launchAdSplitAdset) {
+              adsetsToCreate = this.selectedProductMedias.length
+            }
+            for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
               this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
                 .then((response) => {
                   adsetIds.push(response.data.id)
