@@ -4177,8 +4177,12 @@ export default {
                       }.bind(this))
                     } else {
                       // Create ad images and ad videos
+                      let adsetIndex = 0
                       this.selectedProductMedias.forEach((pmIndex) => {
                         let productMedia = this.productMediasFiltered[pmIndex]
+
+                        let adsetId = adsetIds[adsetIndex]
+                        adsetIndex++
 
                         let pageId = this.launchAdPageId // TODO: Better
                         let data = {
