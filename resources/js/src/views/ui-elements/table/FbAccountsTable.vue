@@ -1187,8 +1187,8 @@
                     </div>
                     <div class="vx-col sm:w-1/3 w-full">
                         <vs-select autocomplete v-model="launchAdSplitAdset" class="w-full select-large">
-                            <vs-select-item :value="true" :text="Yes" class="w-full" />
-                            <vs-select-item :value="false" :text="No" class="w-full" />
+                            <vs-select-item value="true" text="Yes" class="w-full" />
+                            <vs-select-item value="false" text="No" class="w-full" />
                         </vs-select>
                     </div>
                 </div>
@@ -1606,6 +1606,8 @@ export default {
 
       notes: '',
       editingNotesObj: '',
+
+      fbAccountPages: [],
     }
   },
   computed: {
@@ -4031,7 +4033,7 @@ export default {
             let adsetIds = []
 
             // TODO: HERE
-            while (adsetCounter < this.this.selectedProductMedias.length) {
+            for (let adsetIndexTmp = 0; adsetIndexTmp < this.selectedProductMedias.length; adsetIndexTmp++) {
               this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
                 .then((response) => {
                   adsetIds.push(response.data.id)
