@@ -4044,7 +4044,7 @@ export default {
                   adsetCounter++
 
                   if (this.launchAdSplitAdset != "true") {
-                    for (let c = 0; c < this.this.selectedProductMedias.length - 1; c++) {
+                    for (let c = 0; c < this.selectedProductMedias.length - 1; c++) {
                       adsetIds.push(response.data.id)
                     }
                   }
@@ -4116,12 +4116,14 @@ export default {
                                           },
                                           page_id: pageId,
                                           actor_id: pageId,
+                                          use_page_actor_override: true,
                                         },
                                       }
                                       this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                         .then((response) => {
                                           this.adCounter += 1
                                           if (this.adCounter == this.selectedAdAccounts.length) {
+                                            // TODO: HERE IT IS
                                             this.$vs.loading.close()
                                           }
                                         })
@@ -4157,17 +4159,17 @@ export default {
                                         },
                                         page_id: pageId,
                                         actor_id: pageId,
+                                        use_page_actor_override: true,
                                       },
                                     }
 
+                                    // TODO: HERE IT IS
                                     this.createAd(adAccount.id, data)
                                   })
                                   .catch((error) => {
                                     // TODO: Log the error
                                     console.log("error:", error)
                                   })
-                              } else {
-                                return
                               }
                             })
 
@@ -4223,12 +4225,14 @@ export default {
                                     },
                                     page_id: pageId,
                                     actor_id: pageId,
+                                    use_page_actor_override: true,
                                   },
                                 }
                                 this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                   .then((response) => {
                                     this.adCounter += 1
                                     if (this.adCounter == this.selectedAdAccounts.length) {
+                                      // TODO: HERE IT IS
                                       this.$vs.loading.close()
                                     }
                                   })
@@ -4264,9 +4268,11 @@ export default {
                                   },
                                   page_id: pageId,
                                   actor_id: pageId,
+                                  use_page_actor_override: true,
                                 },
                               }
 
+                              // TODO: HERE IT IS
                               this.createAd(adAccount.id, data)
                             })
                             .catch((error) => {
