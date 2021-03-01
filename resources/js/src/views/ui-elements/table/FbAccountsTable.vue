@@ -4116,6 +4116,7 @@ export default {
                                           },
                                           page_id: pageId,
                                           actor_id: pageId,
+                                          instagram_actor_id: pageId,
                                           use_page_actor_override: true,
                                         },
                                       }
@@ -4159,6 +4160,7 @@ export default {
                                         },
                                         page_id: pageId,
                                         actor_id: pageId,
+                                        instagram_actor_id: pageId,
                                         use_page_actor_override: true,
                                       },
                                     }
@@ -4225,6 +4227,7 @@ export default {
                                     },
                                     page_id: pageId,
                                     actor_id: pageId,
+                                    instagram_actor_id: pageId,
                                     use_page_actor_override: true,
                                   },
                                 }
@@ -4268,6 +4271,7 @@ export default {
                                   },
                                   page_id: pageId,
                                   actor_id: pageId,
+                                  instagram_actor_id: pageId,
                                   use_page_actor_override: true,
                                 },
                               }
