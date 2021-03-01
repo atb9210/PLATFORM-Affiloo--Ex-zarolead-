@@ -4116,7 +4116,6 @@ export default {
                                           },
                                           page_id: pageId,
                                           actor_id: pageId,
-                                          instagram_actor_id: pageId,
                                         },
                                       }
                                       this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
@@ -4158,7 +4157,6 @@ export default {
                                         },
                                         page_id: pageId,
                                         actor_id: pageId,
-                                        instagram_actor_id: pageId,
                                       },
                                     }
 
@@ -4225,7 +4223,6 @@ export default {
                                     },
                                     page_id: pageId,
                                     actor_id: pageId,
-                                    instagram_actor_id: pageId,
                                   },
                                 }
                                 this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
@@ -4267,7 +4264,6 @@ export default {
                                   },
                                   page_id: pageId,
                                   actor_id: pageId,
-                                  instagram_actor_id: pageId,
                                 },
                               }
 
