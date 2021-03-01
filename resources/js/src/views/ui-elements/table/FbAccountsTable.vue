@@ -1576,7 +1576,7 @@ export default {
       ],
       launchAdCampaignBidStrategy: 'LOWEST_COST_WITHOUT_CAP',
       launchAdCampaignBid: 1,
-      launchAdSplitAdset: false,
+      launchAdSplitAdset: "false",
 
       launchAdTargetingGenderOptions: [ 'All', 'Male', 'Female' ],
       launchAdTargetingGender: 'All',
@@ -4034,7 +4034,7 @@ export default {
 
             // TODO: HERE
             let adsetsToCreate = 1
-            if (this.launchAdSplitAdset) {
+            if (this.launchAdSplitAdset == "true") {
               adsetsToCreate = this.selectedProductMedias.length
             }
             for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
@@ -4043,7 +4043,7 @@ export default {
                   adsetIds.push(response.data.id)
                   adsetCounter++
 
-                  if (!this.launchAdSplitAdset) {
+                  if (this.launchAdSplitAdset != "true") {
                     for (let c = 0; c < this.this.selectedProductMedias.length - 1; c++) {
                       adsetIds.push(response.data.id)
                     }
