@@ -4115,6 +4115,8 @@ export default {
                                             image_hash: imageHash,
                                           },
                                           page_id: pageId,
+                                          actor_id: pageId,
+                                          instagram_actor_id: pageId,
                                         },
                                       }
                                       this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
@@ -4155,6 +4157,8 @@ export default {
                                           image_hash: previewHash,
                                         },
                                         page_id: pageId,
+                                        actor_id: pageId,
+                                        instagram_actor_id: pageId,
                                       },
                                     }
 
@@ -4220,6 +4224,8 @@ export default {
                                       image_hash: imageHash,
                                     },
                                     page_id: pageId,
+                                    actor_id: pageId,
+                                    instagram_actor_id: pageId,
                                   },
                                 }
                                 this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
@@ -4260,6 +4266,8 @@ export default {
                                     image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
                                   },
                                   page_id: pageId,
+                                  actor_id: pageId,
+                                  instagram_actor_id: pageId,
                                 },
                               }
 
