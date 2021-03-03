@@ -29,6 +29,11 @@ Route::post('/fb-accounts/import', 'api\third\FbAccountController@import')->midd
 Route::post('/fb-accounts/multiple', 'api\third\FbAccountController@storeMultiple')->middleware('auth:api')
     ->name('fb-accounts.store.multiple');
 
+/* Fb ad rules routes */
+Route::apiResource('fb-ad-rules', 'api\third\FbAdRuleController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
 /* Finapsy routes */
 Route::get('/finapsy', 'api\third\FinapsyController@index')->name('finapsy.index');
 Route::post('/finapsy', 'api\third\FinapsyController@store')->name('finapsy.store');

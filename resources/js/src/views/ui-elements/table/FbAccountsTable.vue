@@ -1364,6 +1364,19 @@
             <div class="w-full pr-2 pl-2">
                 <div class="vx-row mb-6 mt-6">
                     <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad rule template</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adRuleTemplate" class="w-full select-large" @change="changeAdRule">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adRulesOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
                         <span>Name</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
@@ -1389,6 +1402,17 @@
                     <div class="vx-col sm:w-2/3 w-full">
                         <vs-select autocomplete v-model="adRule['execution_type']" class="w-full select-large">
                             <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleExecutionTypeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Time preset</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adRule['time_preset']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleTimePresetOptions" class="w-full" />
                         </vs-select>
                     </div>
                 </div>
@@ -1430,7 +1454,8 @@
             </div>
 
             <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="createAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Create Ad</vs-button>
+                <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Save Template</vs-button>
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Create Ad Rule</vs-button>
             </div>
         </vs-popup>
 
@@ -1686,6 +1711,8 @@ export default {
 
       fbAccountPages: [],
 
+      adRuleTemplate: 0,
+
       adRuleEntityTypeOptions: [
         'CAMPAIGN',
         'ADSET',
@@ -1699,6 +1726,11 @@ export default {
         'DAILY',
         'HOURLY',
         'SEMI_HOURLY',
+      ],
+      adRuleTimePresetOptions: [
+        'TODAY',
+        'YESTARDAY',
+        'LIFETIME',
       ],
       adRuleFieldOptions: [
         'lifetime_impressions',
@@ -1718,6 +1750,7 @@ export default {
       adRule: {
         'name': '',
         'entity_type': 'AD',
+        'time_preset': 'TODAY',
         'execution_type': 'PAUSE',
         'schedule_type': 'DAILY',
         'filters': [
@@ -1728,6 +1761,8 @@ export default {
           }
         ],
       },
+      adRules: [],
+      adRulesOptions: [],
     }
   },
   computed: {
@@ -4815,7 +4850,7 @@ export default {
               },
               {
                  "field": "time_preset",
-                 "value": "LIFETIME",
+                 "value": this.adRule['time_preset'],
                  "operator": "EQUAL"
               },
               {
@@ -4829,7 +4864,11 @@ export default {
 
         this.adRule['filters'].forEach((filter) => {
           if (filter['field'] != '' && filter['operator'] != '') {
-            data.evaluation_spec.filters.push(filter);
+            data.evaluation_spec.filters.push({
+              field: filter['field'],
+              operator: filter['operator'],
+              value: parseInt(parseFloat(filter['value']) * 100),
+            });
           }
         })
 
@@ -4861,6 +4900,55 @@ export default {
             }
           })
       })
+    },
+    saveAdRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        name: this.adRule['name'],
+        value: JSON.stringify(this.adRule),
+      }
+
+      this.$http.post('/api/3rd/fb-ad-rules', data, { headers })
+        .then((response) => {
+          this.adRules.push(response.data.data)
+          this.adRulesOptions.push(response.data.data)
+          this.adRuleTemplate = response.data.data.id
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Ad rule template saved',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: 'Unknown error while saving ad rule template',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    },
+    changeAdRule() {
+      let index = -1
+      for (let i = 0; i < this.adRulesOptions.length; i++) {
+        if (this.adRulesOptions[i].id == this.adRuleTemplate) {
+          index = i
+          break
+        }
+      }
+      if (index > -1) {
+        this.adRule = this.adRulesOptions[index].value
+      }
     },
   },
   created() {
@@ -5048,7 +5136,47 @@ export default {
                   label: user.email,
                 })
               })
-              this.$vs.loading.close()
+              this.$http.get('/api/3rd/fb-ad-rules', { headers })
+                .then((response) => {
+                  this.$vs.loading.close()
+                  this.adRules = []
+                  this.adRulesOptions = []
+                  this.adRulesOptions.push({
+                    id: 0,
+                    name: 'New',
+                    value: {
+                      'name': '',
+                      'entity_type': 'AD',
+                      'time_preset': 'TODAY',
+                      'execution_type': 'PAUSE',
+                      'schedule_type': 'DAILY',
+                      'filters': [
+                        {
+                          'field': 'lifetime_impressions',
+                          'operator': 'GREATER_THAN',
+                          'value': '0',
+                        }
+                      ],
+                    },
+                  })
+                  response.data.data.forEach((r) => {
+                    this.adRulesOptions.push(r)
+                    this.adRules.push(r)
+                  })
+
+                  // TODO: TO DELETE
+                  console.log("this.adRules", this.adRules)
+                })
+                .catch((error) => {
+                  this.$vs.loading.close()
+                  this.$vs.notify({
+                    title: 'Error',
+                    text: error.message,
+                    iconPack: 'feather',
+                    icon: 'icon-alert-circle',
+                    color: 'danger'
+                  })
+                })
             })
             .catch((error) => {
               this.$vs.loading.close()
