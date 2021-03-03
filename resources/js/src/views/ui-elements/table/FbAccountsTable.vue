@@ -31,6 +31,7 @@
             <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-map-pin" @click="switchFbAccountsStatus()" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-play" @click="showForm('launch_ad')" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="createPixels" v-if="view == 'ad_accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-square" @click="showForm('ad_rules')" v-if="view == 'ad_accounts'" :disabled="this.selectedAdAccounts.length == 0"></vs-button>
             <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" v-if="view == 'accounts'"></vs-button>
         </p>
 
@@ -1358,6 +1359,81 @@
             </div>
         </vs-popup>
 
+        <!-- Ad rules popup -->
+        <vs-popup title="Ad rules" :active.sync="showPopup['ad_rules']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="adRule['name']" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>What</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adRule['entity_type']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleEntityTypeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Action</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adRule['execution_type']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleExecutionTypeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>When</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adRule['schedule_type']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleScheduleTypeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6" v-for="(filterItem, filterIndex) in adRule['filters']">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-select autocomplete v-model="adRule['filters'][filterIndex]['field']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleFieldOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-select autocomplete v-model="adRule['filters'][filterIndex]['operator']" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleOperatorOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="adRule['filters'][filterIndex]['value']" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-2/3 w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAdRuleFilter"></vs-button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Create Ad</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -1438,6 +1514,7 @@ export default {
         'view_ad': false,
         'launch_ad': false,
         'notes': false,
+        'ad_rules': false,
       },
       newObject: {
         'create': {
@@ -1608,6 +1685,49 @@ export default {
       editingNotesObj: '',
 
       fbAccountPages: [],
+
+      adRuleEntityTypeOptions: [
+        'CAMPAIGN',
+        'ADSET',
+        'AD',
+      ],
+      adRuleExecutionTypeOptions: [
+        'PAUSE',
+        'UNPAUSE',
+      ],
+      adRuleScheduleTypeOptions: [
+        'DAILY',
+        'HOURLY',
+        'SEMI_HOURLY',
+      ],
+      adRuleFieldOptions: [
+        'lifetime_impressions',
+        'spent',
+        'result',
+        'cost_per_link_click',
+        'frequency',
+        'website_purchase_roas',
+        'cpm',
+        'link_ctr',
+        'cost_per',
+      ],
+      adRuleOperatorOptions: [
+        'GREATER_THAN',
+        'LESS_THAN',
+      ],
+      adRule: {
+        'name': '',
+        'entity_type': 'AD',
+        'execution_type': 'PAUSE',
+        'schedule_type': 'DAILY',
+        'filters': [
+          {
+            'field': 'lifetime_impressions',
+            'operator': 'GREATER_THAN',
+            'value': '0',
+          }
+        ],
+      },
     }
   },
   computed: {
@@ -1886,6 +2006,9 @@ export default {
                 this.launchAdTitle != '' && this.launchAdText != '' &&
                 this.selectedProductMedias.length > 0 &&
                 (!this.selectedProductMediasHaveVideo() || this.selectedPreview.length > 0))
+      } else if (type == 'ad_rule') {
+        // TODO:
+        return true
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
@@ -4115,10 +4238,9 @@ export default {
                                             image_hash: imageHash,
                                           },
                                           page_id: pageId,
-                                          actor_id: pageId,
-                                          instagram_actor_id: pageId,
-                                          use_page_actor_override: true,
                                         },
+                                        actor_id: pageId,
+                                        use_page_actor_override: true,
                                       }
                                       this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                         .then((response) => {
@@ -4159,10 +4281,9 @@ export default {
                                           image_hash: previewHash,
                                         },
                                         page_id: pageId,
-                                        actor_id: pageId,
-                                        instagram_actor_id: pageId,
-                                        use_page_actor_override: true,
                                       },
+                                      actor_id: pageId,
+                                      use_page_actor_override: true,
                                     }
 
                                     // TODO: HERE IT IS
@@ -4226,10 +4347,9 @@ export default {
                                       image_hash: imageHash,
                                     },
                                     page_id: pageId,
-                                    actor_id: pageId,
-                                    instagram_actor_id: pageId,
-                                    use_page_actor_override: true,
                                   },
+                                  actor_id: pageId,
+                                  use_page_actor_override: true,
                                 }
                                 this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                   .then((response) => {
@@ -4270,10 +4390,9 @@ export default {
                                     image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
                                   },
                                   page_id: pageId,
-                                  actor_id: pageId,
-                                  instagram_actor_id: pageId,
-                                  use_page_actor_override: true,
                                 },
+                                actor_id: pageId,
+                                use_page_actor_override: true,
                               }
 
                               // TODO: HERE IT IS
@@ -4662,6 +4781,87 @@ export default {
         }
       })
     },
+    addAdRuleFilter() {
+      this.adRule['filters'].push({
+        'field': '',
+        'operator': '',
+        'value': '0',
+      })
+    },
+    createAdRule() {
+      this.$vs.loading()
+
+      // TODO: HERE
+      let counter = 0
+      this.selectedAdAccounts.forEach((adAccount) => {
+        let accountId = adAccount.id
+
+        let data = {
+          access_token: this.currentAccessToken,
+          name: this.adRule['name'],
+          execution_spec: {
+            execution_type: this.adRule['execution_type'],
+          },
+          schedule_spec: {
+            schedule_type: this.adRule['schedule_type'],
+          },
+          evaluation_spec: {
+            evaluation_type: 'SCHEDULE',
+            filters: [
+              {
+                 "field": "entity_type",
+                 "value": this.adRule['entity_type'],
+                 "operator": "EQUAL"
+              },
+              {
+                 "field": "time_preset",
+                 "value": "LIFETIME",
+                 "operator": "EQUAL"
+              },
+              {
+                 "field": "attribution_window",
+                 "value": "ACCOUNT_DEFAULT",
+                 "operator": "EQUAL"
+              }
+            ],
+          },
+        }
+
+        this.adRule['filters'].forEach((filter) => {
+          if (filter['field'] != '' && filter['operator'] != '') {
+            data.evaluation_spec.filters.push(filter);
+          }
+        })
+
+        this.$http.post('https://graph.facebook.com/v10.0/act_' + accountId + '/adrules_library', data)
+          .then((response) => {
+            counter++
+            if (counter == this.selectedAdAccounts.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Ad rule created',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+            }
+          })
+          .catch((error) => {
+            counter++
+            if (counter == this.selectedAdAccounts.length) {
+              this.$vs.loading.close()
+              this.$vs.notify({
+                title: 'Error',
+                text: 'Unknown error while creating ad rule',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+            }
+          })
+      })
+    },
   },
   created() {
     // TODO: to delete
@@ -4717,6 +4917,24 @@ export default {
       .catch((error) => {
       })
     */
+
+    // TODO: to delete
+    // Create ad rule
+    let accessToken = 'EAABsbCS1iHgBACzjjNCCmANQLldGtHVCLaZBPHv01n9UaHPcsR74EvjQiDSQgCzlnLG0AHGVay31GUIZCcTZCDSvqA4XNWUZAMi3RvzwTRKt2N5eucDnWLBcddNK00N8X2MsG14zDDmbZBXftceJFcbNSEL1AOrUbpLqjzMlCvkt7O5gP1hBz'
+    let accountId = '300688817943793'
+    let data = {
+      evaluation_spec: {
+        evaluation_type: 'SCHEDULE',
+        filters: {
+          //this.adRule
+        },
+      },
+    }
+    this.$http.get('https://graph.facebook.com/v9.0/act_' + accountId + '/adrules_library?fields=name,evaluation_spec,execution_spec,schedule_spec&access_token=' + accessToken, data)
+      .then((response) => {
+      })
+      .catch((error) => {
+      })
 
     /*
     // Create ad image
