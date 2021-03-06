@@ -4170,7 +4170,6 @@ export default {
       return
       */
 
-
       this.$vs.loading()
 
       this.adCounter = 0
@@ -4200,218 +4199,89 @@ export default {
           data.daily_budget = this.launchAdCampaignBudget*100
         }
 
-        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/campaigns', data)
-          .then((response) => {
-            let campaignId = response.data.id
+        // Get Page backed instagram account (PBIA)
+        this.$http.get('https://graph.facebook.com/v9.0/' + pageId + '/page_backed_instagram_accounts?fields=id,username&access_token=' + accessToken, data)
+          .then((response_pbia) => {
+            if (response_pbia.data.hasOwnProperty('data') && response_pbia.data.data.length == 0) {
+              this.$vs.loading.close()
 
-            // Create adset
-            let data = {
-              access_token: accessToken,
-              name: 'Adset',
-              optimization_goal: this.launchAdCampaignObjective,
-              billing_event: 'IMPRESSIONS', // TODO: What about this?
-              campaign_id: campaignId,
-              targeting: {},
-              status: this.launchAdCampaignStatus,
-            }
-            if (this.launchAdCampaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
-              data.bid_amount = this.launchAdCampaignBid
-            }
-            if (this.launchAdCampaignBudgetStrategy != 'CBO') {
-              data.bid_strategy = this.launchAdCampaignBidStrategy
-              data.daily_budget = this.launchAdCampaignBudget*100
-            }
-            if (this.launchAdTargetingAgeMin > 0) {
-              data.targeting.age_min = this.launchAdTargetingAgeMin
-            }
-            if (this.launchAdTargetingAgeMax > 0) {
-              data.targeting.age_max = this.launchAdTargetingAgeMax
-            }
-            data.targeting.geo_locations = { countries: [] }
-            data.targeting.geo_locations.countries.push(this.launchAdTargetingCountry)
-            if (this.launchAdTargetingGender == 'Male') {
-              data.targeting.genders = [1]
-            } else if (this.launchAdTargetingGender == 'Female') {
-              data.targeting.genders = [2]
+              // TODO: Log the error
+              console.log("error:", error)
+              return
             }
 
-            if (this.launchAdCampaignObjective == 'CONVERSIONS') {
-              data.promoted_object = {
-                custom_event_type: this.launchAdConversionEvent,
-                pixel_id: adAccount.pixel,
-              }
-              data.optimization_goal = 'OFFSITE_CONVERSIONS'
-            }
+            let pbia_id = response_pbia.data.data[0]
 
-            let adsetCounter = 0
-            let adsetIds = []
+            this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/campaigns', data)
+              .then((response) => {
+                let campaignId = response.data.id
 
-            // TODO: HERE
-            let adsetsToCreate = 1
-            if (this.launchAdSplitAdset == "true") {
-              adsetsToCreate = this.selectedProductMedias.length
-            }
-            for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
-              this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
-                .then((response) => {
-                  adsetIds.push(response.data.id)
-                  adsetCounter++
+                // Create adset
+                let data = {
+                  access_token: accessToken,
+                  name: 'Adset',
+                  optimization_goal: this.launchAdCampaignObjective,
+                  billing_event: 'IMPRESSIONS', // TODO: What about this?
+                  campaign_id: campaignId,
+                  targeting: {},
+                  status: this.launchAdCampaignStatus,
+                }
+                if (this.launchAdCampaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+                  data.bid_amount = this.launchAdCampaignBid
+                }
+                if (this.launchAdCampaignBudgetStrategy != 'CBO') {
+                  data.bid_strategy = this.launchAdCampaignBidStrategy
+                  data.daily_budget = this.launchAdCampaignBudget*100
+                }
+                if (this.launchAdTargetingAgeMin > 0) {
+                  data.targeting.age_min = this.launchAdTargetingAgeMin
+                }
+                if (this.launchAdTargetingAgeMax > 0) {
+                  data.targeting.age_max = this.launchAdTargetingAgeMax
+                }
+                data.targeting.geo_locations = { countries: [] }
+                data.targeting.geo_locations.countries.push(this.launchAdTargetingCountry)
+                if (this.launchAdTargetingGender == 'Male') {
+                  data.targeting.genders = [1]
+                } else if (this.launchAdTargetingGender == 'Female') {
+                  data.targeting.genders = [2]
+                }
 
-                  if (this.launchAdSplitAdset != "true") {
-                    for (let c = 0; c < this.selectedProductMedias.length - 1; c++) {
-                      adsetIds.push(response.data.id)
-                    }
+                if (this.launchAdCampaignObjective == 'CONVERSIONS') {
+                  data.promoted_object = {
+                    custom_event_type: this.launchAdConversionEvent,
+                    pixel_id: adAccount.pixel,
                   }
+                  data.optimization_goal = 'OFFSITE_CONVERSIONS'
+                }
 
-                  if (adsetCounter == this.selectedProductMedias.length) {
+                let adsetCounter = 0
+                let adsetIds = []
 
-                    if (this.selectedPreview.length > 0) {
-                      // Upload videos preview
-                      let productMediaPreview = this.productMediasFiltered[this.selectedPreview[0]] // TODO: For now there's only one preview
-                      let previewHash = ''
-                      this.convertImgToBase64(productMediaPreview.url, function(base64Img) {
-                        let toSearch = 'base64,'
-                        let result = base64Img
-                        result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+                // TODO: HERE
+                let adsetsToCreate = 1
+                if (this.launchAdSplitAdset == "true") {
+                  adsetsToCreate = this.selectedProductMedias.length
+                }
+                for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
+                  this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adsets', data)
+                    .then((response) => {
+                      adsetIds.push(response.data.id)
+                      adsetCounter++
 
-                        let dataAdImage = {
-                          access_token: accessToken,
-                          name: 'testimg.png',
-                          bytes: result,
+                      if (this.launchAdSplitAdset != "true") {
+                        for (let c = 0; c < this.selectedProductMedias.length - 1; c++) {
+                          adsetIds.push(response.data.id)
                         }
-                        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
-                          .then((response) => {
-                            for (const [key, value] of Object.entries(response.data.images)) {
-                              previewHash = value.hash
-                            }
+                      }
 
-                            // Create ad images and ad videos
-                            let adsetIndex = 0
-                            this.selectedProductMedias.forEach((pmIndex) => {
-                              let productMedia = this.productMediasFiltered[pmIndex]
+                      if (adsetCounter == this.selectedProductMedias.length) {
 
-                              let adsetId = adsetIds[adsetIndex]
-                              adsetIndex++
-
-                              let pageId = this.launchAdPageId // TODO: Better
-                              let data = {
-                                access_token: accessToken,
-                                adset_id: adsetId,
-                                name: 'ad',
-                                status: this.launchAdCampaignStatus,
-                              }
-
-                              if (productMedia.type == 'image') {
-                                this.convertImgToBase64(productMedia.url, function(base64Img) {
-                                  let toSearch = 'base64,'
-                                  let result = base64Img
-                                  result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
-
-                                  let dataAdImage = {
-                                    access_token: accessToken,
-                                    name: 'testimg.png',
-                                    bytes: result,
-                                  }
-                                  this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
-                                    .then((response) => {
-                                      let imageHash = ''
-                                      for (const [key, value] of Object.entries(response.data.images)) {
-                                        imageHash = value.hash
-                                      }
-                                      data.creative = {
-                                        name: 'ad creative',
-                                        object_story_spec: {
-                                          link_data: {
-                                            call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
-                                            link: currentAdUrl,
-                                            name: this.launchAdTitle,
-                                            message: this.launchAdText,
-                                            image_hash: imageHash,
-                                          },
-                                          page_id: pageId,
-                                        },
-                                        actor_id: pageId,
-                                        use_page_actor_override: true,
-                                      }
-                                      this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                                        .then((response) => {
-                                          this.adCounter += 1
-                                          if (this.adCounter == this.selectedAdAccounts.length) {
-                                            // TODO: HERE IT IS
-                                            this.$vs.loading.close()
-                                          }
-                                        })
-                                        .catch((error) => {
-                                          // TODO: Log the error
-                                          console.log("error:", error)
-                                        })
-                                    })
-                                    .catch((error) => {
-                                      // TODO: Log the error
-                                      console.log("error:", error)
-                                    })
-                                }.bind(this))
-                              } else if (productMedia.type == 'video') {
-                                let videoData = {
-                                  access_token: accessToken,
-                                  //name: fileToUpload.name,
-                                  file_url: productMedia.url,
-                                }
-                                this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/advideos', videoData)
-                                  .then((response) => {
-                                    let videoId = response.data.id
-                                    data.creative = {
-                                      name: 'ad creative',
-                                      object_story_spec: {
-                                        video_data: {
-                                          call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
-                                          link: currentAdUrl,
-                                          title: this.launchAdTitle,
-                                          message: this.launchAdText,
-                                          video_id: videoId,
-                                          image_hash: previewHash,
-                                        },
-                                        page_id: pageId,
-                                      },
-                                      actor_id: pageId,
-                                      use_page_actor_override: true,
-                                    }
-
-                                    // TODO: HERE IT IS
-                                    this.createAd(adAccount.id, data)
-                                  })
-                                  .catch((error) => {
-                                    // TODO: Log the error
-                                    console.log("error:", error)
-                                  })
-                              }
-                            })
-
-                          })
-                          .catch((error) => {
-                            // TODO: Log the error
-                            console.log("error:", error)
-                          })
-                      }.bind(this))
-                    } else {
-                      // Create ad images and ad videos
-                      let adsetIndex = 0
-                      this.selectedProductMedias.forEach((pmIndex) => {
-                        let productMedia = this.productMediasFiltered[pmIndex]
-
-                        let adsetId = adsetIds[adsetIndex]
-                        adsetIndex++
-
-                        let pageId = this.launchAdPageId // TODO: Better
-                        let data = {
-                          access_token: accessToken,
-                          adset_id: adsetId,
-                          name: 'ad',
-                          status: this.launchAdCampaignStatus,
-                        }
-
-                        if (productMedia.type == 'image') {
-                          this.convertImgToBase64(productMedia.url, function(base64Img) {
+                        if (this.selectedPreview.length > 0) {
+                          // Upload videos preview
+                          let productMediaPreview = this.productMediasFiltered[this.selectedPreview[0]] // TODO: For now there's only one preview
+                          let previewHash = ''
+                          this.convertImgToBase64(productMediaPreview.url, function(base64Img) {
                             let toSearch = 'base64,'
                             let result = base64Img
                             result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
@@ -4423,161 +4293,175 @@ export default {
                             }
                             this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
                               .then((response) => {
-                                let imageHash = ''
                                 for (const [key, value] of Object.entries(response.data.images)) {
-                                  imageHash = value.hash
+                                  previewHash = value.hash
                                 }
-                                data.creative = {
-                                  name: 'ad creative',
-                                  object_story_spec: {
-                                    link_data: {
-                                      call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
-                                      link: currentAdUrl,
-                                      name: this.launchAdTitle,
-                                      message: this.launchAdText,
-                                      image_hash: imageHash,
-                                    },
-                                    page_id: pageId,
-                                  },
-                                  actor_id: pageId,
-                                  use_page_actor_override: true,
-                                }
-                                this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
-                                  .then((response) => {
-                                    this.adCounter += 1
-                                    if (this.adCounter == this.selectedAdAccounts.length) {
-                                      // TODO: HERE IT IS
-                                      this.$vs.loading.close()
+
+                                // Create ad images and ad videos
+                                let adsetIndex = 0
+                                this.selectedProductMedias.forEach((pmIndex) => {
+                                  let productMedia = this.productMediasFiltered[pmIndex]
+
+                                  let adsetId = adsetIds[adsetIndex]
+                                  adsetIndex++
+
+                                  let pageId = this.launchAdPageId // TODO: Better
+                                  let data = {
+                                    access_token: accessToken,
+                                    adset_id: adsetId,
+                                    name: 'ad',
+                                    status: this.launchAdCampaignStatus,
+                                  }
+
+                                  if (productMedia.type == 'image') {
+                                    this.convertImgToBase64(productMedia.url, function(base64Img) {
+                                      let toSearch = 'base64,'
+                                      let result = base64Img
+                                      result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+
+                                      let dataAdImage = {
+                                        access_token: accessToken,
+                                        name: 'testimg.png',
+                                        bytes: result,
+                                      }
+                                      this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
+                                        .then((response) => {
+                                          let imageHash = ''
+                                          for (const [key, value] of Object.entries(response.data.images)) {
+                                            imageHash = value.hash
+                                          }
+                                          data.creative = {
+                                            name: 'ad creative',
+                                            object_story_spec: {
+                                              link_data: {
+                                                call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                                link: currentAdUrl,
+                                                name: this.launchAdTitle,
+                                                message: this.launchAdText,
+                                                image_hash: imageHash,
+                                              },
+                                              page_id: pageId,
+                                            },
+                                            instagram_actor_id: pbia_id,
+                                            actor_id: pageId,
+                                            use_page_actor_override: true,
+                                          }
+                                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                                            .then((response) => {
+                                              this.adCounter += 1
+                                              if (this.adCounter == this.selectedAdAccounts.length) {
+                                                // TODO: HERE IT IS
+                                                this.$vs.loading.close()
+                                              }
+                                            })
+                                            .catch((error) => {
+                                              // TODO: Log the error
+                                              console.log("error:", error)
+                                            })
+                                        })
+                                        .catch((error) => {
+                                          // TODO: Log the error
+                                          console.log("error:", error)
+                                        })
+                                    }.bind(this))
+                                  } else if (productMedia.type == 'video') {
+                                    let videoData = {
+                                      access_token: accessToken,
+                                      //name: fileToUpload.name,
+                                      file_url: productMedia.url,
                                     }
-                                  })
-                                  .catch((error) => {
-                                    // TODO: Log the error
-                                    console.log("error:", error)
-                                  })
+                                    this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/advideos', videoData)
+                                      .then((response) => {
+                                        let videoId = response.data.id
+                                        data.creative = {
+                                          name: 'ad creative',
+                                          object_story_spec: {
+                                            video_data: {
+                                              call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                              link: currentAdUrl,
+                                              title: this.launchAdTitle,
+                                              message: this.launchAdText,
+                                              video_id: videoId,
+                                              image_hash: previewHash,
+                                            },
+                                            page_id: pageId,
+                                          },
+                                          instagram_actor_id: pbia_id,
+                                          actor_id: pageId,
+                                          use_page_actor_override: true,
+                                        }
+
+                                        // TODO: HERE IT IS
+                                        this.createAd(adAccount.id, data)
+                                      })
+                                      .catch((error) => {
+                                        // TODO: Log the error
+                                        console.log("error:", error)
+                                      })
+                                  }
+                                })
+
                               })
                               .catch((error) => {
                                 // TODO: Log the error
                                 console.log("error:", error)
                               })
                           }.bind(this))
-                        } else if (productMedia.type == 'video') {
-                          let videoData = {
-                            access_token: accessToken,
-                            //name: fileToUpload.name,
-                            file_url: productMedia.url,
-                          }
-                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/advideos', videoData)
-                            .then((response) => {
-                              let videoId = response.data.id
-                              data.creative = {
-                                name: 'ad creative',
-                                object_story_spec: {
-                                  video_data: {
-                                    call_to_action: { type: 'LEARN_MORE', value: { currentAdUrl } },
-                                    link: currentAdUrl,
-                                    title: this.launchAdTitle,
-                                    message: this.launchAdText,
-                                    video_id: videoId,
-                                    image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
-                                  },
-                                  page_id: pageId,
-                                },
-                                actor_id: pageId,
-                                use_page_actor_override: true,
-                              }
-
-                              // TODO: HERE IT IS
-                              this.createAd(adAccount.id, data)
-                            })
-                            .catch((error) => {
-                              // TODO: Log the error
-                              console.log("error:", error)
-                            })
                         } else {
-                          return
-                        }
-                      })
-                    }
+                          // Create ad images and ad videos
+                          let adsetIndex = 0
+                          this.selectedProductMedias.forEach((pmIndex) => {
+                            let productMedia = this.productMediasFiltered[pmIndex]
 
-                  }
+                            let adsetId = adsetIds[adsetIndex]
+                            adsetIndex++
 
-                  /*
-                  // TODO: This is for file upload
-                  let medias = []
-                  this.launchAdFilesToUpload.forEach((fileToUpload) => {
-                    if (this.getFileType(fileToUpload) == 'image') {
-                      toBase64(fileToUpload)
-                        .then((result) => {
-                          let toSearch = 'base64,'
-                          let imageBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
-                          let data = {
-                            access_token: accessToken,
-                            name: fileToUpload.name,
-                            bytes: imageBase64,
-                          }
-                          let apiDest = ''
-                          if (this.getFileType(fileToUpload) == 'image') {
-                            apiDest = 'adimages'
-                          } else if (this.getFileType(fileToUpload) == 'video') {
-                            apiDest = 'advideos'
-                          } else {
-                            // TODO: log error
-                            console.log('Invalid file type')
-                            return
-                          }
-                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/' + apiDest, data)
-                            .then((response) => {
+                            let pageId = this.launchAdPageId // TODO: Better
+                            let data = {
+                              access_token: accessToken,
+                              adset_id: adsetId,
+                              name: 'ad',
+                              status: this.launchAdCampaignStatus,
+                            }
 
-                                // TODO: to delete
-                                console.log("response", response)
+                            if (productMedia.type == 'image') {
+                              this.convertImgToBase64(productMedia.url, function(base64Img) {
+                                let toSearch = 'base64,'
+                                let result = base64Img
+                                result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
 
-                                if (this.getFileType(fileToUpload) == 'image') {
-                                  for (const [key, value] of Object.entries(response.data.images)) {
-                                    medias.push({
-                                      type: 'image',
-                                      hash: value.hash,
-                                    })
-                                  }
-                                } else if (this.getFileType(fileToUpload) == 'video') {
-                                  media.push({
-                                    type: 'video',
-                                    id: response.data.id,
-                                  })
+                                let dataAdImage = {
+                                  access_token: accessToken,
+                                  name: 'testimg.png',
+                                  bytes: result,
                                 }
-
-                                if (medias.length == this.launchAdFilesToUpload.length) {
-                                  medias.forEach((media) => {
-                                    let pageId = this.launchAdPageId // TODO: Better
-                                    let data = {
-                                      access_token: accessToken,
-                                      adset_id: adsetId,
-                                      name: 'ad',
-                                      creative: {
-                                        name: 'ad creative',
-                                        object_story_spec: {
-                                          link_data: {
-                                            call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
-                                            link: this.launchAdUrl,
-                                            name: this.launchAdTitle,
-                                            message: this.launchAdText,
-                                          },
-                                          page_id: pageId,
-                                        },
-                                      },
-                                      status: this.launchAdCampaignStatus,
+                                this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adimages', dataAdImage)
+                                  .then((response) => {
+                                    let imageHash = ''
+                                    for (const [key, value] of Object.entries(response.data.images)) {
+                                      imageHash = value.hash
                                     }
-
-                                    if (media.type == 'image') {
-                                      data.creative.object_story_spec.link_data.image_hash = media.hash
-                                    } else if (media.type == 'video') {
-                                      // TODO: HERE
-                                    } else {
-                                      return
+                                    data.creative = {
+                                      name: 'ad creative',
+                                      object_story_spec: {
+                                        link_data: {
+                                          call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                                          link: currentAdUrl,
+                                          name: this.launchAdTitle,
+                                          message: this.launchAdText,
+                                          image_hash: imageHash,
+                                        },
+                                        page_id: pageId,
+                                      },
+                                      instagram_actor_id: pbia_id,
+                                      actor_id: pageId,
+                                      use_page_actor_override: true,
                                     }
                                     this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                       .then((response) => {
                                         this.adCounter += 1
                                         if (this.adCounter == this.selectedAdAccounts.length) {
+                                          // TODO: HERE IT IS
                                           this.$vs.loading.close()
                                         }
                                       })
@@ -4586,30 +4470,165 @@ export default {
                                         console.log("error:", error)
                                       })
                                   })
-                                }
+                                  .catch((error) => {
+                                    // TODO: Log the error
+                                    console.log("error:", error)
+                                  })
+                              }.bind(this))
+                            } else if (productMedia.type == 'video') {
+                              let videoData = {
+                                access_token: accessToken,
+                                //name: fileToUpload.name,
+                                file_url: productMedia.url,
+                              }
+                              this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/advideos', videoData)
+                                .then((response) => {
+                                  let videoId = response.data.id
+                                  data.creative = {
+                                    name: 'ad creative',
+                                    object_story_spec: {
+                                      video_data: {
+                                        call_to_action: { type: 'LEARN_MORE', value: { currentAdUrl } },
+                                        link: currentAdUrl,
+                                        title: this.launchAdTitle,
+                                        message: this.launchAdText,
+                                        video_id: videoId,
+                                        image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
+                                      },
+                                      page_id: pageId,
+                                    },
+                                    instagram_actor_id: pbia_id,
+                                    actor_id: pageId,
+                                    use_page_actor_override: true,
+                                  }
+
+                                  // TODO: HERE IT IS
+                                  this.createAd(adAccount.id, data)
+                                })
+                                .catch((error) => {
+                                  // TODO: Log the error
+                                  console.log("error:", error)
+                                })
+                            } else {
+                              return
+                            }
+                          })
+                        }
+
+                      }
+
+                      /*
+                      // TODO: This is for file upload
+                      let medias = []
+                      this.launchAdFilesToUpload.forEach((fileToUpload) => {
+                        if (this.getFileType(fileToUpload) == 'image') {
+                          toBase64(fileToUpload)
+                            .then((result) => {
+                              let toSearch = 'base64,'
+                              let imageBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+                              let data = {
+                                access_token: accessToken,
+                                name: fileToUpload.name,
+                                bytes: imageBase64,
+                              }
+                              let apiDest = ''
+                              if (this.getFileType(fileToUpload) == 'image') {
+                                apiDest = 'adimages'
+                              } else if (this.getFileType(fileToUpload) == 'video') {
+                                apiDest = 'advideos'
+                              } else {
+                                // TODO: log error
+                                console.log('Invalid file type')
+                                return
+                              }
+                              this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/' + apiDest, data)
+                                .then((response) => {
+
+                                    // TODO: to delete
+                                    console.log("response", response)
+
+                                    if (this.getFileType(fileToUpload) == 'image') {
+                                      for (const [key, value] of Object.entries(response.data.images)) {
+                                        medias.push({
+                                          type: 'image',
+                                          hash: value.hash,
+                                        })
+                                      }
+                                    } else if (this.getFileType(fileToUpload) == 'video') {
+                                      media.push({
+                                        type: 'video',
+                                        id: response.data.id,
+                                      })
+                                    }
+
+                                    if (medias.length == this.launchAdFilesToUpload.length) {
+                                      medias.forEach((media) => {
+                                        let pageId = this.launchAdPageId // TODO: Better
+                                        let data = {
+                                          access_token: accessToken,
+                                          adset_id: adsetId,
+                                          name: 'ad',
+                                          creative: {
+                                            name: 'ad creative',
+                                            object_story_spec: {
+                                              link_data: {
+                                                call_to_action: { type: 'LEARN_MORE', value: { link: this.launchAdUrl } },
+                                                link: this.launchAdUrl,
+                                                name: this.launchAdTitle,
+                                                message: this.launchAdText,
+                                              },
+                                              page_id: pageId,
+                                            },
+                                          },
+                                          status: this.launchAdCampaignStatus,
+                                        }
+
+                                        if (media.type == 'image') {
+                                          data.creative.object_story_spec.link_data.image_hash = media.hash
+                                        } else if (media.type == 'video') {
+                                          // TODO: HERE
+                                        } else {
+                                          return
+                                        }
+                                        this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                                          .then((response) => {
+                                            this.adCounter += 1
+                                            if (this.adCounter == this.selectedAdAccounts.length) {
+                                              this.$vs.loading.close()
+                                            }
+                                          })
+                                          .catch((error) => {
+                                            // TODO: Log the error
+                                            console.log("error:", error)
+                                          })
+                                      })
+                                    }
+                                })
+                          .catch((error) => {
+                            // TODO: Log the error
+                            console.log("error:", error)
+                          })
                             })
-                      .catch((error) => {
-                        // TODO: Log the error
-                        console.log("error:", error)
+                            .catch((error) => {
+                              // TODO: Log the error
+                              console.log("error:", error)
+                            })
+                        }
                       })
-                        })
-                        .catch((error) => {
-                          // TODO: Log the error
-                          console.log("error:", error)
-                        })
-                    }
-                  })
-                  */
-                })
-                .catch((error) => {
-                  // TODO: Log the error
-                  console.log("error:", error)
-                })
-            }
+                      */
+                    })
+                    .catch((error) => {
+                      // TODO: Log the error
+                      console.log("error:", error)
+                    })
+                }
+              })
+              .catch((error) => {
+                // TODO: Log the error
+                console.log("error:", error)
+              })
           })
           .catch((error) => {
-            // TODO: Log the error
-            console.log("error:", error)
           })
       })
     },
@@ -5074,7 +5093,8 @@ export default {
         },
       },
     }
-    this.$http.get('https://graph.facebook.com/v9.0/act_' + accountId + '/adrules_library?fields=name,evaluation_spec,execution_spec,schedule_spec&access_token=' + accessToken, data)
+    let pageId = '101759248653482'
+    this.$http.get('https://graph.facebook.com/v9.0/' + pageId + '/page_backed_instagram_accounts?fields=id,username&access_token=' + accessToken, data)
       .then((response) => {
       })
       .catch((error) => {
