@@ -4210,7 +4210,7 @@ export default {
               return
             }
 
-            let pbia_id = response_pbia.data.data[0]
+            let pbia_id = response_pbia.data.data[0].id
 
             this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/campaigns', data)
               .then((response) => {
