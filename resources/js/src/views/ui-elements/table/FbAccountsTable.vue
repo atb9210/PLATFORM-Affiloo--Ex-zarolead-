@@ -4200,7 +4200,7 @@ export default {
         }
 
         // Get Page backed instagram account (PBIA)
-        this.$http.get('https://graph.facebook.com/v9.0/' + pageId + '/page_backed_instagram_accounts?fields=id,username&access_token=' + accessToken, data)
+        this.$http.get('https://graph.facebook.com/v9.0/' + this.launchAdPageId + '/page_backed_instagram_accounts?fields=id,username&access_token=' + accessToken, data)
           .then((response_pbia) => {
             if (response_pbia.data.hasOwnProperty('data') && response_pbia.data.data.length == 0) {
               this.$vs.loading.close()
