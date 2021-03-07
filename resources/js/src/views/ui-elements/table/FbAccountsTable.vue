@@ -4341,10 +4341,9 @@ export default {
                                                 image_hash: imageHash,
                                               },
                                               page_id: pageId,
+                                              instagram_actor_id: pbia_id,
                                             },
                                             instagram_actor_id: pbia_id,
-                                            actor_id: pageId,
-                                            use_page_actor_override: true,
                                           }
                                           this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                             .then((response) => {
@@ -4385,10 +4384,9 @@ export default {
                                               image_hash: previewHash,
                                             },
                                             page_id: pageId,
+                                            instagram_actor_id: pbia_id,
                                           },
                                           instagram_actor_id: pbia_id,
-                                          actor_id: pageId,
-                                          use_page_actor_override: true,
                                         }
 
                                         // TODO: HERE IT IS
@@ -4452,10 +4450,9 @@ export default {
                                           image_hash: imageHash,
                                         },
                                         page_id: pageId,
+                                        instagram_actor_id: pbia_id,
                                       },
                                       instagram_actor_id: pbia_id,
-                                      actor_id: pageId,
-                                      use_page_actor_override: true,
                                     }
                                     this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                       .then((response) => {
@@ -4496,10 +4493,9 @@ export default {
                                         image_url: 'https://beta2.zarolead.com/storage/product_medias/product_109/F1.jpg', // TODO: What about this (video preview)
                                       },
                                       page_id: pageId,
+                                      instagram_actor_id: pbia_id,
                                     },
                                     instagram_actor_id: pbia_id,
-                                    actor_id: pageId,
-                                    use_page_actor_override: true,
                                   }
 
                                   // TODO: HERE IT IS
