@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -75,6 +76,7 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
+                <vs-th></vs-th>
                 <vs-th sort-key="day">Date</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
@@ -88,6 +90,10 @@
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td>
+                        <vs-button size="small" radius :color="(data[indextr].cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                    </vs-td>
 
                     <vs-td :data="data[indextr].day">
                         {{data[indextr].day}}
@@ -125,7 +131,7 @@
                     </vs-td>
 
                     <vs-td>
-                        <vs-button :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNote(data[indextr].id)"></vs-button>
+                        <vs-button style="width: 30px !important; height: 30px !important;" :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNote(data[indextr].id)"></vs-button>
                     </vs-td>
 
                 </vs-tr>
@@ -199,6 +205,36 @@ export default {
         cost: 0,
         extra_cost: 0,
         profit: 0,
+      },
+
+      showChart: false,
+      maxChartLines: 10,
+      themeColors: {
+          admin: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+          mediaBuyer: ['#7367F0', '#28C76F', '#9C1E10', '#E36222', '#1E1E1E'],
+      },
+      lineAreaChartSpline: {
+        series: [],
+        chartOptions: {
+          chart: {
+            type: 'line',
+          },
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            curve: 'smooth'
+          },
+          colors: [],
+          xaxis: {
+            categories: [],
+          },
+          tooltip: {
+            x: {
+              format: 'yyyy-MM-dd'
+            }
+          },
+        }
       },
     }
   },
@@ -575,6 +611,100 @@ export default {
       this.total_stats.cost = this.total_stats.cost.toFixed(2)
       this.total_stats.extra_cost = this.total_stats.extra_cost.toFixed(2)
       this.total_stats.profit = this.total_stats.profit.toFixed(2)
+    },
+    loadChart() {
+      // Chart X axis
+      let dateObj = new Date()
+      let startDay = new Date(this.filters.date_from)
+      let endDay = new Date(this.filters.date_to)
+
+      let diffTime = Math.abs(endDay - startDay);
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      let numDots = diffDays + 1
+
+      let currentDay = new Date(this.filters.date_from)
+      let categories = []
+      for(let i = 0; i < numDots; i++) {
+        categories.push(this.formatDate(currentDay))
+        currentDay.setDate(currentDay.getDate() + 1)
+      }
+
+      // Retrieve forms' stats and set chart Y axis
+      this.lineAreaChartSpline.series = []
+      let series = []
+
+      let stats = this.objects
+
+      // Calculate CPV and EPV
+      let commission_values = []
+      let total_cost_values = []
+      let profit_values = []
+      for(let j = 0; j < numDots; j++) {
+        // TODO: HERE
+        commission_values.push(0)
+        total_cost_values.push(0)
+        profit_values.push(0)
+      }
+      for(let j = 0; j < stats.length; j++) {
+        let stat = stats[j]
+
+        let commission = 0
+        let total_cost = 0
+        let profit = 0
+
+        commission = parseFloat(stat.commission)
+        total_cost = parseFloat(stat.cost) + parseFloat(stat.extra_cost)
+        profit = parseFloat(stat.profit)
+
+        let index = categories.indexOf(stat.day)
+
+        if (index >= 0) {
+          commission_values[index] = commission.toFixed(2)
+          total_cost_values[index] = total_cost.toFixed(2)
+          profit_values[index] = profit.toFixed(2)
+        }
+      }
+
+      let themeColors = []
+      if (this.canViewStats) {
+        themeColors = this.themeColors.admin
+        series.push({
+          name: "Commission",
+          data: commission_values,
+        })
+        series.push({
+          name: "Total cost",
+          data: total_cost_values,
+        })
+      } else {
+        themeColors = this.themeColors.mediaBuyer
+        series.push({
+          name: "Profit",
+          data: profit_values,
+        })
+      }
+      this.lineAreaChartSpline.series = series
+
+      this.lineAreaChartSpline.chartOptions = {
+        chart: {
+          type: 'line',
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        colors: themeColors,
+        xaxis: {
+          categories: categories,
+        },
+        tooltip: {
+          x: {
+            format: 'yyyy-MM-dd'
+          }
+        },
+      }
     },
   },
   created() {

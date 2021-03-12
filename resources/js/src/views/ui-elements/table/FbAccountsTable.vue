@@ -2998,7 +2998,7 @@ export default {
       this.$vs.loading.close()
       this.applyFilters()
     },
-    importProfiles() {
+    async importProfiles() {
       this.$vs.loading()
 
       let headers = {
@@ -3017,30 +3017,18 @@ export default {
         gologin_ids: pIds,
       }
 
-      this.$http.post('/api/3rd/fb-accounts/import', data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'FB account imported',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.profileIds = ''
-          this.showPopup['import'] = false
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      await this.$http.post('/api/3rd/fb-accounts/import', data, { headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'FB account imported',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.profileIds = ''
+      this.showPopup['import'] = false
+      this.applyFilters()
     },
     multiCreateAdd() {
       this.multiCreate.push({
@@ -3049,7 +3037,7 @@ export default {
         token: '',
       })
     },
-    multiCreateFinish() {
+    async multiCreateFinish() {
       this.$vs.loading()
 
       let valid = []
@@ -3076,30 +3064,18 @@ export default {
       }
 
       // Create multiple fb accounts
-      this.$http.post('/api/3rd/fb-accounts/multiple', data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'FB account(s) created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.clearForm('multi_create')
-          this.showPopup['multi_create'] = false
-          this.applyFilters()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      await this.$http.post('/api/3rd/fb-accounts/multiple', data, { headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'FB account(s) created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.clearForm('multi_create')
+      this.showPopup['multi_create'] = false
+      this.applyFilters()
     },
     filterDatesShortcut(period) {
       let invalidPeriod = false;
@@ -3216,7 +3192,6 @@ export default {
       }
       return cardValue
     },
-    
     showInvoicePreview(index) {
       this.$vs.loading()
       this.$nextTick(() => {
