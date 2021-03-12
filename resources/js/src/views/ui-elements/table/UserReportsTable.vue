@@ -275,7 +275,7 @@ export default {
       }
       return index
     },
-    retrieveObjects() {
+    async retrieveObjects() {
       this.selected = []
       this.$vs.loading()
 
@@ -292,29 +292,17 @@ export default {
       }
 
       // Retrieve user's report
-      this.$http.get('/api/v1/my-reports', { headers, params: data })
-        .then((response) => {
-          this.objects = response.data.data
+      const response = await this.$http.get('/api/v1/my-reports', { headers, params: data })
+      this.objects = response.data.data
 
-          for (let i = 0; i < this.objects.length; i++) {
-            if(this.objects[i].notes === null) {
-              this.objects[i].notes = ''
-            }
-          }
-          this.calculateStats()
+      for (let i = 0; i < this.objects.length; i++) {
+        if(this.objects[i].notes === null) {
+          this.objects[i].notes = ''
+        }
+      }
+      this.calculateStats()
 
-          this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      this.$vs.loading.close()
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -381,7 +369,7 @@ export default {
       this.notes = this.editingObject.notes
       this.showNotesPopup = true
     },
-    editNote() {
+    async editNote() {
       this.$vs.loading()
 
       let headers = {
@@ -391,29 +379,17 @@ export default {
         day: this.editingObject.day,
         notes: this.notes
       }
-      this.$http.put('/api/v1/my-reports', data, { headers })
-        .then((response) => {
-          let index = this.getObjectIndexById(this.editingObjectId)
-          this.objects[index].notes = this.notes
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Notes updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.put('/api/v1/my-reports', data, { headers })
+      let index = this.getObjectIndexById(this.editingObjectId)
+      this.objects[index].notes = this.notes
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Notes updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
     editNoteCancel() {
       this.notes = this.editingObject.notes
@@ -432,7 +408,7 @@ export default {
         inputEl.focus()
       });
     },
-    editCommission() {
+    async editCommission() {
       this.$vs.loading()
 
       let index = this.getObjectIndexById(this.editingObjectId)
@@ -444,30 +420,18 @@ export default {
         day: this.editingObject.day,
         commission: this.editingCommissionValue,
       }
-      this.$http.put('/api/v1/my-reports', data, { headers })
-        .then((response) => {
-          this.objects[index].commission = this.editingCommissionValue
-          this.objects[index].profit = response.data.data.profit
-          this.isEditingCommission = false
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Commission updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.put('/api/v1/my-reports', data, { headers })
+      this.objects[index].commission = this.editingCommissionValue
+      this.objects[index].profit = response.data.data.profit
+      this.isEditingCommission = false
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Commission updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
     dontEditCommission() {
       this.isEditingCommission = false
@@ -486,7 +450,7 @@ export default {
         inputEl.focus()
       });
     },
-    editCost() {
+    async editCost() {
       this.$vs.loading()
 
       let index = this.getObjectIndexById(this.editingObjectId)
@@ -498,30 +462,18 @@ export default {
         day: this.editingObject.day,
         cost: this.editingCostValue,
       }
-      this.$http.put('/api/v1/my-reports', data, { headers })
-        .then((response) => {
-          this.objects[index].cost = this.editingCostValue
-          this.objects[index].profit = response.data.data.profit
-          this.isEditingCost = false
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Cost updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.put('/api/v1/my-reports', data, { headers })
+      this.objects[index].cost = this.editingCostValue
+      this.objects[index].profit = response.data.data.profit
+      this.isEditingCost = false
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Cost updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
     dontEditCost() {
       this.isEditingCost = false
@@ -540,7 +492,7 @@ export default {
         inputEl.focus()
       });
     },
-    editExtraCost() {
+    async editExtraCost() {
       this.$vs.loading()
 
       let index = this.getObjectIndexById(this.editingObjectId)
@@ -552,30 +504,18 @@ export default {
         day: this.editingObject.day,
         extra_cost: this.editingExtraCostValue,
       }
-      this.$http.put('/api/v1/my-reports', data, { headers })
-        .then((response) => {
-          this.objects[index].extra_cost = this.editingExtraCostValue
-          this.objects[index].profit = response.data.data.profit
-          this.isEditingExtraCost = false
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Extra cost updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.put('/api/v1/my-reports', data, { headers })
+      this.objects[index].extra_cost = this.editingExtraCostValue
+      this.objects[index].profit = response.data.data.profit
+      this.isEditingExtraCost = false
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Extra cost updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
     dontEditExtraCost() {
       this.isEditingExtraCost = false
