@@ -13,6 +13,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showChart = !showChart"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -47,6 +48,10 @@
                 </div>
             </div>
 
+        </div>
+
+        <div v-if="showChart">
+            <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
         </div>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -123,19 +128,19 @@
                     {{total_stats.leads}}
                 </vs-td>
                 <vs-td>
-                    {{total_stats.total_cost.toFixed(2)}} €
+                    {{parseFloat(total_stats.total_cost).toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.commission.toFixed(2)}} €
+                    {{parseFloat(total_stats.commission).toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.approved_commission.toFixed(2)}} €
+                    {{parseFloat(total_stats.approved_commission).toFixed(2)}} €
                 </vs-td>
                 <vs-td>
-                    {{total_stats.approved_commission_percentage.toFixed(2)}} %
+                    {{parseFloat(total_stats.approved_commission_percentage).toFixed(2)}} %
                 </vs-td>
                 <vs-td>
-                    {{total_stats.net_profit.toFixed(2)}} €
+                    {{parseFloat(total_stats.net_profit).toFixed(2)}} €
                 </vs-td>
                 <!-- END TOTAL STATS-->
             </template>
@@ -145,10 +150,12 @@
 
 <script>
 import vSelect from 'vue-select'
+import VueApexCharts from 'vue-apexcharts'
 
 export default {
   components: {
     'v-select': vSelect,
+    VueApexCharts,
   },
   data () {
     return {
@@ -205,6 +212,36 @@ export default {
       editingObjectId: -1,
       editingObject: null,
       editingValue: 0,
+
+      showChart: false,
+      maxChartLines: 10,
+      themeColors: {
+          admin: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+          mediaBuyer: ['#7367F0', '#28C76F', '#9C1E10', '#E36222', '#1E1E1E'],
+      },
+      lineAreaChartSpline: {
+        series: [],
+        chartOptions: {
+          chart: {
+            type: 'line',
+          },
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            curve: 'smooth'
+          },
+          colors: [],
+          xaxis: {
+            categories: [],
+          },
+          tooltip: {
+            x: {
+              format: 'yyyy-MM-dd'
+            }
+          },
+        }
+      },
     }
   },
   computed: {
@@ -260,7 +297,7 @@ export default {
             let total_cost = parseFloat(obj.total_cost)
             let commission = parseFloat(obj.commission)
             let approved_commission = parseFloat(obj.approved_commission)
-            let approved_commission_percentage = (commission > 0) ? ((approved_commission / commission)*100) : 0
+            let approved_commission_percentage = parseFloat((commission > 0) ? ((approved_commission / commission)*100) : 0)
             let net_profit = approved_commission - total_cost
 
             this.objects.push({
@@ -279,6 +316,7 @@ export default {
           })
 
           this.calculateStats()
+          this.loadChart()
           this.$vs.loading.close()
         })
         .catch((error) => {
@@ -356,7 +394,7 @@ export default {
         this.total_stats.approved_commission += parseFloat(obj.approved_commission)
         this.total_stats.net_profit += parseFloat(obj.net_profit)
       }
-      this.total_stats.approved_commission_percentage = (this.total_stats.commission > 0) ? ((this.total_stats.approved_commission / this.total_stats.commission)*100) : 0
+      this.total_stats.approved_commission_percentage = parseFloat((this.total_stats.commission > 0) ? ((this.total_stats.approved_commission / this.total_stats.commission)*100) : 0)
     },
     showEditInput(id) {
       let index = this.getObjectIndexById(id)
@@ -412,6 +450,97 @@ export default {
             color: 'danger'
           })
         })
+    },
+    loadChart() {
+      // Chart X axis
+      let numDots = 12
+
+      let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+      let currentDate = new Date()
+      let endMonth = currentDate.getMonth()
+      let startMonth = (endMonth == 11) ? (0) : (endMonth + 1)
+      let currentMonth = startMonth
+
+      let categories = []
+      for(let i = 0; i < numDots; i++) {
+        categories.push(months[currentMonth])
+        currentMonth++
+        if (currentMonth > 11) {
+          currentMonth = 0
+        }
+      }
+
+      // Retrieve forms' stats and set chart Y axis
+      this.lineAreaChartSpline.series = []
+      let series = []
+
+      let stats = this.objects
+
+      // Calculate CPV and EPV
+      let commission_values = []
+      let total_cost_values = []
+      let profit_values = []
+      for(let j = 0; j < numDots; j++) {
+        commission_values.push(0)
+        total_cost_values.push(0)
+        profit_values.push(0)
+      }
+      for(let j = 0; j < stats.length; j++) {
+        let stat = stats[j]
+
+        let commission = 0
+        let total_cost = 0
+        let profit = 0
+
+        commission = parseFloat(stat.commission)
+        total_cost = parseFloat(stat.total_cost)
+        profit = parseFloat(stat.profit)
+
+        let index = categories.indexOf(stat.day)
+
+        if (index >= 0) {
+          commission_values[index] = commission.toFixed(2)
+          total_cost_values[index] = total_cost.toFixed(2)
+          profit_values[index] = profit.toFixed(2)
+        }
+      }
+
+      let themeColors = []
+      if (this.canViewStats) {
+        themeColors = this.themeColors.admin
+        series.push({
+          name: "Commission",
+          data: commission_values,
+        })
+        series.push({
+          name: "Total cost",
+          data: total_cost_values,
+        })
+      } else {
+        themeColors = this.themeColors.mediaBuyer
+        series.push({
+          name: "Profit",
+          data: profit_values,
+        })
+      }
+      this.lineAreaChartSpline.series = series
+
+      this.lineAreaChartSpline.chartOptions = {
+        chart: {
+          type: 'line',
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        colors: themeColors,
+        xaxis: {
+          categories: categories,
+        },
+      }
     },
   },
   created() {

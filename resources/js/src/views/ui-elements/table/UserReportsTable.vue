@@ -52,6 +52,10 @@
 
         </div>
 
+        <div v-if="showChart">
+            <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
+        </div>
+
         <vs-dropdown vs-trigger-click class="cursor-pointer">
             <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                 <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
@@ -171,7 +175,12 @@
 </template>
 
 <script>
+import VueApexCharts from 'vue-apexcharts'
+
 export default {
+  components: {
+    VueApexCharts,
+  },
   data () {
     return {
       objects: [],
@@ -301,6 +310,7 @@ export default {
         }
       }
       this.calculateStats()
+      this.loadChart()
 
       this.$vs.loading.close()
     },
@@ -580,7 +590,6 @@ export default {
       let total_cost_values = []
       let profit_values = []
       for(let j = 0; j < numDots; j++) {
-        // TODO: HERE
         commission_values.push(0)
         total_cost_values.push(0)
         profit_values.push(0)
