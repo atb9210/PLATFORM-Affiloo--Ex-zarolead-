@@ -1,187 +1,123 @@
 <template>
   <div id="dashboard-analytics">
-    <div class="vx-row">
+    <p class="flex items-center mb-4">
+      <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+    </p>
 
-      <!-- CARD 1: CONGRATS -->
-      <div class="vx-col w-full lg:w-1/2 mb-base">
-        <vx-card slot="no-body" class="text-center bg-primary-gradient greet-user">
-                    <img src="@assets/images/elements/decore-left.png" class="decore-left" alt="Decore Left" width="200" >
-                    <img src="@assets/images/elements/decore-right.png" class="decore-right" alt="Decore Right" width="175">
-          <feather-icon icon="AwardIcon" class="p-6 mb-8 bg-primary inline-flex rounded-full text-white shadow" svgClasses="h-8 w-8"></feather-icon>
-          <h1 class="mb-6 text-white">Congratulations {{ checkpointReward.userName }},</h1>
-          <p class="xl:w-3/4 lg:w-4/5 md:w-2/3 w-4/5 mx-auto text-white">You have done <strong>{{ checkpointReward.progress }}</strong> more sales today. Check your new badge in your profile.</p>
-        </vx-card>
-      </div>
-
-      <!-- CARD 2: SUBSCRIBERS GAINED -->
-      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-        <statistics-card-line icon="UsersIcon" statistic="92.6k" statisticTitle="Commission Total" :chartData="ordersSeries.commission" type="area"></statistics-card-line>
-      </div>
-
-      <!-- CARD 3: ORDER RECIEVED -->
-      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-        <statistics-card-line icon="ShoppingBagIcon" statistic="97.5K" statisticTitle="Orders Received" :chartData="ordersRecevied.series" color="warning" type="area"></statistics-card-line>
-      </div>
-    </div>
-
-    <div class="vx-row">
-
-      <!-- CARD 4: SESSION -->
-      <div class="vx-col w-full md:w-1/2 mb-base">
-        <vx-card>
-          <div class="vx-row flex-col-reverse md:flex-col-reverse sm:flex-row lg:flex-row">
-
-            <!-- LEFT COL -->
-            <div class="vx-col w-full md:w-full sm:w-1/2 lg:w-1/2 xl:w-1/2 flex flex-col justify-between" v-if="salesBarSession.analyticsData">
-              <div>
-                <h2 class="mb-1 font-bold">{{ salesBarSession.analyticsData.session | k_formatter }}</h2>
-                <span class="font-medium">Avg Sessions</span>
-
-                <!-- Previous Data Comparison -->
-                <p class="mt-2 text-xl font-medium">
-                  <span :class="salesBarSession.analyticsData.comparison.result >= 0 ? 'text-success' : 'text-danger'">
-                    <span v-if="salesBarSession.analyticsData.comparison.result > 0">+</span>
-                    <span>{{ salesBarSession.analyticsData.comparison.result }}</span>
-                  </span>
-                  <span> vs </span>
-                  <span>{{ salesBarSession.analyticsData.comparison.str }}</span>
-                </p>
-              </div>
-              <vs-button icon-pack="feather" icon="icon-chevrons-right" icon-after class="shadow-md w-full lg:mt-0 mt-4">View Details</vs-button>
-            </div>
-
-            <!-- RIGHT COL -->
-            <div class="vx-col w-full md:w-full sm:w-1/2 lg:w-1/2 xl:w-1/2 flex flex-col lg:mb-0 md:mb-base sm:mb-0 mb-base">
-              <change-time-duration-dropdown class="self-end" />
-              <vue-apex-charts type="bar" height="200" :options="analyticsData.salesBar.chartOptions" :series="salesBarSession.series" v-if="salesBarSession.series" />
-            </div>
-
-          </div>
-          <vs-divider class="my-6"></vs-divider>
-          <div class="vx-row">
-            <div class="vx-col w-1/2 mb-3">
-              <p>Goal: $100000</p>
-              <vs-progress class="block mt-1" :percent="50" color="primary"></vs-progress>
-            </div>
-            <div class="vx-col w-1/2 mb-3">
-              <p>Users: 100K</p>
-              <vs-progress class="block mt-1" :percent="60" color="warning"></vs-progress>
-            </div>
-            <div class="vx-col w-1/2 mb-3">
-              <p>Retention: 90%</p>
-              <vs-progress class="block mt-1" :percent="70" color="danger"></vs-progress>
-            </div>
-            <div class="vx-col w-1/2 mb-3">
-              <p>Duration: 1yr</p>
-              <vs-progress class="block mt-1" :percent="90" color="success"></vs-progress>
-            </div>
-          </div>
-        </vx-card>
-      </div>
-
-      <!-- CARD 5: SUPPORT TRACKER -->
-      <div class="vx-col w-full md:w-1/2 lg:w-1/2 xl:w-1/2 mb-base">
-          <vx-card title="Support Tracker">
-              <!-- CARD ACTION -->
-              <template slot="actions">
-                  <change-time-duration-dropdown />
-              </template>
-
-              <div slot="no-body" v-if="supportTracker.analyticsData">
-                  <div class="vx-row text-center">
-
-                      <!-- Open Tickets Heading -->
-                      <div class="vx-col w-full lg:w-1/5 md:w-full sm:w-1/5 flex flex-col justify-between mb-4 lg:order-first md:order-last sm:order-first order-last">
-                          <div class="lg:ml-6 lg:mt-6 md:mt-0 md:ml-0 sm:ml-6 sm:mt-6">
-                              <h1 class="font-bold text-5xl">{{ supportTracker.analyticsData.openTickets }}</h1>
-                              <small>Tickets</small>
-                          </div>
-                      </div>
-
-                      <!-- Chart -->
-                      <div class="vx-col w-full lg:w-4/5 md:w-full sm:w-4/5 justify-center mx-auto lg:mt-0 md:mt-6 sm:mt-0 mt-6">
-                          <vue-apex-charts type="radialBar" height="385" :options="analyticsData.supportTrackerRadialBar.chartOptions" :series="supportTracker.series" />
-                      </div>
-                  </div>
-
-                  <!-- Support Tracker Meta Data -->
-                  <div class="flex flex-row justify-between px-8 pb-4 mt-4">
-                      <p class="text-center" v-for="(val, key) in supportTracker.analyticsData.meta" :key="key">
-                        <span class="block">{{ key }}</span>
-                        <span class="text-2xl font-semibold">{{ val }}</span>
-                      </p>
-                  </div>
-              </div>
-          </vx-card>
-      </div>
-    </div>
-
-        <div class="vx-row">
-            <!-- CARD 6: Product Orders -->
-            <div class="vx-col w-full lg:w-1/3 mb-base">
-                <vx-card title="Product Orders">
-                    <!-- CARD ACTION -->
-                    <template slot="actions">
-                        <change-time-duration-dropdown />
-                    </template>
-
-                    <!-- Chart -->
-                    <div slot="no-body">
-                        <vue-apex-charts type="radialBar" height="420" :options="analyticsData.productOrdersRadialBar.chartOptions" :series="productsOrder.series" />
-                    </div>
-
-                    <ul>
-                        <li v-for="orderData in productsOrder.analyticsData" :key="orderData.orderType" class="flex mb-3 justify-between">
-                            <span class="flex items-center">
-                                    <span class="inline-block h-4 w-4 rounded-full mr-2 bg-white border-3 border-solid" :class="`border-${orderData.color}`"></span>
-                                    <span class="font-semibold">{{ orderData.orderType }}</span>
-                            </span>
-                            <span>{{ orderData.counts }}</span>
-                        </li>
-                    </ul>
-                </vx-card>
-            </div>
-
-            <!-- CARD 7: Sales Stats -->
-            <div class="vx-col w-full lg:w-1/3 mb-base">
-              <vx-card title="Sales Stats" subtitle="Last 6 Months">
-                <template slot="actions">
-                  <feather-icon icon="MoreVerticalIcon" svgClasses="w-6 h-6 text-grey"></feather-icon>
-                </template>
-                <div class="flex">
-                  <span class="flex items-center"><div class="h-3 w-3 rounded-full mr-1 bg-primary"></div><span>Sales</span></span>
-                  <span class="flex items-center ml-4"><div class="h-3 w-3 rounded-full mr-1 bg-success"></div><span>Visits</span></span>
-                </div>
-                <div slot="no-body-bottom">
-                  <vue-apex-charts type="radar" height="385" :options="analyticsData.statisticsRadar.chartOptions" :series="salesRadar.series" />
-                </div>
-              </vx-card>
-            </div>
-
-            <!-- CARD 8: Activity Timeline -->
-            <div class="vx-col w-full lg:w-1/3 mb-base">
-                <vx-card title="Activity Timeline">
-                    <vx-timeline :data="timelineData" />
-                </vx-card>
-            </div>
+    <div v-if="showFilters" class="mb-12">
+      <div class="vx-row mb-2">
+        <div class="vx-col w-3-12">
+          <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
         </div>
+        <div class="vx-col w-3-12">
+          <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+        </div>
+        <div class="vx-col w-3-12">
+          <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+        </div>
+        <div class="vx-col w-3-12">
+          <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+        </div>
+      </div>
+
+      <div class="vx-row mb-2">
+        <div class="vx-col md:w-1/2 lg:w-1/4">
+          <label>From</label>
+          <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+        </div>
+        <div class="vx-col md:w-1/2 lg:w-1/4">
+          <label>To</label>
+          <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+        </div>
+        <div class="vx-col md:w-full lg:w-1/2">
+          <label>Form</label>
+          <v-select :options="formOptions" v-model="filters.form" />
+        </div>
+      </div>
+      <div class="vx-row mt-6">
+        <div class="vx-col w-full">
+          <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+          <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+        </div>
+      </div>
+    </div>
 
     <div class="vx-row">
-      <!-- CARD 9: DISPATCHED ORDERS -->
-      <div class="vx-col w-full">
-        <vx-card title="Dispatched Orders">
+
+      <!-- Visits daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="EyeIcon" :statistic="visits" statisticTitle="Visits" :chartData="visitsSeries" color="primary" type="area"></statistics-card-line>
+      </div>
+
+      <!-- Leads daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="UsersIcon" :statistic="leads" statisticTitle="Leads" :chartData="leadsSeries" color="warning" type="area"></statistics-card-line>
+      </div>
+
+      <!-- Cost daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="AlertCircleIcon" :statistic="'€ ' + cost" statisticTitle="Total Cost" :chartData="costSeries" color="danger" type="area"></statistics-card-line>
+      </div>
+
+      <!-- CPA daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + cpa" statisticTitle="CPA" :chartData="cpaSeries" color="success" type="area"></statistics-card-line>
+      </div>
+
+    </div>
+
+    <div class="vx-row">
+
+      <!-- Monthly overview -->
+      <div class="vx-col w-full sm:w-full md:w-full lg:w-1/2 mb-base">
+        <vx-card title="Monthly Overview">
+          <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
+        </vx-card>
+      </div>
+
+      <!-- Goals overview -->
+      <div class="vx-col w-full lg:w-1/2 mb-base">
+        <vx-card title="Goals Overview (fake)">
+            <!-- CARD ACTION -->
+            <template slot="actions">
+                <change-time-duration-dropdown />
+            </template>
+
+            <!-- Chart -->
+            <div slot="no-body">
+                <vue-apex-charts type="radialBar" height="420" :options="analyticsData.productOrdersRadialBar.chartOptions" :series="productsOrder.series" />
+            </div>
+
+            <ul>
+                <li v-for="orderData in productsOrder.analyticsData" :key="orderData.orderType" class="flex mb-3 justify-between">
+                    <span class="flex items-center">
+                            <span class="inline-block h-4 w-4 rounded-full mr-2 bg-white border-3 border-solid" :class="`border-${orderData.color}`"></span>
+                            <span class="font-semibold">{{ orderData.orderType }}</span>
+                    </span>
+                    <span>{{ orderData.counts }}</span>
+                </li>
+            </ul>
+        </vx-card>
+      </div>
+
+    </div>
+
+    <div class="vx-row">
+
+      <!-- Top products -->
+      <div class="vx-col lg:w-1/2">
+        <vx-card title="Top Products (fake)">
           <div slot="no-body" class="mt-4">
             <vs-table :data="dispatchedOrders" class="table-dark-inverted">
               <template slot="thead">
-                <vs-th>ORDER NO.</vs-th>
-                <vs-th>STATUS</vs-th>
-                <vs-th>OPERATORS</vs-th>
+                <vs-th>Name</vs-th>
+                <vs-th>Cost</vs-th>
+                <vs-th>CPA</vs-th>
                 <vs-th>LOCATION</vs-th>
                 <vs-th>DISTANCE</vs-th>
                 <vs-th>START DATE</vs-th>
                 <vs-th>EST DELIVERY DATE</vs-th>
               </template>
-
               <template slot-scope="{data}">
                 <vs-tr :key="indextr" v-for="(tr, indextr) in data">
                   <vs-td :data="data[indextr].orderNo">
@@ -216,9 +152,60 @@
               </template>
             </vs-table>
           </div>
-
         </vx-card>
       </div>
+
+      <!-- Orders -->
+      <div class="vx-col lg:w-1/2">
+        <vx-card title="Orders (fake)">
+          <div slot="no-body" class="mt-4">
+            <vs-table :data="dispatchedOrders" class="table-dark-inverted">
+              <template slot="thead">
+                <vs-th>Name</vs-th>
+                <vs-th>Cost</vs-th>
+                <vs-th>CPA</vs-th>
+                <vs-th>LOCATION</vs-th>
+                <vs-th>DISTANCE</vs-th>
+                <vs-th>START DATE</vs-th>
+                <vs-th>EST DELIVERY DATE</vs-th>
+              </template>
+              <template slot-scope="{data}">
+                <vs-tr :key="indextr" v-for="(tr, indextr) in data">
+                  <vs-td :data="data[indextr].orderNo">
+                    <span>#{{data[indextr].orderNo}}</span>
+                  </vs-td>
+                  <vs-td :data="data[indextr].status">
+                    <span class="flex items-center px-2 py-1 rounded"><div class="h-3 w-3 rounded-full mr-2" :class="'bg-' + data[indextr].statusColor"></div>{{data[indextr].status}}</span>
+                  </vs-td>
+                  <vs-td :data="data[indextr].orderNo">
+                    <ul class="users-liked user-list">
+                        <li v-for="(user, userIndex) in data[indextr].usersLiked" :key="userIndex">
+                            <vx-tooltip :text="user.name" position="bottom">
+                                <vs-avatar :src="user.img" size="30px" class="border-2 border-white border-solid -m-1"></vs-avatar>
+                            </vx-tooltip>
+                        </li>
+                    </ul>
+                  </vs-td>
+                  <vs-td :data="data[indextr].orderNo">
+                    <span>{{data[indextr].location}}</span>
+                  </vs-td>
+                  <vs-td :data="data[indextr].orderNo">
+                    <span>{{data[indextr].distance}}</span>
+                    <vs-progress :percent="data[indextr].distPercent" :color="data[indextr].statusColor"></vs-progress>
+                  </vs-td>
+                  <vs-td :data="data[indextr].orderNo">
+                    <span>{{data[indextr].startDate}}</span>
+                  </vs-td>
+                  <vs-td :data="data[indextr].orderNo">
+                    <span>{{data[indextr].estDelDate}}</span>
+                  </vs-td>
+                </vs-tr>
+              </template>
+            </vs-table>
+          </div>
+        </vx-card>
+      </div>
+
     </div>
 
   </div>
@@ -230,10 +217,72 @@ import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine
 import analyticsData from '../card/analyticsData.js'
 import ChangeTimeDurationDropdown from '@/components/ChangeTimeDurationDropdown.vue'
 import VxTimeline from '@/components/timeline/VxTimeline'
+import vSelect from 'vue-select'
 
 export default {
+  components: {
+    VueApexCharts,
+    StatisticsCardLine,
+    ChangeTimeDurationDropdown,
+    VxTimeline,
+    'v-select': vSelect,
+  },
   data () {
     return {
+      objects: [],
+
+      showFilters: false,
+      filters: {
+        date_from: '',
+        date_to: '',
+        form: '',
+      },
+      formOptions: [],
+
+      visits: 0,
+      leads: 0,
+      cost: 0,
+      cpa: 0,
+
+      maxNumDots: 10,
+      visitsSeries: [{ data: [1, 2, 3, 4, 5], name: 'Visits' }],
+      leadsSeries:  [{ data: [4, 3, 2, 1], name: 'Leads' }],
+      costSeries:   [{ data: [30, 35, 48, 7], name: 'Cost' }],
+      cpaSeries:    [{ data: [2, 4, 6, 4], name: 'CPA' }],
+
+      monthlyVisits: [],
+      monthlyLeads: [],
+      monthlyCost: [],
+      monthlyCpa: [],
+      lastMonths: 8,
+      maxChartLines: 10,
+      themeColors: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+      lineAreaChartSpline: {
+        series: [],
+        chartOptions: {
+          chart: {
+            type: 'line',
+          },
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            curve: 'smooth'
+          },
+          colors: this.themeColors,
+          xaxis: {
+            categories: [],
+          },
+          tooltip: {
+            x: {
+              format: 'yyyy-MM-dd'
+            }
+          },
+        }
+      },
+
+      // TODO: delete all these variables below
+
       orders: [],
       ordersSeries: {
           commission: [
@@ -296,13 +345,320 @@ export default {
       dispatchedOrders: []
     }
   },
-  components: {
-    VueApexCharts,
-    StatisticsCardLine,
-    ChangeTimeDurationDropdown,
-    VxTimeline
+  methods: {
+    loadDailyCharts() {
+      let dateObj = new Date()
+      let startDay = new Date(this.filters.date_from)
+      let endDay = new Date(this.filters.date_to)
+
+      let diffTime = Math.abs(endDay - startDay);
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      let numDots = diffDays + 1
+
+      let currentDay = new Date(this.filters.date_from)
+
+      let categories = []
+      let objIndex = this.objects.length - 1
+      let visitsSeries = []
+      let leadsSeries = []
+      let costSeries = []
+      let cpaSeries = []
+      this.visits = 0
+      this.leads = 0
+      this.cost = 0.0
+      this.cpa = 0
+      for(let i = 0; i < numDots; i++) {
+        let visits = 0
+        let leads = 0
+        let cost = 0.0
+        let cpa = 0.0
+
+        if (objIndex >= 0 && objIndex < this.objects.length && this.objects[objIndex].day == this.formatDate(currentDay)) {
+          visits = parseInt(this.objects[objIndex].visits)
+          leads = parseInt(this.objects[objIndex].leads)
+          cost = (this.filters.form != '' && this.filters.form.id != 0) ? parseFloat(this.objects[objIndex].total_cost) : parseFloat(this.objects[objIndex].cost)
+          cpa = ((leads > 0) ? (cost / leads) : cost)
+          objIndex--
+        }
+
+        this.visits += visits
+        this.leads += leads
+        this.cost += cost
+
+        cost = cost.toFixed(2)
+        cpa = cpa.toFixed(2)
+
+        visitsSeries.push(visits)
+        leadsSeries.push(leads)
+        costSeries.push(cost)
+        cpaSeries.push(cpa)
+
+        currentDay.setDate(currentDay.getDate() + 1)
+      }
+      if (numDots == 1) {
+        visitsSeries.push(visitsSeries[0])
+        leadsSeries.push(leadsSeries[0])
+        costSeries.push(costSeries[0])
+        cpaSeries.push(cpaSeries[0])
+      }
+
+      this.cpa = ((this.leads > 0) ? (this.cost / this.leads) : this.cost)
+
+      this.cost = this.cost.toFixed(2)
+      this.cpa = this.cpa.toFixed(2)
+
+      this.visitsSeries = [{ data: visitsSeries, name: 'Visits' }]
+      this.leadsSeries = [{ data: leadsSeries, name: 'Leads' }]
+      this.costSeries = [{ data: costSeries, name: 'Cost' }]
+      this.cpaSeries = [{ data: cpaSeries, name: 'CPA' }]
+    },
+    loadMonthlyCharts() {
+      // X axis
+      let categories = []
+      let monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ]
+      let dateObj = new Date()
+      for(let monthIndex = this.lastMonths - 1; monthIndex >= 0; monthIndex--) {
+        categories.push(monthNames[dateObj.getMonth() - monthIndex])
+      }
+
+      this.lineAreaChartSpline.chartOptions = {
+        chart: {
+          type: 'line',
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        colors: this.themeColors,
+        xaxis: {
+          categories: categories,
+        },
+        tooltip: {
+          x: {
+            format: 'yyyy-MM-dd'
+          }
+        },
+      }
+
+      // Y axis
+      this.lineAreaChartSpline.series = []
+      let series = []
+      series.push({
+        name: "visits",
+        data: this.monthlyVisits,
+      })
+      series.push({
+        name: "leads",
+        data: this.monthlyLeads,
+      })
+      series.push({
+        name: "Cost",
+        data: this.monthlyCost,
+      })
+      series.push({
+        name: "visits",
+        data: this.monthlyCpa,
+      })
+      this.lineAreaChartSpline.series = series
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0');
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+      let yyyy = dateObj.getFullYear();
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd;
+      return formattedDate;
+    },
+    resetFilters() {
+      this.filters = {
+        date_from: '',
+        date_to: '',
+        form: '',
+      }
+      this.filterDatesShortcut('this_month')
+    },
+    applyFilters() {
+      // Retrieve user's report
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {}
+      if (this.filters.date_from != '') {
+        data['filter_date_from'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        data['filter_date_to'] = this.filters.date_to
+      }
+
+      // Retrieve user's report
+      if (this.filters.form != '' && this.filters.form.id != 0) {
+        this.$http.get('/api/v1/forms/' + this.filters.form.id + '/stats', { headers, params: data })
+        .then((response) => {
+          this.objects = response.data.data
+          this.loadDailyCharts()
+          this.$vs.loading.close()
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+      } else {
+        this.$http.get('/api/v1/my-reports', { headers, params: data })
+          .then((response) => {
+            this.objects = response.data.data
+            for (let i = 0; i < this.objects.length; i++) {
+              if(this.objects[i].notes === null) {
+                this.objects[i].notes = ''
+              }
+            }
+            this.loadDailyCharts()
+            this.$vs.loading.close()
+          })
+          .catch((error) => {
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Error',
+              text: error.message,
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          })
+      }
+    },
+    filterDatesShortcut(period) {
+      let invalidPeriod = false;
+
+      switch (period) {
+        case 'today': {
+          let today = new Date();
+          this.filters.date_from = this.formatDate(today);
+          this.filters.date_to = this.formatDate(today);
+        } break;
+        case 'yesterday': {
+          let dateObj = new Date();
+          dateObj.setDate(dateObj.getDate() - 1);
+          this.filters.date_from = this.formatDate(dateObj);
+          this.filters.date_to = this.formatDate(dateObj);
+        } break;
+        case 'this_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        case 'last_month': {
+          let dateObj = new Date();
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1);
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0);
+          this.filters.date_from = this.formatDate(fromObj);
+          this.filters.date_to = this.formatDate(toObj);
+        } break;
+        default: {
+          invalidPeriod = true;
+        } break;
+      }
+
+      if(!invalidPeriod) {
+        this.applyFilters();
+      }
+    },
   },
   created () {
+    this.resetFilters()
+
+    let headers = {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+    }
+
+    // Retrieve forms
+    this.$vs.loading()
+    this.$http.get('/api/v1/forms', { headers })
+      .then((response) => {
+        this.formOptions = []
+        this.formOptions.push({
+          id: 0,
+          label: 'All forms',
+        })
+        response.data.data.forEach((form) => {
+          this.formOptions.push({
+            id: form.id,
+            label: form.name,
+          })
+        })
+        this.$vs.loading.close()
+      })
+      .catch((error) => {
+        this.$vs.loading.close()
+      })
+
+    // Retrieve last 'lastMonths' month monthly reports (including current month)
+    this.$vs.loading()
+    let todayDateObj = new Date();
+    for (let monthIndex = this.lastMonths - 1; monthIndex >= 0; monthIndex--) {
+      let fromObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() - monthIndex, 1);
+      let toObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() + 1 - monthIndex, 0);
+      let data = {
+        filter_date_from: this.formatDate(fromObj),
+        filter_date_to: this.formatDate(toObj),
+      }
+
+      this.$http.get('/api/v1/my-reports', { headers, params: data })
+        .then((response) => {
+          let reports = response.data.data
+          let visits = 0
+          let leads = 0
+          let cost = 0.0
+          let cpa = 0.0
+          for (let i = 0; i < reports.length; i++) {
+            visits += parseInt(reports[i].visits)
+            leads += parseInt(reports[i].leads)
+            cost += parseFloat(reports[i].cost)
+          }
+          cpa = ((leads > 0) ? (cost / leads) : (cost))
+
+          cost = cost.toFixed(2)
+          cpa = cpa.toFixed(2)
+
+          this.monthlyVisits.push(visits)
+          this.monthlyLeads.push(leads)
+          this.monthlyCost.push(cost)
+          this.monthlyCpa.push(cpa)
+
+          if (monthIndex == 0) {
+            this.loadMonthlyCharts()
+            this.$vs.loading.close()
+          }
+        })
+        .catch((error) => {
+          this.$vs.loading.close()
+          this.$vs.notify({
+            title: 'Error',
+            text: error.message,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        })
+    }
+
+    // TODO: delete all of this
+
     // Fetch orders
     this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
       .then((response) => { this.orders = response.data })

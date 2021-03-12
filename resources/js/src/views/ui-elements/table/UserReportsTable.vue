@@ -219,8 +219,8 @@ export default {
       showChart: false,
       maxChartLines: 10,
       themeColors: {
-          admin: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
-          mediaBuyer: ['#7367F0', '#28C76F', '#9C1E10', '#E36222', '#1E1E1E'],
+          admin: ['#EA5455', '#FFC73B', '#28C76F', '#FF9F43', '#1E1E1E'],
+          mediaBuyer: ['#EA5455', '#FFC73B', '#28C76F', '#FF9F43', '#1E1E1E'],
       },
       lineAreaChartSpline: {
         series: [],
@@ -615,21 +615,25 @@ export default {
       }
 
       let themeColors = []
-      if (this.canViewStats) {
+      if (this.isAdmin) {
         themeColors = this.themeColors.admin
+        series.push({
+          name: "Total cost",
+          data: total_cost_values,
+        })
         series.push({
           name: "Commission",
           data: commission_values,
         })
         series.push({
-          name: "Total cost",
-          data: total_cost_values,
+          name: "Profit",
+          data: profit_values,
         })
       } else {
         themeColors = this.themeColors.mediaBuyer
         series.push({
-          name: "Profit",
-          data: profit_values,
+          name: "Total cost",
+          data: total_cost_values,
         })
       }
       this.lineAreaChartSpline.series = series
