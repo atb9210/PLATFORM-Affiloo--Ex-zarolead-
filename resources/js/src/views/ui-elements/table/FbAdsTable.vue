@@ -1521,7 +1521,7 @@ export default {
               icon: 'icon-alert-circle',
               color: 'success'
             })
-          } catch((error) => {
+          } catch (error) {
             this.editingObject = {}
             this.showPopup['edit_budget'] = false
             this.$vs.loading.close()
@@ -1535,7 +1535,6 @@ export default {
           }
         } else {
           // Change all adsets daily budget of this campaign
-          let adsetCounter = 0
           let errorCounter = 0
           for (let i = 0; i < this.editingObject.adsets.length; i++) {
             let adset = this.editingObject.adsets[i]
@@ -1597,7 +1596,7 @@ export default {
         this.$vs.loading.close()
       }
     },
-    editBid() {
+    async editBid() {
       let bidAmount = parseInt(this.editingBidAmount * 100)
       let bidStrategy = this.editingObject.bid_strategy
 
@@ -1605,78 +1604,49 @@ export default {
       if (this.editingObject.object_type == 'campaign') {
         if (this.editingObject.cbo) {
           // Change campaign bid_strategy
-          this.$http.post('https://graph.facebook.com/v9.0/' + this.editingObject.id + '?bid_strategy=' + bidStrategy + '&access_token=' + this.fb_account.token)
-            .then((response) => {
-              // Change all adsets bid amount of this campaign
-              if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
-                let adsetCounter = 0
-                let errorCounter = 0
-                for (let i = 0; i < this.editingObject.adsets.length; i++) {
-                  let adset = this.editingObject.adsets[i]
+          await this.$http.post('https://graph.facebook.com/v9.0/' + this.editingObject.id + '?bid_strategy=' + bidStrategy + '&access_token=' + this.fb_account.token)
 
-                  let params = ''
-                  params += '?bid_amount=' + bidAmount
-                  params += '&access_token=' + this.fb_account.token
-                  this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
-                    .then((response) => {
-                      adsetCounter++
-                      if (adsetCounter == this.editingObject.adsets.length) {
-                        this.editingObject = {}
-                        this.showPopup['edit_bid'] = false
-                        this.$vs.loading.close()
-                        this.applyFilters()
-                        if (errorCounter == 0) {
-                          this.$vs.notify({
-                            title: 'Success',
-                            text: 'Adsets bid updated',
-                            iconPack: 'feather',
-                            icon: 'icon-alert-circle',
-                            color: 'success'
-                          })
-                        } else {
-                          this.$vs.notify({
-                            title: 'Error',
-                            text: errorCounter + ' errors occured while updating adsets bid',
-                            iconPack: 'feather',
-                            icon: 'icon-alert-circle',
-                            color: 'danger'
-                          })
-                        }
-                      }
-                    })
-                    .catch((error) => {
-                      adsetCounter++
-                      errorCounter++
-                      if (adsetCounter == this.editingObject.adsets.length) {
-                        this.editingObject = {}
-                        this.showPopup['edit_bid'] = false
-                        this.$vs.loading.close()
-                        this.applyFilters()
-                        this.$vs.notify({
-                          title: 'Error',
-                          text: errorCounter + ' errors occured while updating adsets bid',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'danger'
-                        })
-                      }
-                    })
-                }
+          // Change all adsets bid amount of this campaign
+          if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+            let errorCounter = 0
+            for (let i = 0; i < this.editingObject.adsets.length; i++) {
+              let adset = this.editingObject.adsets[i]
+
+              let params = ''
+              params += '?bid_amount=' + bidAmount
+              params += '&access_token=' + this.fb_account.token
+
+              try {
+                await this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+              } catch (error) {
+                errorCounter++
               }
-            })
-            .catch((error) => {
-              this.$vs.loading.close()
+            }
+
+            this.editingObject = {}
+            this.showPopup['edit_bid'] = false
+            this.$vs.loading.close()
+            if (errorCounter == 0) {
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Adsets bid updated',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+            } else {
               this.$vs.notify({
                 title: 'Error',
-                text: 'Campaign daily budget cannot be modified',
+                text: errorCounter + ' errors occured while updating adsets bid',
                 iconPack: 'feather',
                 icon: 'icon-alert-circle',
                 color: 'danger'
               })
-            })
+            }
+            this.applyFilters()
+          }
         } else {
           // Change all adsets bid amount and bid strategy of this campaign
-          let adsetCounter = 0
           let errorCounter = 0
           for (let i = 0; i < this.editingObject.adsets.length; i++) {
             let adset = this.editingObject.adsets[i]
@@ -1687,51 +1657,35 @@ export default {
               params += '&bid_amount=' + bidAmount
             }
             params += '&access_token=' + this.fb_account.token
-            this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
-              .then((response) => {
-                adsetCounter++
-                if (adsetCounter == this.editingObject.adsets.length) {
-                  this.editingObject = {}
-                  this.showPopup['edit_bid'] = false
-                  this.$vs.loading.close()
-                  this.applyFilters()
-                  if (errorCounter == 0) {
-                    this.$vs.notify({
-                      title: 'Success',
-                      text: 'Adsets bid updated',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'success'
-                    })
-                  } else {
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: errorCounter + ' errors occured while updating adsets bid',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
-                  }
-                }
-              })
-              .catch((error) => {
-                adsetCounter++
-                errorCounter++
-                if (adsetCounter == this.editingObject.adsets.length) {
-                  this.editingObject = {}
-                  this.showPopup['edit_bid'] = false
-                  this.$vs.loading.close()
-                  this.applyFilters()
-                  this.$vs.notify({
-                    title: 'Error',
-                    text: errorCounter + ' errors occured while updating adsets bid',
-                    iconPack: 'feather',
-                    icon: 'icon-alert-circle',
-                    color: 'danger'
-                  })
-                }
-              })
+
+            try {
+              await this.$http.post('https://graph.facebook.com/v9.0/' + adset.id + params)
+            } catch (error) {
+              errorCounter++
+            }
           }
+
+          this.editingObject = {}
+          this.showPopup['edit_bid'] = false
+          this.$vs.loading.close()
+          if (errorCounter == 0) {
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Adsets bid updated',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+          } else {
+            this.$vs.notify({
+              title: 'Error',
+              text: errorCounter + ' errors occured while updating adsets bid',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'danger'
+            })
+          }
+          this.applyFilters()
         }
       } else if (this.editingObject.object_type == 'adset') {
         let params = ''
@@ -1750,33 +1704,18 @@ export default {
           doRequestFlag = false
         }
         if (doRequestFlag) {
-          this.$http.post('https://graph.facebook.com/v9.0/' + this.editingObject.id + params)
-            .then((response) => {
-              this.editingObject = {}
-              this.showPopup['edit_bid'] = false
-              this.$vs.loading.close()
-              this.applyFilters()
-              this.$vs.notify({
-                title: 'Success',
-                text: 'Adset bid updated',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
-              })
-            })
-            .catch((error) => {
-              this.editingObject = {}
-              this.showPopup['edit_bid'] = false
-              this.$vs.loading.close()
-              this.applyFilters()
-              this.$vs.notify({
-                title: 'Error',
-                text: 'An error occured while updating adsets bid',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
-            })
+          await this.$http.post('https://graph.facebook.com/v9.0/' + this.editingObject.id + params)
+          this.editingObject = {}
+          this.showPopup['edit_bid'] = false
+          this.$vs.loading.close()
+          this.applyFilters()
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Adset bid updated',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
         } else {
           this.$vs.loading.close()
         }
@@ -1864,7 +1803,7 @@ export default {
         this.showPopup['update_form_cost'] = true
       }
     },
-    updateFormCost() {
+    async updateFormCost() {
       this.$vs.loading()
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
@@ -1876,30 +1815,18 @@ export default {
       }
 
       // Retrieve forms
-      this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Form total cost updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.showPopup['update_form_cost'] = false
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      await this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Form total cost updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['update_form_cost'] = false
     },
-    adSave() {
+    async adSave() {
       this.$vs.loading()
 
       let pmId = 0
@@ -1909,7 +1836,7 @@ export default {
       let url = img.src
       fetch(url)
         .then(r => r.blob())
-        .then((blob) => {
+        .then(async (blob) => {
           let fileToUpload = new File([blob], "file_to_upload.jpg")
 
           let headers = {
@@ -1924,120 +1851,72 @@ export default {
           formData.append('product_id', this.viewAdSavingProduct)
           formData.append('type', 'image')
           formData.append('file', fileToUpload)
-          this.$http.post('/api/v1/product-medias', formData, config)
-            .then((response) => {
-              pmId = response.data.data.id
+          const response = await this.$http.post('/api/v1/product-medias', formData, config)
+          pmId = response.data.data.id
 
-              if (this.viewAdSavingType == 'video') {
-                pmPreviewId = pmId
+          if (this.viewAdSavingType == 'video') {
+            pmPreviewId = pmId
 
-                let formData = new FormData()
-                formData.append('product_id', 1)
-                formData.append('type', this.viewAdSavingType)
-                formData.append('file', this.fileToUpload)
-                this.$http.post('/api/v1/product-medias', formData, config)
-                  .then((response) => {
-                    pmId = response.data.data.id
+            let formData = new FormData()
+            formData.append('product_id', 1)
+            formData.append('type', this.viewAdSavingType)
+            formData.append('file', this.fileToUpload)
+            const response2 = await this.$http.post('/api/v1/product-medias', formData, config)
+            pmId = response2.data.data.id
 
-                    let headers = {
-                      'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-                    }
-                    let data = {}
-                    data['traffic_source_id'] = this.viewAdSavingTrafficSource
-                    data['product_id'] = this.viewAdSavingProduct
-                    data['product_media_id'] = pmId
-                    data['ctr'] = this.viewAdSavingCtr
-                    data['cpc'] = this.viewAdSavingCpc
-                    data['cpa'] = this.viewAdSavingCpa
-                    data['info'] = JSON.stringify({
-                      title: this.viewAdSavingTitle,
-                      text: this.viewAdSavingText,
-                    })
-                    data['product_media_preview_id'] = pmPreviewId
-                    this.$http.post('/api/v1/ads', data, { headers })
-                      .then((response) => {
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Success',
-                          text: 'Ad saved',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'success'
-                        })
-                        this.viewAdSaving = false
-                        this.showPopup['view_ad'] = false
-                      })
-                      .catch((error) => {
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Error',
-                          text: error.message,
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'danger'
-                        })
-                      })
-                  })
-                  .catch((error) => {
-                    this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: error.message,
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
-                  })
-              } else {
-                let headers = {
-                  'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-                }
-                let data = {}
-                data['traffic_source_id'] = this.viewAdSavingTrafficSource
-                data['product_id'] = this.viewAdSavingProduct
-                data['product_media_id'] = pmId
-                data['ctr'] = this.viewAdSavingCtr
-                data['cpc'] = this.viewAdSavingCpc
-                data['cpa'] = this.viewAdSavingCpa
-                data['info'] = JSON.stringify({
-                  title: this.viewAdSavingTitle,
-                  text: this.viewAdSavingText,
-                })
-                this.$http.post('/api/v1/ads', data, { headers })
-                  .then((response) => {
-                    this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Success',
-                      text: 'Ad saved',
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'success'
-                    })
-                    this.viewAdSaving = false
-                    this.showPopup['view_ad'] = false
-                  })
-                  .catch((error) => {
-                    this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: error.message,
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
-                  })
-              }
+            let headers = {
+              'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+            }
+            let data = {}
+            data['traffic_source_id'] = this.viewAdSavingTrafficSource
+            data['product_id'] = this.viewAdSavingProduct
+            data['product_media_id'] = pmId
+            data['ctr'] = this.viewAdSavingCtr
+            data['cpc'] = this.viewAdSavingCpc
+            data['cpa'] = this.viewAdSavingCpa
+            data['info'] = JSON.stringify({
+              title: this.viewAdSavingTitle,
+              text: this.viewAdSavingText,
             })
-            .catch((error) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Error',
-                text: error.message,
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
+            data['product_media_preview_id'] = pmPreviewId
+            await this.$http.post('/api/v1/ads', data, { headers })
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Ad saved',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
             })
+            this.viewAdSaving = false
+            this.showPopup['view_ad'] = false
+          } else {
+            let headers = {
+              'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+            }
+            let data = {}
+            data['traffic_source_id'] = this.viewAdSavingTrafficSource
+            data['product_id'] = this.viewAdSavingProduct
+            data['product_media_id'] = pmId
+            data['ctr'] = this.viewAdSavingCtr
+            data['cpc'] = this.viewAdSavingCpc
+            data['cpa'] = this.viewAdSavingCpa
+            data['info'] = JSON.stringify({
+              title: this.viewAdSavingTitle,
+              text: this.viewAdSavingText,
+            })
+            await this.$http.post('/api/v1/ads', data, { headers })
+            this.$vs.loading.close()
+            this.$vs.notify({
+              title: 'Success',
+              text: 'Ad saved',
+              iconPack: 'feather',
+              icon: 'icon-alert-circle',
+              color: 'success'
+            })
+            this.viewAdSaving = false
+            this.showPopup['view_ad'] = false
+          }
         })
     },
     showFilePicker() {
