@@ -1026,9 +1026,9 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name,account_status'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,daily_budget'
+      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       fields += '\}'
       fields += '\}'
@@ -1069,9 +1069,23 @@ export default {
                 let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
                 let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
                 let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
-                let ctr = campaign.unique_outbound_clicks_ctr
-                let cpc = campaign.cpc
-                let roas = campaign.purchase_roas
+                let ctr = 0.0
+                let cpc = 0.0
+                let roas = 0.0
+
+                if (campaign.hasOwnProperty('insights') && campaign.insights.hasOwnProperty('data') &&
+                    campaign.insights.data.length > 0)
+                {
+                    if (campaign.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                      ctr = parseFloat(campaign.insights.data[0].inline_link_click_ctr)
+                    }
+                    if (campaign.insights.data[0].hasOwnProperty('cpc')) {
+                      cpc = parseFloat(campaign.insights.data[0].cpc)
+                    }
+                    if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                      roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
+                    }
+                }
 
                 let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
                 let daily_budget = 0
@@ -1115,9 +1129,23 @@ export default {
                         let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
                         let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
                         let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                        let adCtr = ad.unique_outbound_clicks_ctr
-                        let adCpc = ad.cpc
-                        let adRoas = ad.purchase_roas
+                        let adCtr = 0.0
+                        let adCpc = 0.0
+                        let adRoas = 0.0
+
+                        if (ad.hasOwnProperty('insights') && ad.insights.hasOwnProperty('data') &&
+                            ad.insights.data.length > 0)
+                        {
+                            if (ad.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                              adCtr = parseFloat(ad.insights.data[0].inline_link_click_ctr)
+                            }
+                            if (ad.insights.data[0].hasOwnProperty('cpc')) {
+                              adCpc = parseFloat(ad.insights.data[0].cpc)
+                            }
+                            if (ad.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                              adRoas = parseFloat(ad.insights.data[0].website_purchase_roas[0].value)
+                            }
+                        }
 
                         let adDailyBudget = 0
                         let adBidStrategy = ''
@@ -1187,9 +1215,23 @@ export default {
                     let adsetCpa = (adset.result > 0) ? (adsetSpent/adset.result) : adsetSpent
                     let adsetCr = (adset.clicks > 0) ? ((adset.result/adset.clicks)*100) : ((adset.result > 0) ? 9999.99 : 0)
                     let adsetCpm = (adset.impressions > 0) ? ((adsetSpent*1000)/adset.impressions) : (adsetSpent*1000)
-                    let adsetCtr = adset.unique_outbound_clicks_ctr
-                    let adsetCpc = adset.cpc
-                    let adsetRoas = adset.purchase_roas
+                    let adsetCtr = 0.0
+                    let adsetCpc = 0.0
+                    let adsetRoas = 0.0
+
+                    if (adset.hasOwnProperty('insights') && adset.insights.hasOwnProperty('data') &&
+                        adset.insights.data.length > 0)
+                    {
+                        if (adset.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                          adsetCtr = parseFloat(adset.insights.data[0].inline_link_click_ctr)
+                        }
+                        if (adset.insights.data[0].hasOwnProperty('cpc')) {
+                          adsetCpc = parseFloat(adset.insights.data[0].cpc)
+                        }
+                        if (adset.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                          adsetRoas = parseFloat(adset.insights.data[0].website_purchase_roas[0].value)
+                        }
+                    }
 
                     let adsetDailyBudget = 0
                     let adsetBidStrategy = ''
@@ -1227,10 +1269,13 @@ export default {
                     }
                     adsets.push(adsetToPush)
                     this.adsets.push(adsetToPush)
+
+                    // TODO: to delete
+                    console.log("adsetToPush:", adsetToPush)
                   }
                 }
 
-                this.campaigns.push({
+                let campaignToPush = {
                   object_type: 'campaign',
                   account_id: adAccount.id,
                   id: campaign.id,
@@ -1250,7 +1295,11 @@ export default {
                   daily_budget: daily_budget,
                   bid_strategy: bid_strategy,
                   adsets: adsets,
-                })
+                }
+                this.campaigns.push(campaignToPush)
+
+                // TODO: to delete
+                console.log(campaignToPush)
               }
             }
           }

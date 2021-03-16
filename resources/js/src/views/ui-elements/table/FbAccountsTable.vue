@@ -2266,9 +2266,9 @@ export default {
         let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
         let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
         fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,unique_outbound_clicks_ctr,cpc,purchase_roas,bid_strategy,daily_budget'
+        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights{inline_link_click_ctr,cpc,website_purchase_roas},bid_strategy,daily_budget'
         //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
-        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,unique_outbound_clicks_ctr,cpc,purchase_roas,bid_strategy,bid_amount,daily_budget'
+        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights{inline_link_click_ctr,cpc,website_purchase_roas},bid_strategy,bid_amount,daily_budget'
         fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
         fields += '\}'
         fields += '\}'
@@ -2384,9 +2384,23 @@ export default {
               let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
               let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
               let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
-              let ctr = campaign.unique_outbound_clicks_ctr
-              let cpc = campaign.cpc
-              let roas = campaign.purchase_roas
+              let ctr = 0.0
+              let cpc = 0.0
+              let roas = 0.0
+
+              if (campaign.hasOwnProperty('insights') && campaign.insights.hasOwnProperty('data') &&
+                  campaign.insights.data.length > 0)
+              {
+                  if (campaign.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                    ctr = parseFloat(campaign.insights.data[0].inline_link_click_ctr)
+                  }
+                  if (campaign.insights.data[0].hasOwnProperty('cpc')) {
+                    cpc = parseFloat(campaign.insights.data[0].cpc)
+                  }
+                  if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                    campaign = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
+                  }
+              }
 
               let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
               let daily_budget = 0
@@ -2440,9 +2454,23 @@ export default {
                   let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
                   let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
                   let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                  let adCtr = ad.unique_outbound_clicks_ctr
-                  let adCpc = ad.cpc
-                  let adRoas = ad.purchase_roas
+                  let adCtr = 0.0
+                  let adCpc = 0.0
+                  let adRoas = 0.0
+
+                  if (ad.hasOwnProperty('insights') && ad.insights.hasOwnProperty('data') &&
+                      ad.insights.data.length > 0)
+                  {
+                      if (ad.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                        adCtr = parseFloat(ad.insights.data[0].inline_link_click_ctr)
+                      }
+                      if (ad.insights.data[0].hasOwnProperty('cpc')) {
+                        adCpc = parseFloat(ad.insights.data[0].cpc)
+                      }
+                      if (ad.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                        adRoas = parseFloat(ad.insights.data[0].website_purchase_roas[0].value)
+                      }
+                  }
 
                   let adDailyBudget = 0
                   let adBidStrategy = ''
