@@ -117,6 +117,7 @@
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="ctr">CTR</vs-th>
                     <vs-th sort-key="cpc">CPC</vs-th>
+                    <vs-th sort-key="roas">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
                     <vs-th>Actions</vs-th>
                 </template>
@@ -167,6 +168,10 @@
 
                         <vs-td :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].roas">
+                            € {{data[indextr].roas.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].daily_budget">
@@ -233,6 +238,7 @@
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="ctr">CTR</vs-th>
                     <vs-th sort-key="cpc">CPC</vs-th>
+                    <vs-th sort-key="roas">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
                     <vs-th>Actions</vs-th>
                 </template>
@@ -283,6 +289,10 @@
 
                         <vs-td :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].roas">
+                            € {{data[indextr].roas.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].daily_budget">
@@ -349,6 +359,7 @@
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="ctr">CTR</vs-th>
                     <vs-th sort-key="cpc">CPC</vs-th>
+                    <vs-th sort-key="roas">ROAS</vs-th>
                     <vs-th>Actions</vs-th>
                 </template>
 
@@ -398,6 +409,10 @@
 
                         <vs-td :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].roas">
+                            € {{data[indextr].roas.toFixed(2)}}
                         </vs-td>
 
                         <vs-td>
@@ -1011,9 +1026,9 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name,account_status'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,daily_budget'
+      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,unique_outbound_clicks_ctr,cpc,purchase_roas,clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       fields += '\}'
       fields += '\}'
@@ -1054,8 +1069,9 @@ export default {
                 let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
                 let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
                 let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
-                let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
-                let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
+                let ctr = campaign.unique_outbound_clicks_ctr
+                let cpc = campaign.cpc
+                let roas = campaign.purchase_roas
 
                 let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
                 let daily_budget = 0
@@ -1099,8 +1115,9 @@ export default {
                         let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
                         let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
                         let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                        let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
-                        let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
+                        let adCtr = ad.unique_outbound_clicks_ctr
+                        let adCpc = ad.cpc
+                        let adRoas = ad.purchase_roas
 
                         let adDailyBudget = 0
                         let adBidStrategy = ''
@@ -1151,6 +1168,7 @@ export default {
                           cpm: adCpm,
                           ctr: adCtr,
                           cpc: adCpc,
+                          roas: adRoas,
                           daily_budget: adDailyBudget,
                           bid_strategy: adBidStrategy,
                           image_url: adImageUrl,
@@ -1169,8 +1187,9 @@ export default {
                     let adsetCpa = (adset.result > 0) ? (adsetSpent/adset.result) : adsetSpent
                     let adsetCr = (adset.clicks > 0) ? ((adset.result/adset.clicks)*100) : ((adset.result > 0) ? 9999.99 : 0)
                     let adsetCpm = (adset.impressions > 0) ? ((adsetSpent*1000)/adset.impressions) : (adsetSpent*1000)
-                    let adsetCtr = (adset.impressions > 0) ? ((adset.clicks/adset.impressions)*100) : ((adset.clicks > 0) ? 9999.99 : 0)
-                    let adsetCpc = (adset.clicks > 0) ? (adsetSpent/adset.clicks) : adsetSpent
+                    let adsetCtr = adset.unique_outbound_clicks_ctr
+                    let adsetCpc = adset.cpc
+                    let adsetRoas = adset.purchase_roas
 
                     let adsetDailyBudget = 0
                     let adsetBidStrategy = ''
@@ -1200,6 +1219,7 @@ export default {
                       cpm: adsetCpm,
                       ctr: adsetCtr,
                       cpc: adsetCpc,
+                      roas: adsetRoas,
                       cbo: cbo,
                       daily_budget: adsetDailyBudget,
                       bid_strategy: adsetBidStrategy,
@@ -1225,6 +1245,7 @@ export default {
                   cpm: cpm,
                   ctr: ctr,
                   cpc: cpc,
+                  roas: roas,
                   cbo: cbo,
                   daily_budget: daily_budget,
                   bid_strategy: bid_strategy,
