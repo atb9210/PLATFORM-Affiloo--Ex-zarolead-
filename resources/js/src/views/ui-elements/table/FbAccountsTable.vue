@@ -552,7 +552,9 @@
                         </div>
                     </vs-td>
                     <vs-td>{{tr.pixel}}</vs-td>
-                    <vs-td>{{tr.has_ad_rules ? 'Yes' : 'No'}}</vs-td>
+                    <vs-td>
+                        <vs-avatar size="24px" icon-pack="feather" :icon="tr.has_ad_rules ? 'icon-check' : 'icon-x'" :color="tr.has_ad_rules ? 'success' : 'danger'" />
+                    </vs-td>
                 </vs-tr>
             </template>
         </vs-table>
@@ -1372,6 +1374,7 @@
                         <vs-select autocomplete v-model="adRuleTemplate" class="w-full select-large" @change="changeAdRule">
                             <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adRulesOptions" class="w-full" />
                         </vs-select>
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdRuleTemplate"></vs-button>
                     </div>
                 </div>
 
@@ -1441,8 +1444,11 @@
                             <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleOperatorOptions" class="w-full" />
                         </vs-select>
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="adRule['filters'][filterIndex]['value']" />
+                    <div class="vx-col sm:w-1/6 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" v-model="adRule['filters'][filterIndex]['value']" />
+                    </div>
+                    <div class="vx-col sm:w-1/6 w-full">
+                        <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAdRuleFilter(filterIndex)"></vs-button>
                     </div>
                 </div>
 
@@ -1726,12 +1732,11 @@ export default {
       ],
       adRuleScheduleTypeOptions: [
         'DAILY',
-        'HOURLY',
         'SEMI_HOURLY',
       ],
       adRuleTimePresetOptions: [
         'TODAY',
-        'YESTARDAY',
+        'YESTERDAY',
         'LIFETIME',
       ],
       adRuleFieldOptions: [
@@ -4026,7 +4031,6 @@ export default {
                 let adsetCounter = 0
                 let adsetIds = []
 
-                // TODO: HERE
                 let adsetsToCreate = 1
                 if (this.launchAdSplitAdset == "true") {
                   adsetsToCreate = this.selectedProductMedias.length
@@ -4662,10 +4666,12 @@ export default {
         'value': '0',
       })
     },
+    removeAdRuleFilter(index) {
+      this.adRule['filters'].splice(index, 1)
+    },
     createAdRule() {
       this.$vs.loading()
 
-      // TODO: HERE
       let counter = 0
       this.selectedAdAccounts.forEach((adAccount) => {
         let accountId = adAccount.id
@@ -4703,10 +4709,20 @@ export default {
 
         this.adRule['filters'].forEach((filter) => {
           if (filter['field'] != '' && filter['operator'] != '') {
+            let value = parseFloat(filter['value'])
+            if (filter['field'] == 'cost_per_link_click' ||
+                filter['field'] == 'spent' ||
+                filter['field'] == 'cost_per' ||
+                filter['field'] == 'cpm')
+            {
+                value = value*100
+            }
+            value = parseInt(value) // TODO: What about numbers with decimals?
+        
             data.evaluation_spec.filters.push({
               field: filter['field'],
               operator: filter['operator'],
-              value: parseInt(parseFloat(filter['value']) * 100),
+              value: value,
             });
           }
         })
@@ -4788,6 +4804,48 @@ export default {
       if (index > -1) {
         this.adRule = this.adRulesOptions[index].value
       }
+    },
+    async deleteAdRuleTemplate() {
+      let id = this.adRuleTemplate
+
+      if (id <= 0) return
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$vs.loading()
+      await this.$http.delete('/api/3rd/fb-ad-rules/' + id, { headers })
+
+      // Retrieve fb ad rules
+      const fbAdRulesResponse = await this.$http.get('/api/3rd/fb-ad-rules', { headers })
+      this.adRules = []
+      this.adRulesOptions = []
+      this.adRulesOptions.push({
+        id: 0,
+        name: 'New',
+        value: {
+          'name': '',
+          'entity_type': 'AD',
+          'time_preset': 'TODAY',
+          'execution_type': 'PAUSE',
+          'schedule_type': 'DAILY',
+          'filters': [
+            {
+              'field': 'lifetime_impressions',
+              'operator': 'GREATER_THAN',
+              'value': '0',
+            }
+          ],
+        },
+      })
+      fbAdRulesResponse.data.data.forEach((r) => {
+        this.adRulesOptions.push(r)
+        this.adRules.push(r)
+      })
+      this.adRuleTemplate = 0
+
+      this.$vs.loading.close()
     },
   },
   async created() {
