@@ -4908,13 +4908,12 @@ export default {
     async addAdAccountToBusiness() {
       this.$vs.loading()
 
-      // TODO: to test
       try {
         let data = {
           adaccount_id: 'act_' + this.currentAdAccount.id,
           permitted_tasks: ['ADVERTISE', 'ANALYZE'],
         }
-        await this.$http.post('https://graph.facebook.com/v10.0/' + this.currentAdAccount.business.id + '/client_ad_accounts?access_token=' + this.currentAccessToken, data)
+        await this.$http.post('https://graph.facebook.com/v10.0/' + this.businessId + '/client_ad_accounts?access_token=' + this.currentAccessToken, data)
         this.$vs.notify({
           title: 'Success',
           text: 'Ad account assigned to business',
