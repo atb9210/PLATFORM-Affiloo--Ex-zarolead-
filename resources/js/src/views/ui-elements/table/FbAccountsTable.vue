@@ -541,7 +541,9 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
                     <vs-td :data="tr.status">
-                        <vs-chip transparent :color="tr.status == 2 ? 'danger' : 'success'">{{tr.name}}</vs-chip>
+                        <div @click="showAdAccountPopup(tr)">
+                            <vs-chip transparent :color="tr.status == 2 ? 'danger' : 'success'">{{tr.name}}</vs-chip>
+                        </div>
                     </vs-td>
                     <vs-td>{{tr.adtrust_dsl}}</vs-td>
                     <vs-td>
@@ -1467,6 +1469,22 @@
             </div>
         </vs-popup>
 
+        <!-- Ad account popup -->
+        <vs-popup title="Notes" :active.sync="showPopup['ad_account']">
+            <div class="w-full pr-2 pl-2">
+
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input placeholder="Business ID" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="businessId" />
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAdAccountToBusiness"></vs-button>
+                    </div>
+                </div>
+
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -1548,6 +1566,7 @@ export default {
         'launch_ad': false,
         'notes': false,
         'ad_rules': false,
+        'ad_account': false,
       },
       newObject: {
         'create': {
@@ -1770,6 +1789,9 @@ export default {
       },
       adRules: [],
       adRulesOptions: [],
+
+      currentAdAccount: null,
+      businessId: '',
     }
   },
   computed: {
@@ -4876,6 +4898,39 @@ export default {
         this.adRules.push(r)
       })
       this.adRuleTemplate = 0
+
+      this.$vs.loading.close()
+    },
+    showAdAccountPopup(adAccount) {
+      this.currentAdAccount = adAccount
+      this.showForm('ad_account')
+    },
+    async addAdAccountToBusiness() {
+      this.$vs.loading()
+
+      // TODO: to test
+      try {
+        let data = {
+          adaccount_id: 'act_' + this.currentAdAccount.id,
+          permitted_tasks: ['ADVERTISE', 'ANALYZE'],
+        }
+        await this.$http.post('https://graph.facebook.com/v10.0/' + this.currentAdAccount.business.id + '/client_ad_accounts?access_token=' + this.currentAccessToken, data)
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad account assigned to business',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
 
       this.$vs.loading.close()
     },
