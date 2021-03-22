@@ -326,6 +326,7 @@
         <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
+                <vs-th></vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="spent">Spent</vs-th>
@@ -335,12 +336,17 @@
                 <vs-th sort-key="cpm">CPM</vs-th>
                 <vs-th sort-key="ctr">CTR</vs-th>
                 <vs-th sort-key="cpc">CPC</vs-th>
+                <vs-th sort-key="roas">ROAS</vs-th>
                 <vs-th sort-key="daily_budget">Budget</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td>
+                        <vs-button size="small" radius :color="(data[indextr].roas > 0) ? ((data[indextr].roas > 1) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                    </vs-td>
 
                     <vs-td :data="data[indextr].name">
                         {{data[indextr].name}}
@@ -380,6 +386,10 @@
 
                     <vs-td :data="data[indextr].cpc">
                         € {{data[indextr].cpc.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].roas">
+                        {{data[indextr].roas.toFixed(2)}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].daily_budget">
@@ -434,6 +444,7 @@
         <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
+                <vs-th></vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="spent">Spent</vs-th>
@@ -443,11 +454,16 @@
                 <vs-th sort-key="cpm">CPM</vs-th>
                 <vs-th sort-key="ctr">CTR</vs-th>
                 <vs-th sort-key="cpc">CPC</vs-th>
+                <vs-th sort-key="roas">ROAS</vs-th>
                 <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                    <vs-td>
+                        <vs-button size="small" radius :color="(data[indextr].roas > 0) ? ((data[indextr].roas > 1) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                    </vs-td>
 
                     <vs-td :data="data[indextr].name">
                         {{data[indextr].name}}
@@ -487,6 +503,10 @@
 
                     <vs-td :data="data[indextr].cpc">
                         € {{data[indextr].cpc.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].roas">
+                        {{data[indextr].roas.toFixed(2)}}
                     </vs-td>
 
                     <vs-td>
@@ -2288,9 +2308,9 @@ export default {
         let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
         let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
         fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights{inline_link_click_ctr,cpc,website_purchase_roas},bid_strategy,daily_budget'
+        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,daily_budget'
         //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
-        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights{inline_link_click_ctr,cpc,website_purchase_roas},bid_strategy,bid_amount,daily_budget'
+        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,bid_amount,daily_budget'
         fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
         fields += '\}'
         fields += '\}'
@@ -2420,7 +2440,7 @@ export default {
                     cpc = parseFloat(campaign.insights.data[0].cpc)
                   }
                   if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                    campaign = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
+                    roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
                   }
               }
 

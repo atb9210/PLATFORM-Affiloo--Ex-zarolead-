@@ -38,6 +38,9 @@
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
             </span>
             <vs-button :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
+            <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
+            <vs-button v-if="view == 'adsets'" :disabled="!((view == 'adsets') && (selectedAdsets.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adsets')"></vs-button>
+            <vs-button v-if="view == 'ads'" :disabled="!((view == 'ads') && (selectedAds.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('ads')"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -82,6 +85,69 @@
             </div>
         </div>
 
+        <vue-context ref="campaign_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();editBudgetPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Budget</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit bid</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();campaignBreakdown(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="UserIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Identikit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
+        <vue-context ref="adset_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close();editBudgetPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Budget</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit bid</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
+        <vue-context ref="ad_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.ad_context_menu.close();viewAdPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">View ad</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <div>
             <vs-dropdown vs-trigger-click class="cursor-pointer">
                 <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
@@ -109,6 +175,9 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th v-if="showTrend">Lifetime</vs-th>
+                    <vs-th v-if="showTrend">3 days</vs-th>
+                    <vs-th v-if="showTrend">Yesterday</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
@@ -119,17 +188,49 @@
                     <vs-th sort-key="cpc">CPC</vs-th>
                     <vs-th sort-key="roas">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
-                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td :data="data[indextr].name">
-                            {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].status">
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('lifetime')"
+                                transparent
+                                :color="((data[indextr].trend['lifetime'] > 0) ? 'success' : ((data[indextr].trend['lifetime'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['lifetime'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('last_3_days')"
+                                transparent
+                                :color="((data[indextr].trend['last_3_days'] > 0) ? 'success' : ((data[indextr].trend['last_3_days'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['last_3_days'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('yesterday')"
+                                transparent
+                                :color="((data[indextr].trend['yesterday'] > 0) ? 'success' : ((data[indextr].trend['yesterday'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['yesterday'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].status">
                             <vs-switch
                                 :color="statusColors[data[indextr].status]"
                                 v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
@@ -142,85 +243,97 @@
                             </vs-switch>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].spent">
+                        <vs-td class="column-no-padding" :data="data[indextr].spent">
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].result">
+                        <vs-td class="column-no-padding" :data="data[indextr].result">
                             {{data[indextr].result}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpa">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
                             € {{data[indextr].cpa.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cr">
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
                             {{data[indextr].cr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpm">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].roas">
-                            € {{data[indextr].roas.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                            <span style="color: green;" v-if="data[indextr].roas > 1">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span style="color: red;" v-else-if="data[indextr].roas > 0">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span v-else>
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].daily_budget">
+                        <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                             <span v-if="data[indextr].cbo">
                                 € {{data[indextr].daily_budget.toFixed(2)}}
                             </span>
                             <span v-else>
-                                Adset budget
+                                ABO
                             </span>
                         </vs-td>
 
-                        <vs-td>
+                        <!--
+                        <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
                                 <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
+                        -->
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>{{data.length}}</vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.result}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.cr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
-                    <vs-td></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -230,6 +343,9 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th v-if="showTrend">Lifetime</vs-th>
+                    <vs-th v-if="showTrend">3 days</vs-th>
+                    <vs-th v-if="showTrend">Yesterday</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
@@ -240,17 +356,49 @@
                     <vs-th sort-key="cpc">CPC</vs-th>
                     <vs-th sort-key="roas">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
-                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td :data="data[indextr].name">
-                            {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].status">
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('lifetime')"
+                                transparent
+                                :color="((data[indextr].trend['lifetime'] > 0) ? 'success' : ((data[indextr].trend['lifetime'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['lifetime'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('last_3_days')"
+                                transparent
+                                :color="((data[indextr].trend['last_3_days'] > 0) ? 'success' : ((data[indextr].trend['last_3_days'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['last_3_days'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('yesterday')"
+                                transparent
+                                :color="((data[indextr].trend['yesterday'] > 0) ? 'success' : ((data[indextr].trend['yesterday'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['yesterday'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].status">
                             <vs-switch
                                 :color="statusColors[data[indextr].status]"
                                 v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
@@ -263,39 +411,47 @@
                             </vs-switch>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].spent">
+                        <vs-td class="column-no-padding" :data="data[indextr].spent">
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].result">
+                        <vs-td class="column-no-padding" :data="data[indextr].result">
                             {{data[indextr].result}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpa">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
                             € {{data[indextr].cpa.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cr">
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
                             {{data[indextr].cr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpm">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].roas">
-                            € {{data[indextr].roas.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                            <span style="color: green;" v-if="data[indextr].roas > 1">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span style="color: red;" v-else-if="data[indextr].roas > 0">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span v-else>
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].daily_budget">
+                        <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                             <span v-if="data[indextr].cbo">
                                 Campaign budget
                             </span>
@@ -304,44 +460,48 @@
                             </span>
                         </vs-td>
 
-                        <vs-td>
+                        <!--
+                        <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
                                 <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
                             </div>
                         </vs-td>
+                        -->
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>{{data.length}}</vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.result}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.cr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
-                    <vs-td></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -351,6 +511,9 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th v-if="showTrend">Lifetime</vs-th>
+                    <vs-th v-if="showTrend">3 days</vs-th>
+                    <vs-th v-if="showTrend">Yesterday</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
@@ -360,17 +523,50 @@
                     <vs-th sort-key="ctr">CTR</vs-th>
                     <vs-th sort-key="cpc">CPC</vs-th>
                     <vs-th sort-key="roas">ROAS</vs-th>
-                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td :data="data[indextr].name">
-                            {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.ad_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].status">
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('lifetime')"
+                                transparent
+                                :color="((data[indextr].trend['lifetime'] > 0) ? 'success' : ((data[indextr].trend['lifetime'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['lifetime'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('last_3_days')"
+                                transparent
+                                :color="((data[indextr].trend['last_3_days'] > 0) ? 'success' : ((data[indextr].trend['last_3_days'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['last_3_days'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" v-if="showTrend">
+                            <vs-chip
+                                v-if="data[indextr].trend.hasOwnProperty('yesterday')"
+                                transparent
+                                :color="((data[indextr].trend['yesterday'] > 0) ? 'success' : ((data[indextr].trend['yesterday'] < 0) ? 'danger' : '#d9d9d9'))">
+                                {{data[indextr].trend['yesterday'].toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+
+                        <vs-td class="column-no-padding" :data="data[indextr].status">
                             <vs-switch
                                 :color="statusColors[data[indextr].status]"
                                 v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
@@ -383,73 +579,124 @@
                             </vs-switch>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].spent">
+                        <vs-td class="column-no-padding" :data="data[indextr].spent">
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].result">
+                        <vs-td class="column-no-padding" :data="data[indextr].result">
                             {{data[indextr].result}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpa">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
                             € {{data[indextr].cpa.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cr">
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
                             {{data[indextr].cr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpm">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].roas">
-                            € {{data[indextr].roas.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                            <span style="color: green;" v-if="data[indextr].roas > 1">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span style="color: red;" v-else-if="data[indextr].roas > 0">
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
+                            <span v-else>
+                                {{data[indextr].roas.toFixed(2)}}
+                            </span>
                         </vs-td>
 
-                        <vs-td>
+                        <!--
+                        <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vs-button @click="viewAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                             </div>
                         </vs-td>
+                        -->
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>{{data.length}}</vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
+                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.result}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.cr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td></vs-td>
                     <!-- END TOTAL STATS-->
+                </template>
+            </vs-table>
+
+            <!-- Identikit table -->
+            <vs-table v-if="view == 'identikit'" stripe multiple v-model="selectedBreakdowns" :max-items="maxItems" pagination search :data="identikit" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th>Breakdown</vs-th>
+                    <vs-th sort-key="spent">Spent</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roas">ROAS</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :key="indextr" v-for="(tr, indextr) in data">
+                        <vs-td class="column-no-padding" v-if="tr.breakdown != ''">
+                            {{tr.breakdown}}
+                        </vs-td>
+                        <vs-td class="column-no-padding" v-else></vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].spent" v-if="tr.breakdown != ''">
+                            € {{tr.spent.toFixed(2)}}
+                        </vs-td>
+                        <vs-td class="column-no-padding" v-else></vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].profit" v-if="tr.breakdown != ''">
+                            <vs-chip transparent :color="((tr.profit > 0) ? 'success' : ((tr.profit < 0) ? 'danger' : 'warning'))">
+                                € {{tr.profit.toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+                        <vs-td class="column-no-padding" v-else></vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roas" v-if="tr.breakdown != ''">
+                            <vs-chip transparent :color="((tr.roas > 1) ? 'success' : ((tr.roas > 0) ? 'danger' : 'warning'))">
+                                {{tr.roas.toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+                        <vs-td class="column-no-padding" v-else></vs-td>
+                    </vs-tr>
                 </template>
             </vs-table>
 
@@ -727,10 +974,13 @@
 import vSelect from 'vue-select'
 import VueApexCharts from 'vue-apexcharts'
 
+import { VueContext } from 'vue-context'
+
 export default {
   components: {
     'v-select': vSelect,
     VueApexCharts,
+    VueContext,
   },
   props: {
     fb_account_id: Number,
@@ -828,6 +1078,11 @@ export default {
       viewAdSavingCtr: 0,
       viewAdSavingCpc: 0,
       viewAdSavingCpa: 0,
+
+      showTrend: false,
+
+      identikit: [],
+      selectedBreakdowns: [],
     }
   },
   watch: {
@@ -1026,9 +1281,9 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name,account_status'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights{inline_link_click_ctr,cpc,website_purchase_roas},clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,daily_budget'
+      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       fields += '\}'
       fields += '\}'
@@ -1204,6 +1459,7 @@ export default {
                       call_to_action_type: ad.creative.call_to_action_type,
                       url: adUrl,
                       post_url: adLinkUrl,
+                      trend: {},
                     }
                     ads.push(adToPush)
                     this.ads.push(adToPush)
@@ -1265,6 +1521,7 @@ export default {
                   daily_budget: adsetDailyBudget,
                   bid_strategy: adsetBidStrategy,
                   ads: ads,
+                  trend: {},
                 }
                 adsets.push(adsetToPush)
                 this.adsets.push(adsetToPush)
@@ -1291,11 +1548,9 @@ export default {
               daily_budget: daily_budget,
               bid_strategy: bid_strategy,
               adsets: adsets,
+              trend: {},
             }
             this.campaigns.push(campaignToPush)
-
-            // TODO: to delete
-            console.log(campaignToPush)
           }
         }
       }
@@ -1733,6 +1988,7 @@ export default {
       this.view = view
       this.calculateStats()
       this.$nextTick(() => {
+        this.showTrend = false
         this.$vs.loading.close()
       })
     },
@@ -1925,6 +2181,259 @@ export default {
     onFileUploadChange(event) {
       this.fileToUpload = event.target.files[0]
     },
+    async fetchTrend(what) {
+      if (what != 'campaigns' && what != 'adsets' && what != 'ads') {
+          return
+      }
+
+      if (this.showTrend) {
+        this.showTrend = false
+        return
+      }
+
+      this.$vs.loading()
+
+      let selected = []
+      if (what == 'campaigns') {
+        selected = this.selectedCampaigns
+      } else if (what == 'adsets') {
+        selected = this.selectedAdsets
+      } else if (what == 'ads') {
+        selected = this.selectedAds
+      }
+
+      let fieldsLifetime  = 'id,name,spent,insights.date_preset(maximum)\{website_purchase_roas\}'
+      let fieldsLast3Days = 'id,name,spent,insights.date_preset(last_3d)\{website_purchase_roas\}'
+      let fieldsYesterday = 'id,name,spent,insights.date_preset(yesterday)\{website_purchase_roas\}'
+
+      for (let i = 0; i < selected.length; i++) {
+        let obj = selected[i]
+
+        let trend = {
+          'lifetime': 0.0,
+          'last_3_days': 0.0,
+          'yesterday': 0.0,
+        }
+
+        let responseData = {}
+        let roas = 0.0
+        let spent = 0.0
+
+        const responseLifetime = await this.$http.get('https://graph.facebook.com/v10.0/' + obj.id + '?access_token=' + this.fb_account.token + '&fields=' + fieldsLifetime + '&date_preset=maximum')
+        responseData = responseLifetime.data
+        roas = 0.0
+        if (responseData.hasOwnProperty('insights') && responseData.insights.hasOwnProperty('data') &&
+            responseData.insights.data.length > 0 && responseData.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+            roas = parseFloat(responseData.insights.data[0].website_purchase_roas[0].value)
+        }
+        if (responseData.hasOwnProperty('spent')) {
+            spent = parseInt(responseData.spent)/100
+        }
+        trend['lifetime'] = (roas - 1)*spent
+
+        const responseLast3Days = await this.$http.get('https://graph.facebook.com/v10.0/' + obj.id + '?access_token=' + this.fb_account.token + '&fields=' + fieldsLast3Days + '&date_preset=last_3d')
+        responseData = responseLast3Days.data
+        roas = 0.0
+        if (responseData.hasOwnProperty('insights') && responseData.insights.hasOwnProperty('data') &&
+            responseData.insights.data.length > 0 && responseData.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+            roas = parseFloat(responseData.insights.data[0].website_purchase_roas[0].value)
+        }
+        if (responseData.hasOwnProperty('spent')) {
+            spent = parseInt(responseData.spent)/100
+        }
+        trend['last_3_days'] = (roas - 1)*spent
+
+        const responseYesterday = await this.$http.get('https://graph.facebook.com/v10.0/' + obj.id + '?access_token=' + this.fb_account.token + '&fields=' + fieldsYesterday + '&date_preset=yesterday')
+        responseData = responseYesterday.data
+        roas = 0.0
+        if (responseData.hasOwnProperty('insights') && responseData.insights.hasOwnProperty('data') &&
+            responseData.insights.data.length > 0 && responseData.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+            roas = parseFloat(responseData.insights.data[0].website_purchase_roas[0].value)
+        }
+        if (responseData.hasOwnProperty('spent')) {
+            spent = parseInt(responseData.spent)/100
+        }
+        trend['yesterday'] = (roas - 1)*spent
+
+        if (what == 'campaigns') {
+          let objIndex = this.getObjectIndexById(this.campaigns, obj.id)
+          if (objIndex >= 0) {
+            this.campaigns[objIndex].trend = trend
+          }
+        } else if (what == 'adsets') {
+          let objIndex = this.getObjectIndexById(this.adsets, obj.id)
+          if (objIndex >= 0) {
+            this.adsets[objIndex].trend = trend
+          }
+        } else if (what == 'ads') {
+          let objIndex = this.getObjectIndexById(this.ads, obj.id)
+          if (objIndex >= 0) {
+            this.ads[objIndex].trend = trend
+          }
+        }
+      }
+
+      this.showTrend = true
+      this.$vs.loading.close()
+    },
+    async campaignBreakdown(id) {
+      this.$vs.loading()
+
+      let fields  = 'spend,website_purchase_roas'
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      timeRange = JSON.stringify(timeRange)
+      let breakdowns = ''
+
+      breakdowns = 'age'
+      const responseAge = await this.$http.get('https://graph.facebook.com/v10.0/' + id + '/insights?access_token=' + this.fb_account.token + '&time_range=' + timeRange + '&fields=' + fields + '&breakdowns=' + breakdowns)
+
+      breakdowns = 'gender'
+      const responseGender = await this.$http.get('https://graph.facebook.com/v10.0/' + id + '/insights?access_token=' + this.fb_account.token + '&time_range=' + timeRange + '&fields=' + fields + '&breakdowns=' + breakdowns)
+
+      breakdowns = 'publisher_platform'
+      const responsePlatform = await this.$http.get('https://graph.facebook.com/v10.0/' + id + '/insights?access_token=' + this.fb_account.token + '&time_range=' + timeRange + '&fields=' + fields + '&breakdowns=' + breakdowns)
+
+      breakdowns = 'hourly_stats_aggregated_by_audience_time_zone'
+      const responseHourly = await this.$http.get('https://graph.facebook.com/v10.0/' + id + '/insights?access_token=' + this.fb_account.token + '&time_range=' + timeRange + '&fields=' + fields + '&breakdowns=' + breakdowns)
+
+      this.identikit = []
+
+      responseGender.data.data.forEach((item) => {
+        let spent = 0.0
+        let roas = 0.0
+        let profit = 0.0
+
+        spent = parseFloat(item.spend)
+        if (item.hasOwnProperty('website_purchase_roas')) {
+          roas = parseFloat(item.website_purchase_roas[0].value)
+        }
+        profit = (roas - 1)*spent
+
+        this.identikit.push({
+          'breakdown': item.gender,
+          'spent': spent,
+          'roas': roas,
+          'profit': profit,
+        })
+      })
+
+      this.identikit.push({
+        'breakdown': '',
+        'spent': '',
+        'roas': '',
+        'profit': '',
+      })
+
+      responseAge.data.data.forEach((item) => {
+        let spent = 0.0
+        let roas = 0.0
+        let profit = 0.0
+
+        spent = parseFloat(item.spend)
+        if (item.hasOwnProperty('website_purchase_roas')) {
+          roas = parseFloat(item.website_purchase_roas[0].value)
+        }
+        profit = (roas - 1)*spent
+
+        this.identikit.push({
+          'breakdown': item.age,
+          'spent': spent,
+          'roas': roas,
+          'profit': profit,
+        })
+      })
+
+      this.identikit.push({
+        'breakdown': '',
+        'spent': '',
+        'roas': '',
+        'profit': '',
+      })
+
+      responsePlatform.data.data.forEach((item) => {
+        let spent = 0.0
+        let roas = 0.0
+        let profit = 0.0
+
+        spent = parseFloat(item.spend)
+        if (item.hasOwnProperty('website_purchase_roas')) {
+          roas = parseFloat(item.website_purchase_roas[0].value)
+        }
+        profit = (roas - 1)*spent
+
+        this.identikit.push({
+          'breakdown': item.publisher_platform,
+          'spent': spent,
+          'roas': roas,
+          'profit': profit,
+        })
+      })
+
+      this.identikit.push({
+        'breakdown': '',
+        'spent': '',
+        'roas': '',
+        'profit': '',
+      })
+
+      let hourly = [
+        {
+          'breakdown': '00:00-05:59',
+          'spent': 0.0,
+          'roas': 0.0,
+          'profit': 0.0,
+        },
+        {
+          'breakdown': '06:00-11:59',
+          'spent': 0.0,
+          'roas': 0.0,
+          'profit': 0.0,
+        },
+        {
+          'breakdown': '12:00-17:59',
+          'spent': 0.0,
+          'roas': 0.0,
+          'profit': 0.0,
+        },
+        {
+          'breakdown': '18:00-23:59',
+          'spent': 0.0,
+          'roas': 0.0,
+          'profit': 0.0,
+        },
+      ]
+
+      responseHourly.data.data.forEach((item) => {
+        let spent = 0.0
+        let roas = 0.0
+        let profit = 0.0
+
+        spent = parseFloat(item.spend)
+        if (item.hasOwnProperty('website_purchase_roas')) {
+          roas = parseFloat(item.website_purchase_roas[0].value)
+        }
+        profit = (roas - 1)*spent
+
+        let hour = parseInt((((item.hourly_stats_aggregated_by_audience_time_zone.split(' - '))[0]).replace(':00', '')).replace(':00', ''))
+        let hourlyIndex = parseInt(hour/6)
+        hourly[hourlyIndex].spent += spent
+        hourly[hourlyIndex].profit += profit
+        hourly[hourlyIndex].roas = hourly[hourlyIndex].profit/hourly[hourlyIndex].spent + 1
+      })
+
+      hourly.forEach((item) => {
+        this.identikit.push(item)
+      })
+
+      this.$vs.loading.close()
+      this.changeView('identikit')
+    },
   },
   async created() {
     let headers = {
@@ -1954,3 +2463,9 @@ export default {
 }
 
 </script>
+
+<style>
+.column-no-padding {
+  padding: 0px !important;
+}
+</style>
