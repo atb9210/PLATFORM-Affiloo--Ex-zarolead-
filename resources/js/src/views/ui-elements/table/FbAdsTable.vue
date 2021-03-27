@@ -209,7 +209,8 @@
                             <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -378,7 +379,8 @@
                             <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -546,7 +548,8 @@
                             <div @contextmenu.prevent="$refs.ad_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#d9d9d9')">
+                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
+                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -2775,5 +2778,8 @@ export default {
 <style>
 .column-no-padding {
   padding: 0px !important;
+}
+.disabled-object {
+  color: #363636 !important;
 }
 </style>
