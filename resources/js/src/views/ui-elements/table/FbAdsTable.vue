@@ -126,6 +126,18 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.adset_context_menu.close();duplicateAdsetPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Duplicate</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close();duplicateBidderAdsetPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Bidder</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
@@ -331,6 +343,7 @@
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
@@ -499,6 +512,7 @@
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
@@ -654,6 +668,7 @@
                     <vs-td class="column-no-padding">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
@@ -965,6 +980,91 @@
                 </div>
             </vs-popup>
 
+            <!-- Duplicate adset popup -->
+            <vs-popup title="Duplicate adset" :active.sync="showPopup['duplicate_adset']">
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Number of new adsets</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="1" step="1" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="duplicateAdsetNumber" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Budget (daily) of each adset</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="duplicateAdsetBudget" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateAdset" color="primary" type="filled" :disabled="!isValidForm('duplicate_adset')">Duplicate</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Duplicate (bidder) adset popup -->
+            <vs-popup title="Bidder" :active.sync="showPopup['duplicate_bidder_adset']">
+                <div class="vx-row mb-6" v-if="currentAdset.cbo">
+                    <div class="vx-col w-full">
+                        <span>* Warning: This adset is from a CBO campaign</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Budget</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Accelerated</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-for="(item, index) in duplicateBidderAdsets" :key="index">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.budget" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select v-model="item.bid" class="w-full">
+                            <vs-select-item :key="optionIndex" :value="option.value" :text="option.label" v-for="(option, optionIndex) in duplicateBidderBidOptions" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.bid_amount" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-checkbox v-model="item.accelerated">Acc.</vs-checkbox>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="removeBidderAdset(index)" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="addBidderAdset" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateBidderAdset" color="primary" type="filled" :disabled="!isValidForm('duplicate_bidder_adset')">Duplicate (bidder)</vs-button>
+                </div>
+            </vs-popup>
+
         </div>
 
     </vx-card>
@@ -975,6 +1075,11 @@ import vSelect from 'vue-select'
 import VueApexCharts from 'vue-apexcharts'
 
 import { VueContext } from 'vue-context'
+
+// TODO: Move this function into a utilities package?
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export default {
   components: {
@@ -1047,6 +1152,8 @@ export default {
         'edit_bid': false,
         'view_ad': false,
         'update_form_cost': false,
+        'duplicate_adset': false,
+        'duplicate_bidder_adset': false,
       },
       bidOptions: [
         { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
@@ -1083,6 +1190,17 @@ export default {
 
       identikit: [],
       selectedBreakdowns: [],
+
+      currentAdset: {},
+      currentAdsetId: 0,
+      duplicateAdsetNumber: 1,
+      duplicateAdsetBudget: 0.0,
+
+      duplicateBidderBidOptions: [
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+      duplicateBidderAdsets: [],
     }
   },
   watch: {
@@ -1740,6 +1858,16 @@ export default {
             return true
           }
         }
+      } else if (type == 'duplicate_adset') {
+        if (this.duplicateAdsetNumber > 0 && this.duplicateAdsetBudget > 0) {
+          return true
+        }
+      } else if (type == 'duplicate_bidder_adset') {
+        for (let i = 0; i < this.duplicateBidderAdsets.length; i++) {
+          let obj = this.duplicateBidderAdsets[i]
+          if (obj.budget == 0 || obj.bid == '') return false
+        }
+        return true
       }
       return false
     },
@@ -2433,6 +2561,186 @@ export default {
 
       this.$vs.loading.close()
       this.changeView('identikit')
+    },
+    duplicateAdsetPopup(id) {
+      let obj = this.objects[this.getObjectIndexById(this.objects, id)]
+      this.currentAdset = obj
+      this.currentAdsetId = id
+      this.duplicateAdsetNumber = 1
+      this.duplicateAdsetBudget = obj.daily_budget
+      this.showPopup['duplicate_adset'] = true
+    },
+    async duplicateAdset() {
+      this.$vs.loading()
+
+      let batch = []
+
+      for (let i = 0; i < this.duplicateAdsetNumber; i++) {
+        batch.push({
+          "method": "POST",
+          "relative_url": this.currentAdsetId + "/copies",
+          "name": "duplicate_adset_" + i,
+          "body": "deep_copy=true"
+        })
+      }
+
+      let data = {
+        access_token: this.fb_account.token,
+        asyncbatch: batch,
+      }
+      const responseAsyncBatch = await this.$http.post('https://graph.facebook.com/v10.0', data)
+
+      let adsetIds = []
+      let sessions = responseAsyncBatch.data.async_sessions
+      for (let sessionIndex = 0; sessionIndex < sessions.length; sessionIndex++) {
+        let session = sessions[sessionIndex]
+        let notCompleted = true
+        while (notCompleted) {
+          await sleep(1000)
+          const response = await this.$http.get('https://graph.facebook.com/v10.0/' + session.id + '?fields=id,name,status,result&access_token=' + this.fb_account.token)
+
+          if (response.data.status != 'COMPLETED' && response.data.status != 'FAILED') {
+            notCompleted = true
+            continue
+          }
+
+          notCompleted = false
+          if (response.data.status == 'COMPLETED') {
+            let result = JSON.parse(response.data.result)
+            if (result.hasOwnProperty('copied_adset_id')) {
+              adsetIds.push(result.copied_adset_id)
+            }
+          } else {
+            // TODO: Log (only for debug)
+            console.log("Failed to duplicate adset")
+          }
+        }
+      }
+
+      let adsetData = {
+        access_token: this.fb_account.token,
+        name: 'Duplicate - €' + parseFloat(this.duplicateAdsetBudget).toFixed(2),
+        daily_budget: parseInt(this.duplicateAdsetBudget*100),
+      }
+      for (let adsetIndex = 0; adsetIndex < adsetIds.length; adsetIndex++) {
+        let adsetId = adsetIds[adsetIndex]
+        const response = await this.$http.post('https://graph.facebook.com/v10.0/' + adsetId, adsetData)
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Adset duplicated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['duplicate_adset'] = false
+
+      this.$vs.loading.close()
+    },
+    duplicateBidderAdsetPopup(id) {
+      let obj = this.objects[this.getObjectIndexById(this.objects, id)]
+      this.currentAdset = obj
+      this.currentAdsetId = id
+      this.duplicateBidderAdsets = [{
+        'budget': 0.0,
+        'bid': 'COST_CAP',
+        'bid_amount': 0.0,
+        'accelerated': false,
+      }]
+      this.showPopup['duplicate_bidder_adset'] = true
+    },
+    async duplicateBidderAdset() {
+      this.$vs.loading()
+
+      let batch = []
+
+      for (let i = 0; i < this.duplicateBidderAdsets.length; i++) {
+        batch.push({
+          "method": "POST",
+          "relative_url": this.currentAdsetId + "/copies",
+          "name": "duplicate_adset_" + i,
+          "body": "deep_copy=true"
+        })
+      }
+
+      let data = {
+        access_token: this.fb_account.token,
+        asyncbatch: batch,
+      }
+      const responseAsyncBatch = await this.$http.post('https://graph.facebook.com/v10.0', data)
+
+      let adsetIds = []
+      let sessions = responseAsyncBatch.data.async_sessions
+      for (let sessionIndex = 0; sessionIndex < sessions.length; sessionIndex++) {
+        let session = sessions[sessionIndex]
+        let notCompleted = true
+        while (notCompleted) {
+          await sleep(1000)
+          const response = await this.$http.get('https://graph.facebook.com/v10.0/' + session.id + '?fields=id,name,status,result&access_token=' + this.fb_account.token)
+
+          if (response.data.status != 'COMPLETED' && response.data.status != 'FAILED') {
+            notCompleted = true
+            continue
+          }
+
+          notCompleted = false
+          if (response.data.status == 'COMPLETED') {
+            let result = JSON.parse(response.data.result)
+            if (result.hasOwnProperty('copied_adset_id')) {
+              adsetIds.push(result.copied_adset_id)
+            }
+          } else {
+            // TODO: Log (only for debug)
+            console.log("Failed to duplicate adset")
+          }
+        }
+      }
+
+      for (let adsetIndex = 0; adsetIndex < adsetIds.length; adsetIndex++) {
+        let adsetId = adsetIds[adsetIndex]
+        let adset = this.duplicateBidderAdsets[adsetIndex]
+
+        let bidType = 'Unknown'
+        if (adset.bid == 'LOWEST_COST_WITH_BID_CAP') {
+          bidType = 'BID_CAP'
+        } else if (adset.bid == 'COST_CAP') {
+          bidType = 'COST_CAP'
+        }
+        let adsetData = {
+          access_token: this.fb_account.token,
+          name: 'BIDDER - ' + bidType + ' - €' + parseFloat(adset.bid_amount).toFixed(2),
+          daily_budget: parseInt(adset.budget*100),
+          bid_strategy: adset.bid,
+          bid_amount: parseInt(adset.bid_amount*100),
+        }
+        if (adset.accelerated) {
+          adsetData.name += ' - Acc.'
+        }
+        const response = await this.$http.post('https://graph.facebook.com/v10.0/' + adsetId, adsetData)
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Adset duplicated (bidder)',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['duplicate_bidder_adset'] = false
+
+      this.$vs.loading.close()
+    },
+    removeBidderAdset(index) {
+      this.duplicateBidderAdsets.splice(index, 1)
+    },
+    addBidderAdset() {
+      this.duplicateBidderAdsets.push({
+        'budget': 0.0,
+        'bid': 'COST_CAP',
+        'bid_amount': 0.0,
+        'accelerated': false,
+      })
     },
   },
   async created() {
