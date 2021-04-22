@@ -1177,6 +1177,9 @@ export default {
             fContent = fContent.replace('[[AMOUNT]]', invoice.amount)
             fContent = fContent.replace('[[DATE]]', invoice.date)
 
+            // TODO: to delete
+            console.log("fContent", fContent)
+
             let buf = new ArrayBuffer(fContent.length*2); // 2 bytes for each char
             let bufView = new Uint16Array(buf);
             for (let j = 0; j < fContent.length; j++) {
@@ -1212,7 +1215,7 @@ export default {
               icon: 'icon-alert-circle',
               color: 'success'
             })
-          })
+          }.bind(this))
 
         }, 100)
       })
