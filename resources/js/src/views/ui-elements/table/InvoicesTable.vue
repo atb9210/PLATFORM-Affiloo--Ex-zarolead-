@@ -1177,11 +1177,11 @@ export default {
             fContent = fContent.replace(/--AMOUNT--/g, invoice.amount)
             fContent = fContent.replace(/--DATE--/g, invoice.date)
 
-            let buf = new ArrayBuffer(fContent.length*2); // 2 bytes for each char
-            let bufView = new Uint16Array(buf);
-            for (let j = 0; j < fContent.length; j++) {
-              bufView[j] = fContent.charCodeAt(j);
-            }
+            //let buf = new ArrayBuffer(fContent.length*2); // 2 bytes for each char
+            //let bufView = new Uint16Array(buf);
+            //for (let j = 0; j < fContent.length; j++) {
+            //  bufView[j] = fContent.charCodeAt(j);
+            //}
 
             let d = new Date(invoice.time * 1000)
             let filename = ''
@@ -1191,7 +1191,7 @@ export default {
 
             zip.folder(d.getFullYear().toString())
               .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-              .file(filename, buf)
+              .file(filename, fContent)
           }
 
           // Create zip file and download
