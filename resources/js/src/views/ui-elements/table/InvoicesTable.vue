@@ -1122,19 +1122,19 @@ export default {
     <DatiGenerali>
       <DatiGeneraliDocumento>
         <TipoDocumento>TD01</TipoDocumento>
-        <Divisa>[[CURRENCY]]</Divisa>
-        <Data>[[DATE]]</Data>
-        <Numero>[[NUMBER]]</Numero>
-        <ImportoTotaleDocumento>[[AMOUNT]]</ImportoTotaleDocumento>
+        <Divisa>--CURRENCY--</Divisa>
+        <Data>--DATE--</Data>
+        <Numero>--NUMBER--</Numero>
+        <ImportoTotaleDocumento>--AMOUNT--</ImportoTotaleDocumento>
         <Arrotondamento>0.00</Arrotondamento>
         <FatturaPrincipale>
-          <NumeroFatturaPrincipale>[[NUMBER]]</NumeroFatturaPrincipale>
-          <DataFatturaPrincipale>[[DATE]]</DataFatturaPrincipale>
+          <NumeroFatturaPrincipale>--NUMBER--</NumeroFatturaPrincipale>
+          <DataFatturaPrincipale>--DATE--</DataFatturaPrincipale>
         </FatturaPrincipale>
       </DatiGeneraliDocumento>
       <DatiRicezione>
-        <IdDocumento>[[NUMBER]]</IdDocumento>
-        <Data>[[DATE]]</Data>
+        <IdDocumento>--NUMBER--</IdDocumento>
+        <Data>--DATE--</Data>
       </DatiRicezione>
     </DatiGenerali>
     <DatiBeniServizi>
@@ -1142,8 +1142,8 @@ export default {
         <NumeroLinea>1</NumeroLinea>
         <Descrizione>Spese pubblicitarie</Descrizione>
         <Quantita>1</Quantita>
-        <PrezzoUnitario>[[AMOUNT]]</PrezzoUnitario>
-        <PrezzoTotale>[[AMOUNT]]</PrezzoTotale>
+        <PrezzoUnitario>--AMOUNT--</PrezzoUnitario>
+        <PrezzoTotale>--AMOUNT--</PrezzoTotale>
         <AliquotaIVA>0.00</AliquotaIVA>
         <Natura>N6</Natura>
       </DettaglioLinee>
@@ -1151,7 +1151,7 @@ export default {
         <AliquotaIVA>0.00</AliquotaIVA>
         <Natura>N6</Natura>
         <Arrotondamento>0.00</Arrotondamento>
-        <ImponibileImporto>[[AMOUNT]]</ImponibileImporto>
+        <ImponibileImporto>--AMOUNT--</ImponibileImporto>
         <Imposta>0.00</Imposta>
       </DatiRiepilogo>
     </DatiBeniServizi>
@@ -1159,8 +1159,8 @@ export default {
       <CondizioniPagamento>TP02</CondizioniPagamento>
       <DettaglioPagamento>
         <ModalitaPagamento>MP08</ModalitaPagamento>
-        <DataScadenzaPagamento>[[DATE]]</DataScadenzaPagamento>
-        <ImportoPagamento>[[AMOUNT]]</ImportoPagamento>
+        <DataScadenzaPagamento>--DATE--</DataScadenzaPagamento>
+        <ImportoPagamento>--AMOUNT--</ImportoPagamento>
       </DettaglioPagamento>
     </DatiPagamento>
   </FatturaElettronicaBody>
@@ -1172,10 +1172,10 @@ export default {
             let invoice = this.invoices[i]
 
             let fContent = XMLContent
-            fContent = fContent.replace('[[CURRENCY]]', invoice.currency)
-            fContent = fContent.replace('[[NUMBER]]', invoice.reference_number)
-            fContent = fContent.replace('[[AMOUNT]]', invoice.amount)
-            fContent = fContent.replace('[[DATE]]', invoice.date)
+            fContent = fContent.replace('--CURRENCY--', invoice.currency)
+            fContent = fContent.replace('--NUMBER--', invoice.reference_number)
+            fContent = fContent.replace('--AMOUNT--', invoice.amount)
+            fContent = fContent.replace('--DATE--', invoice.date)
 
             // TODO: to delete
             console.log("fContent", fContent)
