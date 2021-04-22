@@ -1172,13 +1172,10 @@ export default {
             let invoice = this.invoices[i]
 
             let fContent = XMLContent
-            fContent = fContent.replace('--CURRENCY--', invoice.currency)
-            fContent = fContent.replace('--NUMBER--', invoice.reference_number)
-            fContent = fContent.replace('--AMOUNT--', invoice.amount)
-            fContent = fContent.replace('--DATE--', invoice.date)
-
-            // TODO: to delete
-            console.log("fContent", fContent)
+            fContent = fContent.replace(/--CURRENCY--/g, invoice.currency)
+            fContent = fContent.replace(/--NUMBER--/g, invoice.reference_number)
+            fContent = fContent.replace(/--AMOUNT--/g, invoice.amount)
+            fContent = fContent.replace(/--DATE--/g, invoice.date)
 
             let buf = new ArrayBuffer(fContent.length*2); // 2 bytes for each char
             let bufView = new Uint16Array(buf);
