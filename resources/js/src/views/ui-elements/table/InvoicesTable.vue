@@ -1052,6 +1052,9 @@ export default {
           this.invoices = []
           for (let i = 0; i < this.selected.length; i++) {
             let invoiceD = new Date(this.selected[i].invoice_date)
+
+            // TODO: What if the invoice has no info['ad_account_name'] etc...
+
             let invoice = {
               'id': this.selected[i].transaction_id,
               'ad_account_name': this.selected[i].info['ad_account_name'],
@@ -1078,7 +1081,7 @@ export default {
             let dateNoTime = (invoice.date.split(" "))[0]
 
             let fContent = invoiceTemplateXML
-            fContent = fContent.replace(/--CURRENCY--/g, invoice.currency)
+            fContent = fContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
             fContent = fContent.replace(/--NUMBER--/g, invoice.reference_number)
             fContent = fContent.replace(/--AMOUNT--/g, invoice.amount)
             fContent = fContent.replace(/--DATE--/g, dateNoTime)
