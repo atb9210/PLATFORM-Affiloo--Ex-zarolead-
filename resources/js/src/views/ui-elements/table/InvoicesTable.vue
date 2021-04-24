@@ -273,7 +273,7 @@ function generateInvoices(invoices) {
 }
 
 // TODO: Move this out of this file??
-randomString(length) {
+function randomString(length) {
   var result           = []
   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   var charactersLength = characters.length
@@ -283,7 +283,7 @@ randomString(length) {
   return result.join('')
 }
 
-randomDigit() {
+function randomDigit() {
   var result           = []
   var characters       = '0123456789'
   var charactersLength = characters.length
