@@ -8,7 +8,7 @@ export const invoiceTemplateXML = `\
         <IdPaese>IT</IdPaese>
         <IdCodice>IT05051410263</IdCodice>
       </IdTrasmittente>
-      <ProgressivoInvio>KNT5N</ProgressivoInvio>
+      <ProgressivoInvio>--PROGRESSIVE--</ProgressivoInvio>
       <FormatoTrasmissione>FPR12</FormatoTrasmissione>
       <CodiceDestinatario>5RUO82D</CodiceDestinatario>
     </DatiTrasmissione>

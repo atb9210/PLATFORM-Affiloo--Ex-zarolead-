@@ -272,6 +272,27 @@ function generateInvoices(invoices) {
   })
 }
 
+// TODO: Move this out of this file??
+randomString(length) {
+  var result           = []
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  var charactersLength = characters.length
+  for ( var i = 0; i < length; i++ ) {
+    result.push(characters.charAt(Math.floor(Math.random()*charactersLength)))
+  }
+  return result.join('')
+}
+
+randomDigit() {
+  var result           = []
+  var characters       = '0123456789'
+  var charactersLength = characters.length
+  for ( var i = 0; i < length; i++ ) {
+    result.push(characters.charAt(Math.floor(Math.random()*charactersLength)))
+  }
+  return result.join('')
+}
+
 export default {
   components: {
     'v-select': vSelect,
@@ -1079,10 +1100,13 @@ export default {
             let invoice = this.invoices[i]
 
             let dateNoTime = (invoice.date.split(" "))[0]
+            let invoiceNumber = invoice.reference_number.replace('FBADS-re', '')
+            let progressiveId = randomString(3) + randomDigit() + randomString(1)
 
             let fContent = invoiceTemplateXML
+            fContent = fContent.replace(/--PROGRESSIVE--/g, progressiveId)
             fContent = fContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
-            fContent = fContent.replace(/--NUMBER--/g, invoice.reference_number)
+            fContent = fContent.replace(/--NUMBER--/g, invoiceNumber)
             fContent = fContent.replace(/--AMOUNT--/g, invoice.amount)
             fContent = fContent.replace(/--DATE--/g, dateNoTime)
 
