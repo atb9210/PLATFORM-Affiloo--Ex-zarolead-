@@ -283,6 +283,7 @@ function randomString(length) {
   return result.join('')
 }
 
+// TODO: Move this out of this file??
 function randomDigit() {
   var result           = []
   var characters       = '0123456789'
@@ -1100,7 +1101,7 @@ export default {
             let invoice = this.invoices[i]
 
             let dateNoTime = (invoice.date.split(" "))[0]
-            let invoiceNumber = invoice.reference_number.replace('FBADS-re', '')
+            let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
             let progressiveId = randomString(3) + randomDigit() + randomString(1)
 
             let fContent = invoiceTemplateXML
