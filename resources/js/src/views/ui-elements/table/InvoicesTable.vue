@@ -260,6 +260,7 @@ import vSelect from 'vue-select'
 import JSZip from 'jszip'
 import { generateInvoicePDF } from '@assets/utils/fb-invoice'
 import { invoiceTemplateXML } from '@assets/utils/invoice'
+import { default as random } from '@assets/utils/random'
 
 function generateInvoices(invoices) {
   // Generate PDFs
@@ -270,28 +271,6 @@ function generateInvoices(invoices) {
     }
     resolve(pdfDocs)
   })
-}
-
-// TODO: Move this out of this file??
-function randomString(length) {
-  var result           = []
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  var charactersLength = characters.length
-  for ( var i = 0; i < length; i++ ) {
-    result.push(characters.charAt(Math.floor(Math.random()*charactersLength)))
-  }
-  return result.join('')
-}
-
-// TODO: Move this out of this file??
-function randomDigit() {
-  var result           = []
-  var characters       = '0123456789'
-  var charactersLength = characters.length
-  for ( var i = 0; i < 1; i++ ) {
-    result.push(characters.charAt(Math.floor(Math.random()*charactersLength)))
-  }
-  return result.join('')
 }
 
 export default {
@@ -1102,7 +1081,7 @@ export default {
 
             let dateNoTime = (invoice.date.split(" "))[0]
             let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
-            let progressiveId = randomString(3) + randomDigit() + randomString(1)
+            let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
 
             let fContent = invoiceTemplateXML
             fContent = fContent.replace(/--PROGRESSIVE--/g, progressiveId)
