@@ -27,6 +27,7 @@
         "jspdf": "^2.1.1",
         "jszip": "^3.5.0",
         "material-icons": "^0.3.1",
+        "pdfjs-dist": "^2.7.570",
         "perfect-scrollbar": "^1.4.0",
         "postcss-rtl": "^1.5.0",
         "prismjs": "^1.16.0",
