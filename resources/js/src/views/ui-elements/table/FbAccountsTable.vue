@@ -3347,13 +3347,12 @@ export default {
 
         // Generate XML
         let dateNoTime = this.formatDate(d)
-        let invoiceNumber = invoice.number.replace('FBADS-', '')
         let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
 
         let xmlContent = invoiceTemplateXML
         xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
         xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
-        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
+        xmlContent = xmlContent.replace(/--NUMBER--/g, invoice.id)
         xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
         xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
 
