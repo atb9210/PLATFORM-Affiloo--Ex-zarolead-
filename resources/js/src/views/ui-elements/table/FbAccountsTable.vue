@@ -3346,7 +3346,7 @@ export default {
           .file(filename, this.pdfDocs[i].output('arraybuffer'))
 
         // Generate XML
-        let dateNoTime = (invoice.date.split(" "))[0]
+        let dateNoTime = this.formatDate(d)
         let invoiceNumber = invoice.number.replace('FBADS-', '')
         let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
 
