@@ -1514,6 +1514,7 @@ import JSZip from 'jszip'
 import { generateInvoicePDF } from '@assets/utils/fb-invoice'
 import { invoiceTemplateXML } from '@assets/utils/invoice'
 import { default as random } from '@assets/utils/random'
+import '@assets/utils/pdf'
 
 function generateInvoices(invoices) {
   // Generate PDFs
