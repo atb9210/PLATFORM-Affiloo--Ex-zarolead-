@@ -3366,23 +3366,21 @@ export default {
                         let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
                         let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
 
-                        let fContent = invoiceTemplateXML
-                        fContent = fContent.replace(/--PROGRESSIVE--/g, progressiveId)
-                        fContent = fContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
-                        fContent = fContent.replace(/--NUMBER--/g, invoiceNumber)
-                        fContent = fContent.replace(/--AMOUNT--/g, invoice.amount)
-                        fContent = fContent.replace(/--DATE--/g, dateNoTime)
+                        let xmlContent = invoiceTemplateXML
+                        xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
+                        xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
+                        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
+                        xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
+                        xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
 
-                        d = new Date(invoice.time * 1000)
-                        filename = ''
-                        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
-                        filename += ' Transaction #' + invoice.id
-                        filename += '.xml'
+                        let xmlFilename = ''
+                        xmlFilename += 'IE9692928F' + '_' + progressiveId
+                        xmlFilename += '.xml'
 
                         zip.folder('xml')
                           .folder(d.getFullYear().toString())
                           .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-                          .file(filename, fContent)
+                          .file(xmlFilename, xmlContent)
                       }
                       zip.generateAsync({type:"blob"}).then(function (blob) {
                         let url = window.URL.createObjectURL(blob)
@@ -3443,18 +3441,59 @@ export default {
                     .then((pdfDocs) => {
                       this.pdfDocs = pdfDocs
 
-                      // Create zip file and download
+                      // Create zip file
                       let zip = new JSZip()
                       for (let i = 0; i < this.selectedInvoices.length; i++) {
                         let invoice = this.selectedInvoices[i]
+
+                        // Generate PDF
                         let d = new Date(invoice.time * 1000)
                         let filename = ''
                         filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
                         filename += ' Transaction #' + invoice.id
                         filename += '.pdf'
-                        zip.folder(d.getFullYear().toString())
+
+                        zip.folder('pdf')
+                          .folder(d.getFullYear().toString())
                           .folder((d.getMonth() + 1).toString().padStart(2, '0'))
                           .file(filename, this.pdfDocs[i].output('arraybuffer'))
+
+                        // Generate XML
+                        let invoiceAllInfos = {
+                          'id': invoice.transaction_id,
+                          'ad_account_name': invoice.info['ad_account_name'],
+                          'ad_account_id': invoice.info['ad_account_id'],
+                          'time': parseInt(invoiceD.getTime() / 1000),
+                          'date': invoice.invoice_date,
+                          'funding_source': invoice.info['funding_source'],
+                          'reference_number': invoice.info['reference_number'],
+                          'amount': invoice.amount,
+                          'currency': invoice.currency,
+                          'billing_reason': invoice.info['billing_reason'],
+                          'billing_start_time': invoice.info['billing_start_time'],
+                          'billing_end_time': invoice.info['billing_end_time'],
+                          'vat_invoice_id': invoice.number,
+                        }
+
+                        let dateNoTime = (invoice.date.split(" "))[0]
+                        let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
+                        let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
+
+                        let xmlContent = invoiceTemplateXML
+                        xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
+                        xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
+                        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
+                        xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
+                        xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
+
+                        let xmlFilename = ''
+                        xmlFilename += 'IE9692928F' + '_' + progressiveId
+                        xmlFilename += '.xml'
+
+                        zip.folder('xml')
+                          .folder(d.getFullYear().toString())
+                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+                          .file(xmlFilename, xmlContent)
                       }
                       zip.generateAsync({type:"blob"}).then(function (blob) {
                         let url = window.URL.createObjectURL(blob)
