@@ -3282,7 +3282,7 @@ export default {
         }, 100)
       })
     },
-    downloadInvoices() {
+    async downloadInvoices() {
       this.$vs.loading()
       
       let numInvoicesUploaded = 0
@@ -3317,231 +3317,102 @@ export default {
           'info': JSON.stringify(info)
         }
 
-        // Create invoice
-        this.$http.post('/api/v1/invoices', data, { headers: headers })
-          .then((response) => {
-            numInvoicesUploaded++
-            if (numInvoicesUploaded >= this.selectedInvoices.length) {
-              this.$nextTick(() => {
-                setTimeout(() => {
-                  generateInvoices(this.selectedInvoices)
-                    .then((pdfDocs) => {
-                      this.pdfDocs = pdfDocs
-
-                      // Create zip file
-                      let zip = new JSZip()
-                      for (let i = 0; i < this.selectedInvoices.length; i++) {
-                        let invoice = this.selectedInvoices[i]
-
-                        // Generate PDF
-                        let d = new Date(invoice.time * 1000)
-                        let filename = ''
-                        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
-                        filename += ' Transaction #' + invoice.id
-                        filename += '.pdf'
-
-                        zip.folder('pdf')
-                          .folder(d.getFullYear().toString())
-                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-                          .file(filename, this.pdfDocs[i].output('arraybuffer'))
-
-                        // Generate XML
-                        let invoiceAllInfos = {
-                          'id': invoice.transaction_id,
-                          'ad_account_name': invoice.info['ad_account_name'],
-                          'ad_account_id': invoice.info['ad_account_id'],
-                          'time': parseInt(invoiceD.getTime() / 1000),
-                          'date': invoice.invoice_date,
-                          'funding_source': invoice.info['funding_source'],
-                          'reference_number': invoice.info['reference_number'],
-                          'amount': invoice.amount,
-                          'currency': invoice.currency,
-                          'billing_reason': invoice.info['billing_reason'],
-                          'billing_start_time': invoice.info['billing_start_time'],
-                          'billing_end_time': invoice.info['billing_end_time'],
-                          'vat_invoice_id': invoice.number,
-                        }
-
-                        let dateNoTime = (invoice.date.split(" "))[0]
-                        let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
-                        let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
-
-                        let xmlContent = invoiceTemplateXML
-                        xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
-                        xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
-                        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
-                        xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
-                        xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
-
-                        let xmlFilename = ''
-                        xmlFilename += 'IE9692928F' + '_' + progressiveId
-                        xmlFilename += '.xml'
-
-                        zip.folder('xml')
-                          .folder(d.getFullYear().toString())
-                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-                          .file(xmlFilename, xmlContent)
-                      }
-                      zip.generateAsync({type:"blob"}).then(function (blob) {
-                        let url = window.URL.createObjectURL(blob)
-                        let a = document.createElement("a")
-                        document.body.appendChild(a)
-                        a.style = "display: none"
-                        a.href = url
-                        a.download = "invoices.zip"
-                        a.click()
-                        window.URL.revokeObjectURL(url)
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Success',
-                          text: numInvoicesUploaded + ' invoices uploaded',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'success'
-                        })
-                      }.bind(this), function (err) {
-                        // TODO: to delete
-                        // This should be here only for debug purposes
-                        console.log(err)
-
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Error',
-                          text: 'Error while downloading PDFs',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'danger'
-                        })
-                      }.bind(this));
-                    })
-                    .catch((log) => {
-                      this.$vs.loading.close()
-                      this.$vs.notify({
-                        title: 'Error',
-                        text: 'Error while generating PDFs',
-                        iconPack: 'feather',
-                        icon: 'icon-alert-circle',
-                        color: 'danger'
-                      })
-                    })
-                }, 100)
-              })
-            }
-          })
-          .catch((error) => {
-            // TODO: to delete
-            // This should be here only for debug purposes
-            console.log(error.response)
-
-            numInvoicesUploaded++
-            if (numInvoicesUploaded >= this.selectedInvoices.length) {
-              this.$nextTick(() => {
-                setTimeout(() => {
-                  generateInvoices(this.selectedInvoices)
-                    .then((pdfDocs) => {
-                      this.pdfDocs = pdfDocs
-
-                      // Create zip file
-                      let zip = new JSZip()
-                      for (let i = 0; i < this.selectedInvoices.length; i++) {
-                        let invoice = this.selectedInvoices[i]
-
-                        // Generate PDF
-                        let d = new Date(invoice.time * 1000)
-                        let filename = ''
-                        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
-                        filename += ' Transaction #' + invoice.id
-                        filename += '.pdf'
-
-                        zip.folder('pdf')
-                          .folder(d.getFullYear().toString())
-                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-                          .file(filename, this.pdfDocs[i].output('arraybuffer'))
-
-                        // Generate XML
-                        let invoiceAllInfos = {
-                          'id': invoice.transaction_id,
-                          'ad_account_name': invoice.info['ad_account_name'],
-                          'ad_account_id': invoice.info['ad_account_id'],
-                          'time': parseInt(invoiceD.getTime() / 1000),
-                          'date': invoice.invoice_date,
-                          'funding_source': invoice.info['funding_source'],
-                          'reference_number': invoice.info['reference_number'],
-                          'amount': invoice.amount,
-                          'currency': invoice.currency,
-                          'billing_reason': invoice.info['billing_reason'],
-                          'billing_start_time': invoice.info['billing_start_time'],
-                          'billing_end_time': invoice.info['billing_end_time'],
-                          'vat_invoice_id': invoice.number,
-                        }
-
-                        let dateNoTime = (invoice.date.split(" "))[0]
-                        let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
-                        let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
-
-                        let xmlContent = invoiceTemplateXML
-                        xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
-                        xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
-                        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
-                        xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
-                        xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
-
-                        let xmlFilename = ''
-                        xmlFilename += 'IE9692928F' + '_' + progressiveId
-                        xmlFilename += '.xml'
-
-                        zip.folder('xml')
-                          .folder(d.getFullYear().toString())
-                          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-                          .file(xmlFilename, xmlContent)
-                      }
-                      zip.generateAsync({type:"blob"}).then(function (blob) {
-                        let url = window.URL.createObjectURL(blob)
-                        let a = document.createElement("a")
-                        document.body.appendChild(a)
-                        a.style = "display: none"
-                        a.href = url
-                        a.download = "invoices.zip"
-                        a.click()
-                        window.URL.revokeObjectURL(url)
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Success',
-                          text: numInvoicesUploaded + ' invoices uploaded',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'success'
-                        })
-                      }.bind(this), function (err) {
-                        // TODO: to delete
-                        // This should be here only for debug purposes
-                        console.log(err)
-
-                        this.$vs.loading.close()
-                        this.$vs.notify({
-                          title: 'Error',
-                          text: 'Error while downloading PDFs',
-                          iconPack: 'feather',
-                          icon: 'icon-alert-circle',
-                          color: 'danger'
-                        })
-                      }.bind(this));
-                    })
-                    .catch((log) => {
-                      this.$vs.loading.close()
-                      this.$vs.notify({
-                        title: 'Error',
-                        text: 'Error while generating PDFs',
-                        iconPack: 'feather',
-                        icon: 'icon-alert-circle',
-                        color: 'danger'
-                      })
-                    })
-                }, 100)
-              })
-            }
-          })
+        // Create invoice into ZaroLead backend
+        try {
+          const response = await this.$http.post('/api/v1/invoices', data, { headers: headers })
+        } catch (error) {
+          // TODO: HERE...
+        }
       }
+
+      const pdfDocs = await generateInvoices(this.selectedInvoices)
+      this.pdfDocs = pdfDocs
+
+      // Create zip file
+      let zip = new JSZip()
+      for (let i = 0; i < this.selectedInvoices.length; i++) {
+        let invoice = this.selectedInvoices[i]
+
+        // Generate PDF
+        let d = new Date(invoice.time * 1000)
+        let filename = ''
+        filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
+        filename += ' Transaction #' + invoice.id
+        filename += '.pdf'
+
+        zip.folder('pdf')
+          .folder(d.getFullYear().toString())
+          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+          .file(filename, this.pdfDocs[i].output('arraybuffer'))
+
+        // Generate XML
+        let invoiceAllInfos = {
+          'id': invoice.transaction_id,
+          'ad_account_name': invoice.info['ad_account_name'],
+          'ad_account_id': invoice.info['ad_account_id'],
+          'time': parseInt(invoiceD.getTime() / 1000),
+          'date': invoice.invoice_date,
+          'funding_source': invoice.info['funding_source'],
+          'reference_number': invoice.info['reference_number'],
+          'amount': invoice.amount,
+          'currency': invoice.currency,
+          'billing_reason': invoice.info['billing_reason'],
+          'billing_start_time': invoice.info['billing_start_time'],
+          'billing_end_time': invoice.info['billing_end_time'],
+          'vat_invoice_id': invoice.number,
+        }
+
+        let dateNoTime = (invoice.date.split(" "))[0]
+        let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
+        let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
+
+        let xmlContent = invoiceTemplateXML
+        xmlContent = xmlContent.replace(/--PROGRESSIVE--/g, progressiveId)
+        xmlContent = xmlContent.replace(/--CURRENCY--/g, invoice.currency.toUpperCase())
+        xmlContent = xmlContent.replace(/--NUMBER--/g, invoiceNumber)
+        xmlContent = xmlContent.replace(/--AMOUNT--/g, invoice.amount)
+        xmlContent = xmlContent.replace(/--DATE--/g, dateNoTime)
+
+        let xmlFilename = ''
+        xmlFilename += 'IE9692928F' + '_' + progressiveId
+        xmlFilename += '.xml'
+
+        zip.folder('xml')
+          .folder(d.getFullYear().toString())
+          .folder((d.getMonth() + 1).toString().padStart(2, '0'))
+          .file(xmlFilename, xmlContent)
+      }
+      zip.generateAsync({type:"blob"}).then(function (blob) {
+        let url = window.URL.createObjectURL(blob)
+        let a = document.createElement("a")
+        document.body.appendChild(a)
+        a.style = "display: none"
+        a.href = url
+        a.download = "invoices.zip"
+        a.click()
+        window.URL.revokeObjectURL(url)
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Success',
+          text: numInvoicesUploaded + ' invoices uploaded',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      }.bind(this), function (err) {
+        // TODO: to delete
+        // This should be here only for debug purposes
+        console.log(err)
+
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while downloading PDFs',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }.bind(this))
     },
     showAds(id) {
       this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
