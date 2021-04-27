@@ -3346,24 +3346,8 @@ export default {
           .file(filename, this.pdfDocs[i].output('arraybuffer'))
 
         // Generate XML
-        let invoiceAllInfos = {
-          'id': invoice.transaction_id,
-          'ad_account_name': invoice.info['ad_account_name'],
-          'ad_account_id': invoice.info['ad_account_id'],
-          'time': parseInt(invoiceD.getTime() / 1000),
-          'date': invoice.invoice_date,
-          'funding_source': invoice.info['funding_source'],
-          'reference_number': invoice.info['reference_number'],
-          'amount': invoice.amount,
-          'currency': invoice.currency,
-          'billing_reason': invoice.info['billing_reason'],
-          'billing_start_time': invoice.info['billing_start_time'],
-          'billing_end_time': invoice.info['billing_end_time'],
-          'vat_invoice_id': invoice.number,
-        }
-
         let dateNoTime = (invoice.date.split(" "))[0]
-        let invoiceNumber = invoice.vat_invoice_id.replace('FBADS-', '')
+        let invoiceNumber = invoice.number.replace('FBADS-', '')
         let progressiveId = random.randomString(3) + random.randomDigit() + random.randomString(1)
 
         let xmlContent = invoiceTemplateXML
