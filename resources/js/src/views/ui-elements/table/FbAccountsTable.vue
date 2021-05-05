@@ -32,7 +32,8 @@
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-play" @click="showForm('launch_ad')" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="createPixels" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-square" @click="showForm('ad_rules')" v-if="view == 'ad_accounts'" :disabled="this.selectedAdAccounts.length == 0"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="danger"  type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-layout" @click="showForm('create_page')" v-if="view == 'ad_accounts'"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -1505,6 +1506,31 @@
             </div>
         </vs-popup>
 
+        <!-- Create page popup -->
+        <vs-popup title="Create facebook page" :active.sync="showPopup['create_page']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Page name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input placeholder="Page name" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="createPageName" />
+                    </div>
+                </div>
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Page image URL</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input placeholder="Image URL" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="createPageImageURL" />
+                    </div>
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createPage" color="primary" type="filled" :disabled="!isValidForm('create_page')">Create</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -1588,6 +1614,7 @@ export default {
         'notes': false,
         'ad_rules': false,
         'ad_account': false,
+        'create_page': false,
       },
       newObject: {
         'create': {
@@ -1813,6 +1840,9 @@ export default {
 
       currentAdAccount: null,
       businessId: '',
+
+      createPageName: '',
+      createPageImageURL: '',
     }
   },
   computed: {
@@ -1988,6 +2018,10 @@ export default {
 
         this.$vs.loading.close()
         this.showPopup[type] = true
+      } else if (type == 'create_page') {
+        this.createPageName = ''
+        this.createPageImageURL = ''
+        this.showPopup[type] = true
       } else {
         this.showPopup[type] = true
       }
@@ -2045,6 +2079,8 @@ export default {
       } else if (type == 'ad_rule') {
         // TODO:
         return true
+      } else if (type == 'create_page') {
+        return (this.createPageName != '' && this.createPageImageURL != '')
       } else {
         isValid = (this.newObject[type].name.length > 0)
         if (this.canCreateAsAdmin) {
@@ -4889,6 +4925,31 @@ export default {
       }
 
       this.$vs.loading.close()
+    },
+    async createPage() {
+      let data = {
+        name: this.createPageName,
+        picture: this.createPageImageURL,
+      }
+      try {
+        const response = await this.$http.post('https://graph.facebook.com/v10.0/me/accounts?access_token=' + this.currentAccessToken, data)
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Page created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        this.showPopup['create_page'] = false
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
     },
   },
   async created() {
