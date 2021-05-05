@@ -134,6 +134,8 @@
         <!-- tab 4 content -->
         <tab-content title="Plugins" class="mb-5" icon="feather icon-plus-square" :before-change="validateStep4">
           <form data-vv-scope="step-4">
+
+          <!-- Thank you redirect plugin -->
           <div class="vx-row">
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Thank You Page URL Redirect</div>
@@ -152,6 +154,8 @@
                 />
               </vx-input-group>
             </div>
+
+            <!-- Facebook pixel plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Facebook Pixel</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -183,6 +187,8 @@
                 </vs-select>
               </vx-input-group>
             </div>
+
+            <!-- Zeus track plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Zeus Track</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -199,6 +205,8 @@
                 />
               </vx-input-group>
             </div>
+
+            <!-- Double recovery plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Double Recovery</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -212,6 +220,8 @@
                 </vs-select>
               </vx-input-group>
             </div>
+
+            <!-- CSS style template plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">CSS Style Template</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -230,6 +240,8 @@
                 </template>
               </vx-input-group>
             </div>
+
+            <!-- Custom JS plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Custom (after submit, on success) wrapped into &lt;script&gt; tags</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -241,6 +253,7 @@
                 <vs-textarea v-model="plugins['custom'].afterSubmit"/>
               </vx-input-group>
             </div>
+
           </div>
           </form>
         </tab-content>

@@ -134,6 +134,8 @@
         <!-- tab 4 content -->
         <tab-content title="Plugins" class="mb-5" icon="feather icon-plus-square" :before-change="validateStep4">
           <form data-vv-scope="step-4">
+
+          <!-- Thank you redirect plugin -->
           <div class="vx-row">
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Thank You Page URL Redirect</div>
@@ -152,6 +154,8 @@
                 />
               </vx-input-group>
             </div>
+
+            <!-- Facebook pixel plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Facebook Pixel</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -183,6 +187,8 @@
                 </vs-select>
               </vx-input-group>
             </div>
+
+            <!-- Zeus track plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Zeus Track</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -199,6 +205,8 @@
                 />
               </vx-input-group>
             </div>
+
+            <!-- Double recovery plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Double Recovery</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -212,6 +220,8 @@
                 </vs-select>
               </vx-input-group>
             </div>
+
+            <!-- CSS style template plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">CSS Style Template</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -230,6 +240,8 @@
                 </template>
               </vx-input-group>
             </div>
+
+            <!-- Custom JS plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Custom (after submit, on success) wrapped into &lt;script&gt; tags</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -241,6 +253,7 @@
                 <vs-textarea v-model="plugins['custom'].afterSubmit"/>
               </vx-input-group>
             </div>
+
           </div>
           </form>
         </tab-content>
@@ -257,6 +270,8 @@
                 <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create_forms_style'].name" />
             </div>
         </div>
+
+        <!--
         <div class="vx-row mb-6">
             <div class="vx-col sm:w-1/3 w-full">
                 <span>CSS Code</span>
@@ -265,7 +280,68 @@
                 <vs-textarea v-model="newObject['create_forms_style'].code"/>
             </div>
         </div>
-        
+        -->
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Container:</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].background_color" />
+                <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].text_color" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Input:</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <input type="color" class="w-1/3" v-model="newObject['create_forms_style'].input_background_color" />
+                <input type="color" class="w-1/3" v-model="newObject['create_forms_style'].input_text_color" />
+                <input type="color" class="w-1/3" v-model="newObject['create_forms_style'].input_border_color" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Button:</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].button_background_color" />
+                <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].button_text_color" />
+            </div>
+        </div>
+
+        <!-- CSS Template plugin -->
+        <div class="vx-row mb-6">
+            <div class="vx-col w-full">
+                <center><h1>Preview</h1></center>
+            </div>
+            <div class="vx-col w-full">
+                <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
+                    <form id="css-plugin-preview-main-form" method="post" action="" accept-charset="utf-8" role="form" style="display: block;">
+                        <div>
+                            <div style="margin-botton: 1rem; display: block;">
+                                <label style="display: inline-block;margin-bottom: .5rem;">Nome e cognome</label>
+                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
+                            </div>
+                            <div style="margin-botton: 1rem; display: block;">
+                                <label style="display: inline-block;margin-bottom: .5rem;">Telefono (meglio cellulare)</label>
+                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
+                            </div>
+                            <div style="margin-botton: 1rem; display: block;">
+                                <label style="display: inline-block;margin-bottom: .5rem;">Città e indirizzo di consegna</label>
+                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
+                            </div>
+                        </div>
+                        <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">Conferma l'ordine</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
         <div class="vx-row mb-6">
             <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Create</vs-button>
         </div>
@@ -508,6 +584,13 @@ export default {
           name: '',
           type: 'css',
           code: '',
+          background_color: '#ffffff',
+          text_color: '#000000',
+          input_background_color: '#ffffff',
+          input_text_color: '#000000',
+          input_border_color: '#f2e832',
+          button_background_color: '#eaac00',
+          button_text_color: '#ffffff',
         },
         'cross_sell': {
           sku: '',
@@ -528,11 +611,46 @@ export default {
         },
       },
       editingQuantityOptionIndex: -1,
+
+      /*
+      cssPluginContainerStyle: {
+        backgroundColor: '#ffffff',
+        color: '#000000',
+      },
+      cssPluginInputStyle: {
+        backgroundColor: '#ffffff',
+        color: '#000000',
+        borderColor: '#f2e832',
+      },
+      cssPluginButtonStyle: {
+        backgroundColor: '#eaac00',
+        color: '#ffffff',
+      },
+      */
     }
   },
   computed: {
     canChangeUser() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
+    cssPluginContainerStyle() {
+      return {
+        backgroundColor: this.newObject['create_forms_style'].background_color,
+        color: this.newObject['create_forms_style'].text_color,
+      }
+    },
+    cssPluginInputStyle() {
+      return {
+        backgroundColor: this.newObject['create_forms_style'].input_background_color,
+        color: this.newObject['create_forms_style'].input_text_color,
+        borderColor: this.newObject['create_forms_style'].input_border_color,
+      }
+    },
+    cssPluginButtonStyle() {
+      return {
+        backgroundColor: this.newObject['create_forms_style'].button_background_color,
+        color: this.newObject['create_forms_style'].button_text_color,
+      }
     },
   },
   methods: {
@@ -572,6 +690,13 @@ export default {
           name: '',
           type: 'css',
           code: '',
+          background_color: '#ffffff',
+          text_color: '#000000',
+          input_background_color: '#ffffff',
+          input_text_color: '#000000',
+          input_border_color: '#f2e832',
+          button_background_color: '#eaac00',
+          button_text_color: '#ffffff',
         }
       } else if (type == 'cross_sell') {
         this.newObject[type] = {
@@ -604,7 +729,7 @@ export default {
     isValidForm(type) {
       let obj = this.newObject[type]
       if (type == 'create_forms_style') {
-        return (obj.name != '' && obj.code != '')
+        return (obj.name != '')
       } else if (type == 'cross_sell') {
         return (obj.sku != '' && obj.title != '' && obj.description != '' &&
           obj.img != '' &&
@@ -791,6 +916,29 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+
+      // Create CSS code
+      this.newObject['create_forms_style'].code = ''
+
+      this.newObject['create_forms_style'].code += '#formContainer {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      this.newObject['create_forms_style'].code += '.form-input {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].input_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].input_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'border-color: ' + this.newObject['create_forms_style'].input_border_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+
+      this.newObject['create_forms_style'].code += '.form-button {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].button_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].button_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      // TODO: to delete
+      console.log(this.newObject['create_forms_style'].code)
 
       let data = {
         name: this.newObject['create_forms_style'].name,
@@ -1010,3 +1158,50 @@ export default {
   },
 }
 </script>
+
+<style>
+#css-plugin-preview-form-container {
+    width: 100%;
+    /*color: black;*/
+    /*background-color: white;*/
+}
+
+#css-plugin-preview-main-form {
+   padding: 15px;
+   height: 100%;
+}
+
+.css-plugin-preview-form-input {
+	margin-bottom: 0.5em;
+	font-weight: 400;
+	width: 100%;
+	border-radius: 3px;
+	padding: 15px;
+	font-size: 22px;
+	border-width: 1px;
+	border-style: double;
+	/*border-color: #f2e832;*/
+	box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5);
+	font-family: "Open Sans",Sans-serif;
+	font-weight: 400;
+}
+
+.css-plugin-preview-form-button {
+    margin-bottom: 3em;
+    border: 1px solid #e0e0e0;
+    font-size: 25px;
+    padding: 10px;
+    width: 90%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
+    float: none;
+    font-family: "Arial",Sans-serif;
+    font-weight: 600;
+    text-transform: none;
+    /*color: #fff;*/
+    /*background-color: #eaac00;*/
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
+}
+</style>

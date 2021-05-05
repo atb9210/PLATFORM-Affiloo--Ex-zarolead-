@@ -52,6 +52,8 @@ body {
 }
 
 #submit-button {
+    /*
+    TODO: Check if it works without this style
     margin-bottom: 3em;
     border: 1px solid #e0e0e0;
     font-size: 25px;
@@ -68,6 +70,22 @@ body {
     background-color: #eaac00;
     border-radius: 8px;
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
+    */
+}
+
+.form-input {
+    margin-bottom: 0.5em;
+    font-weight: 400;
+    width: 100%;
+    border-radius: 3px;
+    padding: 15px;
+    font-size: 22px;
+    border-width: 1px;
+    border-style: double;
+    border-color: #f2e832;
+    box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5);
+    font-family: "Open Sans",Sans-serif;
+    font-weight: 400;
 }
 
 .form-button {

@@ -428,7 +428,7 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
         id: name,
         name: name,
         type: type,
-        style: 'margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;',
+        class: "form-input",
     };
     if ('required' in params) {
         inputData.required = params['required'];
