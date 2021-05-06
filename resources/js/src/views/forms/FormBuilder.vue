@@ -937,9 +937,6 @@ export default {
       this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].button_text_color + ' !important;'
       this.newObject['create_forms_style'].code += '}'
 
-      // TODO: to delete
-      console.log(this.newObject['create_forms_style'].code)
-
       let data = {
         name: this.newObject['create_forms_style'].name,
         type: this.newObject['create_forms_style'].type,

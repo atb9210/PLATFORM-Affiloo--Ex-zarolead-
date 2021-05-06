@@ -2347,7 +2347,7 @@ export default {
         fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
         fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,daily_budget'
         //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
-        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas,conversions\},bid_strategy,bid_amount,daily_budget'
+        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,bid_amount,daily_budget'
         fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
         fields += '\}'
         fields += '\}'
@@ -2479,9 +2479,6 @@ export default {
                   if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
                     roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
                   }
-
-                  // TODO: to delete
-                  console.log(campaign.insights.data[0].conversions)
               }
 
               let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))

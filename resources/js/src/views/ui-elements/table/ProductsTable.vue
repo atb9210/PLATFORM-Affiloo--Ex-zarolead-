@@ -44,7 +44,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="advertiser.name">Advertiser</vs-th>
+                <vs-th sort-key="advertiser_name">Advertiser</vs-th>
                 <vs-th sort-key="tag.name">Tag</vs-th>
                 <vs-th sort-key="country">Country</vs-th>
                 <vs-th>Actions</vs-th>
@@ -61,8 +61,8 @@
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].advertiser.name">
-                        {{data[indextr].advertiser.name}}
+                    <vs-td :data="data[indextr].advertiser_name">
+                        {{data[indextr].advertiser_name}}
                     </vs-td>
 
                     <vs-td :data="data[indextr].tag.name">
@@ -417,7 +417,7 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
+    async retrieveObjects() {
       this.selected = []
       this.$vs.loading()
 
@@ -426,21 +426,12 @@ export default {
       }
 
       // Retrieve products
-      this.$http.get('/api/v1/products', { headers })
-        .then((response) => {
-          this.objects = response.data.data
-          this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.get('/api/v1/products', { headers })
+      this.objects = response.data.data
+      for (let i = 0; i < this.objects.length; i++) {
+        this.objects[i].advertiser_name = this.objects[i].advertiser.name
+      }
+      this.$vs.loading.close()
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -791,6 +782,34 @@ export default {
     },
   },
   created() {
+    // TODO: to delete
+    console.log("TEST PRODUCTS PAGE")
+    let testData = {
+      zip: "",
+      city: "",
+      name: "Test",
+      phone: "123456789",
+      price: "49",
+      state: "",
+      token: "hkz9KaRn5Grqxjrr3t8ychFrkl88mD",
+      source: "ZARO",
+      address: "test test",
+      country: "IT",
+      quantity: "1",
+      company_id: "15",
+      //ip_address: "{input.ip}",
+      payment_type: "c",
+      product_name: "test",
+      publisher_id: "18456",
+      external_notes: "",
+      product_reference: "test",
+    }
+    this.$http.post('https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder', testData)
+    .then((response) => {
+      })
+      .catch((error) => {
+      })
+
     this.retrieveObjects()
 
     let headers = {
@@ -833,8 +852,6 @@ export default {
         this.$vs.loading.close()
       })
   },
-  mounted () {
-  }
 }
 
 </script>
