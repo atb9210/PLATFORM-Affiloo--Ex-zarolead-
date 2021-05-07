@@ -9,6 +9,10 @@ class FormsStyle extends Model
     protected $table = 'forms_styles';
 
     protected $fillable = [
-        'name', 'type', 'code',
+        'name', 'type', 'code', 'settings',
+    ];
+
+    protected $casts = [
+        'settings' => 'array',
     ];
 }

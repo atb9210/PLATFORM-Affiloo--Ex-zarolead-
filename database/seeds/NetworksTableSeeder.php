@@ -165,9 +165,9 @@ class NetworksTableSeeder extends Seeder
                         'type' => 'json',
                         'bodyParams' => [
                             'token' => 'HReYRJSUJ77XSm8Aga2bkezMm4udCB', //@TODO
-                            'publisher_id' => '8469', //@TODO
-                            'company_id' => '5', //@TODO
-                            'source' => 'achraf', //@TODO
+                            'publisher_id' => '18456', //@TODO
+                            'company_id' => '15', //@TODO
+                            'source' => 'ZARO', //@TODO
                             'phone' => '{input.phone}',
                             'name' => '{input.name}',
                             'quantity' => '{input.quantity}',

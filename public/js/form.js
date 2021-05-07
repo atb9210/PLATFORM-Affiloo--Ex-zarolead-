@@ -1,3 +1,5 @@
+window.global_button_text = 'Conferma l\'ordine';
+
 function getUrlParam(param) {
     var url_string = window.location.href
     var url = new URL(url_string);
@@ -558,7 +560,7 @@ Form.prototype.goToInputStep = function(stepNum) {
         $("#submit-button").html("Continua");
     } else {
         if (!this.deliveryEnabled) {
-            $("#submit-button").html("Conferma l'ordine");
+            $("#submit-button").html(window.global_button_text);
         } else {
             $("#submit-button").html("Continua");
         }
@@ -571,7 +573,7 @@ Form.prototype.goToNextStep = function() {
         this.goToInputStep(this.currentInputStep + 1);
     } else {
         if (!this.deliveryEnabled) {
-            $("#submit-button").html("Conferma l'ordine");
+            $("#submit-button").html(window.global_button_text);
         } else {
             $("#submit-button").html("Continua");
         }

@@ -782,34 +782,6 @@ export default {
     },
   },
   created() {
-    // TODO: to delete
-    console.log("TEST PRODUCTS PAGE")
-    let testData = {
-      zip: "",
-      city: "",
-      name: "Test",
-      phone: "123456789",
-      price: "49",
-      state: "",
-      token: "hkz9KaRn5Grqxjrr3t8ychFrkl88mD",
-      source: "ZARO",
-      address: "test test",
-      country: "IT",
-      quantity: "1",
-      company_id: "15",
-      //ip_address: "{input.ip}",
-      payment_type: "c",
-      product_name: "test",
-      publisher_id: "18456",
-      external_notes: "",
-      product_reference: "test",
-    }
-    this.$http.post('https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder', testData)
-    .then((response) => {
-      })
-      .catch((error) => {
-      })
-
     this.retrieveObjects()
 
     let headers = {

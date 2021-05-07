@@ -986,6 +986,7 @@ class FormController extends Controller
      * @bodyParam name string required Style's name
      * @bodyParam type string required Style's type (css)
      * @bodyParam code string required Style's code
+     * @bodyParam settings json Style's settings (button text, etc...)
      *
      * @response 201 {
      *  "message": "Forms style created",
@@ -999,7 +1000,12 @@ class FormController extends Controller
             'name' => 'required|string|min:3',
             'type' => 'required|in:css',
             'code' => 'required|string',
+            'settings' => 'json',
         ]);
+
+        if (isset($params['settings'])) {
+            $params['settings'] = json_decode($params['settings'], TRUE);
+        }
 
         $formsStyle = FormsStyle::create($params);
 
@@ -1007,5 +1013,64 @@ class FormController extends Controller
             "message" => "Forms style created",
             "data" => new FormsStyleResource($formsStyle),
         ], 201);
+    }
+
+    /**
+     * Update a forms style
+     *
+     * @url id int required Style's id
+     *
+     * @bodyParam name string Style's name
+     * @bodyParam type string Style's type (css)
+     * @bodyParam code string Style's code
+     * @bodyParam settings json Style's settings (button text, etc...)
+     *
+     * @response {
+     *  "message": "Forms style updated",
+     *  "data": forms_style,
+     * }
+     */
+    public function updateStyle($id, Request $request)
+    {
+        $formsStyle = FormsStyle::findOrFail($id);
+
+        // Params validation
+        $params = $request->validate([
+            'name' => 'string|min:3',
+            'type' => 'in:css',
+            'code' => 'string',
+            'settings' => 'json',
+        ]);
+
+        if (isset($params['settings'])) {
+            $params['settings'] = json_decode($params['settings'], TRUE);
+        }
+
+        $formsStyle->update($params);
+
+        return response([
+            "message" => "Forms style created",
+            "data" => new FormsStyleResource($formsStyle),
+        ]);
+    }
+
+    /**
+     * Delete a forms style
+     *
+     * @url id int required Style's id
+     *
+     * @response {
+     *  "message": "Forms style deleted",
+     * }
+     */
+    public function deleteStyle($id)
+    {
+        $formsStyle = FormsStyle::findOrFail($id);
+
+        $formsStyle->delete();
+
+        return response([
+            "message" => "Forms style deleted",
+        ]);
     }
 }

@@ -115,6 +115,10 @@ Route::get('forms-styles', 'api\v1\FormController@getStyles')->middleware('auth:
     ->name('forms-styles.index');
 Route::post('forms-styles', 'api\v1\FormController@createStyle')->middleware('auth:api')
     ->name('forms-styles.store');
+Route::put('forms-styles/{id}', 'api\v1\FormController@updateStyle')->middleware('auth:api')
+    ->name('forms-styles.update');
+Route::delete('forms-styles/{id}', 'api\v1\FormController@deleteStyle')->middleware('auth:api')
+    ->name('forms-styles.destroy');
 
 /* Invoices routes */
 Route::apiResource('invoices', 'api\v1\InvoiceController')->except([

@@ -18,6 +18,7 @@ class CreateFormsStylesTable extends Migration
             $table->string('name');
             $table->enum('type', ['css'])->default('css');
             $table->longText('code');
+            $table->json('settings')->nullable();
             $table->timestamps();
         });
     }

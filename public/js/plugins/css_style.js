@@ -2,11 +2,24 @@ function CssStylePlugin(data) {
     Plugin.call(this, data);
 
     this.stylesheet_url = this.data.stylesheet_url;
-    this.loadCssStyle()
+    this.button_text = '';
+    if (this.data.hasOwnProperty('button_text') != '' &&
+        this.data.button_text != '') {
+        this.button_text = this.data.button_text;
+        window.global_button_text = this.button_text;
+    }
+
+    this.loadCssStyle();
 }
 
 CssStylePlugin.prototype.onVisit = function() {
     console.log("CssStylePlugin onVisit");
+
+    if (this.button_text != '') {
+        //document.querySelector('#submit-button').textContent = 'OOOO';
+        var button = document.getElementById('submit-button');
+        button.textContent = this.button_text;
+    }
 }
 
 CssStylePlugin.prototype.onSubmit = function() {

@@ -262,6 +262,31 @@
 
     <!-- Create forms style popup -->
     <vs-popup title="Create forms style" :active.sync="showPopup['create_forms_style']">
+
+        <div class="vx-row mb-6">
+            <div class="vx-col w-full">
+                <center><h1>Current styles</h1></center>
+            </div>
+        </div>
+
+        <div class="vx-row mb-6" :key="index" v-for="(item, index) in formsStyles">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>{{ item.name }}</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <p class="flex items-center mb-4">
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-airplay" @click="loadFormsStyle(index)">Load</vs-button>
+                    <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteFormsStyle(index)">Delete</vs-button>
+                </p>
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col w-full">
+                <center><h1>Fields</h1></center>
+            </div>
+        </div>
+
         <div class="vx-row mb-6">
             <div class="vx-col sm:w-1/3 w-full">
                 <span>Name</span>
@@ -308,12 +333,40 @@
                 <span>Button:</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full flex items-center">
-                <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].button_background_color" />
+                <input type="color" class="w-full" v-model="newObject['create_forms_style'].button_background_color" />
                 <input type="color" class="w-1/2" v-model="newObject['create_forms_style'].button_text_color" />
             </div>
         </div>
 
-        <!-- CSS Template plugin -->
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Button text:</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full flex items-center">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create_forms_style'].button_text" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <vs-button
+                v-if="currentStyleExists()"
+                class="mt-12 mr-auto ml-auto"
+                @click="updateFormsStyle"
+                color="primary" type="filled"
+                :disabled="!isValidForm('create_forms_style')">
+                Update
+            </vs-button>
+            <vs-button
+                v-else
+                class="mt-12 mr-auto ml-auto"
+                @click="createFormsStyle"
+                color="primary" type="filled"
+                :disabled="!isValidForm('create_forms_style')">
+                Create
+            </vs-button>
+        </div>
+
+        <!-- CSS Template preview -->
         <div class="vx-row mb-6">
             <div class="vx-col w-full">
                 <center><h1>Preview</h1></center>
@@ -335,16 +388,13 @@
                                 <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
                             </div>
                         </div>
-                        <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">Conferma l'ordine</button>
+                        <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">{{ newObject['create_forms_style'].button_text }}</button>
                     </form>
 
                 </div>
             </div>
         </div>
 
-        <div class="vx-row mb-6">
-            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Create</vs-button>
-        </div>
     </vs-popup>
 
     <!-- Cross sell popup -->
@@ -591,6 +641,7 @@ export default {
           input_border_color: '#f2e832',
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
+          button_text: 'Conferma l\'ordine',
         },
         'cross_sell': {
           sku: '',
@@ -611,22 +662,6 @@ export default {
         },
       },
       editingQuantityOptionIndex: -1,
-
-      /*
-      cssPluginContainerStyle: {
-        backgroundColor: '#ffffff',
-        color: '#000000',
-      },
-      cssPluginInputStyle: {
-        backgroundColor: '#ffffff',
-        color: '#000000',
-        borderColor: '#f2e832',
-      },
-      cssPluginButtonStyle: {
-        backgroundColor: '#eaac00',
-        color: '#ffffff',
-      },
-      */
     }
   },
   computed: {
@@ -681,7 +716,178 @@ export default {
         }
       }
     },
-    showForm(type) {
+    currentStyleExists() {
+      let name = this.newObject['create_forms_style'].name
+
+      for (let i = 0; i < this.formsStyles.length; i++) {
+        if (name == this.formsStyles[i].name) {
+          return true
+        }
+      }
+
+      return false
+    },
+    async getFormsStyles() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$vs.loading()
+      const response = await this.$http.get('/api/v1/forms-styles', { headers })
+      this.formsStyles = response.data.data
+      this.formsStylesOptions = []
+      for (let i = 0; i < this.formsStyles.length; i++) {
+        let formsStyle = this.formsStyles[i]
+        this.formsStylesOptions.push({
+          value: formsStyle.url,
+          label: formsStyle.name,
+        })
+      }
+      this.$vs.loading.close()
+    },
+    async loadFormsStyle(index) {
+      this.newObject['create_forms_style'] = this.formsStyles[index].settings
+    },
+    async createFormsStyle() {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Create CSS code
+      this.newObject['create_forms_style'].code = ''
+
+      this.newObject['create_forms_style'].code += '#formContainer {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      this.newObject['create_forms_style'].code += '.form-input {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].input_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].input_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'border-color: ' + this.newObject['create_forms_style'].input_border_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+
+      this.newObject['create_forms_style'].code += '.form-button {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].button_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].button_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      let settings = this.newObject['create_forms_style']
+
+      let data = {
+        name: this.newObject['create_forms_style'].name,
+        type: this.newObject['create_forms_style'].type,
+        code: this.newObject['create_forms_style'].code,
+        settings: JSON.stringify(settings),
+      }
+
+      // Create forms style
+      const response = await this.$http.post('/api/v1/forms-styles', data, { headers: headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Style created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['create_forms_style'] = false
+      this.clearForm('create_forms_style')
+
+      this.getFormsStyles()
+    },
+    async updateFormsStyle() {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+     
+      let formsStyle = null
+
+      let name = this.newObject['create_forms_style'].name
+      for (let i = 0; i < this.formsStyles.length; i++) {
+        if (name == this.formsStyles[i].name) {
+          formsStyle = this.formsStyles[i]
+        }
+      }
+
+      if (formsStyle == null) {
+        this.$vs.loading.close()
+        return
+      }
+
+      // Create CSS code
+      this.newObject['create_forms_style'].code = ''
+
+      this.newObject['create_forms_style'].code += '#formContainer {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      this.newObject['create_forms_style'].code += '.form-input {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].input_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].input_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'border-color: ' + this.newObject['create_forms_style'].input_border_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+
+      this.newObject['create_forms_style'].code += '.form-button {'
+      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].button_background_color + ' !important;'
+      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].button_text_color + ' !important;'
+      this.newObject['create_forms_style'].code += '}'
+
+      let settings = this.newObject['create_forms_style']
+
+      let data = {
+        name: this.newObject['create_forms_style'].name,
+        type: this.newObject['create_forms_style'].type,
+        code: this.newObject['create_forms_style'].code,
+        settings: JSON.stringify(settings),
+      }
+
+      // Update forms style
+      const response = await this.$http.put('/api/v1/forms-styles/' + formsStyle.id, data, { headers: headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Style updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['create_forms_style'] = false
+      this.clearForm('create_forms_style')
+
+      this.getFormsStyles()
+    },
+    async deleteFormsStyle(index) {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let formsStyle = this.formsStyles[index]
+
+      this.$vs.loading()
+      await this.$http.delete('/api/v1/forms-styles/' + formsStyle.id, { headers: headers })
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Style deleted',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.getFormsStyles()
+    },
+    async showForm(type) {
+      if (type == 'create_forms_style') {
+        this.getFormsStyles()
+      }
       this.showPopup[type] = true
     },
     clearForm(type) {
@@ -697,6 +903,7 @@ export default {
           input_border_color: '#f2e832',
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
+          button_text: 'Conferma l\'ordine',
         }
       } else if (type == 'cross_sell') {
         this.newObject[type] = {
@@ -911,70 +1118,6 @@ export default {
           })
       })
     },
-    createFormsStyle() {
-      this.$vs.loading()
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      // Create CSS code
-      this.newObject['create_forms_style'].code = ''
-
-      this.newObject['create_forms_style'].code += '#formContainer {'
-      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].background_color + ' !important;'
-      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].text_color + ' !important;'
-      this.newObject['create_forms_style'].code += '}'
-
-      this.newObject['create_forms_style'].code += '.form-input {'
-      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].input_background_color + ' !important;'
-      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].input_text_color + ' !important;'
-      this.newObject['create_forms_style'].code += 'border-color: ' + this.newObject['create_forms_style'].input_border_color + ' !important;'
-      this.newObject['create_forms_style'].code += '}'
-
-
-      this.newObject['create_forms_style'].code += '.form-button {'
-      this.newObject['create_forms_style'].code += 'background-color: ' + this.newObject['create_forms_style'].button_background_color + ' !important;'
-      this.newObject['create_forms_style'].code += 'color: ' + this.newObject['create_forms_style'].button_text_color + ' !important;'
-      this.newObject['create_forms_style'].code += '}'
-
-      let data = {
-        name: this.newObject['create_forms_style'].name,
-        type: this.newObject['create_forms_style'].type,
-        code: this.newObject['create_forms_style'].code,
-      }
-
-      // Create forms style
-      this.$http.post('/api/v1/forms-styles', data, { headers: headers })
-        .then((response) => {
-          this.formsStyles.push(response.data.data)
-          this.formsStylesOptions.push({
-            value: response.data.data.url,
-            label: response.data.data.name,
-          })
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Forms style created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.showPopup['create_forms_style'] = false
-          this.clearForm('create_forms_style')
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-          this.showPopup['create_forms_style'] = false
-          this.clearForm('create_forms_style')
-        })
-    },
     showCrossSellForm() {
       this.newObject['cross_sell'].sku = this.crossSell.sku
       this.newObject['cross_sell'].title = this.crossSell.title
@@ -1050,6 +1193,9 @@ export default {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
+    // Retrieve forms styles
+    this.getFormsStyles()
+
     // Retrieve users
     this.$vs.loading()
     this.$http.get('/api/v1/users', { headers })
@@ -1115,23 +1261,6 @@ export default {
                           })
                           this.plugins['double_recovery'].form_id = form.id;
                         }
-
-                        // Retrieve forms styles
-                        this.$http.get('/api/v1/forms-styles', { headers })
-                          .then((response) => {
-                            this.formsStyles = response.data.data
-                            for (let i = 0; i < this.formsStyles.length; i++) {
-                              let formsStyle = this.formsStyles[i]
-                              this.formsStylesOptions.push({
-                                value: formsStyle.url,
-                                label: formsStyle.name,
-                              })
-                            }
-                            this.$vs.loading.close()
-                          })
-                          .catch((error) => {
-                            this.$vs.loading.close()
-                          })
                       })
                       .catch((error) => {
                         this.$vs.loading.close()
