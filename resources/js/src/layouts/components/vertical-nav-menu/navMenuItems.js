@@ -218,7 +218,7 @@ export default [
         url: '/dashboard/Styles',
         name: 'Styles',
         slug: 'styles',
-        icon: 'LayoutIcon',
+        icon: 'Edit2Icon',
         i18n: 'Styles',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
