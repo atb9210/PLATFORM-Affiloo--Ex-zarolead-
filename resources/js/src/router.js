@@ -1430,6 +1430,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/styles',
+          name: 'forms-styles',
+          component: () => import('./views/Styles.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Styles', active: true }
+            ],
+            pageTitle: 'Styles',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/landings/:landing_id/stats/',
           props: true,
           name: 'landings-stats',

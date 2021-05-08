@@ -215,6 +215,15 @@ export default [
       },
 
       {
+        url: '/dashboard/Styles',
+        name: 'Styles',
+        slug: 'styles',
+        icon: 'LayoutIcon',
+        i18n: 'Styles',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+
+      {
         url: null,
         name: 'Landings',
         icon: 'LayoutIcon',
