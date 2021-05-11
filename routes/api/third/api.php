@@ -34,6 +34,13 @@ Route::apiResource('fb-ad-rules', 'api\third\FbAdRuleController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
+/* Fb campaigns routes */
+Route::apiResource('fb-campaigns', 'api\third\FbCampaignController')->except([
+    'create', 'store', 'edit', 'update',
+])->middleware('auth:api');
+Route::post('/fb-campaigns/associate', 'api\third\FbCampaignController@associate')->middleware('auth:api')
+    ->name('fb-campaigns.associate');
+
 /* Finapsy routes */
 Route::get('/finapsy', 'api\third\FinapsyController@index')->name('finapsy.index');
 Route::post('/finapsy', 'api\third\FinapsyController@store')->name('finapsy.store');

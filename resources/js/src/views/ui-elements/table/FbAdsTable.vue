@@ -186,6 +186,7 @@
             <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
+                    <vs-th>Form</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -205,12 +206,21 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
+                        <vs-td class="column-no-padding">
+                            <!--<vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>-->
+                            <vs-chip v-if="tr.form != null">
+                                <vs-avatar icon-pack="feather" icon="icon-check" />
+                                {{tr.form.id}}
+                            </vs-chip>
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
+                                    :class="((objectColor(data[indextr]) == 'success' || objectColor(data[indextr]) == 'danger') ? '' : 'disabled-object')"
+                                    :color="objectColor(data[indextr])">
+                                    <vs-avatar icon-pack="feather" :icon="objectIcon(data[indextr])" />
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -319,6 +329,7 @@
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -356,6 +367,7 @@
             <vs-table v-if="view == 'adsets'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
+                    <vs-th></vs-th>
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -374,6 +386,10 @@
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td>
+                            <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
+                        </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
@@ -468,7 +484,7 @@
 
                         <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                             <span v-if="data[indextr].cbo">
-                                Campaign budget
+                                CBO
                             </span>
                             <span v-else>
                                 € {{data[indextr].daily_budget.toFixed(2)}}
@@ -487,6 +503,7 @@
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -526,6 +543,7 @@
             <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
+                    <vs-th></vs-th>
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -543,6 +561,10 @@
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td>
+                            <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
+                        </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.ad_context_menu.open($event, data[indextr])">
@@ -649,6 +671,7 @@
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -671,10 +694,10 @@
                     <vs-td class="column-no-padding">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -951,7 +974,7 @@
                         <span>Total amount spent</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
-                        € {{this.updateFormTotalCost.toFixed(2)}}
+                        € {{updateFormTotalCost.toFixed(2)}}
                     </div>
                 </div>
 
@@ -966,6 +989,15 @@
                           class="w-full">
                             <vs-select-item :key="index" :value="item.id" :text="item.id + ' - ' + item.name" v-for="(item, index) in forms" />
                         </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Form association</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                       <vs-checkbox v-model="updateFormAssociate">Associate</vs-checkbox>
                     </div>
                 </div>
 
@@ -1167,6 +1199,7 @@ export default {
 
       updateFormId: '',
       updateFormTotalCost: 0,
+      updateFormAssociate: false,
       updateFormDate: '',
       formsLoaded: false,
       forms: [],
@@ -1402,9 +1435,9 @@ export default {
       timeRange = JSON.stringify(timeRange)
       
       let fields = 'id,name,account_status'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,daily_budget'
+      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
+      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
       fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       fields += '\}'
       fields += '\}'
@@ -1670,6 +1703,7 @@ export default {
               bid_strategy: bid_strategy,
               adsets: adsets,
               trend: {},
+              form: null,
             }
             this.campaigns.push(campaignToPush)
           }
@@ -1678,6 +1712,24 @@ export default {
 
       this.calculateStats()
       this.sortByStatus()
+
+      let fbCampaignsArray = []
+      for (let campaignIndex = 0; campaignIndex < this.campaigns.length; campaignIndex++) {
+        fbCampaignsArray.push(this.campaigns[campaignIndex].id)
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let fbCampaignsData = {
+        fb_campaign: fbCampaignsArray,
+      }
+      const fbCampaignsResponse = await this.$http.get('/api/3rd/fb-campaigns', { headers, params: fbCampaignsData })
+      for (let fbCampaignIndex = 0; fbCampaignIndex < fbCampaignsResponse.data.data.length; fbCampaignIndex++) {
+        let fbCampaign = fbCampaignsResponse.data.data[fbCampaignIndex]
+        this.campaigns[this.getObjectIndexById(this.campaigns, fbCampaign.id)].form = fbCampaign.form
+      }
+
       this.$vs.loading.close()
     },
     filterDatesShortcut(period) {
@@ -2201,8 +2253,26 @@ export default {
         cost_to_add: this.updateFormTotalCost,
       }
 
-      // Retrieve forms
+      // Form cost update
       await this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
+
+      // Form association
+      if (this.updateFormAssociate) {
+        let fbCampaigns = []
+        for (let i = 0; i < this.selectedCampaigns.length; i++) {
+          fbCampaigns.push(this.selectedCampaigns[i].id)
+        }
+        data = {
+          fb_campaigns: fbCampaigns,
+          form_id: this.updateFormId,
+        }
+        const fbCampaignsResponse = await this.$http.post('/api/3rd/fb-campaigns/associate', data, { headers })
+        for (let fbCampaignIndex = 0; fbCampaignIndex < fbCampaignsResponse.data.data.length; fbCampaignIndex++) {
+          let fbCampaign = fbCampaignsResponse.data.data[fbCampaignIndex]
+          this.campaigns[this.getObjectIndexById(this.campaigns, fbCampaign.id)].form = fbCampaign.form
+        }
+      }
+
       this.$vs.loading.close()
       this.$vs.notify({
         title: 'Success',
@@ -2744,6 +2814,26 @@ export default {
         'bid_amount': 0.0,
         'accelerated': false,
       })
+    },
+    objectColor(obj) {
+      if (obj.roas > 1) {
+        return 'success'
+      } else if (obj.roas > 0 || (obj.roas == 0 && obj.spent > 0)) {
+        return 'danger'
+      } else {
+        return '#d9d9d9'
+      }
+    },
+    objectIcon(obj) {
+      if (obj.spent > 0) {
+        if (obj.roas > 1) {
+          return 'icon-plus'
+        } else {
+          return 'icon-minus'
+        }
+      } else {
+        return 'icon-refresh-cw'
+      }
     },
   },
   async created() {

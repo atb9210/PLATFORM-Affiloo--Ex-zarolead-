@@ -346,7 +346,7 @@
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                     <vs-td>
-                        <vs-button size="small" radius :color="(data[indextr].roas > 0) ? ((data[indextr].roas > 1) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                        <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
@@ -398,7 +398,7 @@
                             € {{data[indextr].daily_budget.toFixed(2)}}
                         </span>
                         <span v-else>
-                            Adset budget
+                            ABO
                         </span>
                     </vs-td>
 
@@ -463,7 +463,7 @@
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                     <vs-td>
-                        <vs-button size="small" radius :color="(data[indextr].roas > 0) ? ((data[indextr].roas > 1) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
+                        <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
                     </vs-td>
 
                     <vs-td :data="data[indextr].name">
@@ -2345,9 +2345,9 @@ export default {
         let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
         let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
         fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,daily_budget'
+        fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,insights.time_range({"since":"' + since + '", "until":"' + until +'"})\{inline_link_click_ctr,cpc,website_purchase_roas,action_values\},bid_strategy,daily_budget'
         //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
-        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights\{inline_link_click_ctr,cpc,website_purchase_roas\},bid_strategy,bid_amount,daily_budget'
+        fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,insights.time_range({"since":"' + since + '", "until":"' + until +'"})\{inline_link_click_ctr,cpc,website_purchase_roas,action_values\},bid_strategy,bid_amount,daily_budget'
         fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
         fields += '\}'
         fields += '\}'
@@ -2466,19 +2466,29 @@ export default {
               let ctr = 0.0
               let cpc = 0.0
               let roas = 0.0
+              let result = 0
 
               if (campaign.hasOwnProperty('insights') && campaign.insights.hasOwnProperty('data') &&
                   campaign.insights.data.length > 0)
               {
-                  if (campaign.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
-                    ctr = parseFloat(campaign.insights.data[0].inline_link_click_ctr)
+                if (campaign.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                  ctr = parseFloat(campaign.insights.data[0].inline_link_click_ctr)
+                }
+                if (campaign.insights.data[0].hasOwnProperty('cpc')) {
+                  cpc = parseFloat(campaign.insights.data[0].cpc)
+                }
+                if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                  roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
+                }
+                if (campaign.insights.data[0].hasOwnProperty('action_values')) {
+                  let actionValues = campaign.insights.data[0].action_values
+                  for (let actionValuesIndex = 0; actionValuesIndex < actionValues.length; actionValuesIndex++) {
+                    let actionValue = actionValues[actionValuesIndex]
+                    if (actionValue.hasOwnProperty('action_type') && actionValue.action_type == 'offsite_conversion.fb_pixel_purchase') {
+                      result = parseInt(actionValue.value)
+                    }
                   }
-                  if (campaign.insights.data[0].hasOwnProperty('cpc')) {
-                    cpc = parseFloat(campaign.insights.data[0].cpc)
-                  }
-                  if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                    roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
-                  }
+                }
               }
 
               let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
@@ -2508,7 +2518,7 @@ export default {
                   name: campaign.name,
                   status: campaign.effective_status,
                   spent: spent,
-                  result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
+                  result: result,
                   cpa: cpa,
                   impressions: campaign.impressions,
                   clicks: campaign.clicks,
@@ -2536,19 +2546,29 @@ export default {
                   let adCtr = 0.0
                   let adCpc = 0.0
                   let adRoas = 0.0
+                  let adResult = 0
 
                   if (ad.hasOwnProperty('insights') && ad.insights.hasOwnProperty('data') &&
                       ad.insights.data.length > 0)
                   {
-                      if (ad.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
-                        adCtr = parseFloat(ad.insights.data[0].inline_link_click_ctr)
+                    if (ad.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                      adCtr = parseFloat(ad.insights.data[0].inline_link_click_ctr)
+                    }
+                    if (ad.insights.data[0].hasOwnProperty('cpc')) {
+                      adCpc = parseFloat(ad.insights.data[0].cpc)
+                    }
+                    if (ad.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                      adRoas = parseFloat(ad.insights.data[0].website_purchase_roas[0].value)
+                    }
+                    if (ad.insights.data[0].hasOwnProperty('action_values')) {
+                      let actionValues = ad.insights.data[0].action_values
+                      for (let actionValuesIndex = 0; actionValuesIndex < actionValues.length; actionValuesIndex++) {
+                        let actionValue = actionValues[actionValuesIndex]
+                        if (actionValue.hasOwnProperty('action_type') && actionValue.action_type == 'offsite_conversion.fb_pixel_purchase') {
+                          adResult = parseInt(actionValue.value)
+                        }
                       }
-                      if (ad.insights.data[0].hasOwnProperty('cpc')) {
-                        adCpc = parseFloat(ad.insights.data[0].cpc)
-                      }
-                      if (ad.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                        adRoas = parseFloat(ad.insights.data[0].website_purchase_roas[0].value)
-                      }
+                    }
                   }
 
                   let adDailyBudget = 0
@@ -2590,7 +2610,7 @@ export default {
                       name: ad.name,
                       status: ad.effective_status,
                       spent: adSpent,
-                      result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
+                      result: adResult,
                       cpa: adCpa,
                       impressions: ad.impressions,
                       clicks: ad.clicks,
@@ -3357,7 +3377,7 @@ export default {
         try {
           const response = await this.$http.post('/api/v1/invoices', data, { headers: headers })
         } catch (error) {
-          // TODO: HERE...
+          // TODO: Log?
         }
       }
 
@@ -4949,6 +4969,26 @@ export default {
           icon: 'icon-alert-circle',
           color: 'danger'
         })
+      }
+    },
+    objectColor(obj) {
+      if (obj.roas > 1) {
+        return 'success'
+      } else if (obj.roas > 0 || (obj.roas == 0 && obj.spent > 0)) {
+        return 'danger'
+      } else {
+        return '#d9d9d9'
+      }
+    },
+    objectIcon(obj) {
+      if (obj.spent > 0) {
+        if (obj.roas > 1) {
+          return 'icon-plus'
+        } else {
+          return 'icon-minus'
+        }
+      } else {
+        return 'icon-refresh-cw'
       }
     },
   },
