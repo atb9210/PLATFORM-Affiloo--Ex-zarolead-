@@ -174,6 +174,37 @@ Form.prototype.initialize = function() {
 
     // Input values
     $('#form_id').val(this.FORM_ID);
+
+    // Countdown initialization
+    var countdownElements = $('.countdown-time');
+    console.log(countdownElements);
+    if (countdownElements.length > 0) {
+        setInterval(function() {
+            var t = countdownElements[0].innerHTML;
+            var tmp = t.split(':');
+            var m = parseInt(tmp[0]);
+            var s = parseInt(tmp[1]);
+
+            if (m == 0 && s == 0) {
+                return;
+            }
+
+            s -= 1;
+            if (s < 0) {
+                s += 60;
+                m -= 1;
+            }
+            if (m < 0) {
+                m = 0;
+                s = 0;
+            }
+
+            var newT = m.toString() + ':' + s.toString().padStart(2, '0')
+            for (var i = 0; i < countdownElements.length; i++) {
+                countdownElements[i].innerHTML = newT;
+            }
+        }, 1000);
+    }
 }
 
 Form.prototype.formVisited = function() {

@@ -11,8 +11,8 @@ import jwt from '../../http/requests/auth/jwt/index.js'
 
 import axios from 'axios'
 
-import firebase from 'firebase/app'
-import 'firebase/auth'
+//import firebase from 'firebase/app'
+//import 'firebase/auth'
 import router from '@/router'
 
 export default {
@@ -28,15 +28,16 @@ export default {
     // If remember_me is enabled change firebase Persistence
     if (!payload.checkbox_remember_me) {
 
+      /*
       // Change firebase Persistence
       firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
 
-      // If success try to login
+        // If success try to login
         .then(function () {
           dispatch('login', newPayload)
         })
 
-      // If error notify
+        // If error notify
         .catch(function (err) {
 
           // Close animation if passed as payload
@@ -51,6 +52,7 @@ export default {
             color: 'danger'
           })
         })
+      */
     } else {
       // Try to login
       dispatch('login', newPayload)
@@ -75,6 +77,7 @@ export default {
     }
 
     // Try to sigin
+    /*
     firebase.auth().signInWithEmailAndPassword(payload.userDetails.email, payload.userDetails.password)
 
       .then((result) => {
@@ -121,6 +124,7 @@ export default {
           color: 'danger'
         })
       })
+    */
   },
 
   // Google Login

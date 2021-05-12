@@ -134,9 +134,10 @@
                     <span>Input:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <input type="color" class="w-1/3" v-model="newObject['create'].input_background_color" />
-                    <input type="color" class="w-1/3" v-model="newObject['create'].input_text_color" />
-                    <input type="color" class="w-1/3" v-model="newObject['create'].input_border_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].input_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].input_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].input_border_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['create'].input_address_visible">Address</vs-checkbox>
                 </div>
             </div>
 
@@ -145,17 +146,34 @@
                     <span>Button:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <input type="color" class="w-full" v-model="newObject['create'].button_background_color" />
-                    <input type="color" class="w-1/2" v-model="newObject['create'].button_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].button_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].button_text_color" />
+                    <vs-input class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].button_text" />
+                </div>
+            </div>
+
+            <hr class="mb-4">
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Countdown:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/6" v-model="newObject['create'].countdown_text_background_color" />
+                    <input type="color" class="w-1/6" v-model="newObject['create'].countdown_text_color" />
+                    <input type="color" class="w-1/6" v-model="newObject['create'].countdown_time_color" />
+                    <vs-input type="number" class="w-1/3"  icon-pack="feather" icon="icon-clock" icon-no-border v-model="newObject['create'].countdown_time" />
+                    <vs-checkbox class="w-1/6" v-model="newObject['create'].countdown_visible"></vs-checkbox>
                 </div>
             </div>
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Button text:</span>
+                    <span>Trust badge:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].button_text" />
+                    <input type="color" class="w-2/3" v-model="newObject['create'].trust_badge_color" />
+                    <vs-checkbox class="w-1/3" v-model="newObject['create'].trust_badge_visible">Show</vs-checkbox>
                 </div>
             </div>
 
@@ -176,6 +194,12 @@
                 </div>
                 <div class="vx-col w-full">
                     <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
+                        <div class="css-plugin-preview-countdown" :style="cssPluginCountdownStyle">
+                            <div class="css-plugin-preview-countdown-text-container">
+                                <span class="css-plugin-preview-countdown-text" :style="cssPluginCountdownTextStyle">L'OFFERTA SCADE TRA:</span>
+                            </div>
+                            <div><p class="css-plugin-preview-countdown-time" :style="cssPluginCountdownTimeStyle">{{cssPluginCountdownTime}}</p></div>
+                        </div>
                         <div id="css-plugin-preview-main-form" style="display: block;">
                             <div>
                                 <div style="margin-botton: 1rem; display: block;">
@@ -186,9 +210,20 @@
                                     <label style="display: inline-block;margin-bottom: .5rem;">Telefono (meglio cellulare)</label>
                                     <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
                                 </div>
-                                <div style="margin-botton: 1rem; display: block;">
+                                <div style="margin-botton: 1rem; display: block;" :style="cssPluginInputAddressStyle">
                                     <label style="display: inline-block;margin-bottom: .5rem;">Città e indirizzo di consegna</label>
                                     <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
+                                </div>
+                            </div>
+                            <div class="css-plugin-preview-trust-badge" :style="cssPluginTrustBadgeStyle">
+                                <div style="text-align: right;">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div style="padding: 0.5rem 0.5rem; font-size: 0.7rem; display: flex; align-items: center;">
+                                    <p>
+                                        I tuoi dati sono al sicuro.<br>
+                                        Un nostro consulente ti contatterà per aiutarti a completare il tuo ordine.
+                                    </p>
                                 </div>
                             </div>
                             <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">{{ cssPluginButtonText }}</button>
@@ -227,9 +262,10 @@
                     <span>Input:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <input type="color" class="w-1/3" v-model="newObject['edit'].input_background_color" />
-                    <input type="color" class="w-1/3" v-model="newObject['edit'].input_text_color" />
-                    <input type="color" class="w-1/3" v-model="newObject['edit'].input_border_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].input_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].input_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].input_border_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['edit'].input_address_visible">Address</vs-checkbox>
                 </div>
             </div>
 
@@ -238,17 +274,34 @@
                     <span>Button:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <input type="color" class="w-full" v-model="newObject['edit'].button_background_color" />
-                    <input type="color" class="w-1/2" v-model="newObject['edit'].button_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].button_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].button_text_color" />
+                    <vs-input class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].button_text" />
+                </div>
+            </div>
+
+            <hr class="mb-4">
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Countdown:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/6" v-model="newObject['edit'].countdown_text_background_color" />
+                    <input type="color" class="w-1/6" v-model="newObject['edit'].countdown_text_color" />
+                    <input type="color" class="w-1/6" v-model="newObject['edit'].countdown_time_color" />
+                    <vs-input type="number" class="w-1/3"  icon-pack="feather" icon="icon-clock" icon-no-border v-model="newObject['edit'].countdown_time" />
+                    <vs-checkbox class="w-1/6" v-model="newObject['edit'].countdown_visible"></vs-checkbox>
                 </div>
             </div>
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Button text:</span>
+                    <span>Trust badge:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].button_text" />
+                    <input type="color" class="w-2/3" v-model="newObject['edit'].trust_badge_color" />
+                    <vs-checkbox class="w-1/3" v-model="newObject['edit'].trust_badge_visible">Show</vs-checkbox>
                 </div>
             </div>
 
@@ -269,6 +322,12 @@
                 </div>
                 <div class="vx-col w-full">
                     <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
+                        <div class="css-plugin-preview-countdown" :style="cssPluginCountdownStyle">
+                            <div class="css-plugin-preview-countdown-text-container">
+                                <span class="css-plugin-preview-countdown-text" :style="cssPluginCountdownTextStyle">L'OFFERTA SCADE TRA:</span>
+                            </div>
+                            <div><p class="css-plugin-preview-countdown-time" :style="cssPluginCountdownTimeStyle">{{cssPluginCountdownTime}}</p></div>
+                        </div>
                         <div id="css-plugin-preview-main-form" style="display: block;">
                             <div>
                                 <div style="margin-botton: 1rem; display: block;">
@@ -279,9 +338,20 @@
                                     <label style="display: inline-block;margin-bottom: .5rem;">Telefono (meglio cellulare)</label>
                                     <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
                                 </div>
-                                <div style="margin-botton: 1rem; display: block;">
+                                <div style="margin-botton: 1rem; display: block;" :style="cssPluginInputAddressStyle">
                                     <label style="display: inline-block;margin-bottom: .5rem;">Città e indirizzo di consegna</label>
                                     <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
+                                </div>
+                            </div>
+                            <div class="css-plugin-preview-trust-badge" :style="cssPluginTrustBadgeStyle">
+                                <div style="text-align: right;">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div style="padding: 0.5rem 0.5rem; font-size: 0.7rem; display: flex; align-items: center;">
+                                    <p>
+                                        I tuoi dati sono al sicuro.<br>
+                                        Un nostro consulente ti contatterà per aiutarti a completare il tuo ordine.
+                                    </p>
                                 </div>
                             </div>
                             <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">{{ cssPluginButtonText }}</button>
@@ -335,19 +405,37 @@ import { VueContext } from 'vue-context'
 
 let cssStyleBoilerPlate = `\
 #formContainer {
-background-color: --background_color-- !important;
-color: --text_color-- !important;
+    background-color: --background_color-- !important;
+    color: --text_color-- !important;
 }
 
 .form-input {
-background-color: --input_background_color-- !important;
-color: --input_text_color-- !important;
-border-color: --input_border_color-- !important;
+    background-color: --input_background_color-- !important;
+    color: --input_text_color-- !important;
+    border-color: --input_border_color-- !important;
 }'
 
 .form-button {
-background-color: --button_background_color-- !important;
-color: --button_text_color-- !important;
+    background-color: --button_background_color-- !important;
+    color: --button_text_color-- !important;
+}
+
+.countdown {
+    display: --countdown_display-- !important;
+}
+
+.countdown-text {
+    background-color: --countdown_text_background_color-- !important;
+    color: --countdown_text_color-- !important;
+}
+
+.countdown-time {
+    color: --countdown_time_color-- !important;
+}
+
+.trust-badge {
+    display: --trust_badge_display-- !important;
+    color: --trust_badge_color-- !important;
 }
 `
 
@@ -363,6 +451,18 @@ function getCssCode(obj) {
 
   code = code.replace('--button_background_color--', obj.button_background_color)
   code = code.replace('--button_text_color--', obj.button_text_color)
+
+  code = code.replace('--countdown_display--', (obj.countdown_visible) ? 'grid' : 'none')
+  code = code.replace('--countdown_text_background_color--', obj.countdown_text_background_color)
+  code = code.replace('--countdown_text_color--', obj.countdown_text_color)
+  code = code.replace('--countdown_time_color--', obj.countdown_time_color)
+
+  code = code.replace('--trust_badge_display--', (obj.trust_badge_visible) ? 'grid' : 'none')
+  code = code.replace('--trust_badge_color--', obj.trust_badge_color)
+
+  if (!obj.input_address_visible) {
+      code += '#address { display: none; }'
+  }
 
   return code
 }
@@ -397,9 +497,17 @@ export default {
           input_background_color: '#ffffff',
           input_text_color: '#000000',
           input_border_color: '#f2e832',
+          input_address_visible: true,
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
+          countdown_visible: false,
+          countdown_text_background_color: '#ff2233',
+          countdown_text_color: '#ffffff',
+          countdown_time_color: '#000000',
+          countdown_time: 5,
         },
         'edit': {
           name: '',
@@ -410,9 +518,17 @@ export default {
           input_background_color: '#ffffff',
           input_text_color: '#000000',
           input_border_color: '#f2e832',
+          input_address_visible: true,
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
+          countdown_visible: false,
+          countdown_text_background_color: '#ff2233',
+          countdown_text_color: '#ffffff',
+          countdown_time_color: '#000000',
+          countdown_time: 5,
         },
         'preview': {
           name: '',
@@ -423,9 +539,17 @@ export default {
           input_background_color: '#ffffff',
           input_text_color: '#000000',
           input_border_color: '#f2e832',
+          input_address_visible: true,
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
+          countdown_visible: false,
+          countdown_text_background_color: '#ff2233',
+          countdown_text_color: '#ffffff',
+          countdown_time_color: '#000000',
+          countdown_time: 5,
         },
       },
 
@@ -485,6 +609,42 @@ export default {
     cssPluginButtonText() {
       let type = this.popupType
       return this.newObject[type].button_text
+    },
+    cssPluginInputAddressStyle() {
+      let type = this.popupType
+      return {
+        display: (this.newObject[type].input_address_visible) ? 'block' : 'none',
+      }
+    },
+    cssPluginCountdownStyle() {
+      let type = this.popupType
+      return {
+        display: (this.newObject[type].countdown_visible) ? 'grid' : 'none',
+      }
+    },
+    cssPluginCountdownTextStyle() {
+      let type = this.popupType
+      return {
+        backgroundColor: this.newObject[type].countdown_text_background_color,
+        color: this.newObject[type].countdown_text_color,
+      }
+    },
+    cssPluginCountdownTimeStyle() {
+      let type = this.popupType
+      return {
+        color: this.newObject[type].countdown_time_color,
+      }
+    },
+    cssPluginCountdownTime() {
+      let type = this.popupType
+      return this.newObject[type].countdown_time + ':00'
+    },
+    cssPluginTrustBadgeStyle() {
+      let type = this.popupType
+      return {
+        display: (this.newObject[type].trust_badge_visible) ? 'grid' : 'none',
+        color: this.newObject[type].trust_badge_color,
+      }
     },
   },
   methods: {
@@ -570,9 +730,17 @@ export default {
         input_background_color: '#ffffff',
         input_text_color: '#000000',
         input_border_color: '#f2e832',
+        input_address_visible: true,
         button_background_color: '#eaac00',
         button_text_color: '#ffffff',
         button_text: 'Conferma l\'ordine',
+        trust_badge_visible: false,
+        trust_badge_color: '#000000',
+        countdown_visible: false,
+        countdown_text_background_color: '#ff2233',
+        countdown_text_color: '#ffffff',
+        countdown_time_color: '#000000',
+        countdown_time: 5,
       }
     },
     isValidForm(type) {
@@ -603,7 +771,12 @@ export default {
     editObject(id) {
       let obj = this.allObjects[this.getObjectIndexById(id)]
       this.editingObject = obj
-      this.newObject['edit'] = obj.settings
+
+      this.clearForm('edit')
+      for (const [key, value] of Object.entries(obj.settings)) {
+        this.newObject['edit'][key] = value
+      }
+
       this.showForm('edit')
     },
     async createObject() {
@@ -745,5 +918,42 @@ export default {
     /*background-color: #eaac00;*/
     border-radius: 8px;
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
+}
+
+.css-plugin-preview-countdown {
+    width: 100%;
+    padding: 0.2rem;
+    font-size: 3.5rem;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    font-weight: bold;
+}
+
+.css-plugin-preview-countdown-text-container {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.css-plugin-preview-countdown-text {
+    background-color: #ff2233;
+    color: #ffffff;
+    border-radius: 0.4rem;
+    padding: 0rem 0.4rem;
+}
+
+.css-plugin-preview-countdown-time {
+    font-size: 3rem;
+}
+
+.css-plugin-preview-trust-badge {
+    width: 100%;
+    padding: 0.2rem;
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: auto auto auto;
 }
 </style>

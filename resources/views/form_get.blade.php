@@ -3,6 +3,10 @@
 <!-- Bootstrap -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
 
+<!-- Font Awsome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" integrity="sha512-RXf+QSDCUQs5uwRKaDoXt55jygZZm2V++WUZduaU/Ui/9EGp3f/2KZVahFZBKGH0s774sd3HmrhUy+SgOFQLVQ==" crossorigin="anonymous"></script>
+
 <style>
 /* TODO: to delete this? Check if everything is fine graphically */
 /*
@@ -106,6 +110,47 @@ body {
     border-radius: 8px;
     box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
 }
+
+.countdown {
+    display: none;
+    width: 100%;
+    padding: 0.2rem;
+    font-size: 3.5rem;
+    display: none;
+    grid-template-columns: auto auto auto;
+    font-weight: bold;
+}
+
+.countdown-text-container {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.countdown-text {
+    background-color: #ff2233;
+    color: #ffffff;
+    border-radius: 0.4rem;
+    padding: 0rem 0.4rem;
+}
+
+.countdown-time {
+    font-size: 3rem;
+    color: #000000;
+}
+
+.trust-badge {
+    width: 100%;
+    padding: 0.2rem;
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: none;
+    grid-template-columns: auto auto auto;
+}
+
+/********************/
 
 #upSellOptions {
     transition: opacity .2s ease;
@@ -268,6 +313,14 @@ body {
 
 <div id="formContainer">
 
+    <!-- Countdown -->
+    <div class="countdown">
+        <div class="countdown-text-container">
+            <span class="countdown-text">L'OFFERTA SCADE TRA:</span>
+        </div>
+        <div><p class="countdown-time">10:00</p></div>
+    </div>
+
     <!-- Order form page -->
 	<form id="mainForm" method="post" target="dummyframe" action="" accept-charset="utf-8" role="form">
    
@@ -303,6 +356,20 @@ body {
             </div>
             -->
         </div>
+
+        <!-- Trust badge -->
+        <div class="trust-badge">
+            <div style="text-align: right;">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div style="padding: 0.5rem 0.5rem; font-size: 0.7rem; display: flex; align-items: center;">
+                <p>
+                    I tuoi dati sono al sicuro.<br>
+                    Un nostro consulente ti contatterà per aiutarti a completare il tuo ordine.
+                </p>
+            </div>
+        </div>
+
 		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Conferma l'Ordine</button>
 	</form>
 
