@@ -132,6 +132,9 @@ function Form(id, debug = false, alpha = false, beta = false) {
     this.ALPHA = alpha;
     this.BETA = beta;
 
+    // TODO: To delete, this is only a momentary patch (used for hiding address input field)
+    this.hideAddressInput = false;
+
     this.initialize();
 }
 
@@ -469,7 +472,14 @@ Form.prototype.createInput = function(name, params, stepNum = 0) {
     if ('value' in params) {
         inputData.value = params['value'];
     }
-    $('<input>', inputData).appendTo(d);
+    var inputElement = $('<input>', inputData).appendTo(d);
+
+    // TODO: To delete, this is only a momentary patch (this will hide address input field
+    // and set it to a default value)
+    if (name == 'address' && inputElement.css('display') == 'none') {
+        inputElement.val('al telefono');
+        this.hideAddressInput = true;
+    }
 
     // Create error span
     if (params['type'] != 'hidden') {
@@ -582,6 +592,11 @@ Form.prototype.goToInputStep = function(stepNum) {
     // Show current step inputs
     var inputsToShow = $('#form-inputs').find('.input-step' + stepNum);
     for (var i = 0; i < inputsToShow.length; i++) {
+        // TODO: To delete, this is only a momentary patch (used for hiding address input field)
+        if (this.hideAddressInput && inputsToShow[i].children[1].id == 'address') {
+            continue;
+        }
+
         $(inputsToShow[i]).css('display', 'block');
     }
 
