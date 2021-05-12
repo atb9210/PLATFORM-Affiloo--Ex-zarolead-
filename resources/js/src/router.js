@@ -1432,7 +1432,7 @@ const router = new Router({
         {
           path: '/dashboard/styles',
           name: 'forms-styles',
-          component: () => import('./views/styles.vue'),
+          component: () => import('./views/Styles.vue'),
           meta: {
             authRequired: true,
             breadcrumb: [

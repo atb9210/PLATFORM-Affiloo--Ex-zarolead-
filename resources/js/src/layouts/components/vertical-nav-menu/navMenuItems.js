@@ -215,7 +215,7 @@ export default [
       },
 
       {
-        url: '/dashboard/Styles',
+        url: '/dashboard/styles',
         name: 'Styles',
         slug: 'styles',
         icon: 'Edit2Icon',
