@@ -8,7 +8,7 @@
 ========================================================================================== -->
 
 <template>
-    <admin-dashboard v-if="dashboardView == 'admin'" />
+    <mediabuyer-dashboard v-if="dashboardView == 'admin'" />
     <mediabuyer-dashboard v-else-if="dashboardView == 'mediabuyer'" />
 </template>
 

@@ -44,6 +44,11 @@
 
     <div class="vx-row">
 
+      <!-- Orders daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="PackageIcon" :statistic="ordersCount" statisticTitle="Orders" :chartData="ordersSeries" color="primary" type="area"></statistics-card-line>
+      </div>
+
       <!-- Visits daily chart -->
       <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
         <statistics-card-line icon="EyeIcon" :statistic="visits" statisticTitle="Visits" :chartData="visitsSeries" color="primary" type="area"></statistics-card-line>
@@ -54,14 +59,29 @@
         <statistics-card-line icon="UsersIcon" :statistic="leads" statisticTitle="Leads" :chartData="leadsSeries" color="warning" type="area"></statistics-card-line>
       </div>
 
+      <!-- CPA daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + cpa" statisticTitle="CPA" :chartData="cpaSeries" color="success" type="area"></statistics-card-line>
+      </div>
+
       <!-- Cost daily chart -->
       <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
         <statistics-card-line icon="AlertCircleIcon" :statistic="'€ ' + cost" statisticTitle="Total Cost" :chartData="costSeries" color="danger" type="area"></statistics-card-line>
       </div>
 
-      <!-- CPA daily chart -->
+      <!-- Revenue daily chart -->
       <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-        <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + cpa" statisticTitle="CPA" :chartData="cpaSeries" color="success" type="area"></statistics-card-line>
+        <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + cost" statisticTitle="Revenue" :chartData="costSeries" color="danger" type="area"></statistics-card-line>
+      </div>
+
+      <!-- Profit daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + cost" statisticTitle="Profit" :chartData="costSeries" color="danger" type="area"></statistics-card-line>
+      </div>
+
+      <!-- ROI daily chart -->
+      <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+        <statistics-card-line icon="PercentIcon" :statistic="'€ ' + cost" statisticTitle="ROI" :chartData="costSeries" color="danger" type="area"></statistics-card-line>
       </div>
 
     </div>
@@ -239,24 +259,33 @@ export default {
       },
       formOptions: [],
 
+      orders: [],
+      ordersCount: 0,
+
       visits: 0,
       leads: 0,
       cost: 0,
       cpa: 0,
 
       maxNumDots: 10,
+      ordersSeries: [{ data: [1, 2, 3, 4, 4, 4, 4], name: 'Orders' }],
       visitsSeries: [{ data: [1, 2, 3, 4, 5], name: 'Visits' }],
       leadsSeries:  [{ data: [4, 3, 2, 1], name: 'Leads' }],
-      costSeries:   [{ data: [30, 35, 48, 7], name: 'Cost' }],
       cpaSeries:    [{ data: [2, 4, 6, 4], name: 'CPA' }],
+      costSeries:   [{ data: [30, 35, 48, 7], name: 'Cost' }],
+      revenueSeries:   [{ data: [30, 35, 48, 7], name: 'Revenue' }],
+      profitSeries:   [{ data: [30, 35, 48, 7], name: 'Profit' }],
+      roiSeries:   [{ data: [30, 35, 48, 7], name: 'ROI' }],
 
+      // TODO: Are these still useful?
       monthlyVisits: [],
       monthlyLeads: [],
       monthlyCost: [],
       monthlyCpa: [],
+
       lastMonths: 8,
       maxChartLines: 10,
-      themeColors: ['#7367F0', '#28C76F', '#EA5455', '#FF9F43', '#1E1E1E'],
+      themeColors: ['#EA5455', '#7367F0', '#28C76F', '#FF9F43', '#1E1E1E'],
       lineAreaChartSpline: {
         series: [],
         chartOptions: {
@@ -282,18 +311,6 @@ export default {
       },
 
       // TODO: delete all these variables below
-
-      orders: [],
-      ordersSeries: {
-          commission: [
-            {
-              data: [],
-              name: 'Commissions'
-            }
-          ],
-          count: [],
-      },
-
       checkpointReward: {},
       subscribersGained: {},
       ordersRecevied: {},
@@ -340,9 +357,10 @@ export default {
         }
       ],
 
-
       analyticsData,
-      dispatchedOrders: []
+      dispatchedOrders: [],
+
+      thisMonthReports: [],
     }
   },
   methods: {
@@ -368,12 +386,14 @@ export default {
       this.cost = 0.0
       this.cpa = 0
       for(let i = 0; i < numDots; i++) {
+        let formattedDate = this.formatDate(currentDay)
+
         let visits = 0
         let leads = 0
         let cost = 0.0
         let cpa = 0.0
 
-        if (objIndex >= 0 && objIndex < this.objects.length && this.objects[objIndex].day == this.formatDate(currentDay)) {
+        if (objIndex >= 0 && objIndex < this.objects.length && this.objects[objIndex].day == formattedDate) {
           visits = parseInt(this.objects[objIndex].visits)
           leads = parseInt(this.objects[objIndex].leads)
           cost = (this.filters.form != '' && this.filters.form.id != 0) ? parseFloat(this.objects[objIndex].total_cost) : parseFloat(this.objects[objIndex].cost)
@@ -415,6 +435,9 @@ export default {
     loadMonthlyCharts() {
       // X axis
       let categories = []
+
+      // TODO: to delete
+      /*
       let monthNames = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -422,6 +445,37 @@ export default {
       let dateObj = new Date()
       for(let monthIndex = this.lastMonths - 1; monthIndex >= 0; monthIndex--) {
         categories.push(monthNames[dateObj.getMonth() - monthIndex])
+      }
+      */
+
+      let costStats = []
+      let revenueStats = []
+      let profitStats = []
+
+      let dateObj = new Date()
+      let daysInMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
+      dateObj.setDate(1)
+      for (let dayIndex = 0; dayIndex < daysInMonth; dayIndex++) {
+        let formattedDate = this.formatDate(dateObj)
+        categories.push(formattedDate)
+
+        costStats.push(0)
+        revenueStats.push(0)
+        profitStats.push(0)
+
+        for (let i = 0; i < this.thisMonthReports.length; i++) {
+          let reports = this.thisMonthReports[i]
+          if (reports.day == formattedDate) {
+            let cost = parseFloat(reports.cost) + parseFloat(reports.extra_cost)
+            let revenue = parseFloat(reports.commission)
+            let profit = parseFloat(reports.profit)
+            costStats[dayIndex] = cost
+            revenueStats[dayIndex] = revenue
+            profitStats[dayIndex] = profit
+          }
+        }
+
+        dateObj.setDate(dateObj.getDate() + 1)
       }
 
       this.lineAreaChartSpline.chartOptions = {
@@ -449,6 +503,21 @@ export default {
       this.lineAreaChartSpline.series = []
       let series = []
       series.push({
+        name: "cost",
+        data: costStats,
+      })
+      series.push({
+        name: "revenue",
+        data: revenueStats,
+      })
+      series.push({
+        name: "profit",
+        data: profitStats,
+      })
+
+      // TODO: to delete
+      /*
+      series.push({
         name: "visits",
         data: this.monthlyVisits,
       })
@@ -464,6 +533,8 @@ export default {
         name: "visits",
         data: this.monthlyCpa,
       })
+      */
+
       this.lineAreaChartSpline.series = series
     },
     formatDate(dateObj) {
@@ -579,7 +650,7 @@ export default {
       }
     },
   },
-  created () {
+  async created () {
     this.resetFilters()
 
     let headers = {
@@ -608,6 +679,7 @@ export default {
       })
 
     // Retrieve last 'lastMonths' month monthly reports (including current month)
+    // TODO: to delete (no need to pick month by month reports anymore???)
     this.$vs.loading()
     let todayDateObj = new Date();
     for (let monthIndex = this.lastMonths - 1; monthIndex >= 0; monthIndex--) {
@@ -621,6 +693,7 @@ export default {
       this.$http.get('/api/v1/my-reports', { headers, params: data })
         .then((response) => {
           let reports = response.data.data
+          this.thisMonthReports = reports
           let visits = 0
           let leads = 0
           let cost = 0.0
@@ -635,6 +708,7 @@ export default {
           cost = cost.toFixed(2)
           cpa = cpa.toFixed(2)
 
+          // TODO: Are these still useful?
           this.monthlyVisits.push(visits)
           this.monthlyLeads.push(leads)
           this.monthlyCost.push(cost)
@@ -660,13 +734,42 @@ export default {
     // TODO: delete all of this
 
     // Fetch orders
-    this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') } })
-      .then((response) => { this.orders = response.data })
+    let fromObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth(), 1);
+    let toObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() + 1, 0);
+    let data = {
+      filter_date_from: this.formatDate(fromObj),
+      filter_date_to: this.formatDate(toObj),
+    }
 
-    // Calculate orders series
-    // TODO:
-    this.ordersSeries.commission[0].data = [3, 8, 9, 5, 10, 8, 7]
+    const ordersResponse = await this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') }, params: data })
+    this.orders = ordersResponse.data.data
+    this.ordersCount = this.orders.length
 
+    // Calculate orders stats
+    let ordersStats = {}
+    let dateObj = new Date()
+    let daysInMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
+    dateObj.setDate(1)
+    for (let dayIndex = 0; dayIndex < daysInMonth; dayIndex++) {
+      ordersStats[this.formatDate(dateObj)] = 0
+      dateObj.setDate(dateObj.getDate() + 1)
+    }
+
+    for (let i = 0; i < this.orders.length; i++) {
+      let order = this.orders[i]
+      let day = this.formatDate(new Date(order.created_at))
+
+      ordersStats[day] += 1
+    }
+
+    let ordersSeries = []
+    for (const [key, value] of Object.entries(ordersStats)) {
+      ordersSeries.push(value)
+    }
+    this.ordersSeries = [{ data: ordersSeries, name: 'Orders' }]
+
+    // TODO: to delete from now on
+    /*
     //  User Reward Card
     this.$http.get('/api/user/checkpoint-reward')
       .then((response) => { this.checkpointReward = response.data })
@@ -706,6 +809,7 @@ export default {
     this.$http.get('/api/table/dispatched-orders')
       .then((response) => { this.dispatchedOrders = response.data })
       .catch((error)   => { console.log(error) })
+    */
   }
 }
 </script>
