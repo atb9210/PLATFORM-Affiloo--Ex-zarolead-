@@ -242,7 +242,6 @@ export default {
           })
           this.calculateStats()
           this.$vs.loading.close()
-          console.log(this.objects)
         })
         .catch((error) => {
           this.$vs.loading.close()

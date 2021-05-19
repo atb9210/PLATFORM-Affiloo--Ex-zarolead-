@@ -131,7 +131,6 @@
 
                     <vs-td :data="data[indextr].status">
                         <span class="flex items-center px-2 py-1 rounded">
-                            <!--<div class="h-3 w-3 rounded-full mr-2" :class="'bg-' + statusColors[data[indextr].status]"></div>{{data[indextr].status}}-->
                             <vs-chip :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                         </span>
                     </vs-td>
