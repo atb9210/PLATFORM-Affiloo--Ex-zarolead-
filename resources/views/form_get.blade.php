@@ -141,6 +141,66 @@ body {
     color: #000000;
 }
 
+.people-viewing {
+    display: none;
+    width: 100%;
+    padding: 0.2rem;
+    text-align: center;
+    color: #000000;
+    font-weight: bold;
+}
+
+.people-viewing-count {
+    background-color: #ff2233;
+    color: #ffffff;
+    border-radius: 0.4rem;
+    padding: 0rem 0.4rem;
+}
+
+.available-quantity {
+    display: none;
+    width: 100%;
+    padding: 0.2rem;
+}
+
+.available-quantity-bar {
+    --barColor: #ff330f;
+    position: relative;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+    height: 2.2em;
+    background-color: #919191;
+    color: #ffffff;
+    border-radius: 0.5em;
+}
+
+.available-quantity-bar::before {
+    content: '';
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: 0.0em;
+    top: 0.0em;
+    bottom: 0.0em;
+    width: 20%;
+    min-width: 2rem;
+    max-width: calc(100% - 1em);
+    background-color: var(--barColor);
+    border-radius: 0.5em;
+    padding: 1em;
+}
+
+.available-quantity-bar::after {
+    content: attr(data-label);
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 3.5em;
+    top: 0.5em;
+    bottom: 0.6em;
+}
+
 .trust-badge {
     width: 100%;
     padding: 0.2rem;
@@ -319,6 +379,18 @@ body {
             <span class="countdown-text">L'OFFERTA SCADE TRA:</span>
         </div>
         <div><p class="countdown-time">10:00</p></div>
+    </div>
+
+    <!-- People viewing -->
+    <div class="people-viewing">
+        <i class="fas fa-eye"></i>
+        <span class="people-viewing-count">10</span>
+        <span>Persone stanno visualizzando</span>
+    </div>
+
+    <!-- Available quantity -->
+    <div class="available-quantity">
+        <div class="available-quantity-bar" data-label="5/100 DISPONIBILI"></div>
     </div>
 
     <!-- Order form page -->

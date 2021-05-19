@@ -169,6 +169,30 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>People viewing:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/4" v-model="newObject['create'].people_viewing_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].people_viewing_counter_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].people_viewing_counter_background_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['create'].people_viewing_visible">Show</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Available quantity:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/4" v-model="newObject['create'].available_quantity_bar_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].available_quantity_bar_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['create'].available_quantity_text_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['create'].available_quantity_visible">Show</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Trust badge:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
@@ -194,12 +218,27 @@
                 </div>
                 <div class="vx-col w-full">
                     <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
+                        <!-- Countdown -->
                         <div class="css-plugin-preview-countdown" :style="cssPluginCountdownStyle">
                             <div class="css-plugin-preview-countdown-text-container">
                                 <span class="css-plugin-preview-countdown-text" :style="cssPluginCountdownTextStyle">L'OFFERTA SCADE TRA:</span>
                             </div>
                             <div><p class="css-plugin-preview-countdown-time" :style="cssPluginCountdownTimeStyle">{{cssPluginCountdownTime}}</p></div>
                         </div>
+
+                        <!-- People viewing -->
+                        <div class="css-plugin-preview-people-viewing" :style="cssPluginPeopleViewingStyle">
+                            <i class="fas fa-eye"></i>
+                            <span class="css-plugin-preview-people-viewing-count" :style="cssPluginPeopleViewingCounterStyle">10</span>
+                            <span>Persone stanno visualizzando</span>
+                        </div>
+
+                        <!-- Available quantity -->
+                        <div class="css-plugin-preview-available-quantity" :style="cssPluginAvailableQuantityStyle">
+                            <div class="css-plugin-preview-available-quantity-bar" data-label="5/100 DISPONIBILI" :style="cssPluginAvailableQuantityBarStyle"></div>
+                        </div>
+
+                        <!-- Form -->
                         <div id="css-plugin-preview-main-form" style="display: block;">
                             <div>
                                 <div style="margin-botton: 1rem; display: block;">
@@ -297,6 +336,30 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>People viewing:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].people_viewing_text_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].people_viewing_counter_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].people_viewing_counter_background_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['edit'].people_viewing_visible">Show</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Available quantity:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].available_quantity_bar_background_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].available_quantity_bar_color" />
+                    <input type="color" class="w-1/4" v-model="newObject['edit'].available_quantity_text_color" />
+                    <vs-checkbox class="w-1/4" v-model="newObject['edit'].available_quantity_visible">Show</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Trust badge:</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full flex items-center">
@@ -322,12 +385,27 @@
                 </div>
                 <div class="vx-col w-full">
                     <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
+                        <!-- Countdown -->
                         <div class="css-plugin-preview-countdown" :style="cssPluginCountdownStyle">
                             <div class="css-plugin-preview-countdown-text-container">
                                 <span class="css-plugin-preview-countdown-text" :style="cssPluginCountdownTextStyle">L'OFFERTA SCADE TRA:</span>
                             </div>
                             <div><p class="css-plugin-preview-countdown-time" :style="cssPluginCountdownTimeStyle">{{cssPluginCountdownTime}}</p></div>
                         </div>
+
+                        <!-- People viewing -->
+                        <div class="css-plugin-preview-people-viewing" :style="cssPluginPeopleViewingStyle">
+                            <i class="fas fa-eye"></i>
+                            <span class="css-plugin-preview-people-viewing-count" :style="cssPluginPeopleViewingCounterStyle">10</span>
+                            <span>Persone stanno visualizzando</span>
+                        </div>
+
+                        <!-- Available quantity -->
+                        <div class="css-plugin-preview-available-quantity" :style="cssPluginAvailableQuantityStyle">
+                            <div class="css-plugin-preview-available-quantity-bar" data-label="5/100 DISPONIBILI" :style="cssPluginAvailableQuantityBarStyle"></div>
+                        </div>
+
+                        <!-- Form -->
                         <div id="css-plugin-preview-main-form" style="display: block;">
                             <div>
                                 <div style="margin-botton: 1rem; display: block;">
@@ -433,6 +511,26 @@ let cssStyleBoilerPlate = `\
     color: --countdown_time_color-- !important;
 }
 
+.people-viewing {
+    display: --people_viewing_display-- !important;
+    color: --people_viewing_text_color-- !important;
+}
+
+.people-viewing-count {
+    background-color: --people_viewing_counter_background_color-- !important;
+    color: --people_viewing_counter_color-- !important;
+}
+
+.available-quantity {
+    display: --available_quantity_display-- !important;
+}
+
+.available-quantity-bar {
+    --barColor: --available_quantity_bar_color-- !important;
+    background-color: --available_quantity_bar_background_color-- !important;
+    color: --available_quantity_text_color-- !important;
+}
+
 .trust-badge {
     display: --trust_badge_display-- !important;
     color: --trust_badge_color-- !important;
@@ -456,6 +554,16 @@ function getCssCode(obj) {
   code = code.replace('--countdown_text_background_color--', obj.countdown_text_background_color)
   code = code.replace('--countdown_text_color--', obj.countdown_text_color)
   code = code.replace('--countdown_time_color--', obj.countdown_time_color)
+
+  code = code.replace('--people_viewing_display--', (obj.people_viewing_visible) ? 'block' : 'none')
+  code = code.replace('--people_viewing_text_color--', obj.people_viewing_text_color)
+  code = code.replace('--people_viewing_counter_background_color--', obj.people_viewing_counter_background_color)
+  code = code.replace('--people_viewing_counter_color--', obj.people_viewing_counter_color)
+
+  code = code.replace('--available_quantity_display--', (obj.available_quantity_visible) ? 'block' : 'none')
+  code = code.replace('--available_quantity_bar_color--', obj.available_quantity_bar_color)
+  code = code.replace('--available_quantity_bar_background_color--', obj.available_quantity_bar_background_color)
+  code = code.replace('--available_quantity_text_color--', obj.available_quantity_text_color)
 
   code = code.replace('--trust_badge_display--', (obj.trust_badge_visible) ? 'grid' : 'none')
   code = code.replace('--trust_badge_color--', obj.trust_badge_color)
@@ -501,13 +609,21 @@ export default {
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
-          trust_badge_visible: false,
-          trust_badge_color: '#000000',
           countdown_visible: false,
           countdown_text_background_color: '#ff2233',
           countdown_text_color: '#ffffff',
           countdown_time_color: '#000000',
           countdown_time: 5,
+          people_viewing_visible: false,
+          people_viewing_text_color: '#000000',
+          people_viewing_counter_color: '#ffffff',
+          people_viewing_counter_background_color: '#ff2233',
+          available_quantity_visible: false,
+          available_quantity_text_color: '#ffffff',
+          available_quantity_bar_background_color: '#919191',
+          available_quantity_bar_color: '#ff330f',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
         },
         'edit': {
           name: '',
@@ -522,13 +638,21 @@ export default {
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
-          trust_badge_visible: false,
-          trust_badge_color: '#000000',
           countdown_visible: false,
           countdown_text_background_color: '#ff2233',
           countdown_text_color: '#ffffff',
           countdown_time_color: '#000000',
           countdown_time: 5,
+          people_viewing_visible: false,
+          people_viewing_text_color: '#000000',
+          people_viewing_counter_color: '#ffffff',
+          people_viewing_counter_background_color: '#ff2233',
+          available_quantity_visible: false,
+          available_quantity_text_color: '#ffffff',
+          available_quantity_bar_background_color: '#919191',
+          available_quantity_bar_color: '#ff330f',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
         },
         'preview': {
           name: '',
@@ -543,13 +667,21 @@ export default {
           button_background_color: '#eaac00',
           button_text_color: '#ffffff',
           button_text: 'Conferma l\'ordine',
-          trust_badge_visible: false,
-          trust_badge_color: '#000000',
           countdown_visible: false,
           countdown_text_background_color: '#ff2233',
           countdown_text_color: '#ffffff',
           countdown_time_color: '#000000',
           countdown_time: 5,
+          people_viewing_visible: false,
+          people_viewing_text_color: '#000000',
+          people_viewing_counter_color: '#ffffff',
+          people_viewing_counter_background_color: '#ff2233',
+          available_quantity_visible: false,
+          available_quantity_text_color: '#ffffff',
+          available_quantity_bar_background_color: '#919191',
+          available_quantity_bar_color: '#ff330f',
+          trust_badge_visible: false,
+          trust_badge_color: '#000000',
         },
       },
 
@@ -638,6 +770,34 @@ export default {
     cssPluginCountdownTime() {
       let type = this.popupType
       return this.newObject[type].countdown_time + ':00'
+    },
+    cssPluginPeopleViewingStyle() {
+      let type = this.popupType
+      return {
+        display: (this.newObject[type].people_viewing_visible) ? 'block' : 'none',
+        color: (this.newObject[type].people_viewing_text_color),
+      }
+    },
+    cssPluginPeopleViewingCounterStyle() {
+      let type = this.popupType
+      return {
+        backgroundColor: (this.newObject[type].people_viewing_counter_background_color),
+        color: (this.newObject[type].people_viewing_counter_color),
+      }
+    },
+    cssPluginAvailableQuantityStyle() {
+      let type = this.popupType
+      return {
+        display: (this.newObject[type].available_quantity_visible) ? 'block' : 'none',
+      }
+    },
+    cssPluginAvailableQuantityBarStyle() {
+      let type = this.popupType
+      return {
+        '--barColor': this.newObject[type].available_quantity_bar_color,
+        'background-color': this.newObject[type].available_quantity_bar_background_color,
+        'color': this.newObject[type].available_quantity_text_color,
+      }
     },
     cssPluginTrustBadgeStyle() {
       let type = this.popupType
@@ -734,13 +894,21 @@ export default {
         button_background_color: '#eaac00',
         button_text_color: '#ffffff',
         button_text: 'Conferma l\'ordine',
-        trust_badge_visible: false,
-        trust_badge_color: '#000000',
         countdown_visible: false,
         countdown_text_background_color: '#ff2233',
         countdown_text_color: '#ffffff',
         countdown_time_color: '#000000',
         countdown_time: 5,
+        people_viewing_visible: false,
+        people_viewing_text_color: '#000000',
+        people_viewing_counter_color: '#ffffff',
+        people_viewing_counter_background_color: '#ff2233',
+        available_quantity_visible: false,
+        available_quantity_text_color: '#ffffff',
+        available_quantity_bar_background_color: '#919191',
+        available_quantity_bar_color: '#ff330f',
+        trust_badge_visible: false,
+        trust_badge_color: '#000000',
       }
     },
     isValidForm(type) {
@@ -946,6 +1114,66 @@ export default {
 
 .css-plugin-preview-countdown-time {
     font-size: 3rem;
+}
+
+.css-plugin-preview-people-viewing {
+    display: none;
+    width: 100%;
+    padding: 0.2rem;
+    text-align: center;
+    color: #000000;
+    font-weight: bold;
+}
+
+.css-plugin-preview-people-viewing-count {
+    background-color: #ff2233;
+    color: #ffffff;
+    border-radius: 0.4rem;
+    padding: 0rem 0.4rem;
+}
+
+.css-plugin-preview-available-quantity {
+    display: none;
+    width: 100%;
+    padding: 0.2rem;
+}
+
+.css-plugin-preview-available-quantity-bar {
+    --barColor: #ff330f;
+    position: relative;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+    height: 2.2em;
+    background-color: #919191;
+    color: #ffffff;
+    border-radius: 0.5em;
+}
+
+.css-plugin-preview-available-quantity-bar::before {
+    content: '';
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: 0.0em;
+    top: 0.0em;
+    bottom: 0.0em;
+    width: 20%;
+    min-width: 2rem;
+    max-width: calc(100% - 1em);
+    background-color: var(--barColor);
+    border-radius: 0.5em;
+    padding: 1em;
+}
+
+.css-plugin-preview-available-quantity-bar::after {
+    content: attr(data-label);
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 3.5em;
+    top: 0.5em;
+    bottom: 0.6em;
 }
 
 .css-plugin-preview-trust-badge {
