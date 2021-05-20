@@ -1,4 +1,5 @@
 window.global_button_text = 'Conferma l\'ordine';
+window.global_countdown_time = '10';
 
 function getUrlParam(param) {
     var url_string = window.location.href
@@ -180,8 +181,13 @@ Form.prototype.initialize = function() {
 
     // Countdown initialization
     var countdownElements = $('.countdown-time');
-    console.log(countdownElements);
     if (countdownElements.length > 0) {
+        var countdown_time_start = window.global_countdown_time;
+        if (!countdown_time_start.includes(':')) {
+            countdown_time_start += ':00';
+        }
+
+        countdownElements[0].innerHTML = countdown_time_start;
         setInterval(function() {
             var t = countdownElements[0].innerHTML;
             var tmp = t.split(':');

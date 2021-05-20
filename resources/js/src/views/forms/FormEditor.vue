@@ -230,12 +230,12 @@
                     <vs-checkbox v-model="plugins['css_style'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select autocomplete v-model="plugins['css_style'].stylesheet_url" class="w-full select-large" v-validate="'required'">
-                  <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in formsStylesOptions" class="w-full" />
+                <vs-select autocomplete v-model="selectedFormsStyle" class="w-full select-large" v-validate="'required'">
+                  <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in formsStyles" class="w-full" />
                 </vs-select>
                 <template slot="append">
-                    <div class="append-text bg-primary" @click="showForm('create_forms_style')">
-                        <span><vs-icon icon-pack="feather" icon="icon-plus"></vs-icon></span>
+                    <div class="append-text cursor-pointer" :class="(selectedFormsStyle != null) ? 'bg-primary' : 'bg-dark'" @click="previewFormsStyle()">
+                        <span><vs-icon icon-pack="feather" icon="icon-eye"></vs-icon></span>
                     </div>
                 </template>
               </vx-input-group>
@@ -260,28 +260,16 @@
       </form-wizard>
     </div>
 
-    <!-- Create forms style popup -->
-    <vs-popup title="Create forms style" :active.sync="showPopup['create_forms_style']">
+    <!-- Forms style preview popup -->
+    <vs-popup title="Style preview" :active.sync="showPopup['forms_style_preview']">
+
         <div class="vx-row mb-6">
-            <div class="vx-col sm:w-1/3 w-full">
-                <span>Name</span>
+            <div class="vx-col w-full">
+                <center><h1>Style name: {{ formsStylePreviewObject.name }}</h1></center>
             </div>
-            <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create_forms_style'].name" />
-            </div>
+            <style-preview class="vx-col w-full" :styleObject="formsStylePreviewObject" />
         </div>
-        <div class="vx-row mb-6">
-            <div class="vx-col sm:w-1/3 w-full">
-                <span>CSS Code</span>
-            </div>
-            <div class="vx-col sm:w-2/3 w-full">
-                <vs-textarea v-model="newObject['create_forms_style'].code"/>
-            </div>
-        </div>
-        
-        <div class="vx-row mb-6">
-            <vs-button class="mt-12 mr-auto ml-auto" @click="createFormsStyle" color="primary" type="filled" :disabled="!isValidForm('create_forms_style')">Create</vs-button>
-        </div>
+
     </vs-popup>
 
     <!-- Cross sell popup -->
@@ -393,6 +381,7 @@
 <script>
 import { FormWizard, TabContent } from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
+import StylePreview from '../components/StylePreview.vue'
 
 // For custom error message
 import { Validator } from 'vee-validate'
@@ -423,6 +412,11 @@ Validator.localize('en', dict)
 // ...
 
 export default {
+  components: {
+    FormWizard,
+    TabContent,
+    StylePreview,
+  },
   props: {
     form_id: Number,
   },
@@ -439,7 +433,6 @@ export default {
 
       networksOptions: [],
       formsOptions: [],
-      formsStylesOptions: [],
       network_params: [],
       network_params_values: [],
 
@@ -491,6 +484,8 @@ export default {
         'css_style': {
           enabled: false,
           stylesheet_url: '',
+          style_id: '',
+          button_text: '',
         },
         'custom': {
           enabled: false,
@@ -503,7 +498,8 @@ export default {
       showPopup: {
         'create': false,
         'edit': false,
-        'create_forms_style': false,
+        'forms_style_preview': false,
+        'cross_sell': false,
         'delivery': false,
       },
       newObject: {
@@ -546,34 +542,17 @@ export default {
       },
       editingQuantityOptionIndex: -1,
 
-      firstName: '',
-      lastName: '',
-      email: '',
-      city: 'new-york',
-      proposalTitle: '',
-      jobTitle: '',
-      textarea: '',
-      eventName: '',
-      eventLocation: 'san-francisco',
-      status: 'plannning',
-      cityOptions: [
-        { text: 'New York', value: 'new-york' },
-        { text: 'Chicago', value: 'chicago' },
-        { text: 'San Francisco', value: 'san-francisco' },
-        { text: 'Boston', value: 'boston' }
-      ],
-      statusOptions: [
-        { text: 'Plannning', value: 'plannning' },
-        { text: 'In Progress', value: 'in progress' },
-        { text: 'Finished', value: 'finished' }
-      ],
-      LocationOptions: [
-        { text: 'New York', value: 'new-york' },
-        { text: 'Chicago', value: 'chicago' },
-        { text: 'San Francisco', value: 'san-francisco' },
-        { text: 'Boston', value: 'boston' }
-      ]
+      formsStylePreviewObject: { name: '' },
+      selectedFormsStyle: null,
     }
+  },
+  watch: {
+    selectedFormsStyle: function (val) {
+      this.plugins['css_style'].stylesheet_url = val.url
+      this.plugins['css_style'].style_id = val.id
+      this.plugins['css_style'].button_text = val.settings.button_text
+      this.plugins['css_style'].countdown_time = val.settings.countdown_time
+    },
   },
   computed: {
     canChangeUser() {
@@ -616,17 +595,26 @@ export default {
     changeNetworkParam(index, newVal) {
       this.network_params[index].value = newVal
     },
+    async getFormsStyles() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$vs.loading()
+      const response = await this.$http.get('/api/v1/forms-styles', { headers })
+      this.formsStyles = response.data.data
+      this.$vs.loading.close()
+    },
+    previewFormsStyle() {
+      if (this.selectedFormsStyle == null) return
+      this.formsStylePreviewObject = this.selectedFormsStyle.settings
+      this.showPopup['forms_style_preview'] = true
+    },
     showForm(type) {
       this.showPopup[type] = true
     },
     clearForm(type) {
-      if (type == 'create_forms_style') {
-        this.newObject[type] = {
-          name: '',
-          type: 'css',
-          code: '',
-        }
-      } else if (type == 'cross_sell') {
+      if (type == 'cross_sell') {
         this.newObject[type] = {
           title: '',
           description: '',
@@ -656,9 +644,7 @@ export default {
     },
     isValidForm(type) {
       let obj = this.newObject[type]
-      if (type == 'create_forms_style') {
-        return (obj.name != '' && obj.code != '')
-      } else if (type == 'cross_sell') {
+      if (type == 'cross_sell') {
         return (obj.sku != '' && obj.title != '' && obj.description != '' &&
           obj.img != '' &&
           obj.price != '' && obj.old_price &&
@@ -839,50 +825,6 @@ export default {
           })
       })
     },
-    createFormsStyle() {
-      this.$vs.loading()
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let data = {
-        name: this.newObject['create_forms_style'].name,
-        type: this.newObject['create_forms_style'].type,
-        code: this.newObject['create_forms_style'].code,
-      }
-
-      // Create forms style
-      this.$http.post('/api/v1/forms-styles', data, { headers: headers })
-        .then((response) => {
-          this.formsStyles.push(response.data.data)
-          this.formsStylesOptions.push({
-            value: response.data.data.url,
-            label: response.data.data.name,
-          })
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Forms style created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.showPopup['create_forms_style'] = false
-          this.clearForm('create_forms_style')
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-          this.showPopup['create_forms_style'] = false
-          this.clearForm('create_forms_style')
-        })
-    },
     showCrossSellForm() {
       this.newObject['cross_sell'].sku = this.crossSell.sku
       this.newObject['cross_sell'].title = this.crossSell.title
@@ -949,14 +891,13 @@ export default {
       }
     },
   },
-  components: {
-    FormWizard,
-    TabContent,
-  },
   created() {
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
+
+    // Retrieve forms styles
+    this.getFormsStyles()
 
     // Retrieve form info
     this.$vs.loading()
@@ -1022,7 +963,22 @@ export default {
             this.plugins[key] = this.form.plugins[key]
           } else {
             for (const [key2, value2] of Object.entries(this.form.plugins[key])) {
-                this.plugins[key][key2] = this.form.plugins[key][key2]
+              this.plugins[key][key2] = this.form.plugins[key][key2]
+            }
+          }
+        }
+        if (this.plugins.hasOwnProperty('css_style') && this.plugins['css_style'].hasOwnProperty('style_id')) {
+          let style_id = this.plugins['css_style'].style_id
+          if (style_id !== null && style_id !== '' && style_id !== 0) {
+            let styleObj = null
+            for (let i = 0; i < this.formsStyles.length; i++) {
+              if (this.formsStyles[i].id == style_id) {
+                styleObj = this.formsStyles[i]
+                break
+              }
+            }
+            if (styleObj !== null) {
+              this.selectedFormsStyle = styleObj
             }
           }
         }
@@ -1108,10 +1064,6 @@ export default {
                                 this.formsStyles = response.data.data
                                 for (let i = 0; i < this.formsStyles.length; i++) {
                                   let formsStyle = this.formsStyles[i]
-                                  this.formsStylesOptions.push({
-                                    value: formsStyle.url,
-                                    label: formsStyle.name,
-                                  })
                                   if (this.form.plugins.hasOwnProperty('css_style') && 
                                       formsStyle.url == this.form.plugins.css_style.stylesheet_url) {
                                     this.plugins['css_style'].stylesheet_url = formsStyle.url

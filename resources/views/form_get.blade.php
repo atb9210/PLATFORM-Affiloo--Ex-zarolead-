@@ -55,28 +55,6 @@ body {
    height: 100%;
 }
 
-#submit-button {
-    /*
-    TODO: Check if it works without this style
-    margin-bottom: 3em;
-    border: 1px solid #e0e0e0;
-    font-size: 25px;
-    padding: 10px;
-    width: 90%;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    display: block;
-    float: none;
-    font-family: "Arial",Sans-serif;
-    ont-weight: 600;
-    text-transform: none;
-    color: #fff;
-    background-color: #eaac00;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);
-    */
-}
-
 .form-input {
     margin-bottom: 0.5em;
     font-weight: 400;
@@ -412,17 +390,17 @@ body {
         <div id="form-inputs">
             <!--
             <div class="form-group">
-                <label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Nome e Cognome</label>
+                <label class="" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Nome e Cognome</label>
                 <input id="name" value="test test" name="name" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="name" placeholder="" required="required"/>
                 <span class="span-error" id="nameError"></span>
             </div>
             <div class="form-group">
-                <label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Telefono (meglio cellulare)</label>
+                <label class="" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Telefono (meglio cellulare)</label>
                 <input id="phone" value="123456789" name="phone" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="phone" placeholder="" required="required"/>
                 <span class="span-error" id="phoneError"></span>
             </div>
             <div class="form-group">
-                <label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Città e indirizzo di consegna</label>
+                <label style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Città e indirizzo di consegna</label>
                 <input id="address" value="Via moro 1" name="address" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="address" placeholder="" required="required">
                 <span class="span-error" id="addressError"></span>
             </div>
@@ -442,7 +420,7 @@ body {
             </div>
         </div>
 
-		<button id="submit-button" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Conferma l'Ordine</button>
+		<button id="submit-button" class="form-button">Conferma l'Ordine</button>
 	</form>
 
     <!-- Upsell step -->
@@ -525,7 +503,7 @@ body {
             </tbody>
         </table>
         -->
-		<button id="up-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+		<button id="up-sell-done" class="form-button">Continua</button>
 	</div>
 
     <!-- Cross-sell step -->
@@ -545,7 +523,7 @@ body {
                         +<span id="crossSellPrice"></span>€
                     </div>
                     <div class="col-6">
-		                <button id="crossSellAddButton" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Aggiungi</button>
+		                <button id="crossSellAddButton" class="form-button">Aggiungi</button>
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 10px;">
@@ -558,7 +536,7 @@ body {
                 </div>
             </div>
         </div>
-		<button id="cross-sell-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+		<button id="cross-sell-done" class="form-button">Continua</button>
 	</div>
 
     <!-- Delivery step -->
@@ -585,7 +563,7 @@ body {
                 Consegna stimata: entro il <span id="cartDeliveryDay"></span>
             </div>
         </div>
-		<button id="delivery-done" class="btn btn-lg btn-warning new-sbm-btn font-form form-button">Continua</button>
+		<button id="delivery-done" class="form-button">Continua</button>
 	</div>
 
     <!-- Thankyou page -->
@@ -607,11 +585,11 @@ body {
             <div id="type-email">
                 <p>Inserisci la tua email per ricevere informazioni riguardo al tuo ordine ed offerte speciali</p>
                 <div class="form-group">
-                    <label class="font-form" style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Email</label>
+                    <label style="line-height: 1.3em; width: 100%; font-size: 18px; font-weight: 600;">Email</label>
                     <input type="email" id="newsletter-email" placeholder="example@email.com" style='margin-bottom: 0.5em; font-weight: 400; width: 100%; border-radius: 3px; padding: 15px; font-size: 22px; border-width: 1px; border-style: double; border-color: #f2e832; box-shadow: 0px 3px 10px 0px rgba(0,0,0,.5); font-family: "Open Sans",Sans-serif; font-weight: 400;' type="text" name="name" placeholder="" required="required"/>
                     <span class="span-error" id="newsletterEmailError"></span>
                 </div>
-                <button id="submit-button3" class="btn btn-lg btn-warning new-sbm-btn font-form" style='margin-top: 1em; margin-bottom: 1em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;Ricevi informazioni</button>
+                <button id="submit-button3" style='margin-top: 1em; margin-bottom: 1em; border: 1px solid #e0e0e0; font-size: 25px; padding: 10px; width: 90%; margin-left: auto !important; margin-right: auto !important; display: block; float: none; font-family: "Arial",Sans-serif;font-weight: 600; text-transform: none; color: #fff; background-color: #eaac00; border-radius: 8px; box-shadow: 0px 0px 10px 0px rgba(0,0,0,.5);'><i aria-hidden="true" class="fas fa-gift"></i>&nbsp;Ricevi informazioni</button>
             </div>
             <div id="email-success" style="display: none;">
                 <div style="background-color: #3e9165; padding: 10px;">

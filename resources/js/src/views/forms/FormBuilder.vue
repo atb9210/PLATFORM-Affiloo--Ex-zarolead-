@@ -265,30 +265,9 @@
 
         <div class="vx-row mb-6">
             <div class="vx-col w-full">
-                <center><h1>{{ formsStylePreviewObject.name }}</h1></center>
+                <center><h1>Style name: {{ formsStylePreviewObject.name }}</h1></center>
             </div>
-            <div class="vx-col w-full">
-                <div id="css-plugin-preview-form-container" :style="cssPluginContainerStyle">
-                    <div id="css-plugin-preview-main-form" style="display: block;">
-                        <div>
-                            <div style="margin-botton: 1rem; display: block;">
-                                <label style="display: inline-block;margin-bottom: .5rem;">Nome e cognome</label>
-                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
-                            </div>
-                            <div style="margin-botton: 1rem; display: block;">
-                                <label style="display: inline-block;margin-bottom: .5rem;">Telefono (meglio cellulare)</label>
-                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
-                            </div>
-                            <div style="margin-botton: 1rem; display: block;">
-                                <label style="display: inline-block;margin-bottom: .5rem;">Città e indirizzo di consegna</label>
-                                <input type="text" class="css-plugin-preview-form-input" :style="cssPluginInputStyle">
-                            </div>
-                        </div>
-                        <button class="css-plugin-preview-form-button" :style="cssPluginButtonStyle">{{ cssPluginButtonText }}</button>
-                    </div>
-
-                </div>
-            </div>
+            <style-preview class="vx-col w-full" :styleObject="formsStylePreviewObject" />
         </div>
 
     </vs-popup>
@@ -402,6 +381,7 @@
 <script>
 import { FormWizard, TabContent } from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
+import StylePreview from '../components/StylePreview.vue'
 
 // For custom error message
 import { Validator } from 'vee-validate'
@@ -432,6 +412,11 @@ Validator.localize('en', dict)
 // ...
 
 export default {
+  components: {
+    FormWizard,
+    TabContent,
+    StylePreview,
+  },
   data () {
     return {
       users: [],
@@ -494,6 +479,8 @@ export default {
         'css_style': {
           enabled: false,
           stylesheet_url: '',
+          style_id: '',
+          button_text: '',
         },
         'custom': {
           enabled: false,
@@ -552,33 +539,14 @@ export default {
   watch: {
     selectedFormsStyle: function (val) {
       this.plugins['css_style'].stylesheet_url = val.url
+      this.plugins['css_style'].style_id = val.id
+      this.plugins['css_style'].button_text = val.settings.button_text
+      this.plugins['css_style'].countdown_time = val.settings.countdown_time
     },
   },
   computed: {
     canChangeUser() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
-    },
-    cssPluginContainerStyle() {
-      return {
-        backgroundColor: this.formsStylePreviewObject.background_color,
-        color: this.formsStylePreviewObject.text_color,
-      }
-    },
-    cssPluginInputStyle() {
-      return {
-        backgroundColor: this.formsStylePreviewObject.input_background_color,
-        color: this.formsStylePreviewObject.input_text_color,
-        borderColor: this.formsStylePreviewObject.input_border_color,
-      }
-    },
-    cssPluginButtonStyle() {
-      return {
-        backgroundColor: this.formsStylePreviewObject.button_background_color,
-        color: this.formsStylePreviewObject.button_text_color,
-      }
-    },
-    cssPluginButtonText() {
-      return this.formsStylePreviewObject.button_text
     },
   },
   methods: {
@@ -904,10 +872,6 @@ export default {
         this.upSellBestSeller = key
       }
     },
-  },
-  components: {
-    FormWizard,
-    TabContent,
   },
   created() {
     let headers = {
