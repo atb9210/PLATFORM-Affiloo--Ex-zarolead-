@@ -1660,9 +1660,10 @@ export default {
       //fields += ',ads.time_range(' + timeRange + ')\{id,adset_id,name,status,effective_status,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
       //fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
       //fields += '\}'
-      fields += ',ads.time_range(' + timeRange + ')\{id,adset_id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
-      fields += '\}'
+      //fields += ',ads.time_range(' + timeRange + ')\{id,adset_id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
+      //fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
+      //fields += '\}'
+      fields += ',ads.time_range(' + timeRange + ')\{id,adset_id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget\}'
 
       // Retrieve ads
       this.ads = []
@@ -1726,28 +1727,42 @@ export default {
               adBidStrategy = ad.bid_strategy
             }
 
+            let adCreativeTitle = ''
+            let adCreativeBody = ''
+            let adCreativeCTA = ''
             let adUrl = ''
-            if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
-              adUrl = ad.creative.object_url
-            }
             let adLinkUrl = ''
-            if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
-              adLinkUrl = ad.creative.link_url
-            }
-            if (adLinkUrl == '') {
-              adLinkUrl = 'https://www.facebook.com/' + ad.creative.effective_object_story_id
-            }
-
             let adImageUrl = ''
-            if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
-              adImageUrl = ad.creative.image_url
-            }
             let thumbnailUrl = ''
-            if (ad.creative.hasOwnProperty('thumbnail_url') && ad.creative.thumbnail_url != null && ad.creative.thumbnail_url != '') {
-              thumbnailUrl = ad.creative.thumbnail_url
-            }
-            if (adImageUrl == '') {
-              adImageUrl = thumbnailUrl
+
+            if (ad.hasOwnProperty('creative')) {
+              if (ad.creative.hasOwnProperty('title')) {
+                adCreativeTitle = ad.creative.title
+              }
+              if (ad.creative.hasOwnProperty('body')) {
+                adCreativeBody = ad.creative.body
+              }
+              if (ad.creative.hasOwnProperty('call_to_action_type')) {
+                adCreativeCTA = ad.creative.call_to_action_type
+              }
+              if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+                adUrl = ad.creative.object_url
+              }
+              if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+                adLinkUrl = ad.creative.link_url
+              }
+              if (adLinkUrl == '') {
+                adLinkUrl = 'https://www.facebook.com/' + ad.creative.effective_object_story_id
+              }
+              if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+                adImageUrl = ad.creative.image_url
+              }
+              if (ad.creative.hasOwnProperty('thumbnail_url') && ad.creative.thumbnail_url != null && ad.creative.thumbnail_url != '') {
+                thumbnailUrl = ad.creative.thumbnail_url
+              }
+              if (adImageUrl == '') {
+                adImageUrl = thumbnailUrl
+              }
             }
 
             let adToPush = {
@@ -1769,9 +1784,9 @@ export default {
               daily_budget: adDailyBudget,
               bid_strategy: adBidStrategy,
               image_url: adImageUrl,
-              body: ad.creative.body,
-              title: ad.creative.title,
-              call_to_action_type: ad.creative.call_to_action_type,
+              title: adCreativeTitle,
+              body: adCreativeBody,
+              call_to_action_type: adCreativeCTA,
               url: adUrl,
               post_url: adLinkUrl,
               trend: {},
@@ -1784,6 +1799,63 @@ export default {
       }
 
       this.adsLoaded = true
+      this.$vs.loading.close()
+    },
+    async loadAd(id) {
+      this.$vs.loading()
+
+      let adIndex = this.getObjectIndexById(this.ads, id)
+
+      // Retrieve ad creative
+      let fields = 'id,creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
+      const response = await this.$http.get('https://graph.facebook.com/v9.0/' + id + '?access_token=' + this.fb_account.token + '&fields=' + fields + '&thumbnail_width=512&thumbnail_height=512')
+      let ad = response.data
+
+      let adCreativeTitle = ''
+      let adCreativeBody = ''
+      let adCreativeCTA = ''
+      let adUrl = ''
+      let adLinkUrl = ''
+      let adImageUrl = ''
+      let thumbnailUrl = ''
+
+      if (ad.hasOwnProperty('creative')) {
+        if (ad.creative.hasOwnProperty('title')) {
+          adCreativeTitle = ad.creative.title
+        }
+        if (ad.creative.hasOwnProperty('body')) {
+          adCreativeBody = ad.creative.body
+        }
+        if (ad.creative.hasOwnProperty('call_to_action_type')) {
+          adCreativeCTA = ad.creative.call_to_action_type
+        }
+        if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
+          adUrl = ad.creative.object_url
+        }
+        if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
+          adLinkUrl = ad.creative.link_url
+        }
+        if (adLinkUrl == '') {
+          adLinkUrl = 'https://www.facebook.com/' + ad.creative.effective_object_story_id
+        }
+        if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
+          adImageUrl = ad.creative.image_url
+        }
+        if (ad.creative.hasOwnProperty('thumbnail_url') && ad.creative.thumbnail_url != null && ad.creative.thumbnail_url != '') {
+          thumbnailUrl = ad.creative.thumbnail_url
+        }
+        if (adImageUrl == '') {
+          adImageUrl = thumbnailUrl
+        }
+      }
+
+      this.ads[adIndex].title = adCreativeTitle
+      this.ads[adIndex].body = adCreativeBody
+      this.ads[adIndex].call_to_action_type = adCreativeCTA
+      this.ads[adIndex].url = adUrl
+      this.ads[adIndex].post_url = adLinkUrl
+      this.ads[adIndex].image_url = adImageUrl
+
       this.$vs.loading.close()
     },
     async applyFilters() {
@@ -2311,6 +2383,7 @@ export default {
       this.showPopup['edit_bid'] = true
     },
     viewAdPopup(id) {
+      this.loadAd(id)
       this.viewingObject = this.objects[this.getObjectIndexById(this.objects, id)]
       this.showPopup['view_ad'] = true
     },
