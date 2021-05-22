@@ -41,6 +41,7 @@
             <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
             <vs-button v-if="view == 'adsets'" :disabled="!((view == 'adsets') && (selectedAdsets.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adsets')"></vs-button>
             <vs-button v-if="view == 'ads'" :disabled="!((view == 'ads') && (selectedAds.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('ads')"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="fetchAdvancedStats()"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -186,7 +187,7 @@
             <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <vs-th>Form</vs-th>
+                    <!--<vs-th>Form</vs-th>-->
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -197,22 +198,23 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
-                    <vs-th sort-key="ctr">CTR</vs-th>
-                    <vs-th sort-key="cpc">CPC</vs-th>
-                    <vs-th sort-key="roas">ROAS</vs-th>
+                    <vs-th sort-key="ctr"  v-if="showAdvancedStats">CTR</vs-th>
+                    <vs-th sort-key="cpc"  v-if="showAdvancedStats">CPC</vs-th>
+                    <vs-th sort-key="roas" v-if="showAdvancedStats">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
+                        <!--
                         <vs-td class="column-no-padding">
-                            <!--<vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>-->
                             <vs-chip v-if="tr.form != null">
                                 <vs-avatar icon-pack="feather" icon="icon-check" />
                                 {{tr.form.id}}
                             </vs-chip>
                         </vs-td>
+                        -->
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
@@ -286,15 +288,15 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr" v-if="showAdvancedStats">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc" v-if="showAdvancedStats">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                        <vs-td class="column-no-padding" :data="data[indextr].roas" v-if="showAdvancedStats">
                             <span style="color: green;" v-if="data[indextr].roas > 1">
                                 {{data[indextr].roas.toFixed(2)}}
                             </span>
@@ -327,7 +329,7 @@
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -349,13 +351,13 @@
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
@@ -367,7 +369,6 @@
             <vs-table v-if="view == 'adsets'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <vs-th></vs-th>
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -378,25 +379,22 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
-                    <vs-th sort-key="ctr">CTR</vs-th>
-                    <vs-th sort-key="cpc">CPC</vs-th>
-                    <vs-th sort-key="roas">ROAS</vs-th>
+                    <vs-th sort-key="ctr"  v-if="showAdvancedStats">CTR</vs-th>
+                    <vs-th sort-key="cpc"  v-if="showAdvancedStats">CPC</vs-th>
+                    <vs-th sort-key="roas" v-if="showAdvancedStats">ROAS</vs-th>
                     <vs-th sort-key="daily_budget">Budget</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td>
-                            <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
-                        </vs-td>
-
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
+                                    :class="((objectColor(data[indextr]) == 'success' || objectColor(data[indextr]) == 'danger') ? '' : 'disabled-object')"
+                                    :color="objectColor(data[indextr])">
+                                    <vs-avatar icon-pack="feather" :icon="objectIcon(data[indextr])" />
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -462,15 +460,15 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr" v-if="showAdvancedStats">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc" v-if="showAdvancedStats">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                        <vs-td class="column-no-padding" :data="data[indextr].roas" v-if="showAdvancedStats">
                             <span style="color: green;" v-if="data[indextr].roas > 1">
                                 {{data[indextr].roas.toFixed(2)}}
                             </span>
@@ -505,7 +503,6 @@
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -525,13 +522,13 @@
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats"></vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.daily_budget.toFixed(2)}}
                     </vs-td>
@@ -543,7 +540,6 @@
             <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <vs-th></vs-th>
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th v-if="showTrend">Lifetime</vs-th>
                     <vs-th v-if="showTrend">3 days</vs-th>
@@ -554,24 +550,21 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
-                    <vs-th sort-key="ctr">CTR</vs-th>
-                    <vs-th sort-key="cpc">CPC</vs-th>
-                    <vs-th sort-key="roas">ROAS</vs-th>
+                    <vs-th sort-key="ctr"  v-if="showAdvancedStats">CTR</vs-th>
+                    <vs-th sort-key="cpc"  v-if="showAdvancedStats">CPC</vs-th>
+                    <vs-th sort-key="roas" v-if="showAdvancedStats">ROAS</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td>
-                            <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
-                        </vs-td>
-
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.ad_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
-                                    :class="((data[indextr].status == 'ACTIVE') ? '' : 'disabled-object')"
-                                    :color="((data[indextr].status == 'ACTIVE') ? 'success' : '#b9b9b9')">
+                                    :class="((objectColor(data[indextr]) == 'success' || objectColor(data[indextr]) == 'danger') ? '' : 'disabled-object')"
+                                    :color="objectColor(data[indextr])">
+                                    <vs-avatar icon-pack="feather" :icon="objectIcon(data[indextr])" />
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
@@ -638,15 +631,15 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].ctr">
+                        <vs-td class="column-no-padding" :data="data[indextr].ctr" v-if="showAdvancedStats">
                             {{data[indextr].ctr.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cpc">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpc" v-if="showAdvancedStats">
                             € {{data[indextr].cpc.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].roas">
+                        <vs-td class="column-no-padding" :data="data[indextr].roas" v-if="showAdvancedStats">
                             <span style="color: green;" v-if="data[indextr].roas > 1">
                                 {{data[indextr].roas.toFixed(2)}}
                             </span>
@@ -671,7 +664,6 @@
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
                     <vs-td class="column-no-padding" v-if="showTrend"></vs-td>
@@ -691,13 +683,13 @@
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         {{total_stats.ctr.toFixed(2)}}%
                     </vs-td>
-                    <vs-td class="column-no-padding">
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats">
                         € {{total_stats.cpc.toFixed(2)}}
                     </vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding" v-if="showAdvancedStats"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -1227,6 +1219,7 @@ export default {
       viewAdSavingCpa: 0,
 
       showTrend: false,
+      showAdvancedStats: false,
 
       identikit: [],
       selectedBreakdowns: [],
@@ -3289,6 +3282,13 @@ export default {
       } else {
         return 'icon-refresh-cw'
       }
+    },
+    fetchAdvancedStats() {
+      this.$vs.loading()
+
+      // TODO: HERE
+
+      this.$vs.loading.close()
     },
   },
   async created() {
