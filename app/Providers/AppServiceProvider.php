@@ -6,13 +6,19 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 
-class AppServiceProvider extends ServiceProvider {
+use Storage;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Sftp\SftpAdapter;
+
+class AppServiceProvider extends ServiceProvider
+{
     /**
      * Bootstrap any application services.
      *
      * @return void
      */
-    public function boot() {
+    public function boot()
+    {
         // TODO: Is it still needed in Laravel 7.x?
         // Prevent key length error
         Schema::defaultStringLength(191);
@@ -24,6 +30,14 @@ class AppServiceProvider extends ServiceProvider {
         Validator::extend('is_false', function($attribute, $value, $parameters, $validator) {
             return ($value === 'false' || $value === false || $value === '0' || $value === 0);
         });
+        Validator::extend('landing_path', function($attribute, $value, $parameters, $validator) {
+            return preg_match('/^[A-Za-z]{1}[A-Za-z0-9_]*$/', $value);
+        });
+
+        // SFTP driver
+        Storage::extend('landings', function ($app, $config) {
+            return new Filesystem(new SftpAdapter($config));
+        });
     }
 
     /**
@@ -31,7 +45,8 @@ class AppServiceProvider extends ServiceProvider {
      *
      * @return void
      */
-    public function register() {
+    public function register()
+    {
         //
     }
 }

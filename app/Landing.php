@@ -12,7 +12,7 @@ class Landing extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'product_id', 'url', 'country'
+        'user_id', 'name', 'path', 'product_id', 'url', 'country',
     ];
 
     public function user()

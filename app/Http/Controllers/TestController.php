@@ -16,34 +16,36 @@ class TestController extends Controller
 {
     public function test()
     {
-        $bodyParams = [
-            'offer_id' => 28,
-            'nome' => 'test',
-            'cognome' => 'test',
-            'email' => 'test@example.com',
-            'telefono' => '123456789',
-            'qta' => '1',
+        //$fileContents = 'CIAONE';
+        //Storage::disk('landings')->put('/filename.txt', $fileContents);
+
+        $params = [
+            'test1' => 'ciaone',
+            'test2' => '_ciaone',
+            'test3' => '3ciaone',
+            'test4' => 'Ci2_aon.,a.?e',
+            'test5' => 'Ci2_P?e',
+            'test6' => 's123123_123123123',
+            'test7' => 'ciao a tutti',
+            'test8' => '34 ciao',
         ];
+        $validator = Validator::make($params, [
+            'test1' => 'required|string|landing_path',
+            'test2' => 'required|string|landing_path',
+            'test3' => 'required|string|landing_path',
+            'test4' => 'required|string|landing_path',
+            'test5' => 'required|string|landing_path',
+            'test6' => 'required|string|landing_path',
+            'test7' => 'required|string|landing_path',
+            'test8' => 'required|string|landing_path',
+        ]);
 
-        $physom_token = '7|tIuiQ3C6GuFekt46mlAZbwrpx9KXLYYFO0xVSXSqvC2HTrYh9KNRZyCyeltBvaurg6AtWAY24OzXxYCD';
-        $logisticsUrl = 'https://fynapsyhost.com/api/publisher/orders/send';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $logisticsUrl . '?' . http_build_query($bodyParams));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Accept: application/json',
-            'Authorization: Bearer ' . $physom_token,
-        ));
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $server_output = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        $response = json_decode($server_output, true);
-
-        echo "http code: " . $httpCode . "<br>";
-        print_r($response);
-        exit();
+        echo "<pre>".var_export($validator->messages(), true)."</pre>";
+        //if ($validator->fails()) {
+        //    echo "<pre>".var_export($validator->errors(), true)."</pre>";
+        //} else {
+        //    echo "OK";
+        //}
     }
 
     public function post(Request $request)

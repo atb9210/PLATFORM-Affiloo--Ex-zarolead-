@@ -76,6 +76,13 @@ return [
             'visibility' => 'public',
         ],
 
+        'landings' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+            'username' => env('SFTP_USER'),
+            'password' => env('SFTP_PASSWORD'),
+        ],
+
     ],
 
 ];
