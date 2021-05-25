@@ -127,20 +127,23 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].visits">
-                            {{data[indextr].visits}}
+                            <vs-input v-if="isEditing['visits'] && editingObject == data[indextr].id" :ref="'editInputVisits' + data[indextr].id" type="number" step="1" min="0" v-model="editingValue['visits']" @keyup.enter="edit('visits')" @keyup.escape="dontEdit('visits')" icon-pack="feather" icon="icon-user" placeholder="Visits" class="is-label-placeholder"></vs-input>
+                            <span v-else>{{data[indextr].visits}} <span class="underline" @click="showEditInput('visits', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
                         <vs-td :data="data[indextr].leads">
-                            {{data[indextr].leads}}
+                            <vs-input v-if="isEditing['leads'] && editingObject == data[indextr].id" :ref="'editInputLeads' + data[indextr].id" type="number" step="1" min="0" v-model="editingValue['leads']" @keyup.enter="edit('leads')" @keyup.escape="dontEdit('leads')" icon-pack="feather" icon="icon-user" placeholder="Visits" class="is-label-placeholder"></vs-input>
+                            <span v-else>{{data[indextr].leads}} <span class="underline" @click="showEditInput('leads', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
                         <vs-td :data="data[indextr].total_cost">
-                            <vs-input v-if="isEditingCost && editingObject == data[indextr].id" :ref="'editCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" @keyup.escape="dontEditCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
-                            <span v-else>€ {{data[indextr].total_cost.toFixed(2)}} <span class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
+                            <vs-input v-if="isEditing['total_cost'] && editingObject == data[indextr].id" :ref="'editInputCost' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingValue['total_cost']" @keyup.enter="edit('total_cost')" @keyup.escape="dontEdit('total_cost')" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                            <span v-else>€ {{data[indextr].total_cost.toFixed(2)}} <span class="underline" @click="showEditInput('total_cost', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
                         <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
-                            € {{data[indextr].total_commission.toFixed(2)}}
+                            <vs-input v-if="isEditing['total_commission'] && editingObject == data[indextr].id" :ref="'editInputCommission' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingValue['total_commission']" @keyup.enter="edit('total_commission')" @keyup.escape="dontEdit('total_commission')" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
+                            <span v-else>€ {{data[indextr].total_commission.toFixed(2)}} <span class="underline" @click="showEditInput('total_commission', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
                         <vs-td :data="data[indextr].profit" v-if="canViewStats">
@@ -353,8 +356,18 @@ export default {
 
       maxItems: 20,
 
-      isEditingCost: false,
-      editingCostValue: 0,
+      isEditing: {
+        'visits': false,
+        'leads': false,
+        'total_cost': false,
+        'total_commission': false,
+      },
+      editingValue: {
+        'visits': 0,
+        'leads': 0,
+        'total_cost': 0,
+        'total_commission': 0,
+      },
 
       editingObject: -1,
 
@@ -538,7 +551,7 @@ export default {
         let obj = this.objects[i]
 
         let profit = obj.total_commission - obj.total_cost
-        let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : (profit/obj.total_cost)*100)
+        let roi = parseFloat((obj.total_commission > 0 && obj.total_cost == 0) ? 9999 : ((obj.total_cost == 0) ? 0 : (profit/obj.total_cost)*100))
         let cr = 0.0
         if (obj.leads == 0) cr = 0.0
         else if (obj.visits == 0) cr = 100.0
@@ -676,23 +689,40 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
-    showEditCostInput(id) {
+    showEditInput(type, id) {
       let index = this.getObjectIndexById(id)
 
-      this.isEditingCost = true
-      this.editingCostValue = this.objects[index].total_cost
-      this.editingObject = id
+      // TODO: to delete
+      console.log(this.objects[index])
 
-      let refValue = 'editCostInput' + id
+      let currentValue = this.objects[index][type]
+      let refPrefix = ''
+      if (type == 'visits') {
+        refPrefix = 'editInputVisits'
+      } else if (type == 'leads') {
+        refPrefix = 'editInputLeads'
+      } else if (type == 'total_cost') {
+        refPrefix = 'editInputCost'
+      } else if (type == 'total_commission') {
+        refPrefix = 'editInputCommission'
+      } else {
+        return
+      }
+
+      this.editingObject = id
+      this.isEditing[type] = true
+      this.editingValue[type] = currentValue
+
+      let refValue = refPrefix + id
       this.$nextTick(() => {
         let inputEl = this.$refs[refValue][0].$el.querySelector('input')
         inputEl.focus()
       });
     },
-    dontEditCost() {
-      this.isEditingCost = false
+    dontEdit(type) {
+      this.isEditing[type] = false
     },
-    editCost() {
+    async edit(type) {
       this.$vs.loading()
 
       let index = this.getObjectIndexById(this.editingObject)
@@ -701,33 +731,21 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
       let data = {
-        form_stats_id: this.editingObject,
-        total_cost: this.editingCostValue,
+        'form_stats_id': this.editingObject,
       }
-      this.$http.put('/api/v1/forms/' + this.objects[index].form.id + '/stats', data, { headers })
-        .then((response) => {
-          this.objects[index].total_cost = this.editingCostValue
-          this.isEditingCost = false
-          this.calculateStats()
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Total cost updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      data[type] = this.editingValue[type]
+      const response = await this.$http.put('/api/v1/forms/' + this.objects[index].form.id + '/stats', data, { headers })
+      this.objects[index][type] = this.editingValue[type]
+      this.isEditing[type] = false
+      this.calculateStats()
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Stats updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
     confirmDeletePopup() {
       if (this.selected.length == 0) return

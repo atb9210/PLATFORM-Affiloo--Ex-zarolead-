@@ -367,7 +367,10 @@ class FormController extends Controller
      * @urlParam id int required Form's id
      *
      * @bodyParam form_stats_id int required Form stats id
-     * @bodyParam total_cost float required Form stats total_cost new value
+     * @bodyParam visits int Form stats visits new value
+     * @bodyParam leads int Form stats leads new value
+     * @bodyParam total_cost float Form stats total_cost new value
+     * @bodyParam total_commission float Form stats total_commission new value
      *
      * @response {
      *  "data": [stats]
@@ -381,50 +384,140 @@ class FormController extends Controller
         // Param validation
         $params = $request->validate([
             'form_stats_id' => 'required|integer|exists:form_stats,id',
-            'total_cost' => 'required|numeric|min:0',
+            'visits' => 'numeric|min:0',
+            'leads' => 'numeric|min:0',
+            'total_cost' => 'numeric|min:0',
+            'total_commission' => 'numeric|min:0',
         ]);
 
         $stats = FormStats::findOrFail($params['form_stats_id']);
-
-        // Update total cost
-        $prev_total_cost = $stats->total_cost;
-        $stats->total_cost = $params['total_cost'];
-        $form->total_cost += $stats->total_cost - $prev_total_cost;
-
-        $form->save();
-        $stats->save();
-
-        // Update user's report stats
         $report = UserReport::getObject($form->user->id, $stats->day);
-        $report->cost += $stats->total_cost - $prev_total_cost;
-        $report->profit = $report->commission - ($report->cost + $report->extra_cost);
-        $report->save();
 
-        // Update admin's user report
         $adminRoleId = 2;
-        $users = User::query();
-        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+        $admins = User::query();
+        $admins = $admins->join('role_user', 'role_user.user_id', '=', 'id')
             ->whereIn('role_user.role_id', [$adminRoleId]);
-        $users = $users->get();
-        foreach ($users as $user) {
-            // Skip if it is already updated
-            if ($user->id == $form->user->id) {
-                continue;
-            }
-            $report = UserReport::getObject($user->id, $stats->day);
-            $report->cost += $stats->total_cost - $prev_total_cost;
-            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
-            $report->save();
-        }
+        $admins = $admins->get();
 
-        // Update advertiser's report stats
         $timestamp = strtotime($stats->day);
         $month = intval(date('m', $timestamp));
         $year = intval(date('Y', $timestamp));
         $advertiser = User::findOrFail($form->product->advertiser_id);
         $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
-        $advReport->total_cost += $stats->total_cost - $prev_total_cost;
-        $advReport->profit = $advReport->commission - $advReport->total_cost;
+
+        // Update visits
+        if (isset($params['visits'])) {
+            $prev_value = $stats->visits;
+            $stats->visits = $params['visits'];
+
+            // Update form global stats
+            $form->visits += $stats->visits - $prev_value;
+
+            // Update user's report stats
+            $report->visits += $stats->visits - $prev_value;
+
+            // Update admins' user reports
+            foreach ($admins as $admin) {
+                // Skip if it is already updated
+                if ($admin->id == $form->user->id) {
+                    continue;
+                }
+                $adminReport = UserReport::getObject($admin->id, $stats->day);
+                $adminReport->visits += $stats->visits - $prev_value;
+                $adminReport->save();
+            }
+
+            // Update advertiser's report stats
+            $advReport->visits += $stats->visits - $prev_value;
+        }
+
+        // Update leads
+        if (isset($params['leads'])) {
+            $prev_value = $stats->leads;
+            $stats->leads = $params['leads'];
+
+            // Update form global stats
+            $form->leads += $stats->leads - $prev_value;
+
+            // Update user's report stats
+            $report->leads += $stats->leads - $prev_value;
+
+            // Update admins' user reports
+            foreach ($admins as $admin) {
+                // Skip if it is already updated
+                if ($admin->id == $form->user->id) {
+                    continue;
+                }
+                $adminReport = UserReport::getObject($admin->id, $stats->day);
+                $adminReport->leads += $stats->leads - $prev_value;
+                $adminReport->save();
+            }
+
+            // Update advertiser's report stats
+            $advReport->leads += $stats->leads - $prev_value;
+        }
+
+        // Update total cost
+        if (isset($params['total_cost'])) {
+            $prev_value = $stats->total_cost;
+            $stats->total_cost = $params['total_cost'];
+
+            // Update form global stats
+            $form->total_cost += $stats->total_cost - $prev_value;
+
+            // Update user's report stats
+            $report->cost += $stats->total_cost - $prev_value;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+
+            // Update admins' user reports
+            foreach ($admins as $admin) {
+                // Skip if it is already updated
+                if ($admin->id == $form->user->id) {
+                    continue;
+                }
+                $adminReport = UserReport::getObject($admin->id, $stats->day);
+                $adminReport->cost += $stats->total_cost - $prev_value;
+                $adminReport->profit = $adminReport->commission - ($adminReport->cost + $adminReport->extra_cost);
+                $adminReport->save();
+            }
+
+            // Update advertiser's report stats
+            $advReport->total_cost += $stats->total_cost - $prev_value;
+            $advReport->profit = $advReport->commission - $advReport->total_cost;
+        }
+
+        // Update total commission
+        if (isset($params['total_commission'])) {
+            $prev_value = $stats->total_commission;
+            $stats->total_commission = $params['total_commission'];
+
+            // Update form global stats
+            $form->total_commission += $stats->total_commission - $prev_value;
+
+            // Update user's report stats
+            $report->commission += $stats->total_commission - $prev_value;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+
+            // Update admins' user reports
+            foreach ($admins as $admin) {
+                // Skip if it is already updated
+                if ($admin->id == $form->user->id) {
+                    continue;
+                }
+                $adminReport = UserReport::getObject($admin->id, $stats->day);
+                $adminReport->commission += $stats->total_commission - $prev_value;
+                $adminReport->profit = $adminReport->commission - ($adminReport->cost + $adminReport->extra_cost);
+                $adminReport->save();
+            }
+
+            // Update advertiser's report stats
+            $advReport->commission += $stats->total_commission - $prev_value;
+            $advReport->profit = $advReport->commission - $advReport->total_cost;
+        }
+
+        $form->save();
+        $stats->save();
+        $report->save();
         $advReport->save();
 
         return new FormStatsResource($stats);
@@ -499,7 +592,7 @@ class FormController extends Controller
     }
 
     /**
-     * Edit form stats cost
+     * Edit form stats
      *
      * @urlParam id int required Form's id
      *
