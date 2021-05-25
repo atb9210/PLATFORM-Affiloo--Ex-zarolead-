@@ -38,6 +38,7 @@ class LandingResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'path' => $this->path,
             'user' => [
                 'id' => $this->user->id,
                 'email' => $this->user->email,

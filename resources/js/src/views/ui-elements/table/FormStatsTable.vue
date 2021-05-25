@@ -692,9 +692,6 @@ export default {
     showEditInput(type, id) {
       let index = this.getObjectIndexById(id)
 
-      // TODO: to delete
-      console.log(this.objects[index])
-
       let currentValue = this.objects[index][type]
       let refPrefix = ''
       if (type == 'visits') {

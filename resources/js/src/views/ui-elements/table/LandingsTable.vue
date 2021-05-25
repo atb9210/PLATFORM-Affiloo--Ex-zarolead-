@@ -12,187 +12,226 @@
     <vx-card title="Landings" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+            <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button v-if="view == 'landings'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+
+            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'landings'"></vs-button>
         </p>
 
-        <div v-if="showFilters" class="mb-12">
-            <div class="vx-row mb-2">
-                <div class="vx-col">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+        <div v-if="view == 'landings'">
+            <div v-if="showFilters" class="mb-12">
+                <div class="vx-row mb-2">
+                    <div class="vx-col">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                    </div>
+                    <div class="vx-col">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                    </div>
+                    <div class="vx-col">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                    </div>
+                    <div class="vx-col">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                    </div>
                 </div>
-                <div class="vx-col">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+
+                <div class="vx-row mb-2">
+                    <div class="vx-col md:w-1/2 w-full">
+                        <label>From</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                    </div>
+                    <div class="vx-col md:w-1/2 w-full">
+                        <label>To</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                    </div>
                 </div>
-                <div class="vx-col">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                <div class="vx-row mb-2">
+                    <div class="vx-col md:w-1/3 w-full">
+                        <label>Product</label>
+                        <vs-select autocomplete v-model="filters.product">
+                            <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
+                        </vs-select>
+                    </div>
                 </div>
-                <div class="vx-col">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                <div class="vx-row mt-6">
+                    <div class="vx-col w-full">
+                        <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                        <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                    </div>
                 </div>
             </div>
 
-            <div class="vx-row mb-2">
-                <div class="vx-col md:w-1/2 w-full">
-                    <label>From</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+            <vs-dropdown vs-trigger-click class="cursor-pointer">
+                <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
+                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
+                    <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
                 </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <label>To</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
-                </div>
-            </div>
-            <div class="vx-row mb-2">
-                <div class="vx-col md:w-1/3 w-full">
-                    <label>Product</label>
-                    <vs-select autocomplete v-model="filters.product">
-                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
-                    </vs-select>
-                </div>
-            </div>
-            <div class="vx-row mt-6">
-                <div class="vx-col w-full">
-                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
-                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
-                </div>
-            </div>
+                <vs-dropdown-menu>
+                    <vs-dropdown-item @click="maxItems = 20">
+                        <span>20</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 50">
+                        <span>50</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 100">
+                        <span>100</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 150">
+                        <span>150</span>
+                    </vs-dropdown-item>
+                </vs-dropdown-menu>
+            </vs-dropdown>
+
+            <vue-context ref="context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.context_menu.close();showLandingsStats(data.id);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show stats</span>
+                  </a>
+                </li>
+                <!--
+                <li>
+                  <a href="#" v-clipboard:copy="data.url" v-clipboard:success="onUrlCopied" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Copy URL</span>
+                  </a>
+                </li>
+                -->
+                <li>
+                  <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
+                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.context_menu.close();showFormCodePopup(data.id);" class="flex items-center text-sm">
+                    <feather-icon icon="CodeIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show code</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.context_menu.close();showFileManager(data.id);" class="flex items-center text-sm">
+                    <feather-icon icon="FolderIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">File Manager</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
+
+            <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th sort-key="id">Id</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="product.name">Product</vs-th>
+                    <vs-th sort-key="visits">Visits</vs-th>
+                    <vs-th sort-key="leads">Leads</vs-th>
+                    <vs-th sort-key="total_commission">Commission</vs-th>
+                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="epv">EPV</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td :data="data[indextr].id">
+                            {{data[indextr].id}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                                <vs-chip>
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].product.name">
+                            {{data[indextr].product.name}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].visits">
+                            {{data[indextr].visits}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].leads">
+                            {{data[indextr].leads}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].total_commission">
+                            € {{data[indextr].total_commission.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].cr">
+                            {{data[indextr].cr.toFixed(2)}} %
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].epv">
+                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
+                        </vs-td>
+
+                    </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
+                    <vs-td></vs-td>
+                    <vs-td>
+                        {{totalStats.visits}}
+                    </vs-td>
+                    <vs-td>
+                        {{totalStats.leads}}
+                    </vs-td>
+                    <vs-td>
+                        € {{totalStats.total_commission.toFixed(2)}}
+                    </vs-td>
+                    <vs-td>
+                        {{totalStats.cr.toFixed(2)}} %
+                    </vs-td>
+                    <vs-td>
+                        <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
+                    </vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
+            </vs-table>
         </div>
 
-        <vs-dropdown vs-trigger-click class="cursor-pointer">
-            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
-            </div>
-            <vs-dropdown-menu>
-                <vs-dropdown-item @click="maxItems = 20">
-                    <span>20</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 50">
-                    <span>50</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 100">
-                    <span>100</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 150">
-                    <span>150</span>
-                </vs-dropdown-item>
-            </vs-dropdown-menu>
-        </vs-dropdown>
+        <div v-else-if="view == 'file_manager'">
+            <h3>
+                <a :key="index" v-for="(item, index) in fileManager.dirLevel" @click="goToDirLevel(index)" class="dir-level">{{item}}/</a>
+            </h3>
+            <vs-table stripe multiple v-model="selected" search :data="currentDirectory">
 
-        <vue-context ref="context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.context_menu.close();showLandingsStats(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show stats</span>
-              </a>
-            </li>
-            <!--
-            <li>
-              <a href="#" v-clipboard:copy="data.url" v-clipboard:success="onUrlCopied" class="flex items-center text-sm">
-                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Copy URL</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.context_menu.close();showFormCodePopup(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="CodeIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show code</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+                <template slot="thead">
+                    <vs-th sort-key="pathname">Name</vs-th>
+                    <vs-th></vs-th>
+                    <vs-th></vs-th>
+                </template>
 
-        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-            <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="product.name">Product</vs-th>
-                <vs-th sort-key="visits">Visits</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="total_commission">Commission</vs-th>
-                <vs-th sort-key="cr">CR</vs-th>
-                <vs-th sort-key="epv">EPV</vs-th>
-            </template>
-
-            <template slot-scope="{data}">
-                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-
-                    <vs-td :data="data[indextr].id">
-                        {{data[indextr].id}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].name">
-                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
-                            <vs-chip>
-                                {{data[indextr].name}}
+                        <vs-td :data="data[indextr].pathname">
+                            <vs-chip transparent :color="fileManagerObjectColor[tr.type]" @dblclick="(tr.type == 'directory') ? openDir(tr.pathname) : ''">
+                                <vs-avatar icon-pack="feather" :icon="(tr.type == 'directory') ? 'icon-folder' : 'icon-file'"  @dblclick="(tr.type == 'directory') ? openDir(tr.pathname) : ''" />
+                                {{data[indextr].pathname}}
                             </vs-chip>
-                        </div>
-                    </vs-td>
+                        </vs-td>
 
-                    <vs-td :data="data[indextr].product.name">
-                        {{data[indextr].product.name}}
-                    </vs-td>
+                        <vs-td></vs-td>
+                        <vs-td></vs-td>
 
-                    <vs-td :data="data[indextr].visits">
-                        {{data[indextr].visits}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].leads">
-                        {{data[indextr].leads}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].total_commission">
-                        € {{data[indextr].total_commission.toFixed(2)}}
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].cr">
-                        {{data[indextr].cr.toFixed(2)}} %
-                    </vs-td>
-
-                    <vs-td :data="data[indextr].epv">
-                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
-                    </vs-td>
-
-                </vs-tr>
-
-                <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
-                    {{totalStats.visits}}
-                </vs-td>
-                <vs-td>
-                    {{totalStats.leads}}
-                </vs-td>
-                <vs-td>
-                    € {{totalStats.total_commission.toFixed(2)}}
-                </vs-td>
-                <vs-td>
-                    {{totalStats.cr.toFixed(2)}} %
-                </vs-td>
-                <vs-td>
-                    <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
-                </vs-td>
-                <vs-td></vs-td>
-                <!-- END TOTAL STATS-->
-            </template>
-        </vs-table>
+                    </vs-tr>
+                </template>
+            </vs-table>
+        </div>
 
         <!-- Create popup -->
         <vs-popup title="Create Landing" :active.sync="showPopup['create']">
@@ -202,7 +241,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                    <span>Name*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
@@ -211,7 +250,17 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Product</span>
+                    <span>Path (optional)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['create'].path" />
+                    <span v-if="newObject['create'].path == ''">Default path: {{ defaultPath }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Product*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="products" v-model="newObject['create'].product" />
@@ -220,7 +269,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>URL</span>
+                    <span>URL*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="newObject['create'].url" />
@@ -229,7 +278,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country</span>
+                    <span>Country*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].country" />
@@ -249,7 +298,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                    <span>Name*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
@@ -258,7 +307,17 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Products</span>
+                    <span>Path (optional)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['edit'].path" />
+                    <span v-if="newObject['edit'].path == ''">Default path: {{ defaultPath }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Products*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="products" v-model="newObject['edit'].product" />
@@ -267,7 +326,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>URL</span>
+                    <span>URL*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="newObject['edit'].url" />
@@ -276,7 +335,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country</span>
+                    <span>Country*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].country" />
@@ -314,6 +373,14 @@
 import vSelect from 'vue-select'
 import { VueContext } from 'vue-context'
 
+function stringToSlug(Text) {
+  return Text
+    .toLowerCase()
+    .replace(/ /g,'-')
+    .replace(/[^\w-]+/g,'')
+    ;
+}
+
 export default {
   components: {
     'v-select': vSelect,
@@ -321,9 +388,13 @@ export default {
   },
   data () {
     return {
+      view: 'landings',
+
       objects: [],
       selected: [],
       deleted: [],
+
+      currentObject: null,
 
       maxItems: 20,
 
@@ -337,12 +408,14 @@ export default {
       newObject: {
         'create': {
           name: '',
+          path: '',
           product: '',
           url: '',
           country: '',
         },
         'edit': {
           name: '',
+          path: '',
           product: '',
           url: '',
           country: '',
@@ -372,6 +445,17 @@ export default {
       landingCodeId: -1,
       formCode: '',
       defaultFormId: -1,
+
+      fileManager: {
+        dirLevel: [],
+        content: [],
+      },
+      currentDirectory: [],
+
+      fileManagerObjectColor: {
+        'directory': '#197da8',
+        'file': '',
+      },
     }
   },
   computed: {
@@ -391,6 +475,18 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    defaultPath () {
+      let type = ''
+      if (this.showPopup['create']) {
+        type = 'create'
+      } else if (this.showPopup['edit']) {
+        type = 'edit'
+      } else {
+        return ''
+      }
+      let name = this.newObject[type].name
+      return stringToSlug(name)
     },
   },
   methods: {
@@ -415,7 +511,7 @@ export default {
       }
       this.filterDatesShortcut('this_month')
     },
-    applyFilters() {
+    async applyFilters() {
       this.selected = []
       this.objects = []
       this.$vs.loading()
@@ -435,41 +531,29 @@ export default {
       }
 
       // Retrieve landings
-      this.$http.get('/api/v1/landings', { headers, params: data })
-        .then((response) => {
-          response.data.data.forEach((obj) => {
-            let toPush = obj
+      const response = await this.$http.get('/api/v1/landings', { headers, params: data })
+      response.data.data.forEach((obj) => {
+        let toPush = obj
 
-            toPush.visits = 0
-            toPush.leads = 0
-            toPush.total_commission = 0.0
-            toPush.cr = 0.0
-            toPush.epv = 0.0
+        toPush.visits = 0
+        toPush.leads = 0
+        toPush.total_commission = 0.0
+        toPush.cr = 0.0
+        toPush.epv = 0.0
 
-            obj.daily_stats.forEach((stats) => {
-              toPush.visits += parseInt(stats.visits)
-              toPush.leads += parseInt(stats.leads)
-              toPush.total_commission += parseInt(stats.total_commission)
-            })
-
-            toPush.cr = (toPush.visits > 0) ? (toPush.leads / toPush.visits)*100 : ((toPush.leads > 0) ? 9999.99 : 0)
-            toPush.epv = (toPush.visits > 0) ? (toPush.total_commission / toPush.visits) : (toPush.total_commission)
-            this.objects.push(toPush)
-          })
-
-          this.calculateStats()
-          this.$vs.loading.close()
+        obj.daily_stats.forEach((stats) => {
+          toPush.visits += parseInt(stats.visits)
+          toPush.leads += parseInt(stats.leads)
+          toPush.total_commission += parseInt(stats.total_commission)
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+
+        toPush.cr = (toPush.visits > 0) ? (toPush.leads / toPush.visits)*100 : ((toPush.leads > 0) ? 9999.99 : 0)
+        toPush.epv = (toPush.visits > 0) ? (toPush.total_commission / toPush.visits) : (toPush.total_commission)
+        this.objects.push(toPush)
+      })
+
+      this.calculateStats()
+      this.$vs.loading.close()
     },
     filterDatesShortcut(period) {
       let invalidPeriod = false;
@@ -575,6 +659,7 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
+        path: '',
         product: '',
         url: '',
         country: '',
@@ -598,6 +683,10 @@ export default {
         product_id: this.newObject['create'].product.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
+      }
+
+      if (this.newObject['create'].path != '') {
+        data.path = this.newObject['create'].path
       }
 
       // Retrieve landings
@@ -630,6 +719,7 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
+        path: (obj.path === null) ? '' : obj.path,
         product: {
           id: obj.product.id,
           label: obj.product.name,
@@ -652,6 +742,7 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
+        path: this.newObject['edit'].path,
         product_id: this.newObject['edit'].product.id,
         url: this.newObject['edit'].url,
         country: this.newObject['edit'].country,
@@ -772,74 +863,127 @@ export default {
       this.totalStats.cr = cr
       this.totalStats.epv = epv
     },
+    async showFileManager(id) {
+      this.$vs.loading()
+
+      this.currentObject = this.objects[this.getObjectIndexById(id)]
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve directory content
+      const response = await this.$http.get('/api/v1/landings/' + id + '/ls', { headers })
+      this.fileManager.content = response.data.data
+      this.resetDirLevel()
+
+      this.view = 'file_manager'
+
+      this.$vs.loading.close()
+    },
+    resetDirLevel() {
+      this.fileManager.dirLevel = []
+      this.fileManager.dirLevel.push(this.currentObject.path)
+      this.currentDirectory = this.fileManager.content
+    },
+    goToDirLevel(index) {
+      if (index < 0 && index >= this.fileManager.dirLevel.length) return
+
+      this.currentDirectory = this.fileManager.content
+
+      let newDirLevel = []
+      newDirLevel.push(this.fileManager.dirLevel[0])
+
+      for (let i = 1; i <= index; i++) {
+        for (let j = 0; j < this.currentDirectory.length; j++) {
+          if (this.currentDirectory[j].pathname == this.fileManager.dirLevel[i]) {
+            this.currentDirectory = this.currentDirectory[j].data
+            break
+          }
+        }
+        newDirLevel.push(this.fileManager.dirLevel[i])
+      }
+
+      this.fileManager.dirLevel = newDirLevel
+    },
+    openDir(pathname) {
+      // TODO: to delete
+      console.log("AYOOO")
+
+      let newDirLevel = this.fileManager.dirLevel
+
+      for (let j = 0; j < this.currentDirectory.length; j++) {
+        if (this.currentDirectory[j].pathname == pathname) {
+          this.currentDirectory = this.currentDirectory[j].data
+          newDirLevel.push(pathname)
+          break
+        }
+      }
+
+      this.fileManager.dirLevel = newDirLevel
+    },
   },
-  created() {
+  async created() {
     this.resetFilters()
+
+    this.$vs.loading()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
     // Retrieve tags
-    this.$vs.loading()
-    this.$http.get('/api/v1/tags/', { headers })
-      .then((response) => {
-        this.tags = []
-        response.data.data.forEach((tag) => {
-          this.tags.push({
-            id: tag.id,
-            label: tag.name,
-          })
-        })
-        this.$vs.loading.close()
+    const responseTags = await this.$http.get('/api/v1/tags/', { headers })
+    this.tags = []
+    responseTags.data.data.forEach((tag) => {
+      this.tags.push({
+        id: tag.id,
+        label: tag.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+    })
 
     // Retrieve products
-    this.$vs.loading()
-    this.$http.get('/api/v1/products/', { headers })
-      .then((response) => {
-        this.products = []
-        response.data.data.forEach((product) => {
-          this.products.push({
-            id: product.id,
-            label: product.name,
-          })
-        })
-        this.$vs.loading.close()
+    const responseProducts = await this.$http.get('/api/v1/products/', { headers })
+    this.products = []
+    responseProducts.data.data.forEach((product) => {
+      this.products.push({
+        id: product.id,
+        label: product.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+    })
 
     // Retrieve forms
-    this.$vs.loading()
     let today = new Date();
     let d = this.formatDate(today)
     let data = {
       filter_date_from: d,
       filter_date_to: d,
     }
-    this.$http.get('/api/v1/forms/', { headers, params: data })
-      .then((response) => {
-        this.forms = []
-        response.data.data.forEach((form) => {
-          this.forms.push({
-            id: form.id,
-            label: form.name,
-          })
-          this.defaultFormId = form.id
-        })
-        this.$vs.loading.close()
+    const responseForms = await this.$http.get('/api/v1/forms/', { headers, params: data })
+    this.forms = []
+    responseForms.data.data.forEach((form) => {
+      this.forms.push({
+        id: form.id,
+        label: form.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+      this.defaultFormId = form.id
+    })
+
+    this.$vs.loading.close()
+
+    // TODO: to delete (THIS IS ONLY FOR DEBUG PURPOSES)
+    this.showFileManager(379)
   },
   mounted () {
   }
 }
 
 </script>
+
+<style>
+.dir-level {
+    text-decoration: underline;
+    margin-right: 0.4em;
+    cursor: pointer;
+}
+</style>

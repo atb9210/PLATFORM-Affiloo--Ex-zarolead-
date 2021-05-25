@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 use App\Landing as Landing;
 use App\LandingStats as LandingStats;
@@ -95,7 +97,16 @@ class LandingController extends Controller
         ]);
         $params['user_id'] = Auth::user()->id;
 
+        if (!isset($params['path'])) {
+            $params['path'] = Str::slug($params['name'], '-');
+        }
+
         $landing = Landing::create($params);
+
+        // TODO: Check if path already exists (change it if it already exists?)
+
+        // Create landing's folder
+        Storage::disk('landings')->makeDirectory($landing->path);
 
         return response([
             "message" => "Landing created",
@@ -137,6 +148,13 @@ class LandingController extends Controller
             'url' => 'url',
             'country' => 'string|min:1',
         ]);
+        
+        if (isset($params['path']) && $params['path'] == '') {
+            $params['path'] = Str::slug($params['name'], '-');
+        }
+
+        // TODO: Rename landing's folder if path is changed or create if path
+        // goes from null (or '') to something
 
         $landing->update($params);
 
@@ -161,6 +179,8 @@ class LandingController extends Controller
         // Archive the landing
         $landing->archived = 1;
         $landing->save();
+
+        // TODO: What about landing's folder (delete it or keep it?)
 
         return response([
             'message' => 'Landing has been archived'
@@ -200,22 +220,6 @@ class LandingController extends Controller
         $stats = $stats->orderBy('day', 'desc');
 
         return LandingStatsResource::collection($stats->get());
-    }
-
-    // TODO: Is this required
-    /**
-     * Get multiple landings stats.
-     *
-     * @bodyParam landings array Landings' ids
-     * @bodyParam filter_date_from string From date (Y-m-d format)
-     * @bodyParam filter_date_to string To date (Y-m-d format)
-     *
-     * @response {
-     *  "data": [stats]
-     * }
-     */
-    public function multipleStats(Request $request)
-    {
     }
 
     /**
@@ -294,6 +298,60 @@ class LandingController extends Controller
 
         return response([
             'data' => $form_html,
+        ]);
+    }
+
+    private function getDirectoryContent($directory) {
+        $content = [];
+
+        $directoryPathname = $directory;
+        if ($directoryPathname[strlen($directoryPathname) - 1] != '/') {
+            $directoryPathname .= '/';
+        }
+
+        $directories = Storage::disk('landings')->directories($directory);
+        foreach ($directories as $dir) {
+            $dirContent = $this->getDirectoryContent($dir);
+            $content[] = [
+                'pathname' => str_replace($directoryPathname, '', $dir),
+                'type' => 'directory',
+                'data' => $dirContent,
+            ];
+        }
+
+        $files = Storage::disk('landings')->files($directory);
+        foreach ($files as $file) {
+            $content[] = [
+                'pathname' => str_replace($directoryPathname, '', $file),
+                'type' => 'file',
+                'data' => '',
+            ];
+        }
+
+        return $content;
+    }
+
+    /**
+     * Get landing's files and directories list
+     *
+     * @urlParam id int required Landing's id
+     *
+     * @response {
+     *  "data": [content]
+     * }
+     */
+    public function listFilesAndDirectories($id)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        $content = null;
+        if ($landing->path != null && $landing->path != '') {
+            $content = $this->getDirectoryContent($landing->path);
+        }
+
+        return response([
+            'data' => $content,
         ]);
     }
 }

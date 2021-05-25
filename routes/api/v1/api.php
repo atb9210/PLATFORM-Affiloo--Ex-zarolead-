@@ -73,6 +73,8 @@ Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware(
     ->name('landings.stats');
 Route::get('landings/{id}/code', 'api\v1\LandingController@code')->middleware('auth:api')
     ->name('landings.code');
+Route::get('landings/{id}/ls', 'api\v1\LandingController@listFilesAndDirectories')->middleware('auth:api')
+    ->name('landings.ls');
 
 /* Flows routes */
 Route::apiResource('flows', 'api\v1\FlowController')->except([

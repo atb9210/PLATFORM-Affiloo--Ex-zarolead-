@@ -14,10 +14,41 @@ use App\User;
 
 class TestController extends Controller
 {
+    private function getDirectoryContent($directory) {
+        $content = [];
+
+        $directoryPathname = $directory;
+        if ($directoryPathname[strlen($directoryPathname) - 1] != '/') {
+            $directoryPathname .= '/';
+        }
+
+        $directories = Storage::disk('landings')->directories($directory);
+        foreach ($directories as $dir) {
+            $dirContent = $this->getDirectoryContent($dir);
+            $content[] = [
+                'pathname' => str_replace($directoryPathname, '', $dir),
+                'type' => 'directory',
+                'data' => $dirContent,
+            ];
+        }
+
+        $files = Storage::disk('landings')->files($directory);
+        foreach ($files as $file) {
+            $content[] = [
+                'pathname' => str_replace($directoryPathname, '', $file),
+                'type' => 'file',
+                'data' => '',
+            ];
+        }
+
+        return $content;
+    }
+
     public function test()
     {
-        //$fileContents = 'CIAONE';
-        //Storage::disk('landings')->put('/filename.txt', $fileContents);
+        $content = $this->getDirectoryContent('test-landing-barba');
+        echo "<pre>".var_export($content, true)."</pre>";
+        exit();
 
         $params = [
             'test1' => 'ciaone',
@@ -40,7 +71,7 @@ class TestController extends Controller
             'test8' => 'required|string|landing_path',
         ]);
 
-        echo "<pre>".var_export($validator->messages(), true)."</pre>";
+        //echo "<pre>".var_export($validator->messages(), true)."</pre>";
         //if ($validator->fails()) {
         //    echo "<pre>".var_export($validator->errors(), true)."</pre>";
         //} else {
