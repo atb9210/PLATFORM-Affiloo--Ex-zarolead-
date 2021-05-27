@@ -17,6 +17,8 @@
             <vs-button v-if="view == 'landings'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
 
             <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'landings'"></vs-button>
+            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="startCreatingFileOrDir"></vs-button>
+            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="startCreatingFileOrDir"></vs-button>
         </p>
 
         <div v-if="view == 'landings'">
@@ -203,34 +205,59 @@
             </vs-table>
         </div>
 
-        <div v-else-if="view == 'file_manager'">
-            <h3>
-                <a :key="index" v-for="(item, index) in fileManager.dirLevel" @click="goToDirLevel(index)" class="dir-level">{{item}}/</a>
-            </h3>
-            <vs-table stripe multiple v-model="selected" search :data="currentDirectory">
+        <div class="vx-row" v-else-if="view == 'file_manager'">
+            <!-- File explorer -->
+            <div class="vx-col sm:w-1/2 w-full">
+                <vs-table stripe multiple v-model="selectedFilesAndDirectories" search :data="currentDirectory">
 
-                <template slot="thead">
-                    <vs-th sort-key="pathname">Name</vs-th>
-                    <vs-th></vs-th>
-                    <vs-th></vs-th>
-                </template>
+                    <template slot="header">
+                        <span>
+                            <a :key="index" v-for="(item, index) in fileManager.dirLevel" @click="goToDirLevel(index)" class="dir-level">{{item}}/</a>
+                        </span>
+                    </template>
+                    <template slot="thead">
+                        <vs-th sort-key="name">Name</vs-th>
+                        <vs-th></vs-th>
+                        <vs-th></vs-th>
+                    </template>
 
-                <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                    <template slot-scope="{data}">
 
-                        <vs-td :data="data[indextr].pathname">
-                            <vs-chip transparent :color="fileManagerObjectColor[tr.type]" @dblclick="(tr.type == 'directory') ? openDir(tr.pathname) : ''">
-                                <vs-avatar icon-pack="feather" :icon="(tr.type == 'directory') ? 'icon-folder' : 'icon-file'"  @dblclick="(tr.type == 'directory') ? openDir(tr.pathname) : ''" />
-                                {{data[indextr].pathname}}
-                            </vs-chip>
+                        <vs-td v-if="isCreatingFileOrDir">
+                        </vs-td>
+                        <vs-td v-if="isCreatingFileOrDir">
+                            <vs-input ref="createFileOrDirInput" v-model="createFileOrDirValue" @keyup.enter="createFileOrDir()" @keyup.escape="dontCreateFileOrDir()" icon-pack="feather" icon="icon-file" placeholder="folder/ or file.ext" class="is-label-placeholder"></vs-input>
+                        </vs-td>
+                        <vs-td v-if="isCreatingFileOrDir">
+                        </vs-td>
+                        <vs-td v-if="isCreatingFileOrDir">
                         </vs-td>
 
-                        <vs-td></vs-td>
-                        <vs-td></vs-td>
+                        <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    </vs-tr>
-                </template>
-            </vs-table>
+                            <vs-td :data="data[indextr].name">
+                                <vs-chip transparent :color="fileManagerObjectColor[tr.type]" @dblclick="(tr.type == 'directory') ? openDir(tr.name) : openFile(tr.pathname)">
+                                    <vs-avatar icon-pack="feather" :icon="(tr.type == 'directory') ? 'icon-folder' : 'icon-file'"  @dblclick="(tr.type == 'directory') ? openDir(tr.name) : openFile(tr.pathname)" />
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </vs-td>
+
+                            <vs-td></vs-td>
+                            <vs-td></vs-td>
+
+                        </vs-tr>
+                    </template>
+                </vs-table>
+            </div>
+
+            <!-- File editor -->
+            <div class="vx-col sm:w-1/2 w-full">
+                <p class="flex items-center mb-4">
+                    <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveFile"></vs-button>
+                    <vs-button v-if="view == 'file_manager'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-x" @click="cancelFileEdit"></vs-button>
+                </p>
+                <vs-textarea class="file-editor" :label="fileManager.currentFile + ((fileManager.fileContent != fileManager.fileNewContent) ? ' (* edited)' : '')" v-model="fileManager.fileNewContent" height="50rem" @keydown.tab.prevent="tabber($event)" />
+            </div>
         </div>
 
         <!-- Create popup -->
@@ -446,11 +473,17 @@ export default {
       formCode: '',
       defaultFormId: -1,
 
+      selectedFilesAndDirectories: [],
       fileManager: {
         dirLevel: [],
         content: [],
+        fileContent: '',
+        fileNewContent: '',
+        currentFile: '',
       },
       currentDirectory: [],
+      isCreatingFileOrDir: false,
+      createFileOrDirValue: '',
 
       fileManagerObjectColor: {
         'directory': '#197da8',
@@ -864,6 +897,9 @@ export default {
       this.totalStats.epv = epv
     },
     async showFileManager(id) {
+      await this.refreshFileManager(id)
+    },
+    async refreshFileManager(id) {
       this.$vs.loading()
 
       this.currentObject = this.objects[this.getObjectIndexById(id)]
@@ -885,6 +921,7 @@ export default {
       this.fileManager.dirLevel = []
       this.fileManager.dirLevel.push(this.currentObject.path)
       this.currentDirectory = this.fileManager.content
+      this.selectedFilesAndDirectories = []
     },
     goToDirLevel(index) {
       if (index < 0 && index >= this.fileManager.dirLevel.length) return
@@ -896,7 +933,7 @@ export default {
 
       for (let i = 1; i <= index; i++) {
         for (let j = 0; j < this.currentDirectory.length; j++) {
-          if (this.currentDirectory[j].pathname == this.fileManager.dirLevel[i]) {
+          if (this.currentDirectory[j].name == this.fileManager.dirLevel[i]) {
             this.currentDirectory = this.currentDirectory[j].data
             break
           }
@@ -905,22 +942,150 @@ export default {
       }
 
       this.fileManager.dirLevel = newDirLevel
+      this.selectedFilesAndDirectories = []
     },
-    openDir(pathname) {
-      // TODO: to delete
-      console.log("AYOOO")
-
+    openDir(name) {
       let newDirLevel = this.fileManager.dirLevel
 
       for (let j = 0; j < this.currentDirectory.length; j++) {
-        if (this.currentDirectory[j].pathname == pathname) {
+        if (this.currentDirectory[j].name == name) {
           this.currentDirectory = this.currentDirectory[j].data
-          newDirLevel.push(pathname)
+          newDirLevel.push(name)
           break
         }
       }
 
       this.fileManager.dirLevel = newDirLevel
+      this.selectedFilesAndDirectories = []
+    },
+    async openFile(pathname) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        pathname: pathname,
+      }
+
+      const response = await this.$http.get('/api/v1/landings/' + this.currentObject.id + '/cat', { headers, params: data })
+
+      this.fileManager.currentFile = pathname
+      this.fileManager.fileContent = response.data.data
+      this.fileManager.fileNewContent = this.fileManager.fileContent
+
+      this.$vs.loading.close()
+    },
+    async saveFile() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+        'Content-Type': 'multipart/form-data',
+      }
+
+      let path = ''
+      let fileName = ''
+      let fileContent = this.fileManager.fileNewContent
+
+      let pathname = this.fileManager.currentFile
+      let lastIndex = pathname.lastIndexOf('/') + 1
+      fileName = pathname.substring(lastIndex)
+      path = pathname.substring(0, lastIndex)
+
+      // TODO: to delete
+      console.log("pathname", pathname)
+      console.log("path", path)
+      console.log("fileName", fileName)
+
+      let formData = new FormData()
+      formData.append('path', path)
+      let blob = new Blob([fileContent])
+      formData.append('file', blob, fileName)
+
+      const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/upload', formData, { headers })
+
+      this.fileManager.fileContent = this.fileManager.fileNewContent
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'File saved successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+    },
+    cancelFileEdit() {
+      this.fileManager.fileNewContent = this.fileManager.fileContent
+    },
+    startCreatingFileOrDir() {
+      this.createFileOrDirValue = ''
+      this.isCreatingFileOrDir = true
+
+      this.$nextTick(() => {
+        let inputEl = this.$refs.createFileOrDirInput.$el.querySelector('input')
+        inputEl.focus()
+      });
+    },
+    async createFileOrDir() {
+      this.$vs.loading()
+
+      let pathname = this.createFileOrDirValue
+      let type = 'file'
+      if (pathname.charAt(pathname.length - 1) == '/') {
+        type = 'folder'
+      }
+
+      for (let i = this.fileManager.dirLevel.length - 1; i >= 0; i--) {
+        pathname = this.fileManager.dirLevel[i] + '/' + pathname
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        pathname: pathname,
+      }
+
+      if (type == 'file') {
+        const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/touch', data, { headers })
+      } else if (type == 'folder') {
+        const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/mkdir', data, { headers })
+      }
+
+      this.isCreatingFileOrDir = false
+      this.$vs.notify({
+        title: 'Success',
+        text: 'File/folder created successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      // Refresh without losing current dir level
+      let oldDirLevel = this.fileManager.dirLevel
+      await this.refreshFileManager(this.currentObject.id)
+      for (let i = 1; i < oldDirLevel.length; i++) {
+        this.openDir(oldDirLevel[i])
+      }
+    },
+    dontCreateFileOrDir() {
+      this.isCreatingFileOrDir = false
+    },
+    tabber(event) {
+      if (event) {
+        let text = this.fileManager.fileNewContent
+        let originalSelectionStart = event.target.selectionStart
+        let textStart = text.slice(0, originalSelectionStart)
+        let textEnd =  text.slice(originalSelectionStart)
+        this.fileManager.fileNewContent = `${textStart}\t${textEnd}`
+        event.target.value = this.fileManager.fileNewContent
+        event.target.selectionEnd = event.target.selectionStart = originalSelectionStart + 1
+      }
     },
   },
   async created() {
@@ -972,7 +1137,7 @@ export default {
     this.$vs.loading.close()
 
     // TODO: to delete (THIS IS ONLY FOR DEBUG PURPOSES)
-    this.showFileManager(379)
+    //this.showFileManager(379)
   },
   mounted () {
   }
@@ -985,5 +1150,10 @@ export default {
     text-decoration: underline;
     margin-right: 0.4em;
     cursor: pointer;
+}
+
+.file-editor > h4 {
+    background-color: #bababa;
+    border: 1px solid white;
 }
 </style>

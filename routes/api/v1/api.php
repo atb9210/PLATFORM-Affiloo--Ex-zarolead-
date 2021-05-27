@@ -73,8 +73,18 @@ Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware(
     ->name('landings.stats');
 Route::get('landings/{id}/code', 'api\v1\LandingController@code')->middleware('auth:api')
     ->name('landings.code');
+
+// TODO: Change path?
 Route::get('landings/{id}/ls', 'api\v1\LandingController@listFilesAndDirectories')->middleware('auth:api')
     ->name('landings.ls');
+Route::get('landings/{id}/cat', 'api\v1\LandingController@getFileContent')->middleware('auth:api')
+    ->name('landings.cat');
+Route::post('landings/{id}/touch', 'api\v1\LandingController@createFile')->middleware('auth:api')
+    ->name('landings.touch');
+Route::post('landings/{id}/mkdir', 'api\v1\LandingController@createDirectory')->middleware('auth:api')
+    ->name('landings.mkdir');
+Route::post('landings/{id}/upload', 'api\v1\LandingController@uploadFile')->middleware('auth:api')
+    ->name('landings.upload');
 
 /* Flows routes */
 Route::apiResource('flows', 'api\v1\FlowController')->except([

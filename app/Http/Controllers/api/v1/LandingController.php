@@ -17,6 +17,17 @@ use App\Http\Resources\api\v1\LandingStatsResource;
 
 class LandingController extends Controller
 {
+    private function getServerpilotClient() {
+        $serverpilotConfig = [
+            'id' => env('SERVERPILOT_CLIENT_ID'),
+            'key' => env('SERVERPILOT_API_KEY'),
+        ];
+        return new \ServerPilot($serverpilotConfig);
+    }
+
+    private function loadServerpilotConfig() {
+    }
+
     /**
      * Get all landings list.
      *
@@ -105,8 +116,21 @@ class LandingController extends Controller
 
         // TODO: Check if path already exists (change it if it already exists?)
 
-        // Create landing's folder
-        Storage::disk('landings')->makeDirectory($landing->path);
+        // Create landing's apps (folder and virtualhost) on landings' server with ServerPilot
+        $this->loadServerpilotConfig();
+        $serverpilot = $this->getServerpilotClient();
+        $app = $serverpilot->app_create(
+            $landing->path,
+            env('SERVERPILOT_LANDINGS_SYSUSER_ID'),
+            'php7.4',
+            ['italiaspecialiofferta.com'],
+            []
+        );
+        $serverpilot->ssl_auto($app->data->id);
+        $serverpilot->ssl_force($app->data->id, true);
+
+        // Set domain's record on CloudFlare
+        // TODO
 
         return response([
             "message" => "Landing created",
@@ -313,7 +337,8 @@ class LandingController extends Controller
         foreach ($directories as $dir) {
             $dirContent = $this->getDirectoryContent($dir);
             $content[] = [
-                'pathname' => str_replace($directoryPathname, '', $dir),
+                'pathname' => substr($dir, 5),
+                'name' => str_replace($directoryPathname, '', $dir),
                 'type' => 'directory',
                 'data' => $dirContent,
             ];
@@ -322,7 +347,8 @@ class LandingController extends Controller
         $files = Storage::disk('landings')->files($directory);
         foreach ($files as $file) {
             $content[] = [
-                'pathname' => str_replace($directoryPathname, '', $file),
+                'pathname' => substr($file, 5),
+                'name' => str_replace($directoryPathname, '', $file),
                 'type' => 'file',
                 'data' => '',
             ];
@@ -347,11 +373,137 @@ class LandingController extends Controller
 
         $content = null;
         if ($landing->path != null && $landing->path != '') {
-            $content = $this->getDirectoryContent($landing->path);
+            $content = $this->getDirectoryContent('apps/' . $landing->path);
         }
 
         return response([
             'data' => $content,
+        ]);
+    }
+
+    /**
+     * Get landing's file content
+     *
+     * @urlParam id int required Landing's id
+     *
+     * @bodyParam pathname string required File's pathname
+     *
+     * @response {
+     *  "data": content
+     * }
+     */
+    public function getFileContent($id, Request $request)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        // Params validation
+        $params = $request->validate([
+            'pathname' => 'required|string|min:1',
+        ]);
+
+        // TODO: Check if pathname contains (at the beginning) $landing->path . '/'
+
+        $content = Storage::disk('landings')->get('apps/' . $params['pathname']);
+
+        return response([
+            'data' => $content,
+        ]);
+    }
+
+    /**
+     * Create landing's file
+     *
+     * @urlParam id int required Landing's id
+     *
+     * @bodyParam pathname string required File's pathname
+     *
+     * @response {
+     *  "message": "File created successfully"
+     * }
+     */
+    public function createFile($id, Request $request)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        // Params validation
+        $params = $request->validate([
+            'pathname' => 'required|string|min:1',
+        ]);
+
+        // TODO: Check if pathname contains (at the beginning) $landing->path . '/'
+
+        Storage::disk('landings')->put('apps/' . $params['pathname'], '');
+
+        return response([
+            'message' => 'File created successfully',
+        ]);
+    }
+
+    /**
+     * Create landing's directory
+     *
+     * @urlParam id int required Landing's id
+     *
+     * @bodyParam pathname string required Directory's pathname
+     *
+     * @response {
+     *  "message": "Directory created successfully"
+     * }
+     */
+    public function createDirectory($id, Request $request)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        // Params validation
+        $params = $request->validate([
+            'pathname' => 'required|string|min:1',
+        ]);
+
+        // TODO: Check if pathname contains (at the beginning) $landing->path . '/'
+
+        Storage::disk('landings')->makeDirectory('apps/' . $params['pathname']);
+
+        return response([
+            'message' => 'Directory created successfully',
+        ]);
+    }
+
+    /**
+     * Save landing's file content
+     *
+     * @urlParam id int required Landing's id
+     *
+     * @bodyParam path string required File's path
+     * @bodyParam file string required File's file to upload
+     *
+     * @response {
+     *  "message": "File saved successfully"
+     * }
+     */
+    public function uploadFile($id, Request $request)
+    {
+        $landing = Landing::findOrFail($id);
+        $this->authorize('view', $landing);
+
+        // Params validation
+        $params = $request->validate([
+            'path' => 'required|string|min:1',
+            'file' => 'required|file',
+        ]);
+
+        // TODO: Check if path contains (at the beginning) $landing->path . '/'
+
+        Storage::disk('landings')->putFileAs(
+            'apps/' . $params['path'],
+            $request->file('file'),
+            $request->file('file')->getClientOriginalName()
+        );
+
+        return response([
+            'message' => 'File saved successfully',
         ]);
     }
 }
