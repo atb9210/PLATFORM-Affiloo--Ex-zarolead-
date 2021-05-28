@@ -368,7 +368,7 @@ export default {
   },
   methods: {
     getObjectIndexById(id) {
-      var index = -1;
+      let index = -1
       this.objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
@@ -681,7 +681,7 @@ export default {
         }
       }
       let formData = new FormData()
-      for (var i = 0; i < this.filesToUpload.length; i++)
+      for (let i = 0; i < this.filesToUpload.length; i++)
         formData.append('files[' + i + ']', this.filesToUpload[i])
 
       // Retrieve invoices

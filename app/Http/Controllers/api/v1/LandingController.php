@@ -86,6 +86,7 @@ class LandingController extends Controller
      * @bodyParam name string required Landing's name
      * @bodyParam path string Landing's path
      * @bodyParam product_id int required Landing's product id
+     * @bodyParam domains string required Domains list separated by comma
      * @bodyParam url string required Landing's URL
      * @bodyParam country string Country
      *
@@ -103,6 +104,8 @@ class LandingController extends Controller
             'name' => 'required|string|min:3',
             'path' => 'string|landing_path|unique:landings,path',
             'product_id' => 'required|integer|exists:products,id',
+            'domains' => 'required|array',
+            'domains.*' => 'string',
             'url' => 'required|url',
             'country' => 'string|min:1',
         ]);
@@ -126,7 +129,7 @@ class LandingController extends Controller
             ['italiaspecialiofferta.com'],
             []
         );
-        $serverpilot->ssl_auto($app->data->id);
+        //$serverpilot->ssl_auto($app->data->id); // TODO: Test if it works without this shit!
         $serverpilot->ssl_force($app->data->id, true);
 
         // Set domain's record on CloudFlare

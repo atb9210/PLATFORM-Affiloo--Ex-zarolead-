@@ -11,6 +11,27 @@
 <template>
     <vx-card title="Landings" code-toggler>
 
+        <vue-context ref="upload_context_menu" lazy>
+            <li>
+              <a href="#" @click="$refs.upload_context_menu.close();showFilePicker('files');" class="flex items-center text-sm">
+                <feather-icon icon="FileIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Files</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.upload_context_menu.close();showFilePicker('directories');" class="flex items-center text-sm">
+                <feather-icon icon="FolderIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Directories</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.upload_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <p class="flex items-center mb-4">
             <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
@@ -18,7 +39,7 @@
 
             <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'landings'"></vs-button>
             <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="startCreatingFileOrDir"></vs-button>
-            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="startCreatingFileOrDir"></vs-button>
+            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click.prevent="$refs.upload_context_menu.open($event)" @contextmenu.prevent="$refs.upload_context_menu.open($event)"></vs-button>
         </p>
 
         <div v-if="view == 'landings'">
@@ -207,6 +228,8 @@
 
         <div class="vx-row" v-else-if="view == 'file_manager'">
             <!-- File explorer -->
+            <input type="file" ref="filesUpload" class="hidden" multiple @change="onFilesUploadChange">
+            <input type="file" ref="directoriesUpload" class="hidden" webkitdirectory directory multiple @change="onFilesUploadChange">
             <div class="vx-col sm:w-1/2 w-full">
                 <vs-table stripe multiple v-model="selectedFilesAndDirectories" search :data="currentDirectory">
 
@@ -291,6 +314,15 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="products" v-model="newObject['create'].product" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Domains*</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-textarea v-model="newObject['create'].domains" height="10rem" />
                 </div>
             </div>
 
@@ -439,6 +471,7 @@ export default {
           product: '',
           url: '',
           country: '',
+          domains: '',
         },
         'edit': {
           name: '',
@@ -446,6 +479,7 @@ export default {
           product: '',
           url: '',
           country: '',
+          domains: '',
         },
       },
       dateFormat: 'yyyy-MM-dd',
@@ -484,6 +518,8 @@ export default {
       currentDirectory: [],
       isCreatingFileOrDir: false,
       createFileOrDirValue: '',
+
+      filesToUpload: [],
 
       fileManagerObjectColor: {
         'directory': '#197da8',
@@ -524,7 +560,7 @@ export default {
   },
   methods: {
     getObjectIndexById(id) {
-      var index = -1;
+      let index = -1
       this.objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
@@ -696,13 +732,14 @@ export default {
         product: '',
         url: '',
         country: '',
+        domains: '',
       }
     },
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
         && obj.product != '' && obj.product.id >= 1
-        && obj.url.length > 0)
+          && obj.url.length > 0 && obj.domains.length > 0)
     },
     createObject() {
       this.$vs.loading()
@@ -711,11 +748,14 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
+      let domains = this.newObject['create'].domains.replace('\n', ',')
+
       let data = {
         name: this.newObject['create'].name,
         product_id: this.newObject['create'].product.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
+        domains: domains
       }
 
       if (this.newObject['create'].path != '') {
@@ -917,6 +957,13 @@ export default {
 
       this.$vs.loading.close()
     },
+    fileManagerGetCurrentDirLevel() {
+      let path = this.fileManager.dirLevel[0]
+      for (let i = 1; i < this.fileManager.dirLevel.length; i++) {
+        path += '/' + this.fileManager.dirLevel[i]
+      }
+      return path
+    },
     resetDirLevel() {
       this.fileManager.dirLevel = []
       this.fileManager.dirLevel.push(this.currentObject.path)
@@ -992,11 +1039,6 @@ export default {
       let lastIndex = pathname.lastIndexOf('/') + 1
       fileName = pathname.substring(lastIndex)
       path = pathname.substring(0, lastIndex)
-
-      // TODO: to delete
-      console.log("pathname", pathname)
-      console.log("path", path)
-      console.log("fileName", fileName)
 
       let formData = new FormData()
       formData.append('path', path)
@@ -1076,6 +1118,72 @@ export default {
     dontCreateFileOrDir() {
       this.isCreatingFileOrDir = false
     },
+    showFilePicker(type) {
+      if (type == 'directories') {
+        this.$refs.directoriesUpload.click()
+      } else {
+        this.$refs.filesUpload.click()
+      }
+    },
+    onFilesUploadChange(event) {
+      this.filesToUpload = event.target.files
+      this.confirmUploadPopup()
+    },
+    isValidUpload() {
+      return this.filesToUpload.length > 0
+    },
+    confirmUploadPopup() {
+      if (!this.isValidUpload()) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Upload confirmation',
+        text: 'Are you sure you want to upload ' + this.filesToUpload.length + ' file(s)?',
+        accept: this.uploadFiles
+      })
+    },
+    async uploadFiles() {
+      // TODO: to delete
+      console.log("uploadFiles()");
+      for (let i = 0; i < this.filesToUpload.length; i++)
+        console.log(this.filesToUpload[i])
+
+      this.$vs.loading()
+
+      let headers = {
+        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+        'Content-Type': 'multipart/form-data',
+      }
+
+      for (let i = 0; i < this.filesToUpload.length; i++) {
+        let f = this.filesToUpload[i]
+        let path = f.webkitRelativePath.substring(0,f.webkitRelativePath.lastIndexOf('/') + 1);
+        path = this.fileManagerGetCurrentDirLevel() + '/' + path
+
+        let formData = new FormData()
+        formData.append('path', path)
+        formData.append('file', f)
+
+        await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/upload', formData, { headers })
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'File saved successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      // Refresh without losing current dir level
+      let oldDirLevel = this.fileManager.dirLevel
+      await this.refreshFileManager(this.currentObject.id)
+      for (let i = 1; i < oldDirLevel.length; i++) {
+        this.openDir(oldDirLevel[i])
+      }
+    },
     tabber(event) {
       if (event) {
         let text = this.fileManager.fileNewContent
@@ -1137,7 +1245,7 @@ export default {
     this.$vs.loading.close()
 
     // TODO: to delete (THIS IS ONLY FOR DEBUG PURPOSES)
-    //this.showFileManager(379)
+    //this.showFileManager(380)
   },
   mounted () {
   }
