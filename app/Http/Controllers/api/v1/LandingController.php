@@ -17,7 +17,8 @@ use App\Http\Resources\api\v1\LandingStatsResource;
 
 class LandingController extends Controller
 {
-    private function getServerpilotClient() {
+    private function serverpilotGetClient()
+    {
         $serverpilotConfig = [
             'id' => env('SERVERPILOT_CLIENT_ID'),
             'key' => env('SERVERPILOT_API_KEY'),
@@ -25,7 +26,157 @@ class LandingController extends Controller
         return new \ServerPilot($serverpilotConfig);
     }
 
-    private function loadServerpilotConfig() {
+    private function cloudflareGetHeaders()
+    {
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . env('CLOUDFLARE_API_KEY'),
+        ];
+        return $headers;
+    }
+
+    private function cloudflareGetZones()
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones';
+        $headers = $this->cloudflareGetHeaders();
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        }
+
+        return $toReturn;
+    }
+
+    private function cloudflareCreateZone($name)
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones';
+        $headers = $this->cloudflareGetHeaders();
+        $params = [
+            'name' => $name,
+            'account' => [
+                'id' => env('CLOUDFLARE_ACCOUNT_ID'),
+            ],
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        }
+
+        return $toReturn;
+    }
+
+    private function cloudflareDeleteZone($id)
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones/' . $id;
+        $headers = $this->cloudflareGetHeaders();
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = true;
+        }
+
+        return $toReturn;
+    }
+
+    private function cloudflareGetDNSRecords($zone_id)
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records';
+        $headers = $this->cloudflareGetHeaders();
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        }
+
+        return $toReturn;
+    }
+
+    private function cloudflareAddDNSRecord($zone_id, $type, $name, $value)
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records';
+        $headers = $this->cloudflareGetHeaders();
+        $params = [
+            'type' => $type,
+            'name' => $name,
+            'content' => $value,
+            'ttl' => 1,
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        }
+
+        return $toReturn;
+    }
+
+    private function cloudflareDeleteDNSRecord($zone_id, $dns_record_id)
+    {
+        $toReturn = false;
+
+        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records/' . $dns_record_id;
+        $headers = $this->cloudflareGetHeaders();
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = true;
+        }
+
+        return $toReturn;
     }
 
     /**
@@ -86,7 +237,6 @@ class LandingController extends Controller
      * @bodyParam name string required Landing's name
      * @bodyParam path string Landing's path
      * @bodyParam product_id int required Landing's product id
-     * @bodyParam domains string required Domains list separated by comma
      * @bodyParam url string required Landing's URL
      * @bodyParam country string Country
      *
@@ -104,36 +254,77 @@ class LandingController extends Controller
             'name' => 'required|string|min:3',
             'path' => 'string|landing_path|unique:landings,path',
             'product_id' => 'required|integer|exists:products,id',
-            'domains' => 'required|array',
-            'domains.*' => 'string',
             'url' => 'required|url',
             'country' => 'string|min:1',
         ]);
         $params['user_id'] = Auth::user()->id;
 
+        $path = '';
         if (!isset($params['path'])) {
             $params['path'] = Str::slug($params['name'], '-');
+            $path = $params['path'];
         }
 
-        $landing = Landing::create($params);
+        $domain = parse_url($params['url'])['host'];
 
         // TODO: Check if path already exists (change it if it already exists?)
 
         // Create landing's apps (folder and virtualhost) on landings' server with ServerPilot
-        $this->loadServerpilotConfig();
-        $serverpilot = $this->getServerpilotClient();
+        $serverpilot = $this->serverpilotGetClient();
         $app = $serverpilot->app_create(
-            $landing->path,
+            $path,
             env('SERVERPILOT_LANDINGS_SYSUSER_ID'),
             'php7.4',
-            ['italiaspecialiofferta.com'],
+            [$domain],
             []
         );
-        //$serverpilot->ssl_auto($app->data->id); // TODO: Test if it works without this shit!
-        $serverpilot->ssl_force($app->data->id, true);
+        //$serverpilot->ssl_auto($app->data->id);
+        //$serverpilot->ssl_force($app->data->id, true);
 
         // Set domain's record on CloudFlare
-        // TODO
+        $zones = $this->cloudflareGetZones();
+        if ($zones !== false) {
+            $zone = null;
+            foreach ($zones as $z) {
+                if ($z['name'] == $domain) {
+                    $zone = $z;
+                    break;
+                }
+            }
+
+            if ($zone === null) {
+                $zone = $this->cloudflareCreateZone($domain);
+            }
+
+            if ($zone === null || $zone === false) {
+            }
+
+            $dnsRecords = $this->cloudflareGetDNSRecords($zone['id']);
+            $dnsRecord = null;
+            if ($dnsRecords !== false) {
+                foreach ($dnsRecords as $r) {
+                    if ($r['type'] == 'A') {
+                        $dnsRecord = $r;
+                        break;
+                    }
+                }
+            }
+
+            if ($dnsRecord !== null) {
+                $this->cloudflareDeleteDNSRecord($zone['id'], $dnsRecord['id']);
+            }
+
+            $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $domain, env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
+
+            if ($dnsRecord !== false) {
+                $landing = Landing::create($params);
+            } else {
+                // TODO: Log error?
+            }
+        } else {
+            // TODO: Log error?
+        }
+
 
         return response([
             "message" => "Landing created",

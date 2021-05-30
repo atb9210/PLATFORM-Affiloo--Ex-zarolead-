@@ -17,7 +17,7 @@ class CreateLandingsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned();
             $table->string('name');
-            $table->string('path')->unique();
+            $table->string('path')->unique()->nullable();
             $table->bigInteger('product_id')->unsigned();
             $table->string('url');
             $table->string('country')->nullable();

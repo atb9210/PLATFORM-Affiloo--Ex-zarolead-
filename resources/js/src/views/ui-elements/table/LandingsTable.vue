@@ -319,15 +319,6 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Domains*</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-textarea v-model="newObject['create'].domains" height="10rem" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
                     <span>URL*</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -471,7 +462,6 @@ export default {
           product: '',
           url: '',
           country: '',
-          domains: '',
         },
         'edit': {
           name: '',
@@ -479,7 +469,6 @@ export default {
           product: '',
           url: '',
           country: '',
-          domains: '',
         },
       },
       dateFormat: 'yyyy-MM-dd',
@@ -732,14 +721,13 @@ export default {
         product: '',
         url: '',
         country: '',
-        domains: '',
       }
     },
     isValidForm(type) {
       let obj = this.newObject[type]
       return (obj.name.length > 0
         && obj.product != '' && obj.product.id >= 1
-          && obj.url.length > 0 && obj.domains.length > 0)
+          && obj.url.length > 0)
     },
     createObject() {
       this.$vs.loading()
@@ -748,14 +736,11 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      let domains = this.newObject['create'].domains.replace('\n', ',')
-
       let data = {
         name: this.newObject['create'].name,
         product_id: this.newObject['create'].product.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
-        domains: domains
       }
 
       if (this.newObject['create'].path != '') {
