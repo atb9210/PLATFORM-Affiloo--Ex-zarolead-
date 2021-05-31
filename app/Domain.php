@@ -12,7 +12,7 @@ class Domain extends Model
      * @var array
      */
     protected $fillable = [
-        'url',
+        'domain', 'path',
     ];
 
     public function flows()

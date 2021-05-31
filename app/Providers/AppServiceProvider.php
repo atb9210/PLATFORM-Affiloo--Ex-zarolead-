@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             return ($value === 'false' || $value === false || $value === '0' || $value === 0);
         });
         Validator::extend('landing_path', function($attribute, $value, $parameters, $validator) {
-            return preg_match('/^[A-Za-z]{1}[A-Za-z0-9-]+[A-Za-z]{1}$/', $value);
+            return preg_match('/^[A-Za-z]{1}[A-Za-z0-9-]+[A-Za-z0-9]{1}$/', $value);
         });
 
         // SFTP driver

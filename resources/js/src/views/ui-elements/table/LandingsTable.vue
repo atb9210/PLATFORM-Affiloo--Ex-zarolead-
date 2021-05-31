@@ -11,277 +11,187 @@
 <template>
     <vx-card title="Landings" code-toggler>
 
-        <vue-context ref="upload_context_menu" lazy>
+        <p class="flex items-center mb-4">
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+        </p>
+
+        <div v-if="showFilters" class="mb-12">
+            <div class="vx-row mb-2">
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                </div>
+                <div class="vx-col">
+                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>From</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <label>To</label>
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                </div>
+            </div>
+            <div class="vx-row mb-2">
+                <div class="vx-col md:w-1/3 w-full">
+                    <label>Product</label>
+                    <vs-select autocomplete v-model="filters.product">
+                        <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
+                    </vs-select>
+                </div>
+            </div>
+            <div class="vx-row mt-6">
+                <div class="vx-col w-full">
+                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                </div>
+            </div>
+        </div>
+
+        <vs-dropdown vs-trigger-click class="cursor-pointer">
+            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
+                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
+                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+            </div>
+            <vs-dropdown-menu>
+                <vs-dropdown-item @click="maxItems = 20">
+                    <span>20</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 50">
+                    <span>50</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 100">
+                    <span>100</span>
+                </vs-dropdown-item>
+                <vs-dropdown-item @click="maxItems = 150">
+                    <span>150</span>
+                </vs-dropdown-item>
+            </vs-dropdown-menu>
+        </vs-dropdown>
+
+        <vue-context ref="context_menu" v-slot="{ data }">
             <li>
-              <a href="#" @click="$refs.upload_context_menu.close();showFilePicker('files');" class="flex items-center text-sm">
-                <feather-icon icon="FileIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Files</span>
+              <a href="#" @click="$refs.context_menu.close();showLandingsStats(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show stats</span>
+              </a>
+            </li>
+            <!--
+            <li>
+              <a href="#" v-clipboard:copy="data.url" v-clipboard:success="onUrlCopied" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Copy URL</span>
+              </a>
+            </li>
+            -->
+            <li>
+              <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.upload_context_menu.close();showFilePicker('directories');" class="flex items-center text-sm">
-                <feather-icon icon="FolderIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Directories</span>
+              <a href="#" @click="$refs.context_menu.close();showFormCodePopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CodeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show code</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.upload_context_menu.close()" class="flex items-center text-sm">
+              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
               </a>
             </li>
         </vue-context>
 
-        <p class="flex items-center mb-4">
-            <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button v-if="view == 'landings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
-            <vs-button v-if="view == 'landings'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+        <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
-            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'landings'"></vs-button>
-            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="startCreatingFileOrDir"></vs-button>
-            <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click.prevent="$refs.upload_context_menu.open($event)" @contextmenu.prevent="$refs.upload_context_menu.open($event)"></vs-button>
-        </p>
+            <template slot="thead">
+                <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="product.name">Product</vs-th>
+                <vs-th sort-key="visits">Visits</vs-th>
+                <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="cr">CR</vs-th>
+                <vs-th sort-key="epv">EPV</vs-th>
+            </template>
 
-        <div v-if="view == 'landings'">
-            <div v-if="showFilters" class="mb-12">
-                <div class="vx-row mb-2">
-                    <div class="vx-col">
-                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
-                    </div>
-                    <div class="vx-col">
-                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
-                    </div>
-                    <div class="vx-col">
-                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
-                    </div>
-                    <div class="vx-col">
-                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
-                    </div>
-                </div>
+            <template slot-scope="{data}">
+                <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                <div class="vx-row mb-2">
-                    <div class="vx-col md:w-1/2 w-full">
-                        <label>From</label>
-                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
-                    </div>
-                    <div class="vx-col md:w-1/2 w-full">
-                        <label>To</label>
-                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
-                    </div>
-                </div>
-                <div class="vx-row mb-2">
-                    <div class="vx-col md:w-1/3 w-full">
-                        <label>Product</label>
-                        <vs-select autocomplete v-model="filters.product">
-                            <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" />
-                        </vs-select>
-                    </div>
-                </div>
-                <div class="vx-row mt-6">
-                    <div class="vx-col w-full">
-                        <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
-                        <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
-                    </div>
-                </div>
-            </div>
-
-            <vs-dropdown vs-trigger-click class="cursor-pointer">
-                <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                    <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
-                </div>
-                <vs-dropdown-menu>
-                    <vs-dropdown-item @click="maxItems = 20">
-                        <span>20</span>
-                    </vs-dropdown-item>
-                    <vs-dropdown-item @click="maxItems = 50">
-                        <span>50</span>
-                    </vs-dropdown-item>
-                    <vs-dropdown-item @click="maxItems = 100">
-                        <span>100</span>
-                    </vs-dropdown-item>
-                    <vs-dropdown-item @click="maxItems = 150">
-                        <span>150</span>
-                    </vs-dropdown-item>
-                </vs-dropdown-menu>
-            </vs-dropdown>
-
-            <vue-context ref="context_menu" v-slot="{ data }">
-                <li>
-                  <a href="#" @click="$refs.context_menu.close();showLandingsStats(data.id);" class="flex items-center text-sm">
-                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Show stats</span>
-                  </a>
-                </li>
-                <!--
-                <li>
-                  <a href="#" v-clipboard:copy="data.url" v-clipboard:success="onUrlCopied" class="flex items-center text-sm">
-                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Copy URL</span>
-                  </a>
-                </li>
-                -->
-                <li>
-                  <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Edit</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" @click="$refs.context_menu.close();showFormCodePopup(data.id);" class="flex items-center text-sm">
-                    <feather-icon icon="CodeIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Show code</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" @click="$refs.context_menu.close();showFileManager(data.id);" class="flex items-center text-sm">
-                    <feather-icon icon="FolderIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">File Manager</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
-                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Close</span>
-                  </a>
-                </li>
-            </vue-context>
-
-            <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
-
-                <template slot="thead">
-                    <vs-th sort-key="id">Id</vs-th>
-                    <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="product.name">Product</vs-th>
-                    <vs-th sort-key="visits">Visits</vs-th>
-                    <vs-th sort-key="leads">Leads</vs-th>
-                    <vs-th sort-key="total_commission">Commission</vs-th>
-                    <vs-th sort-key="cr">CR</vs-th>
-                    <vs-th sort-key="epv">EPV</vs-th>
-                </template>
-
-                <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-
-                        <vs-td :data="data[indextr].id">
-                            {{data[indextr].id}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
-                                <vs-chip>
-                                    {{data[indextr].name}}
-                                </vs-chip>
-                            </div>
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].product.name">
-                            {{data[indextr].product.name}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].visits">
-                            {{data[indextr].visits}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].leads">
-                            {{data[indextr].leads}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].total_commission">
-                            € {{data[indextr].total_commission.toFixed(2)}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].cr">
-                            {{data[indextr].cr.toFixed(2)}} %
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].epv">
-                            <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
-                        </vs-td>
-
-                    </vs-tr>
-
-                    <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>
-                        {{totalStats.visits}}
+                    <vs-td :data="data[indextr].id">
+                        {{data[indextr].id}}
                     </vs-td>
-                    <vs-td>
-                        {{totalStats.leads}}
+
+                    <vs-td :data="data[indextr].name">
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                            <vs-chip>
+                                {{data[indextr].name}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
-                    <vs-td>
-                        € {{totalStats.total_commission.toFixed(2)}}
+
+                    <vs-td :data="data[indextr].product.name">
+                        {{data[indextr].product.name}}
                     </vs-td>
-                    <vs-td>
-                        {{totalStats.cr.toFixed(2)}} %
+
+                    <vs-td :data="data[indextr].visits">
+                        {{data[indextr].visits}}
                     </vs-td>
-                    <vs-td>
-                        <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
+
+                    <vs-td :data="data[indextr].leads">
+                        {{data[indextr].leads}}
                     </vs-td>
-                    <!-- END TOTAL STATS-->
-                </template>
-            </vs-table>
-        </div>
 
-        <div class="vx-row" v-else-if="view == 'file_manager'">
-            <!-- File explorer -->
-            <input type="file" ref="filesUpload" class="hidden" multiple @change="onFilesUploadChange">
-            <input type="file" ref="directoriesUpload" class="hidden" webkitdirectory directory multiple @change="onFilesUploadChange">
-            <div class="vx-col sm:w-1/2 w-full">
-                <vs-table stripe multiple v-model="selectedFilesAndDirectories" search :data="currentDirectory">
+                    <vs-td :data="data[indextr].total_commission">
+                        € {{data[indextr].total_commission.toFixed(2)}}
+                    </vs-td>
 
-                    <template slot="header">
-                        <span>
-                            <a :key="index" v-for="(item, index) in fileManager.dirLevel" @click="goToDirLevel(index)" class="dir-level">{{item}}/</a>
-                        </span>
-                    </template>
-                    <template slot="thead">
-                        <vs-th sort-key="name">Name</vs-th>
-                        <vs-th></vs-th>
-                        <vs-th></vs-th>
-                    </template>
+                    <vs-td :data="data[indextr].cr">
+                        {{data[indextr].cr.toFixed(2)}} %
+                    </vs-td>
 
-                    <template slot-scope="{data}">
+                    <vs-td :data="data[indextr].epv">
+                        <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
+                    </vs-td>
 
-                        <vs-td v-if="isCreatingFileOrDir">
-                        </vs-td>
-                        <vs-td v-if="isCreatingFileOrDir">
-                            <vs-input ref="createFileOrDirInput" v-model="createFileOrDirValue" @keyup.enter="createFileOrDir()" @keyup.escape="dontCreateFileOrDir()" icon-pack="feather" icon="icon-file" placeholder="folder/ or file.ext" class="is-label-placeholder"></vs-input>
-                        </vs-td>
-                        <vs-td v-if="isCreatingFileOrDir">
-                        </vs-td>
-                        <vs-td v-if="isCreatingFileOrDir">
-                        </vs-td>
+                </vs-tr>
 
-                        <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-
-                            <vs-td :data="data[indextr].name">
-                                <vs-chip transparent :color="fileManagerObjectColor[tr.type]" @dblclick="(tr.type == 'directory') ? openDir(tr.name) : openFile(tr.pathname)">
-                                    <vs-avatar icon-pack="feather" :icon="(tr.type == 'directory') ? 'icon-folder' : 'icon-file'"  @dblclick="(tr.type == 'directory') ? openDir(tr.name) : openFile(tr.pathname)" />
-                                    {{data[indextr].name}}
-                                </vs-chip>
-                            </vs-td>
-
-                            <vs-td></vs-td>
-                            <vs-td></vs-td>
-
-                        </vs-tr>
-                    </template>
-                </vs-table>
-            </div>
-
-            <!-- File editor -->
-            <div class="vx-col sm:w-1/2 w-full">
-                <p class="flex items-center mb-4">
-                    <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveFile"></vs-button>
-                    <vs-button v-if="view == 'file_manager'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-x" @click="cancelFileEdit"></vs-button>
-                </p>
-                <vs-textarea class="file-editor" :label="fileManager.currentFile + ((fileManager.fileContent != fileManager.fileNewContent) ? ' (* edited)' : '')" v-model="fileManager.fileNewContent" height="50rem" @keydown.tab.prevent="tabber($event)" />
-            </div>
-        </div>
+                <!-- TOTAL STATS -->
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td></vs-td>
+                <vs-td>
+                    {{totalStats.visits}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.leads}}
+                </vs-td>
+                <vs-td>
+                    € {{totalStats.total_commission.toFixed(2)}}
+                </vs-td>
+                <vs-td>
+                    {{totalStats.cr.toFixed(2)}} %
+                </vs-td>
+                <vs-td>
+                    <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
+                </vs-td>
+                <!-- END TOTAL STATS-->
+            </template>
+        </vs-table>
 
         <!-- Create popup -->
         <vs-popup title="Create Landing" :active.sync="showPopup['create']">
@@ -291,7 +201,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name*</span>
+                    <span>Name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].name" />
@@ -300,17 +210,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Path (optional)</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['create'].path" />
-                    <span v-if="newObject['create'].path == ''">Default path: {{ defaultPath }}</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Product*</span>
+                    <span>Product</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="products" v-model="newObject['create'].product" />
@@ -319,7 +219,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>URL*</span>
+                    <span>URL</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="newObject['create'].url" />
@@ -328,7 +228,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country*</span>
+                    <span>Country</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].country" />
@@ -348,7 +248,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name*</span>
+                    <span>Name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].name" />
@@ -357,17 +257,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Path (optional)</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['edit'].path" />
-                    <span v-if="newObject['edit'].path == ''">Default path: {{ defaultPath }}</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Products*</span>
+                    <span>Products</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <v-select :options="products" v-model="newObject['edit'].product" />
@@ -376,7 +266,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>URL*</span>
+                    <span>URL</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="newObject['edit'].url" />
@@ -385,7 +275,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Country*</span>
+                    <span>Country</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].country" />
@@ -423,14 +313,6 @@
 import vSelect from 'vue-select'
 import { VueContext } from 'vue-context'
 
-function stringToSlug(Text) {
-  return Text
-    .toLowerCase()
-    .replace(/ /g,'-')
-    .replace(/[^\w-]+/g,'')
-    ;
-}
-
 export default {
   components: {
     'v-select': vSelect,
@@ -438,8 +320,6 @@ export default {
   },
   data () {
     return {
-      view: 'landings',
-
       objects: [],
       selected: [],
       deleted: [],
@@ -458,14 +338,12 @@ export default {
       newObject: {
         'create': {
           name: '',
-          path: '',
           product: '',
           url: '',
           country: '',
         },
         'edit': {
           name: '',
-          path: '',
           product: '',
           url: '',
           country: '',
@@ -495,25 +373,6 @@ export default {
       landingCodeId: -1,
       formCode: '',
       defaultFormId: -1,
-
-      selectedFilesAndDirectories: [],
-      fileManager: {
-        dirLevel: [],
-        content: [],
-        fileContent: '',
-        fileNewContent: '',
-        currentFile: '',
-      },
-      currentDirectory: [],
-      isCreatingFileOrDir: false,
-      createFileOrDirValue: '',
-
-      filesToUpload: [],
-
-      fileManagerObjectColor: {
-        'directory': '#197da8',
-        'file': '',
-      },
     }
   },
   computed: {
@@ -533,18 +392,6 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
-    },
-    defaultPath () {
-      let type = ''
-      if (this.showPopup['create']) {
-        type = 'create'
-      } else if (this.showPopup['edit']) {
-        type = 'edit'
-      } else {
-        return ''
-      }
-      let name = this.newObject[type].name
-      return stringToSlug(name)
     },
   },
   methods: {
@@ -717,7 +564,6 @@ export default {
     clearForm(type) {
       this.newObject[type] = {
         name: '',
-        path: '',
         product: '',
         url: '',
         country: '',
@@ -741,10 +587,6 @@ export default {
         product_id: this.newObject['create'].product.id,
         url: this.newObject['create'].url,
         country: this.newObject['create'].country,
-      }
-
-      if (this.newObject['create'].path != '') {
-        data.path = this.newObject['create'].path
       }
 
       // Retrieve landings
@@ -777,7 +619,6 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
       this.newObject['edit'] = {
         name: obj.name,
-        path: (obj.path === null) ? '' : obj.path,
         product: {
           id: obj.product.id,
           label: obj.product.name,
@@ -800,7 +641,6 @@ export default {
       }
       let data = {
         name: this.newObject['edit'].name,
-        path: this.newObject['edit'].path,
         product_id: this.newObject['edit'].product.id,
         url: this.newObject['edit'].url,
         country: this.newObject['edit'].country,
@@ -921,265 +761,6 @@ export default {
       this.totalStats.cr = cr
       this.totalStats.epv = epv
     },
-    async showFileManager(id) {
-      await this.refreshFileManager(id)
-    },
-    async refreshFileManager(id) {
-      this.$vs.loading()
-
-      this.currentObject = this.objects[this.getObjectIndexById(id)]
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      // Retrieve directory content
-      const response = await this.$http.get('/api/v1/landings/' + id + '/ls', { headers })
-      this.fileManager.content = response.data.data
-      this.resetDirLevel()
-
-      this.view = 'file_manager'
-
-      this.$vs.loading.close()
-    },
-    fileManagerGetCurrentDirLevel() {
-      let path = this.fileManager.dirLevel[0]
-      for (let i = 1; i < this.fileManager.dirLevel.length; i++) {
-        path += '/' + this.fileManager.dirLevel[i]
-      }
-      return path
-    },
-    resetDirLevel() {
-      this.fileManager.dirLevel = []
-      this.fileManager.dirLevel.push(this.currentObject.path)
-      this.currentDirectory = this.fileManager.content
-      this.selectedFilesAndDirectories = []
-    },
-    goToDirLevel(index) {
-      if (index < 0 && index >= this.fileManager.dirLevel.length) return
-
-      this.currentDirectory = this.fileManager.content
-
-      let newDirLevel = []
-      newDirLevel.push(this.fileManager.dirLevel[0])
-
-      for (let i = 1; i <= index; i++) {
-        for (let j = 0; j < this.currentDirectory.length; j++) {
-          if (this.currentDirectory[j].name == this.fileManager.dirLevel[i]) {
-            this.currentDirectory = this.currentDirectory[j].data
-            break
-          }
-        }
-        newDirLevel.push(this.fileManager.dirLevel[i])
-      }
-
-      this.fileManager.dirLevel = newDirLevel
-      this.selectedFilesAndDirectories = []
-    },
-    openDir(name) {
-      let newDirLevel = this.fileManager.dirLevel
-
-      for (let j = 0; j < this.currentDirectory.length; j++) {
-        if (this.currentDirectory[j].name == name) {
-          this.currentDirectory = this.currentDirectory[j].data
-          newDirLevel.push(name)
-          break
-        }
-      }
-
-      this.fileManager.dirLevel = newDirLevel
-      this.selectedFilesAndDirectories = []
-    },
-    async openFile(pathname) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let data = {
-        pathname: pathname,
-      }
-
-      const response = await this.$http.get('/api/v1/landings/' + this.currentObject.id + '/cat', { headers, params: data })
-
-      this.fileManager.currentFile = pathname
-      this.fileManager.fileContent = response.data.data
-      this.fileManager.fileNewContent = this.fileManager.fileContent
-
-      this.$vs.loading.close()
-    },
-    async saveFile() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'multipart/form-data',
-      }
-
-      let path = ''
-      let fileName = ''
-      let fileContent = this.fileManager.fileNewContent
-
-      let pathname = this.fileManager.currentFile
-      let lastIndex = pathname.lastIndexOf('/') + 1
-      fileName = pathname.substring(lastIndex)
-      path = pathname.substring(0, lastIndex)
-
-      let formData = new FormData()
-      formData.append('path', path)
-      let blob = new Blob([fileContent])
-      formData.append('file', blob, fileName)
-
-      const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/upload', formData, { headers })
-
-      this.fileManager.fileContent = this.fileManager.fileNewContent
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'File saved successfully',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-    },
-    cancelFileEdit() {
-      this.fileManager.fileNewContent = this.fileManager.fileContent
-    },
-    startCreatingFileOrDir() {
-      this.createFileOrDirValue = ''
-      this.isCreatingFileOrDir = true
-
-      this.$nextTick(() => {
-        let inputEl = this.$refs.createFileOrDirInput.$el.querySelector('input')
-        inputEl.focus()
-      });
-    },
-    async createFileOrDir() {
-      this.$vs.loading()
-
-      let pathname = this.createFileOrDirValue
-      let type = 'file'
-      if (pathname.charAt(pathname.length - 1) == '/') {
-        type = 'folder'
-      }
-
-      for (let i = this.fileManager.dirLevel.length - 1; i >= 0; i--) {
-        pathname = this.fileManager.dirLevel[i] + '/' + pathname
-      }
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let data = {
-        pathname: pathname,
-      }
-
-      if (type == 'file') {
-        const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/touch', data, { headers })
-      } else if (type == 'folder') {
-        const response = await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/mkdir', data, { headers })
-      }
-
-      this.isCreatingFileOrDir = false
-      this.$vs.notify({
-        title: 'Success',
-        text: 'File/folder created successfully',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      // Refresh without losing current dir level
-      let oldDirLevel = this.fileManager.dirLevel
-      await this.refreshFileManager(this.currentObject.id)
-      for (let i = 1; i < oldDirLevel.length; i++) {
-        this.openDir(oldDirLevel[i])
-      }
-    },
-    dontCreateFileOrDir() {
-      this.isCreatingFileOrDir = false
-    },
-    showFilePicker(type) {
-      if (type == 'directories') {
-        this.$refs.directoriesUpload.click()
-      } else {
-        this.$refs.filesUpload.click()
-      }
-    },
-    onFilesUploadChange(event) {
-      this.filesToUpload = event.target.files
-      this.confirmUploadPopup()
-    },
-    isValidUpload() {
-      return this.filesToUpload.length > 0
-    },
-    confirmUploadPopup() {
-      if (!this.isValidUpload()) return
-      this.$vs.dialog({
-        type: 'confirm',
-        color: 'primary',
-        title: 'Upload confirmation',
-        text: 'Are you sure you want to upload ' + this.filesToUpload.length + ' file(s)?',
-        accept: this.uploadFiles
-      })
-    },
-    async uploadFiles() {
-      // TODO: to delete
-      console.log("uploadFiles()");
-      for (let i = 0; i < this.filesToUpload.length; i++)
-        console.log(this.filesToUpload[i])
-
-      this.$vs.loading()
-
-      let headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'multipart/form-data',
-      }
-
-      for (let i = 0; i < this.filesToUpload.length; i++) {
-        let f = this.filesToUpload[i]
-        let path = f.webkitRelativePath.substring(0,f.webkitRelativePath.lastIndexOf('/') + 1);
-        path = this.fileManagerGetCurrentDirLevel() + '/' + path
-
-        let formData = new FormData()
-        formData.append('path', path)
-        formData.append('file', f)
-
-        await this.$http.post('/api/v1/landings/' + this.currentObject.id + '/upload', formData, { headers })
-      }
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'File saved successfully',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      // Refresh without losing current dir level
-      let oldDirLevel = this.fileManager.dirLevel
-      await this.refreshFileManager(this.currentObject.id)
-      for (let i = 1; i < oldDirLevel.length; i++) {
-        this.openDir(oldDirLevel[i])
-      }
-    },
-    tabber(event) {
-      if (event) {
-        let text = this.fileManager.fileNewContent
-        let originalSelectionStart = event.target.selectionStart
-        let textStart = text.slice(0, originalSelectionStart)
-        let textEnd =  text.slice(originalSelectionStart)
-        this.fileManager.fileNewContent = `${textStart}\t${textEnd}`
-        event.target.value = this.fileManager.fileNewContent
-        event.target.selectionEnd = event.target.selectionStart = originalSelectionStart + 1
-      }
-    },
   },
   async created() {
     this.resetFilters()
@@ -1228,25 +809,9 @@ export default {
     })
 
     this.$vs.loading.close()
-
-    // TODO: to delete (THIS IS ONLY FOR DEBUG PURPOSES)
-    //this.showFileManager(380)
   },
   mounted () {
   }
 }
 
 </script>
-
-<style>
-.dir-level {
-    text-decoration: underline;
-    margin-right: 0.4em;
-    cursor: pointer;
-}
-
-.file-editor > h4 {
-    background-color: #bababa;
-    border: 1px solid white;
-}
-</style>

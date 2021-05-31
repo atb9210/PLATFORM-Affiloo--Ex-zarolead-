@@ -74,18 +74,6 @@ Route::get('landings/{id}/stats', 'api\v1\LandingController@stats')->middleware(
 Route::get('landings/{id}/code', 'api\v1\LandingController@code')->middleware('auth:api')
     ->name('landings.code');
 
-// TODO: Change path?
-Route::get('landings/{id}/ls', 'api\v1\LandingController@listFilesAndDirectories')->middleware('auth:api')
-    ->name('landings.ls');
-Route::get('landings/{id}/cat', 'api\v1\LandingController@getFileContent')->middleware('auth:api')
-    ->name('landings.cat');
-Route::post('landings/{id}/touch', 'api\v1\LandingController@createFile')->middleware('auth:api')
-    ->name('landings.touch');
-Route::post('landings/{id}/mkdir', 'api\v1\LandingController@createDirectory')->middleware('auth:api')
-    ->name('landings.mkdir');
-Route::post('landings/{id}/upload', 'api\v1\LandingController@uploadFile')->middleware('auth:api')
-    ->name('landings.upload');
-
 /* Flows routes */
 Route::apiResource('flows', 'api\v1\FlowController')->except([
     'create', 'edit',
@@ -156,6 +144,20 @@ Route::post('networks/{id}/params/validate', 'api\v1\NetworkController@validateP
 Route::apiResource('domains', 'api\v1\DomainController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+
+// TODO: Change path?
+Route::get('domains/{id}/ls', 'api\v1\DomainController@listFilesAndDirectories')->middleware('auth:api')
+    ->name('domains.ls');
+Route::get('domains/{id}/cat', 'api\v1\DomainController@getFileContent')->middleware('auth:api')
+    ->name('domains.cat');
+Route::post('domains/{id}/touch', 'api\v1\DomainController@createFile')->middleware('auth:api')
+    ->name('domains.touch');
+Route::post('domains/{id}/mkdir', 'api\v1\DomainController@createDirectory')->middleware('auth:api')
+    ->name('domains.mkdir');
+Route::post('domains/{id}/upload', 'api\v1\DomainController@uploadFile')->middleware('auth:api')
+    ->name('domains.upload');
+Route::post('domains/{id}/rm', 'api\v1\DomainController@deleteFileOrDirectory')->middleware('auth:api')
+    ->name('domains.rm');
 
 /* Product medias routes */
 Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
