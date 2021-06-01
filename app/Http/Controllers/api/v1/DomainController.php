@@ -116,14 +116,8 @@ class DomainController extends Controller
                 $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $params['domain'], env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
                 if ($dnsRecord !== false) {
                     $domain = Domain::create($params);
-                } else {
-                    Log::error('Cannot create DNS record on Cloudflare for the zone ' . $zone['name']);
                 }
-            } else {
-                Log::error('Cannot create zone ' . $params['domain'] . ' on Cloudflare');
             }
-        } else {
-            Log::error('Cannot get zones list on Cloudflare');
         }
 
         if($domain === null) {
@@ -206,14 +200,8 @@ class DomainController extends Controller
                     $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $params['domain'], env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
                     if ($dnsRecord !== false) {
                         $domain->update($params);
-                    } else {
-                        Log::error('Cannot create DNS record on Cloudflare for the zone ' . $zone['name']);
                     }
-                } else {
-                    Log::error('Cannot create zone ' . $params['domain'] . ' on Cloudflare');
                 }
-            } else {
-                Log::error('Cannot get zones list on Cloudflare');
             }
         }
 
@@ -254,8 +242,6 @@ class DomainController extends Controller
                     break;
                 }
             }
-        } else {
-            Log::error('Cannot get zones list on Cloudflare');
         }
 
         // Delete the domain
@@ -522,6 +508,8 @@ class DomainController extends Controller
         $response = json_decode($response, true);
         if (isset($response['success']) && $response['success']) {
             $toReturn = $response['result'];
+        } else {
+            Log::error('Cannot get zones list on Cloudflare - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;
@@ -551,6 +539,8 @@ class DomainController extends Controller
         $response = json_decode($response, true);
         if (isset($response['success']) && $response['success']) {
             $toReturn = $response['result'];
+        } else {
+            Log::error('Cannot create zone ' . $params['domain'] . ' on Cloudflare - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;
@@ -623,6 +613,8 @@ class DomainController extends Controller
         $response = json_decode($response, true);
         if (isset($response['success']) && $response['success']) {
             $toReturn = $response['result'];
+        } else {
+            Log::error('Cannot create DNS record on Cloudflare for the zone ' . $zone['name'] . ' - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;
