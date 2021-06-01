@@ -540,7 +540,7 @@ class DomainController extends Controller
         if (isset($response['success']) && $response['success']) {
             $toReturn = $response['result'];
         } else {
-            Log::error('Cannot create zone ' . $params['domain'] . ' on Cloudflare - RESPONSE: ' . json_encode($response));
+            Log::error('Cannot create zone ' . $name . ' on Cloudflare - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;
@@ -614,7 +614,7 @@ class DomainController extends Controller
         if (isset($response['success']) && $response['success']) {
             $toReturn = $response['result'];
         } else {
-            Log::error('Cannot create DNS record on Cloudflare for the zone ' . $zone['name'] . ' - RESPONSE: ' . json_encode($response));
+            Log::error('Cannot create DNS record on Cloudflare for the zone ' . $name . ' - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;
