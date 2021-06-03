@@ -34,6 +34,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" @click="showForm('zarocloner')"></vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
 
             <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'domains'"></vs-button>
@@ -253,11 +254,59 @@
             </div>
         </vs-popup>
 
+        <!-- ZaroCloner popup -->
+        <vs-popup title="ZaroCloner" :active.sync="showPopup['zarocloner']">
+            <div class="vx-row mb-6 flex items-center">
+                <pre class="zarocloner-header">
+                __________  _____ __________ ________  _________ .____    ________    _______  _____________________ 
+                \____    / /  _  \\______   \\_____  \ \_   ___ \|    |   \_____  \   \      \ \_   _____/\______   \
+                  /     / /  /_\  \|       _/ /   |   \/    \  \/|    |    /   |   \  /   |   \ |    __)_  |       _/
+                 /     /_/    |    \    |   \/    |    \     \___|    |___/    |    \/    |    \|        \ |    |   \
+                /_______ \____|__  /____|_  /\_______  /\______  /_______ \_______  /\____|__  /_______  / |____|_  /
+                        \/       \/       \/         \/        \/        \/       \/         \/        \/         \/ 
+                </pre>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>URL to copy</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="zaroclonerUrl" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>into domain</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="zaroclonerDomain" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in objects" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="cloneWebpage" color="primary" type="filled" :disabled="!isValidForm('zarocloner')">Clone Webpage</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
 <script>
 import { VueContext } from 'vue-context'
+
+function isValidHttpUrl(s) {
+  let url;
+  try {
+    url = new URL(s);
+  } catch (_) {
+    return false;  
+  }
+  return url.protocol === "http:" || url.protocol === "https:";
+}
 
 export default {
   components: {
@@ -279,6 +328,7 @@ export default {
         'create': false,
         'edit': false,
         'update_name_servers': false,
+        'zarocloner': false,
       },
       newObject: {
         'create': {
@@ -309,6 +359,9 @@ export default {
         'directory': '#197da8',
         'file': '',
       },
+
+      zaroclonerUrl: '',
+      zaroclonerDomain: '',
     }
   },
   computed: {
@@ -422,17 +475,34 @@ export default {
       })
     },
     showForm(type) {
+      if (type == 'zarocloner') {
+        this.zaroclonerUrl = ''
+        this.zaroclonerDomain = ''
+      }
       this.showPopup[type] = true
     },
     clearForm(type) {
-      this.newObject[type] = {
-        domain: '',
-        path: '',
+      if (type == 'zarocloner') {
+        this.zaroclonerUrl = ''
+        this.zaroclonerDomain = ''
+      } else {
+        this.newObject[type] = {
+          domain: '',
+          path: '',
+        }
       }
     },
     isValidForm(type) {
-      let obj = this.newObject[type]
-      return (obj.domain.length > 0 && obj.path.length > 0)
+      if (type == 'zarocloner') {
+        if (this.zaroclonerUrl != '' && isValidHttpUrl(this.zaroclonerUrl) &&
+            this.zaroclonerDomain != '' && this.zaroclonerDomain > 0) {
+          return true
+        }
+      } else {
+        let obj = this.newObject[type]
+        return (obj.domain.length > 0 && obj.path.length > 0)
+      }
+      return false
     },
     createObject() {
       this.$vs.loading()
@@ -854,6 +924,12 @@ export default {
         event.target.selectionEnd = event.target.selectionStart = originalSelectionStart + 1
       }
     },
+    cloneWebpage() {
+      // TODO: HERE
+
+      // TODO: to delete
+      console.log("cloneWebpage")
+    },
   },
   created() {
     this.retrieveObjects()
@@ -874,5 +950,9 @@ export default {
 .file-editor > h4 {
     background-color: #bababa;
     border: 1px solid white;
+}
+
+.zarocloner-header {
+    font-size: 0.6em;
 }
 </style>

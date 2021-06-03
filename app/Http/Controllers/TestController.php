@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+
 use App\FormStats;
 use App\User;
 
@@ -16,26 +19,17 @@ class TestController extends Controller
 {
     public function test()
     {
-        Log::error('Error log test [OK]');
-        $tests = [
-            'url1' => 'ciao',
-            'url2' => 'ciao.com',
-            'url3' => 'ciao.',
-            'url4' => 'c.ad',
-            'url5' => 'ads.ci.ad',
-            'url6' => 'mi213123b.ads.ci.ad',
-        ];
-        $regex = '/^([a-zA-Z0-9]{1,61}\.)+[a-zA-Z]{2,}$/';
-        $validator = Validator::make($tests, [
-            'url1' => 'required|regex:' . $regex,
-            'url2' => 'required|regex:' . $regex,
-            'url3' => 'required|regex:' . $regex,
-            'url4' => 'required|regex:' . $regex,
-            'url5' => 'required|regex:' . $regex,
-            'url6' => 'required|regex:' . $regex,
-        ]);
-        if ($validator->fails()) {
-            dd($validator->messages());
+        try {
+            $process = new Process([
+                'python3',
+                env('ZAROCLONER_PATH') . '/zarocloner.py',
+                'https://it.wikipedia.org/wiki/Pagina_principale',
+                env('ZAROCLONER_PATH') . '/projects/wikipedia',
+            ]);
+            $process->run();
+            dd($process->getOutput());
+        } catch (Exception $e) {
+            dd($e);
         }
         ////$config = [
         ////    'id' => env('SERVERPILOT_CLIENT_ID'),
