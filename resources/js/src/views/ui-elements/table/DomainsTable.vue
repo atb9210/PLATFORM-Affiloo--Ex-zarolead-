@@ -925,6 +925,8 @@ export default {
       }
     },
     async cloneWebpage() {
+      this.$vs.loading()
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
@@ -932,6 +934,19 @@ export default {
         url: this.zaroclonerUrl,
       }
       await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain + '/clone-webpage', data, { headers: headers })
+
+      this.clearForm('zarocloner')
+      this.showPopup['zarocloner'] = false
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'ZaroCloner is running in background',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
     },
   },
   created() {
