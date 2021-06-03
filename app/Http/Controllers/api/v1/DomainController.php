@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Spatie\Ssh\Ssh;
 
 use App\Domain as Domain;
 use App\Http\Resources\api\v1\DomainResource;
@@ -320,7 +321,7 @@ class DomainController extends Controller
     public function createFile($id, Request $request)
     {
         $domain = Domain::findOrFail($id);
-        $this->authorize('view', $domain);
+        $this->authorize('update', $domain);
 
         // Params validation
         $params = $request->validate([
@@ -350,7 +351,7 @@ class DomainController extends Controller
     public function createDirectory($id, Request $request)
     {
         $domain = Domain::findOrFail($id);
-        $this->authorize('view', $domain);
+        $this->authorize('update', $domain);
 
         // Params validation
         $params = $request->validate([
@@ -381,7 +382,7 @@ class DomainController extends Controller
     public function uploadFile($id, Request $request)
     {
         $domain = Domain::findOrFail($id);
-        $this->authorize('view', $domain);
+        $this->authorize('update', $domain);
 
         // Params validation
         $params = $request->validate([
@@ -417,7 +418,7 @@ class DomainController extends Controller
     public function deleteFileOrDirectory($id, Request $request)
     {
         $domain = Domain::findOrFail($id);
-        $this->authorize('view', $domain);
+        $this->authorize('update', $domain);
 
         // Params validation
         $params = $request->validate([
@@ -438,6 +439,34 @@ class DomainController extends Controller
 
         return response([
             'message' => $type . ' deleted successfully',
+        ]);
+    }
+
+    /**
+     * Clone webpage
+     *
+     * @urlParam id int required Domain's id
+     *
+     * @bodyParam url string required Webpage's URL to copy
+     *
+     * @response {
+     *  "message": "Zarocloner running asynchronously"
+     * }
+     */
+    public function cloneWebpage($id, Request $request)
+    {
+        $domain = Domain::findOrFail($id);
+        $this->authorize('update', $domain);
+
+        // Params validation
+        $params = $request->validate([
+            'url' => 'required|url',
+        ]);
+
+        $this->zaroclonerExecuteAsync($params['url'], 'apps/' . $domain->path . '/public');
+
+        return response([
+            'message' => 'Zarocloner running asynchronously',
         ]);
     }
     
@@ -640,5 +669,15 @@ class DomainController extends Controller
         }
 
         return $toReturn;
+    }
+
+    private function zaroclonerExecuteAsync($url, $path)
+    {
+        Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
+            ->executeAsync(
+                'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
+                $url . ' ' .
+                $path
+            );
     }
 }

@@ -924,11 +924,14 @@ export default {
         event.target.selectionEnd = event.target.selectionStart = originalSelectionStart + 1
       }
     },
-    cloneWebpage() {
-      // TODO: HERE
-
-      // TODO: to delete
-      console.log("cloneWebpage")
+    async cloneWebpage() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        url: this.zaroclonerUrl,
+      }
+      await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain + '/clone-webpage', data, { headers: headers })
     },
   },
   created() {

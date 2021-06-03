@@ -158,6 +158,8 @@ Route::post('domains/{id}/upload', 'api\v1\DomainController@uploadFile')->middle
     ->name('domains.upload');
 Route::post('domains/{id}/rm', 'api\v1\DomainController@deleteFileOrDirectory')->middleware('auth:api')
     ->name('domains.rm');
+Route::post('domains/{id}/clone-webpage', 'api\v1\DomainController@cloneWebpage')->middleware('auth:api')
+    ->name('domains.clone-webpage');
 
 /* Product medias routes */
 Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
