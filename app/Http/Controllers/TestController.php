@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Spatie\Ssh\Ssh;
 
 use App\FormStats;
 use App\User;
@@ -19,18 +20,25 @@ class TestController extends Controller
 {
     public function test()
     {
-        try {
-            $process = new Process([
-                'python3',
-                env('ZAROCLONER_PATH') . '/zarocloner.py',
-                'https://it.wikipedia.org/wiki/Pagina_principale',
-                env('ZAROCLONER_PATH') . '/projects/wikipedia',
-            ]);
-            $process->run();
+        $process = Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))->execute('pwd');
+        if ($process->isSuccessful()) {
             dd($process->getOutput());
-        } catch (Exception $e) {
-            dd($e);
+        } else {
+            echo "NO";
         }
+        //try {
+        //    $process = new Process([
+        //        'python3',
+        //        env('ZAROCLONER_PATH') . '/zarocloner.py',
+        //        'https://it.wikipedia.org/wiki/Pagina_principale',
+        //        env('ZAROCLONER_PATH') . '/projects/wikipedia',
+        //    ]);
+        //    //$process->run();
+        //    $process->start();
+        //    dd($process->getOutput());
+        //} catch (Exception $e) {
+        //    dd($e);
+        //}
         ////$config = [
         ////    'id' => env('SERVERPILOT_CLIENT_ID'),
         ////    'key' => env('SERVERPILOT_API_KEY'),
