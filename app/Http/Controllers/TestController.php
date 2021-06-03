@@ -20,9 +20,14 @@ class TestController extends Controller
 {
     public function test()
     {
-        $process = Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))->execute('pwd');
+        $process = Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
+            ->executeAsync(
+                'python3 ' . env('ZAROCLONER_PATH') .
+                ' https://it.wikipedia.org/wiki/Pagina_principale ' .
+                env('ZAROCLONER_PATH') . '/projects/wikipedia'
+            );
         if ($process->isSuccessful()) {
-            dd($process->getOutput());
+            echo "OK";
         } else {
             echo "NO";
         }
