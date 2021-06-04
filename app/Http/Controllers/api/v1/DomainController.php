@@ -448,6 +448,7 @@ class DomainController extends Controller
      * @urlParam id int required Domain's id
      *
      * @bodyParam url string required Webpage's URL to copy
+     * @bodyParam path string Target path
      *
      * @response {
      *  "message": "Zarocloner running asynchronously"
@@ -461,9 +462,14 @@ class DomainController extends Controller
         // Params validation
         $params = $request->validate([
             'url' => 'required|url',
+            'path' => 'regex:/^([A-Za-z0-9_-]+\/*)*$/',
         ]);
 
-        $this->zaroclonerExecuteAsync($params['url'], 'apps/' . $domain->path . '/public');
+        $path = 'apps/' . $domain->path . '/public';
+        if (isset($params['path']) && $params['path'] != '') {
+            $path .= '/' . $params['path'];
+        }
+        $this->zaroclonerExecuteAsync($params['url'], $path);
 
         return response([
             'message' => 'Zarocloner running asynchronously',

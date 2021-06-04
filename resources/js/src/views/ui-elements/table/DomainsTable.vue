@@ -282,8 +282,18 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="zaroclonerDomain" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in objects" class="w-full" />
+                        <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in objects" class="w-full" />
                     </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Target path:</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="zaroclonerPath" />
+                    <span>{{zaroclonerPathPreview}}</span>
                 </div>
             </div>
 
@@ -361,7 +371,8 @@ export default {
       },
 
       zaroclonerUrl: '',
-      zaroclonerDomain: '',
+      zaroclonerDomain: null,
+      zaroclonerPath: '',
     }
   },
   computed: {
@@ -381,6 +392,18 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    zaroclonerPathPreview() {
+      if (this.zaroclonerDomain == '' || this.zaroclonerDomain == null) {
+        return ''
+      } else {
+        let toReturn = this.zaroclonerDomain.path + '/public/'
+        if (this.zaroclonerPath != '') {
+          toReturn += this.zaroclonerPath + '/'
+        }
+        return toReturn
+      }
+      return ''
     },
   },
   methods: {
@@ -477,14 +500,16 @@ export default {
     showForm(type) {
       if (type == 'zarocloner') {
         this.zaroclonerUrl = ''
-        this.zaroclonerDomain = ''
+        this.zaroclonerDomain = null
+        this.zaroclonerPath = ''
       }
       this.showPopup[type] = true
     },
     clearForm(type) {
       if (type == 'zarocloner') {
         this.zaroclonerUrl = ''
-        this.zaroclonerDomain = ''
+        this.zaroclonerDomain = null
+        this.zaroclonerPath = ''
       } else {
         this.newObject[type] = {
           domain: '',
@@ -495,7 +520,7 @@ export default {
     isValidForm(type) {
       if (type == 'zarocloner') {
         if (this.zaroclonerUrl != '' && isValidHttpUrl(this.zaroclonerUrl) &&
-            this.zaroclonerDomain != '' && this.zaroclonerDomain > 0) {
+            this.zaroclonerDomain != null && this.zaroclonerDomain != '') {
           return true
         }
       } else {
@@ -932,8 +957,10 @@ export default {
       }
       let data = {
         url: this.zaroclonerUrl,
+        path: this.zaroclonerPath,
       }
-      await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain + '/clone-webpage', data, { headers: headers })
+
+      await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain.id + '/clone-webpage', data, { headers: headers })
 
       this.clearForm('zarocloner')
       this.showPopup['zarocloner'] = false
