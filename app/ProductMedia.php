@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductMedia extends Model
 {
+    protected $table = 'product_medias';
+
     protected $fillable = [
         'user_id',
         'product_id',

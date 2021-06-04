@@ -1723,6 +1723,20 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/3rd-party',
+          name: '3rd-party',
+          component: () => import('./views/3rdParty.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: '3rd Party', active: true }
+            ],
+            pageTitle: '3rd Party',
+            rule: 'admin'
+          }
+        },
       ]
     },
 

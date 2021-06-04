@@ -346,6 +346,15 @@ export default [
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
 
+      {
+        url: '/dashboard/3rd-party',
+        name: '3rd Party',
+        slug: '3rd-party',
+        icon: 'CloudLightningIcon',
+        i18n: '3rd Party',
+        roles: ['developer', 'admin' ],
+      },
+
       /*
       {
         url: '/apps/email',
