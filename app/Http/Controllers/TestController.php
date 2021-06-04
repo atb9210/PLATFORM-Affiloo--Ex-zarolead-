@@ -20,37 +20,21 @@ class TestController extends Controller
 {
     public function test()
     {
-        $regex = '/^([A-Za-z0-9_-]+\/*)*$/';
+        $client = new \Namecheap\Api(
+            env('NAMECHEAP_USER'),
+            env('NAMECHEAP_API_KEY'),
+            env('NAMECHEAP_USER'),
+            env('NAMECHEAP_CLIENT_IP'),
+            'array'
+        );
+        $client->setCurlOption(CURLOPT_SSL_VERIFYPEER, false); // For local development env (if needed)
 
-        $params = [
-            'test1' => 'prova',
-            'test2' => '',
-            'test3' => '.',
-            'test4' => 'cia/',
-            'test5' => './cia/',
-            'test6' => './cia/asd',
-            'test7' => './cia/asd/',
-            'test8' => 'cia/asd/',
-            'test9' => 'cia asd all',
-        ];
-
-        $validator = Validator::make($params, [
-            'test1' => 'regex:' . $regex,
-            'test2' => 'regex:' . $regex,
-            'test3' => 'regex:' . $regex,
-            'test4' => 'regex:' . $regex,
-            'test5' => 'regex:' . $regex,
-            'test6' => 'regex:' . $regex,
-            'test7' => 'regex:' . $regex,
-            'test8' => 'regex:' . $regex,
-            'test9' => 'regex:' . $regex,
-        ]);
-
-        if($validator->fails()){
-            dd($validator->messages());
-        } else {
-            echo "OK";
-        }
+        $ncDomains = new  \Namecheap\Domain\Domains($client);
+        $ncDomains->enableSandbox(); // Enable sandbox mode for the current instance
+        //dd($ncDomains);
+        //exit();
+        $domainList = $ncDomains->getList(); 
+        dd($domainList);
     }
 
     public function post(Request $request)
