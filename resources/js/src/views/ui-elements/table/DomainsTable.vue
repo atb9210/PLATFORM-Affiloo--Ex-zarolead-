@@ -35,6 +35,7 @@
         <p class="flex items-center mb-4">
             <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" @click="showForm('zarocloner')"></vs-button>
+            <vs-button v-if="view == 'domains'" class="mr-2" color="#e95d0c" type="filled" icon-pack="feather" icon="icon-server" @click="showForm('namecheap')">Namecheap</vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
 
             <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'domains'"></vs-button>
@@ -335,6 +336,23 @@
             </div>
         </vs-popup>
 
+        <!-- Namecheap popup -->
+        <vs-popup title="Namecheap Domains" :active.sync="showPopup['namecheap']">
+            <div class="vx-row mb-6 flex items-center">
+                <h1>Domains List</h1>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-col v-for="(domain, index) in namecheapDomains" :key="index">
+                    <vs-checkbox v-model="namecheapDomainsToImport" :vs-value="domain.domain" :disabled="domainAlreadyExist(domain.domain)">{{ domain.domain }}</vs-checkbox>
+                </vs-col>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="namecheapImportDomains" color="primary" type="filled" :disabled="!isValidForm('namecheap')">Import</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -392,6 +410,7 @@ export default {
         'update_name_servers': false,
         'find_and_replace': false,
         'zarocloner': false,
+        'namecheap': false,
       },
       newObject: {
         'create': {
@@ -431,6 +450,7 @@ export default {
       zaroclonerPath: '',
 
       namecheapDomains: [],
+      namecheapDomainsToImport: [],
     }
   },
   computed: {
@@ -555,13 +575,16 @@ export default {
           })
       })
     },
-    showForm(type) {
+    async showForm(type) {
       if (type == 'zarocloner') {
         this.zaroclonerUrl = ''
         this.zaroclonerDomain = null
         this.zaroclonerPath = ''
       } else if (type == 'find_and_replace') {
         this.findAndReplaceStatus = ''
+      } else if (type == 'namecheap') {
+        this.namecheapDomainsToImport = []
+        await this.getNamecheapDomains()
       }
       this.showPopup[type] = true
     },
@@ -570,6 +593,8 @@ export default {
         this.zaroclonerUrl = ''
         this.zaroclonerDomain = null
         this.zaroclonerPath = ''
+      } else if (type == 'namecheap') {
+        this.namecheapDomainsToImport = []
       } else {
         this.newObject[type] = {
           domain: '',
@@ -581,6 +606,10 @@ export default {
       if (type == 'zarocloner') {
         if (this.zaroclonerUrl != '' && isValidHttpUrl(this.zaroclonerUrl) &&
             this.zaroclonerDomain != null && this.zaroclonerDomain != '') {
+          return true
+        }
+      } else if (type == 'namecheap') {
+        if (this.namecheapDomainsToImport.length > 0) {
           return true
         }
       } else {
@@ -1052,11 +1081,66 @@ export default {
       }
     },
     async getNamecheapDomains() {
+      this.$vs.loading()
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+
       const response = await this.$http.get('/api/v1/domains-namecheap', { headers })
-      this.namecheapDomains = response.data.data
+      this.namecheapDomains = []
+      for (let i = 0; i < response.data.data.length; i++) {
+        let domain = response.data.data[i]
+        this.namecheapDomains.push({
+          'domain': domain._Name,
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    domainAlreadyExist(domain) {
+      for (let i = 0; i < this.objects.length; i++) {
+        if (this.objects[i].domain == domain) {
+          return true
+        }
+      }
+      return false
+    },
+    async namecheapImportDomains() {
+      // TODO: to delete
+      return
+
+      // TODO: HERE
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      for (let i = 0; i < this.namecheapDomainsToImport.length; i++) {
+        let domain = this.namecheapDomainsToImport[i]
+        let path = domain.replace('.', '-')
+
+        let data = {
+          domain: domain,
+          path: path,
+        }
+
+        // Create domain
+        const response = await this.$http.post('/api/v1/domains', data, { headers: headers })
+      }
+
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Domain imported successfully from Namecheap',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.clearForm('namecheap')
+      this.showPopup['namecheap'] = false
+      this.retrieveObjects()
     },
   },
   async created() {
