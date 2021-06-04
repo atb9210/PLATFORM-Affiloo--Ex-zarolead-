@@ -170,10 +170,11 @@
             <!-- File editor -->
             <div class="vx-col sm:w-1/2 w-full">
                 <p class="flex items-center mb-4">
+                    <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="showForm('find_and_replace')"></vs-button>
                     <vs-button v-if="view == 'file_manager'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveFile"></vs-button>
                     <vs-button v-if="view == 'file_manager'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-x" @click="cancelFileEdit"></vs-button>
                 </p>
-                <vs-textarea class="file-editor" :label="fileManager.currentFile + ((fileManager.fileContent != fileManager.fileNewContent) ? ' (* edited)' : '')" v-model="fileManager.fileNewContent" height="50rem" @keydown.tab.prevent="tabber($event)" />
+                <vs-textarea @keydown.ctrl.70.prevent="ctrlFHandler()" class="file-editor" :label="fileManager.currentFile + ((fileManager.fileContent != fileManager.fileNewContent) ? ' (* edited)' : '')" v-model="fileManager.fileNewContent" height="50rem" @keydown.tab.prevent="tabber($event)" />
             </div>
         </div>
 
@@ -254,6 +255,38 @@
             </div>
         </vs-popup>
 
+        <!-- Find and replace popup -->
+        <vs-popup title="Find&Replace" :active.sync="showPopup['find_and_replace']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Find</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="findValue" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Replace with</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="replaceValue" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full text-center">
+                    {{findAndReplaceStatus}}
+                </div>
+            </div>
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="findAndReplace" color="primary" type="filled" :disabled="findValue == ''">
+                    {{(replaceValue == '') ? 'Find' : 'Replace'}}
+                </vs-button>
+            </div>
+        </vs-popup>
+
         <!-- ZaroCloner popup -->
         <vs-popup title="ZaroCloner" :active.sync="showPopup['zarocloner']">
             <div class="vx-row mb-6 flex items-center">
@@ -318,6 +351,25 @@ function isValidHttpUrl(s) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
+function occurrencesInString(string, subString, allowOverlapping = false) {
+    string += "";
+    subString += "";
+    if (subString.length <= 0) return (string.length + 1);
+
+    var n = 0,
+        pos = 0,
+        step = allowOverlapping ? 1 : subString.length;
+
+    while (true) {
+        pos = string.indexOf(subString, pos);
+        if (pos >= 0) {
+            ++n;
+            pos += step;
+        } else break;
+    }
+    return n;
+}
+
 export default {
   components: {
     VueContext,
@@ -338,6 +390,7 @@ export default {
         'create': false,
         'edit': false,
         'update_name_servers': false,
+        'find_and_replace': false,
         'zarocloner': false,
       },
       newObject: {
@@ -369,6 +422,9 @@ export default {
         'directory': '#197da8',
         'file': '',
       },
+      findValue: '',
+      replaceValue: '',
+      findAndReplaceStatus: '',
 
       zaroclonerUrl: '',
       zaroclonerDomain: null,
@@ -502,6 +558,8 @@ export default {
         this.zaroclonerUrl = ''
         this.zaroclonerDomain = null
         this.zaroclonerPath = ''
+      } else if (type == 'find_and_replace') {
+        this.findAndReplaceStatus = ''
       }
       this.showPopup[type] = true
     },
@@ -974,6 +1032,22 @@ export default {
       })
 
       this.$vs.loading.close()
+    },
+    ctrlFHandler() {
+      this.showForm('find_and_replace')
+    },
+    findAndReplace() {
+      if (this.findValue == '') return
+
+      let content = this.fileManager.fileNewContent
+      let occurrences = occurrencesInString(content, this.findValue)
+      if (this.replaceValue == '') {
+        this.findAndReplaceStatus = occurrences.toString() + ' occurrences found';
+      } else {
+        content = content.replaceAll(this.findValue, this.replaceValue)
+        this.fileManager.fileNewContent = content
+        this.findAndReplaceStatus = occurrences.toString() + ' occurrences replaces';
+      }
     },
   },
   created() {
