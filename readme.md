@@ -13,7 +13,7 @@
 
 ZaroLead is a web application that follows you in every step of online sales:
 
-- You can create landings and buy forms
+- You can create landings and purchase forms
 - You can run and manage ads on all the major platforms (Facebook, Google, ...)
 - You can track all the sales
 - You can views stats about sales, earnings, ROI, ...
@@ -22,7 +22,7 @@ ZaroLead is a web application that follows you in every step of online sales:
 
 ## Why ZaroLead
 
-ZaroLead is light yet powerful tool to bring your online business to the next level.
+ZaroLead is a light yet powerful tool to bring your online business to the next level.
 
 Take a look at the [demo](https://www.google.com/).
 
