@@ -161,6 +161,9 @@ Route::post('domains/{id}/rm', 'api\v1\DomainController@deleteFileOrDirectory')-
 Route::post('domains/{id}/clone-webpage', 'api\v1\DomainController@cloneWebpage')->middleware('auth:api')
     ->name('domains.clone-webpage');
 
+Route::get('domains-namecheap', 'api\v1\DomainController@getNamecheapDomains')->middleware('auth:api')
+    ->name('domains-namecheap');
+
 /* Product medias routes */
 Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
     'create', 'edit', 'update',

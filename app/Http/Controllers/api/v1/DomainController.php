@@ -117,6 +117,8 @@ class DomainController extends Controller
                 $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $params['domain'], env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
                 if ($dnsRecord !== false) {
                     $domain = Domain::create($params);
+
+                    $this->namecheapSetNameservers($domain->domain, $this->cloudflareNameservers);
                 }
             }
         }
@@ -475,6 +477,25 @@ class DomainController extends Controller
             'message' => 'Zarocloner running asynchronously',
         ]);
     }
+
+    /**
+     * Get namecheap domain list
+     *
+     * @response {
+     *  "data": [domains]
+     * }
+     */
+    public function getNamecheapDomains()
+    {
+        $this->authorize('viewAny', 'App\Domain');
+        $this->authorize('create', 'App\Domain');
+
+        $domains = $this->namecheapGetDomains();
+
+        return response([
+            'data' => $domains,
+        ]);
+    }
     
     private function getDirectoryContent($directory)
     {
@@ -517,6 +538,11 @@ class DomainController extends Controller
         ];
         return new \ServerPilot($serverpilotConfig);
     }
+
+    private $cloudflareNameservers = [
+        'marek.ns.cloudflare.com',
+        'naomi.ns.cloudflare.com',
+    ];
 
     private function cloudflareGetHeaders()
     {
@@ -675,6 +701,72 @@ class DomainController extends Controller
         }
 
         return $toReturn;
+    }
+
+    private function namecheapGetClient()
+    {
+        $client = new \Namecheap\Api(
+            env('NAMECHEAP_USER'),
+            env('NAMECHEAP_API_KEY'),
+            env('NAMECHEAP_USER'),
+            env('NAMECHEAP_CLIENT_IP'),
+            'array'
+        );
+        if (env('NAMECHEAP_SANDBOX')) {
+            $client->enableSandbox();
+        }
+        return $client;
+    }
+
+    private function namecheapGetDomains()
+    {
+        $client = $this->namecheapGetClient();
+
+        $ncDomains = new \Namecheap\Domain\Domains($client);
+        if (env('NAMECHEAP_SANDBOX')) {
+            $ncDomains->enableSandbox();
+        }
+        $domainList = $ncDomains->getList(); 
+
+        $q = 'ApiResponse.CommandResponse.DomainGetListResult.Domain';
+        $q = explode('.', $q);
+        $domains = [];
+        $current = $domainList;
+        foreach ($q as $element) {
+            if (isset($current[$element])) {
+                $current = $current[$element];
+            } else {
+                // TODO: Log error?
+                $domains = [];
+                break;
+            }
+        }
+        if (isset($current['_ID'])) {
+            $domains[] = $current;
+        } else {
+            $domains = $current;
+        }
+
+        return $domains;
+    }
+
+    private function namecheapSetNameservers($domain, $nameservers)
+    {
+        $client = $this->namecheapGetClient();
+
+        $ncDomainsDns = new \Namecheap\Domain\DomainsDns($client);
+        if (env('NAMECHEAP_SANDBOX')) {
+            $ncDomains->enableSandbox();
+        }
+
+        $domainParts = explode('.', $domain);
+        $domainSld = $domainParts[0];
+        $domainTld = $domainParts[1];
+        $formattedNameservers = implode(',', $nameservers);
+
+        $response = $ncDomainsDns->setCustom($domainSld, $domainTld, $formattedNameservers);
+
+        // TODO: Check response and log errors
     }
 
     private function zaroclonerExecuteAsync($url, $path)

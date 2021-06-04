@@ -429,6 +429,8 @@ export default {
       zaroclonerUrl: '',
       zaroclonerDomain: null,
       zaroclonerPath: '',
+
+      namecheapDomains: [],
     }
   },
   computed: {
@@ -1049,8 +1051,15 @@ export default {
         this.findAndReplaceStatus = occurrences.toString() + ' occurrences replaces';
       }
     },
+    async getNamecheapDomains() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      const response = await this.$http.get('/api/v1/domains-namecheap', { headers })
+      this.namecheapDomains = response.data.data
+    },
   },
-  created() {
+  async created() {
     this.retrieveObjects()
   },
   mounted () {

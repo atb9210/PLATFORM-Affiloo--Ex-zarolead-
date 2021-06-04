@@ -27,14 +27,34 @@ class TestController extends Controller
             env('NAMECHEAP_CLIENT_IP'),
             'array'
         );
-        $client->setCurlOption(CURLOPT_SSL_VERIFYPEER, false); // For local development env (if needed)
-
         $ncDomains = new  \Namecheap\Domain\Domains($client);
         $ncDomains->enableSandbox(); // Enable sandbox mode for the current instance
-        //dd($ncDomains);
-        //exit();
         $domainList = $ncDomains->getList(); 
-        dd($domainList);
+
+        $domains = [];
+        $q = 'ApiResponse.CommandResponse.DomainGetListResult.Domain';
+        $q = explode('.', $q);
+        $output = [];
+        $current = $domainList;
+        foreach ($q as $element) {
+            if (isset($current[$element])) {
+                $current = $current[$element];
+            } else {
+                $output = [];
+                break;
+            }
+        }
+        if (isset($current['_ID'])) {
+            $output[] = $current;
+        } else {
+            $output = $current;
+        }
+
+        $domainId = '677737';//'677739';
+        $ncDomainsDns = new \Namecheap\Domain\DomainsDns($client);
+        $ncDomainsDns->enableSandbox();
+        $custom = $ncDomainsDns->setCustom('italiaspecialiofferta', 'com', 'marek.ns.cloudflare.com,naomi.ns.cloudflare.com');
+        dd($custom);
     }
 
     public function post(Request $request)
