@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.0",
         "league/flysystem-sftp": "~1.0",
+        "longman/telegram-bot": "^0.72.0",
         "naturalbuild/namecheap-sdk": "^1.0",
         "smalot/pdfparser": "^0.14.0",
         "spatie/flysystem-dropbox": "^1.2",
