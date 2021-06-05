@@ -555,25 +555,49 @@ class DomainController extends Controller
 
     private function cloudflareGetZones()
     {
-        $toReturn = false;
-
         $url = 'https://api.cloudflare.com/client/v4/zones';
         $headers = $this->cloudflareGetHeaders();
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = $response['result'];
-        } else {
-            Log::error('Cannot get zones list on Cloudflare - RESPONSE: ' . json_encode($response));
+        $thereAreOtherPages = true;
+        $currentPage = 0;
+
+        $error = false;
+        $zones = [];
+        while ($thereAreOtherPages) {
+            $currentPage += 1;
+
+            $params = [
+                'per_page' => 50,
+                'page' => $currentPage,
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            $response = json_decode($response, true);
+
+            if (isset($response['success']) && $response['success']) {
+                foreach ($response['result'] as $zone) {
+                    $zones[] = $zone;
+                }
+
+                $thereAreOtherPages = (isset($response['result_info']) &&
+                    isset($response['result_info']['total_pages']) &&
+                    $response['result_info']['total_pages'] < $currentPage);
+            } else {
+                $error = true;
+                $thereAreOtherPages = false;
+                Log::error('Cannot get zones list on Cloudflare - RESPONSE: ' . json_encode($response));
+            }
         }
 
-        return $toReturn;
+        if ($error) {
+            return false;
+        }
+        return $zones;
     }
 
     private function cloudflareCreateZone($name)
@@ -631,23 +655,49 @@ class DomainController extends Controller
 
     private function cloudflareGetDNSRecords($zone_id)
     {
-        $toReturn = false;
-
         $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records';
         $headers = $this->cloudflareGetHeaders();
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = $response['result'];
+        $thereAreOtherPages = true;
+        $currentPage = 0;
+
+        $error = false;
+        $dnsList = [];
+        while ($thereAreOtherPages) {
+            $currentPage += 1;
+
+            $params = [
+                'per_page' => 100,
+                'page' => $currentPage,
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            $response = json_decode($response, true);
+
+            if (isset($response['success']) && $response['success']) {
+                foreach ($response['result'] as $dns) {
+                    $dnsList[] = $dns;
+                }
+
+                $thereAreOtherPages = (isset($response['result_info']) &&
+                    isset($response['result_info']['total_pages']) &&
+                    $response['result_info']['total_pages'] < $currentPage);
+            } else {
+                $error = true;
+                $thereAreOtherPages = false;
+                Log::error('Cannot get zone DNS list on Cloudflare - RESPONSE: ' . json_encode($response));
+            }
         }
 
-        return $toReturn;
+        if ($error) {
+            return false;
+        }
+        return $dnsList;
     }
 
     private function cloudflareAddDNSRecord($zone_id, $type, $name, $value)

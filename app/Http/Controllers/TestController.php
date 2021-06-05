@@ -20,41 +20,48 @@ class TestController extends Controller
 {
     public function test()
     {
-        $client = new \Namecheap\Api(
-            env('NAMECHEAP_USER'),
-            env('NAMECHEAP_API_KEY'),
-            env('NAMECHEAP_USER'),
-            env('NAMECHEAP_CLIENT_IP'),
-            'array'
-        );
-        $ncDomains = new  \Namecheap\Domain\Domains($client);
-        $ncDomains->enableSandbox(); // Enable sandbox mode for the current instance
-        $domainList = $ncDomains->getList(); 
+        $zones = [];
 
-        $domains = [];
-        $q = 'ApiResponse.CommandResponse.DomainGetListResult.Domain';
-        $q = explode('.', $q);
-        $output = [];
-        $current = $domainList;
-        foreach ($q as $element) {
-            if (isset($current[$element])) {
-                $current = $current[$element];
-            } else {
-                $output = [];
-                break;
+        $url = 'https://api.cloudflare.com/client/v4/zones';
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . env('CLOUDFLARE_API_KEY'),
+        ];
+
+        $thereAreOtherZones = true;
+        $currentPage = 0;
+        while ($thereAreOtherZones) {
+            $currentPage += 1;
+
+            $params = [
+                'per_page' => 50,
+                'page' => $currentPage,
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            $response = json_decode($response, true);
+
+            foreach ($response['result'] as $zone) {
+                $zones[] = $zone;
             }
-        }
-        if (isset($current['_ID'])) {
-            $output[] = $current;
-        } else {
-            $output = $current;
+
+            $thereAreOtherZones = (isset($response['result_info']) &&
+                isset($response['result_info']['total_pages']) &&
+                $response['result_info']['total_pages'] < $currentPage);
         }
 
-        $domainId = '677737';//'677739';
-        $ncDomainsDns = new \Namecheap\Domain\DomainsDns($client);
-        $ncDomainsDns->enableSandbox();
-        $custom = $ncDomainsDns->setCustom('italiaspecialiofferta', 'com', 'marek.ns.cloudflare.com,naomi.ns.cloudflare.com');
-        dd($custom);
+        dd($zones);
+        exit();
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        } else {
+            Log::error('Cannot get zones list on Cloudflare - RESPONSE: ' . json_encode($response));
+        }
     }
 
     public function post(Request $request)
