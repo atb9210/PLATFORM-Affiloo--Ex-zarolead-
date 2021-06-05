@@ -1107,10 +1107,6 @@ export default {
       return false
     },
     async namecheapImportDomains() {
-      // TODO: to delete
-      return
-
-      // TODO: HERE
       this.$vs.loading()
 
       let headers = {

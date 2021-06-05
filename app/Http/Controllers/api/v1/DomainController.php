@@ -770,6 +770,8 @@ class DomainController extends Controller
 
     private function namecheapGetDomains()
     {
+        // TODO: What about pages (like Cloudflare API)???
+
         $client = $this->namecheapGetClient();
 
         $ncDomains = new \Namecheap\Domain\Domains($client);
