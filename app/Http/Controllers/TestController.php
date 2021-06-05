@@ -23,6 +23,8 @@ class TestController extends Controller
         //$telegram = new \Longman\TelegramBot\Telegram(env('TELEGRAM_BOT_API_KEY'), env('TELEGRAM_BOT_USERNAME'));
         //dd($telegram->handleGetUpdates());
         $url = 'https://api.telegram.org/bot' .  env('TELEGRAM_BOT_API_KEY') . '/getUpdates';
+        echo $url;
+        exit();
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "example.com");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

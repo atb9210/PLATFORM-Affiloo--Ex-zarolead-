@@ -229,6 +229,21 @@ class Order extends Model
         }
         $this->save();
 
+        // Send order to telegram
+        $telegram = new \Longman\TelegramBot\Telegram(env('TELEGRAM_BOT_API_KEY'), env('TELEGRAM_BOT_USERNAME'));
+        \Longman\TelegramBot\Request::initialize($telegram);
+        $chatId = -1001319465755; // TODO: Save this into .env?
+        $telegramMessage = <<<EOD
+New Order: {{product}}
+{{name}}
+EOD;
+        $telegramMessage = str_replace('{{product}}', $this->product->name, $telegramMessage);
+        $telegramMessage = str_replace('{{name}}', $this->name, $telegramMessage);
+        \Longman\TelegramBot\Request::sendMessage([
+            'chat_id' => $chatId,
+            'text' => $telegramMessage,
+        ]);
+
         return [
             'status' => $status,
             'message' => $message,
