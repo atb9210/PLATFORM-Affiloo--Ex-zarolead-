@@ -137,9 +137,9 @@ class Flow extends Model
         $src = 'hotload.php';
         $contents = Storage::disk('flows')->get($src);
         $phpCode = $contents;
+        $phpCode = str_replace('[[APP_URL]]', env('APP_URL'), $phpCode);
         $phpCode = str_replace('[[FLOW_ID]]', strval($this->id), $phpCode);
-        $fileName = 'apps/' . $this->domain->path . '/' . $this->path_name . '/index.php';
-        // TODO: Error is here. I need to create folder and subfolders.
-        $this->domain->createFile($fileName, $phpCode);
+        $pathname = $this->domain->path . '/public/' . $this->path_name;
+        $this->domain->createFile($pathname, $phpCode);
     }
 }

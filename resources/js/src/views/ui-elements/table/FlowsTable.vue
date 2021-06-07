@@ -96,7 +96,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
+                        <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
                 </div>
@@ -116,10 +116,11 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Path name zarolead.com/flo/</span>
+                    <span>Path name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['create'].path_name" />
+                    <span>{{flowPathname}}</span>
                     <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
                 </div>
             </div>
@@ -199,7 +200,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
+                        <vs-select-item :key="index" :value="item" :text="item.url" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
                 </div>
@@ -219,10 +220,11 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Path name zarolead.com/flo/</span>
+                    <span>Path name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['edit'].path_name" />
+                    <span>{{flowPathname}}</span>
                     <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
                 </div>
             </div>
@@ -284,10 +286,11 @@
         <vs-popup title="Duplicate Flow" :active.sync="showPopup['duplicate']">
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Path name zarolead.com/flo/</span>
+                    <span>Path name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="duplicatePathName" />
+                    <span>{{flowPathname}}</span>
                     <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
                 </div>
             </div>
@@ -318,7 +321,6 @@ export default {
       trafficSources: [],
       firstTrafficSourceId: 0,
       domains: [],
-      firstDomainId: 0,
 
       editingObject: -1,
 
@@ -388,6 +390,26 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    formType() {
+      if (this.showPopup['create']) {
+        return 'create'
+      } else if (this.showPopup['edit']) {
+        return 'edit'
+      } else if (this.showPopup['duplicate']) {
+        return 'duplicate'
+      }
+      return 'create'
+    },
+    flowPathname() {
+      let obj = this.newObject[this.formType]
+      let flowType = obj.type
+      if (flowType == 'redirect') {
+        return 'https://zarolead.com/flo/' + obj.path_name
+      } else if (flowType == 'hotload') {
+        return 'http://' + obj.domain.domain + '/' + obj.path_name
+      }
+      return ''
     },
   },
   methods: {
@@ -515,10 +537,7 @@ export default {
         weights: [
           1,
         ],
-        domains: {
-          list: [],
-          selected: 0,
-        },
+        domain: '',
       }
     },
     isValidForm(type) {
@@ -576,7 +595,7 @@ export default {
         path_name: pathName,
         rules: JSON.stringify(rules),
         traffic_source_id: this.newObject['create'].traffic_source,
-        domain_id: this.newObject['create'].domain,
+        domain_id: this.newObject['create'].domain.id,
       }
 
       this.$http.post('/api/v1/flows', data, { headers: headers })
@@ -746,7 +765,7 @@ export default {
         path_name: pathName,
         rules: JSON.stringify(rules),
         traffic_source_id: this.newObject['edit'].traffic_source,
-        domain_id: this.newObject['edit'].domain,
+        domain_id: this.newObject['edit'].domain.id,
       }
 
       this.$http.put('/api/v1/flows/' + id, data, { headers: headers })
@@ -908,8 +927,7 @@ export default {
       .then((response) => {
         this.domains = response.data.data
         if (this.domains.length > 0) {
-          this.firstDomainId = this.domains[0].id
-          this.newObject['create'].domain = this.newObject['edit'].domain = this.firstDomainId
+          this.newObject['create'].domain = this.newObject['edit'].domain = this.domains[0]
         }
         this.$vs.loading.close()
       })

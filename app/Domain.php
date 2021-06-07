@@ -222,9 +222,9 @@ class Domain extends Model
         Storage::disk('landings')->putFileAs('apps/' . $path, $file, $file_pathname);
     }
 
-    public function createFile($path, $contents = '')
+    public function createFile($pathname, $contents = '')
     {
-        Storage::disk('landings')->put('apps/' . $path, $contents);
+        Storage::disk('landings')->put('apps/' . $pathname, $contents);
     }
 
     public function deleteFile($pathname)

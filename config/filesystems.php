@@ -81,6 +81,19 @@ return [
             'host' => env('SFTP_HOST'),
             'username' => env('SFTP_USER'),
             'password' => env('SFTP_PASSWORD'),
+            'visibility' => 'public',
+            'permPublic' => 0664,
+            'directoryPerm' => 0775,
+            'permissions' => [
+                'file' => [
+                    'public' => 0664,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0775,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
     ],

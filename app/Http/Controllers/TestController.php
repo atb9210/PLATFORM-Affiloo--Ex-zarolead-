@@ -20,8 +20,7 @@ class TestController extends Controller
 {
     public function test()
     {
-        $content = Storage::get('app/flows_hotload_boilerplate.php');
-        dd($content);
+        Storage::disk('landings')->makeDirectory('apps/italianumero3/public/n8');
         //$ch = curl_init();
         //curl_setopt($ch, CURLOPT_URL, 'http://zarolead.localhost/api/v1/flows/25/hotload');
         //curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
