@@ -20,20 +20,15 @@ class TestController extends Controller
 {
     public function test()
     {
-        //$telegram = new \Longman\TelegramBot\Telegram(env('TELEGRAM_BOT_API_KEY'), env('TELEGRAM_BOT_USERNAME'));
-        //dd($telegram->handleGetUpdates());
-        $url = 'https://api.telegram.org/bot' .  env('TELEGRAM_BOT_API_KEY') . '/getUpdates';
-        echo $url;
-        exit();
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "example.com");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $output = curl_exec($ch);
-        curl_close($ch);  
-        echo $output;
-        exit();
-
-        dd($output);
+        $content = Storage::get('app/flows_hotload_boilerplate.php');
+        dd($content);
+        //$ch = curl_init();
+        //curl_setopt($ch, CURLOPT_URL, 'http://zarolead.localhost/api/v1/flows/25/hotload');
+        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //$response = curl_exec($ch);
+        //curl_close($ch);
+        //$response = json_decode($response, true);
+        //echo $response['html'];
     }
 
     public function post(Request $request)

@@ -79,6 +79,7 @@ Route::apiResource('flows', 'api\v1\FlowController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 Route::get('flows/{id}/landings/get', 'api\v1\FlowController@getLandingUrl')->name('flows.landings.get');
+Route::get('flows/{id}/hotload', 'api\v1\FlowController@hotload')->name('flows.hotload');
 
 /* Forms routes */
 Route::apiResource('forms', 'api\v1\FormController')->except([

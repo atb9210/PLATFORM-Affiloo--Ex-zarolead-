@@ -92,6 +92,18 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Domain</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Type</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -121,22 +133,6 @@
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Domain</span>
-                </div>
-                <div class="vx-col sm:w-1/2 w-full">
-                    <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('create')" @keyup.escape="dontAddNewDomain('create')" />
-                    <vs-select v-else v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
-                    </vs-select>
-                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
-                </div>
-                <div class="vx-col sm:w-1/6 w-full flex items-center">
-                    <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('create')"></vs-button>
                 </div>
             </div>
 
@@ -199,6 +195,18 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Domain</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
+                    </vs-select>
+                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Type</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -228,22 +236,6 @@
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Domain</span>
-                </div>
-                <div class="vx-col sm:w-1/2 w-full">
-                    <vs-input v-if="isAddingDomain" ref="addDomainInput" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="addingDomain" @keyup.enter="addNewDomain('edit')" @keyup.escape="dontAddNewDomain('edit')" />
-                    <vs-select v-else v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
-                    </vs-select>
-                    <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
-                </div>
-                <div class="vx-col sm:w-1/6 w-full flex items-center">
-                    <vs-button class="w-1/3 mr-2" icon-pack="feather" icon="icon-plus" @click="beginAddingNewDomain('edit')"></vs-button>
                 </div>
             </div>
 
@@ -367,8 +359,6 @@ export default {
           domain: 0,
         },
       },
-      isAddingDomain: false,
-      addingDomain: 'http://',
 
       landings: [],
       landingOptions: [],
@@ -842,49 +832,6 @@ export default {
 
       percentage *= 100
       return percentage.toFixed(2)
-    },
-    beginAddingNewDomain(type) {
-      this.addingDomain = 'http://'
-      this.isAddingDomain = true
-      this.$nextTick(() => {
-        this.focusAddDomainInput()
-      });
-    },
-    focusAddDomainInput() {
-      let inputEl = this.$refs['addDomainInput'].$el.querySelector('input')
-      inputEl.focus()
-    },
-    addNewDomain(type) {
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let data = {
-          url: this.addingDomain,
-      }
-
-      this.$vs.loading()
-      this.$http.post('/api/v1/domains', data, { headers: headers })
-        .then((response) => {
-          this.domains.push(response.data.data)
-          this.newObject[type].domain = response.data.data.id
-          this.addingDomain = 'http://'
-          this.isAddingDomain = false
-          this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
-    },
-    dontAddNewDomain(type) {
-      this.isAddingDomain = false
     },
     onUrlCopied() {
       this.$vs.notify({

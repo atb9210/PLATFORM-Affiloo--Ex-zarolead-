@@ -101,7 +101,12 @@ class FlowController extends Controller
         $flow = Flow::create($params);
 
         // Create file script
-        $flow->createFileScript();
+        $type = $params['type'];
+        if ($type == 'redirect') {
+            $flow->createFileScript();
+        } else if ($type == 'hotload') {
+            $flow->createHotloadScript();
+        }
 
         return response([
             "message" => "Flow created",
@@ -168,6 +173,8 @@ class FlowController extends Controller
             }
         }
 
+        // TODO: What about type change???
+
         $oldPathName = $flow->path_name;
         $oldType = $flow->type;
         $flow->update($params);
@@ -220,6 +227,31 @@ class FlowController extends Controller
 
         return response([
             'data' => $data
+        ]);
+    }
+
+    /**
+     * Hotload
+     *
+     * @urlParam id int required Flow's id
+     *
+     * @response {
+     *  "data": url,
+     * }
+     */
+    public function hotload($id, Request $request)
+    {
+        $flow = Flow::findOrFail($id);
+
+        $page = $flow->getLandingUrl();
+
+        $html = file_get_contents($page);
+        $base = $page;
+        $html = str_replace('<head>', '<head><base href="' . $base . '">', $html);
+
+        return response([
+            'succes' => true,
+            'html' => $html
         ]);
     }
 }

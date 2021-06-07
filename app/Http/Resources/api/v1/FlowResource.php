@@ -14,7 +14,7 @@ class FlowResource extends JsonResource
      */
     public function toArray($request)
     {
-        $domain = $this->domain->url;
+        $domain = $this->domain->domain;
         if ($domain[strlen($domain) - 1] != '/') {
           $domain .= '/';
         }
@@ -43,7 +43,7 @@ class FlowResource extends JsonResource
             ],
             'domain' => [
                 'id' => $this->domain->id,
-                'url' => $this->domain->url,
+                'domain' => $this->domain->domain,
             ],
             'path_name' => $this->path_name,
             'url' => $this->getPathnameUrl(),

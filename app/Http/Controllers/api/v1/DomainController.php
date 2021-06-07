@@ -332,7 +332,7 @@ class DomainController extends Controller
 
         // TODO: Check if pathname contains (at the beginning) $domain->path . '/'
 
-        Storage::disk('landings')->put('apps/' . $params['pathname'], '');
+        $domain->createFile($params['pathname'], '');
 
         return response([
             'message' => 'File created successfully',
@@ -394,8 +394,10 @@ class DomainController extends Controller
 
         // TODO: Check if path contains (at the beginning) $domain->path . '/'
 
-        Storage::disk('landings')->putFileAs(
-            'apps/' . $params['path'],
+        // TODO: Substitute every Storage::disk('landings')->... with functions
+        // inside Domain class, like the row below.
+        $domain->uploadFile(
+            $params['path'],
             $request->file('file'),
             $request->file('file')->getClientOriginalName()
         );
