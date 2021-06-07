@@ -5,8 +5,6 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Spatie\Ssh\Ssh;
 
 use App\Domain as Domain;
@@ -67,63 +65,12 @@ class DomainController extends Controller
             'path' => 'required|string|landing_path|unique:domains,path',
         ]);
         
-        $domain = null;
+        // Create domain
+        $domain = Domain::create($params);
+        $result = $domain->createAppAndSetDns($params['path']);
 
-        // Create domain's apps (folder and virtualhost) on landings' server with ServerPilot
-        $serverpilot = $this->serverpilotGetClient();
-        $app = $serverpilot->app_create(
-            $params['path'],
-            env('SERVERPILOT_LANDINGS_SYSUSER_ID'),
-            env('SERVERPILOT_APPS_PHP_VERSION'),
-            [$params['domain']],
-            []
-        );
-        // TODO: What about these? Test this code.
-        //$serverpilot->ssl_delete($app->data->id);
-        //$serverpilot->ssl_auto($app->data->id);
-        //$serverpilot->ssl_force($app->data->id, true);
-
-        // Set domain's record on Cloudflare
-        $zones = $this->cloudflareGetZones();
-        if ($zones !== false) {
-            $zone = null;
-            foreach ($zones as $z) {
-                if ($z['name'] == $params['domain']) {
-                    $zone = $z;
-                    break;
-                }
-            }
-
-            if ($zone === null) {
-                $zone = $this->cloudflareCreateZone($params['domain']);
-            }
-
-            if ($zone !== false && $zone !== null) {
-                $dnsRecords = $this->cloudflareGetDNSRecords($zone['id']);
-                $dnsRecord = null;
-                if ($dnsRecords !== false) {
-                    foreach ($dnsRecords as $r) {
-                        if ($r['type'] == 'A') {
-                            $dnsRecord = $r;
-                            break;
-                        }
-                    }
-                }
-
-                if ($dnsRecord !== null) {
-                    $this->cloudflareDeleteDNSRecord($zone['id'], $dnsRecord['id']);
-                }
-
-                $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $params['domain'], env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
-                if ($dnsRecord !== false) {
-                    $domain = Domain::create($params);
-
-                    $this->namecheapSetNameservers($domain->domain, $this->cloudflareNameservers);
-                }
-            }
-        }
-
-        if($domain === null) {
+        if ($result === false) {
+            $domain->delete();
             return response([
                 "message" => "Unexpected error: domain cannot be created!",
             ], 500);
@@ -158,54 +105,7 @@ class DomainController extends Controller
         ]);
 
         if ($params['domain'] != $domain->domain) {
-            // App update on Serverpilot
-            $serverpilot = $this->serverpilotGetClient();
-            $apps = ($serverpilot->app_list())->data;
-            foreach ($apps as $app) {
-                if ($app->name == $domain->path) {
-                    $serverpilot->app_update($app->id, env('SERVERPILOT_APPS_PHP_VERSION'), [$params['domain']]);
-                    break;
-                }
-            }
-
-            // Update zone on Cloudflare (delete the old one and create a new one)
-            $zones = $this->cloudflareGetZones();
-            if ($zones !== false) {
-                $zone = null;
-                foreach ($zones as $z) {
-                    if ($z['name'] == $domain->domain) {
-                        $this->cloudflareDeleteZone($z['id']);
-                    } else if ($z['name'] == $params['domain']) {
-                        $zone = $z;
-                    }
-                }
-
-                if ($zone === null) {
-                    $zone = $this->cloudflareCreateZone($params['domain']);
-                }
-
-                if ($zone !== false && $zone !== null) {
-                    $dnsRecords = $this->cloudflareGetDNSRecords($zone['id']);
-                    $dnsRecord = null;
-                    if ($dnsRecords !== false) {
-                        foreach ($dnsRecords as $r) {
-                            if ($r['type'] == 'A') {
-                                $dnsRecord = $r;
-                                break;
-                            }
-                        }
-                    }
-
-                    if ($dnsRecord !== null) {
-                        $this->cloudflareDeleteDNSRecord($zone['id'], $dnsRecord['id']);
-                    }
-
-                    $dnsRecord = $this->cloudflareAddDNSRecord($zone['id'], 'A', $params['domain'], env('SFTP_HOST')); // TODO: What about env('SFTP_HOST')???
-                    if ($dnsRecord !== false) {
-                        $domain->update($params);
-                    }
-                }
-            }
+            $domain->change($params['domain']);
         }
 
         return new DomainResource($domain);
@@ -226,28 +126,8 @@ class DomainController extends Controller
 
         $this->authorize('delete', $domain);
 
-        // App deletion on Serverpilot
-        $serverpilot = $this->serverpilotGetClient();
-        $apps = ($serverpilot->app_list())->data;
-        foreach ($apps as $app) {
-            if ($app->name == $domain->path) {
-                $serverpilot->app_delete($app->id);
-                break;
-            }
-        }
-
-        // Zone deletion on Cloudflare??
-        $zones = $this->cloudflareGetZones();
-        if ($zones !== false) {
-            foreach ($zones as $z) {
-                if ($z['name'] == $domain->domain) {
-                    $this->cloudflareDeleteZone($z['id']);
-                    break;
-                }
-            }
-        }
-
         // Delete the domain
+        $domain->deleteAppAndZone();
         $domain->delete();
 
         return response([
@@ -271,7 +151,7 @@ class DomainController extends Controller
 
         $content = null;
         if ($domain->path != null && $domain->path != '') {
-            $content = $this->getDirectoryContent('apps/' . $domain->path);
+            $content = $domain->getDirectoryContent($domain->path);
         }
 
         return response([
@@ -302,7 +182,7 @@ class DomainController extends Controller
 
         // TODO: Check if pathname contains (at the beginning) $domain->path . '/'
 
-        $content = Storage::disk('landings')->get('apps/' . $params['pathname']);
+        $content = $domain->getFileContent($params['pathname']);
 
         return response([
             'data' => $content,
@@ -362,7 +242,7 @@ class DomainController extends Controller
 
         // TODO: Check if pathname contains (at the beginning) $domain->path . '/'
 
-        Storage::disk('landings')->makeDirectory('apps/' . $params['pathname']);
+        $domain->createDirectory($params['pathname']);
 
         return response([
             'message' => 'Directory created successfully',
@@ -370,7 +250,7 @@ class DomainController extends Controller
     }
 
     /**
-     * Save domain's file content
+     * Upload a file
      *
      * @urlParam id int required Domain's id
      *
@@ -394,8 +274,6 @@ class DomainController extends Controller
 
         // TODO: Check if path contains (at the beginning) $domain->path . '/'
 
-        // TODO: Substitute every Storage::disk('landings')->... with functions
-        // inside Domain class, like the row below.
         $domain->uploadFile(
             $params['path'],
             $request->file('file'),
@@ -435,10 +313,10 @@ class DomainController extends Controller
         $type = '';
         if ($params['type'] == 'file') {
             $type = 'File';
-            Storage::disk('landings')->delete('apps/' . $params['pathname']);
+            $domain->deleteFile($params['pathname']);
         } else if ($params['type'] == 'directory') {
             $type = 'Directory';
-            Storage::disk('landings')->deleteDirectory('apps/' . $params['pathname']);
+            $domain->deleteDirectory($params['pathname']);
         }
 
         return response([
@@ -492,335 +370,11 @@ class DomainController extends Controller
         $this->authorize('viewAny', 'App\Domain');
         $this->authorize('create', 'App\Domain');
 
-        $domains = $this->namecheapGetDomains();
+        $domains = Domain::namecheapGetDomains();
 
         return response([
             'data' => $domains,
         ]);
-    }
-    
-    private function getDirectoryContent($directory)
-    {
-        $content = [];
-
-        $directoryPathname = $directory;
-        if ($directoryPathname[strlen($directoryPathname) - 1] != '/') {
-            $directoryPathname .= '/';
-        }
-
-        $directories = Storage::disk('landings')->directories($directory);
-        foreach ($directories as $dir) {
-            $dirContent = $this->getDirectoryContent($dir);
-            $content[] = [
-                'pathname' => substr($dir, 5),
-                'name' => str_replace($directoryPathname, '', $dir),
-                'type' => 'directory',
-                'data' => $dirContent,
-            ];
-        }
-
-        $files = Storage::disk('landings')->files($directory);
-        foreach ($files as $file) {
-            $content[] = [
-                'pathname' => substr($file, 5),
-                'name' => str_replace($directoryPathname, '', $file),
-                'type' => 'file',
-                'data' => '',
-            ];
-        }
-
-        return $content;
-    }
-
-    private function serverpilotGetClient()
-    {
-        $serverpilotConfig = [
-            'id' => env('SERVERPILOT_CLIENT_ID'),
-            'key' => env('SERVERPILOT_API_KEY'),
-        ];
-        return new \ServerPilot($serverpilotConfig);
-    }
-
-    private $cloudflareNameservers = [
-        'marek.ns.cloudflare.com',
-        'naomi.ns.cloudflare.com',
-    ];
-
-    private function cloudflareGetHeaders()
-    {
-        $headers = [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . env('CLOUDFLARE_API_KEY'),
-        ];
-        return $headers;
-    }
-
-    private function cloudflareGetZones()
-    {
-        $url = 'https://api.cloudflare.com/client/v4/zones';
-        $headers = $this->cloudflareGetHeaders();
-
-        $thereAreOtherPages = true;
-        $currentPage = 0;
-
-        $error = false;
-        $zones = [];
-        while ($thereAreOtherPages) {
-            $currentPage += 1;
-
-            $params = [
-                'per_page' => 50,
-                'page' => $currentPage,
-            ];
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $response = curl_exec($ch);
-            curl_close($ch);
-            $response = json_decode($response, true);
-
-            if (isset($response['success']) && $response['success']) {
-                foreach ($response['result'] as $zone) {
-                    $zones[] = $zone;
-                }
-
-                $thereAreOtherPages = (isset($response['result_info']) &&
-                    isset($response['result_info']['total_pages']) &&
-                    $response['result_info']['total_pages'] < $currentPage);
-            } else {
-                $error = true;
-                $thereAreOtherPages = false;
-                Log::error('Cannot get zones list on Cloudflare - RESPONSE: ' . json_encode($response));
-            }
-        }
-
-        if ($error) {
-            return false;
-        }
-        return $zones;
-    }
-
-    private function cloudflareCreateZone($name)
-    {
-        $toReturn = false;
-
-        $url = 'https://api.cloudflare.com/client/v4/zones';
-        $headers = $this->cloudflareGetHeaders();
-        $params = [
-            'name' => $name,
-            'account' => [
-                'id' => env('CLOUDFLARE_ACCOUNT_ID'),
-            ],
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = $response['result'];
-        } else {
-            Log::error('Cannot create zone ' . $name . ' on Cloudflare - RESPONSE: ' . json_encode($response));
-        }
-
-        return $toReturn;
-    }
-
-    private function cloudflareDeleteZone($id)
-    {
-        $toReturn = false;
-
-        $url = 'https://api.cloudflare.com/client/v4/zones/' . $id;
-        $headers = $this->cloudflareGetHeaders();
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = true;
-        }
-
-        return $toReturn;
-    }
-
-    private function cloudflareGetDNSRecords($zone_id)
-    {
-        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records';
-        $headers = $this->cloudflareGetHeaders();
-
-        $thereAreOtherPages = true;
-        $currentPage = 0;
-
-        $error = false;
-        $dnsList = [];
-        while ($thereAreOtherPages) {
-            $currentPage += 1;
-
-            $params = [
-                'per_page' => 100,
-                'page' => $currentPage,
-            ];
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $response = curl_exec($ch);
-            curl_close($ch);
-            $response = json_decode($response, true);
-
-            if (isset($response['success']) && $response['success']) {
-                foreach ($response['result'] as $dns) {
-                    $dnsList[] = $dns;
-                }
-
-                $thereAreOtherPages = (isset($response['result_info']) &&
-                    isset($response['result_info']['total_pages']) &&
-                    $response['result_info']['total_pages'] < $currentPage);
-            } else {
-                $error = true;
-                $thereAreOtherPages = false;
-                Log::error('Cannot get zone DNS list on Cloudflare - RESPONSE: ' . json_encode($response));
-            }
-        }
-
-        if ($error) {
-            return false;
-        }
-        return $dnsList;
-    }
-
-    private function cloudflareAddDNSRecord($zone_id, $type, $name, $value)
-    {
-        $toReturn = false;
-
-        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records';
-        $headers = $this->cloudflareGetHeaders();
-        $params = [
-            'type' => $type,
-            'name' => $name,
-            'content' => $value,
-            'ttl' => 1,
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = $response['result'];
-        } else {
-            Log::error('Cannot create DNS record on Cloudflare for the zone ' . $name . ' - RESPONSE: ' . json_encode($response));
-        }
-
-        return $toReturn;
-    }
-
-    private function cloudflareDeleteDNSRecord($zone_id, $dns_record_id)
-    {
-        $toReturn = false;
-
-        $url = 'https://api.cloudflare.com/client/v4/zones/' . $zone_id . '/dns_records/' . $dns_record_id;
-        $headers = $this->cloudflareGetHeaders();
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        if (isset($response['success']) && $response['success']) {
-            $toReturn = true;
-        }
-
-        return $toReturn;
-    }
-
-    private function namecheapGetClient()
-    {
-        $client = new \Namecheap\Api(
-            env('NAMECHEAP_USER'),
-            env('NAMECHEAP_API_KEY'),
-            env('NAMECHEAP_USER'),
-            env('NAMECHEAP_CLIENT_IP'),
-            'array'
-        );
-        if (env('NAMECHEAP_SANDBOX')) {
-            $client->enableSandbox();
-        }
-        return $client;
-    }
-
-    private function namecheapGetDomains()
-    {
-        // TODO: What about pages (like Cloudflare API)???
-
-        $client = $this->namecheapGetClient();
-
-        $ncDomains = new \Namecheap\Domain\Domains($client);
-        if (env('NAMECHEAP_SANDBOX')) {
-            $ncDomains->enableSandbox();
-        }
-        $domainList = $ncDomains->getList(); 
-
-        $q = 'ApiResponse.CommandResponse.DomainGetListResult.Domain';
-        $q = explode('.', $q);
-        $domains = [];
-        $current = $domainList;
-        foreach ($q as $element) {
-            if (isset($current[$element])) {
-                $current = $current[$element];
-            } else {
-                // TODO: Log error?
-                $domains = [];
-                break;
-            }
-        }
-        if (isset($current['_ID'])) {
-            $domains[] = $current;
-        } else {
-            $domains = $current;
-        }
-
-        return $domains;
-    }
-
-    private function namecheapSetNameservers($domain, $nameservers)
-    {
-        $client = $this->namecheapGetClient();
-
-        $ncDomainsDns = new \Namecheap\Domain\DomainsDns($client);
-        if (env('NAMECHEAP_SANDBOX')) {
-            $ncDomains->enableSandbox();
-        }
-
-        $domainParts = explode('.', $domain);
-        $domainSld = $domainParts[0];
-        $domainTld = $domainParts[1];
-        $formattedNameservers = implode(',', $nameservers);
-
-        $response = $ncDomainsDns->setCustom($domainSld, $domainTld, $formattedNameservers);
-
-        // TODO: Check response and log errors
     }
 
     private function zaroclonerExecuteAsync($url, $path)

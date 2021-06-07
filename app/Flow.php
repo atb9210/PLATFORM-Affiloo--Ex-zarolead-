@@ -138,7 +138,8 @@ class Flow extends Model
         $contents = Storage::disk('flows')->get($src);
         $phpCode = $contents;
         $phpCode = str_replace('[[FLOW_ID]]', strval($this->id), $phpCode);
-        $fileName = $this->path_name . '/index.php';
+        $fileName = 'apps/' . $this->domain->path . '/' . $this->path_name . '/index.php';
+        // TODO: Error is here. I need to create folder and subfolders.
         $this->domain->createFile($fileName, $phpCode);
     }
 }

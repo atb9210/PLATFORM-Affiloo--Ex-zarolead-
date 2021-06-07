@@ -95,7 +95,7 @@
                     <span>Domain</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
+                    <vs-select autocomplete v-model="newObject['create'].domain" class="w-full select-large" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
@@ -129,7 +129,7 @@
                     <span>Traffic Source</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="newObject['create'].traffic_source" class="w-full select-large" v-validate="'required'">
+                    <vs-select autocomplete v-model="newObject['create'].traffic_source" class="w-full select-large" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
@@ -149,7 +149,7 @@
                 <div class="vx-col w-1/6 mb-2 text-center" v-if="indexparam == 0">
                 </div>
                 <div class="vx-col w-full flex items-center">
-                    <vs-select class="w-1/2 select-large" v-model="newObject['create'].landings[indexparam]" v-validate="'required'">
+                    <vs-select autocomplete class="w-1/2 select-large" v-model="newObject['create'].landings[indexparam]" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in landingOptions" class="w-full" />
                     </vs-select>
                     <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model="newObject['create'].weights[indexparam]" />
@@ -198,7 +198,7 @@
                     <span>Domain</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
+                    <vs-select autocomplete v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.url" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
@@ -232,7 +232,7 @@
                     <span>Traffic Source</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="newObject['edit'].traffic_source" class="w-full select-large" v-validate="'required'">
+                    <vs-select autocomplete v-model="newObject['edit'].traffic_source" class="w-full select-large" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in trafficSources" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('traffic_source_id') }}</span>
@@ -252,7 +252,7 @@
                 <div class="vx-col w-1/6 mb-2 text-center" v-if="indexparam == 0">
                 </div>
                 <div class="vx-col w-full flex items-center">
-                    <vs-select class="w-1/2 select-large" v-model="newObject['edit'].landings[indexparam]" v-validate="'required'">
+                    <vs-select autocomplete class="w-1/2 select-large" v-model="newObject['edit'].landings[indexparam]" v-validate="'required'">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in landingOptions" class="w-full" />
                     </vs-select>
                     <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model="newObject['edit'].weights[indexparam]" />
