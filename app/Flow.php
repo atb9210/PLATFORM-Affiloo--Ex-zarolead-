@@ -132,20 +132,11 @@ class Flow extends Model
         return true;
     }
 
-    private const PHP_HOTLOAD_BOILERPLATE = <<<EOD
-$ch = curl_init();
-$api_url = env('APP_URL') . '/api/v1/flows/[[FLOW_ID]]/hotload';
-curl_setopt($ch, CURLOPT_URL, $api_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-$response = curl_exec($ch);
-curl_close($ch);
-$response = json_decode($response, true);
-echo $response['html'];
-EOD;
-
     public function createHotloadScript()
     {
-        $phpCode = self::PHP_HOTLOAD_BOILERPLATE;
+        $src = 'hotload.php';
+        $contents = Storage::disk('flows')->get($src);
+        $phpCode = $contents;
         $phpCode = str_replace('[[FLOW_ID]]', str($this->id), $phpCode);
         $fileName = $this->path_name . '/index.php';
         $this->domain->createFile($fileName, $phpCode);
