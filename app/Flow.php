@@ -137,7 +137,7 @@ class Flow extends Model
         $src = 'hotload.php';
         $contents = Storage::disk('flows')->get($src);
         $phpCode = $contents;
-        $phpCode = str_replace('[[FLOW_ID]]', str($this->id), $phpCode);
+        $phpCode = str_replace('[[FLOW_ID]]', strval($this->id), $phpCode);
         $fileName = $this->path_name . '/index.php';
         $this->domain->createFile($fileName, $phpCode);
     }
