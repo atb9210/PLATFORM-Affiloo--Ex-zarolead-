@@ -20,14 +20,18 @@ class TestController extends Controller
 {
     public function test()
     {
-        Storage::disk('landings')->makeDirectory('apps/italianumero3/public/n8');
-        //$ch = curl_init();
-        //curl_setopt($ch, CURLOPT_URL, 'http://zarolead.localhost/api/v1/flows/25/hotload');
-        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //$response = curl_exec($ch);
-        //curl_close($ch);
-        //$response = json_decode($response, true);
-        //echo $response['html'];
+        //$php = 'C:\\xampp\\php\\php.exe';
+        $php = 'php';
+        $command = $php . ' ..\artisan queue:work --queue=zarocloner --stop-when-empty';
+        $commands = explode(' ', $command);
+        $process = new Process($commands);
+        $process->start();
+        while ($process->isRunning()) {
+        }
+        echo $process->getOutput();
+        echo $process->getErrorOutput();
+        exit();
+        dd($process->getOutput());
     }
 
     public function post(Request $request)

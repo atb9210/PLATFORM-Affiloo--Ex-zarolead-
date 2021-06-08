@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Ssh\Ssh;
+use Symfony\Component\Process\Process;
 
 use App\Domain as Domain;
 use App\Http\Resources\api\v1\DomainResource;
@@ -351,10 +351,11 @@ class DomainController extends Controller
         if (isset($params['path']) && $params['path'] != '') {
             $path .= '/' . $params['path'];
         }
-        $this->zaroclonerExecuteAsync($params['url'], $path);
+        $jobId = $this->zaroclonerExecuteAsync($params['url'], $path);
 
         return response([
             'message' => 'Zarocloner running asynchronously',
+            'job_id' => $jobId,
         ]);
     }
 
@@ -377,13 +378,20 @@ class DomainController extends Controller
         ]);
     }
 
-    private function zaroclonerExecuteAsync($url, $path)
+    private function zaroclonerExecuteAsync(string $url, string $path)
     {
-        Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
-            ->executeAsync(
-                'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
-                $url . ' ' .
-                $path
-            );
+        $job = (new \App\Jobs\CloneWebpageJob($url, $path))->onQueue('zarocloner');
+        $jobId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($job);
+
+        /*
+         * This command is used to run jobs in queue:
+         *     php artisan queue:work --queue=zarocloner --stop-when-empty
+         */
+        $command = 'php artisan queue:work --stop-when-empty';
+        $commands = explode(' ', $command);
+        $process = new Process($commands);
+        $process->start();
+
+        return $jobId;
     }
 }

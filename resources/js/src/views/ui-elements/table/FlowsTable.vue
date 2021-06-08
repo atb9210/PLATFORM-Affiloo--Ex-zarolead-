@@ -343,7 +343,7 @@ export default {
           weights: [
             1,
           ],
-          domain: null,
+          domain: {},
         },
         'edit': {
           name: '',
@@ -358,7 +358,7 @@ export default {
           weights: [
             1,
           ],
-          domain: null,
+          domain: {},
         },
       },
 
@@ -537,7 +537,7 @@ export default {
         weights: [
           1,
         ],
-        domain: null,
+        domain: {},
       }
     },
     isValidForm(type) {
