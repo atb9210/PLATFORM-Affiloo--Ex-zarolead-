@@ -249,7 +249,7 @@ class FlowController extends Controller
 
         $parsed_url = parse_url($page_url);
         $base = $page_url;
-        if (strpos($parsed_url['path'], '.') === false && $base[len($base) - 1] != '/') {
+        if (strpos($parsed_url['path'], '.') === false && $base[strlen($base) - 1] != '/') {
             $base .= '/';
         }
 
