@@ -243,10 +243,16 @@ class FlowController extends Controller
     {
         $flow = Flow::findOrFail($id);
 
-        $page = $flow->getLandingUrl();
+        $page_url = $flow->getLandingUrl();
 
-        $html = file_get_contents($page);
-        $base = $page;
+        $html = file_get_contents($page_url);
+
+        $parsed_url = parse_url($page_url);
+        $base = $page_url;
+        if (strpos($parsed_url['path'], '.') === false && $base[len($base) - 1] != '/') {
+            $base .= '/';
+        }
+
         $html = str_replace('<head>', '<head><base href="' . $base . '">', $html);
 
         return response([
