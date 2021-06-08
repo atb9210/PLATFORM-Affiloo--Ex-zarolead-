@@ -41,7 +41,7 @@ class CloneWebpageJob implements ShouldQueue
         Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
             ->execute(
                 'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
-                $this->url . ' ' .
+                $this->webpage_url . ' ' .
                 $this->path
             );
     }

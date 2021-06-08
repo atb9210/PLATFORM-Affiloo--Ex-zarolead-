@@ -387,7 +387,7 @@ class DomainController extends Controller
          * This command is used to run jobs in queue:
          *     php artisan queue:work --queue=zarocloner --stop-when-empty
          */
-        $command = 'php artisan queue:work --stop-when-empty';
+        $command = 'php ../artisan queue:work --stop-when-empty';
         $commands = explode(' ', $command);
         $process = new Process($commands);
         $process->start();

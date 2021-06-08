@@ -20,9 +20,8 @@ class TestController extends Controller
 {
     public function test()
     {
-        //$php = 'C:\\xampp\\php\\php.exe';
         $php = 'php';
-        $command = $php . ' ..\artisan queue:work --queue=zarocloner --stop-when-empty';
+        $command = $php . ' ../artisan queue:work --queue=zarocloner --stop-when-empty';
         $commands = explode(' ', $command);
         $process = new Process($commands);
         $process->start();
