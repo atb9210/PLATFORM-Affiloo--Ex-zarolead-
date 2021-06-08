@@ -14,11 +14,18 @@ class FlowResource extends JsonResource
      */
     public function toArray($request)
     {
-        $domain = $this->domain->domain;
+        $domain = 'https://' . $this->domain->domain;
         if ($domain[strlen($domain) - 1] != '/') {
           $domain .= '/';
         }
-        $urlDomain = $domain . 'flo/' . $this->path_name;
+        $urlDomain = '';
+
+        if ($this->type == 'redirect') {
+            $urlDomain = $domain . 'flo/' . $this->path_name;
+        } elseif ($this->type == 'hotload') {
+            $urlDomain = $domain . $this->path_name;
+        }
+
         if (count($this->traffic_source->custom_params) > 0) {
             if (strpos($urlDomain, '?') === false) {
                 $urlDomain .= '?';

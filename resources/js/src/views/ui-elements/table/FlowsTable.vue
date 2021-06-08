@@ -343,7 +343,7 @@ export default {
           weights: [
             1,
           ],
-          domain: 0,
+          domain: null,
         },
         'edit': {
           name: '',
@@ -358,7 +358,7 @@ export default {
           weights: [
             1,
           ],
-          domain: 0,
+          domain: null,
         },
       },
 
@@ -537,7 +537,7 @@ export default {
         weights: [
           1,
         ],
-        domain: '',
+        domain: null,
       }
     },
     isValidForm(type) {
@@ -715,7 +715,7 @@ export default {
         landings: landings,
         weights: weights,
         traffic_source: obj.traffic_source.id,
-        domain: obj.domain.id,
+        domain: obj.domain,
       }
       this.editingObject = obj.id
       this.errors.clear()
