@@ -200,7 +200,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
-                        <vs-select-item :key="index" :value="item" :text="item.url" v-for="(item, index) in domains" class="w-full" />
+                        <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
                 </div>
