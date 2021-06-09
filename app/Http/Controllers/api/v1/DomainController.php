@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\DB;
 
 use App\Domain as Domain;
 use App\Http\Resources\api\v1\DomainResource;
@@ -355,7 +356,12 @@ class DomainController extends Controller
 
         return response([
             'message' => 'Zarocloner running asynchronously',
-            'job_id' => $jobId,
+            'job' => [
+                'id' => $jobId,
+                'name' => 'ZaroCloner ' . $params['path'],
+                'created_at' => date('YYYY-mm-dd h:i:s'),
+                'status' => 'running',
+            ],
         ]);
     }
 
@@ -375,6 +381,53 @@ class DomainController extends Controller
 
         return response([
             'data' => $domains,
+        ]);
+    }
+
+    /**
+     * Get job status
+     *
+     * @response {
+     *  "data": [domains]
+     * }
+     */
+    public function getJob($id)
+    {
+        $this->authorize('viewAny', 'App\Domain');
+        $this->authorize('create', 'App\Domain');
+
+        $status = 'completed';
+        $found = false;
+
+        $jobs = DB::table('jobs')->where('queue', 'zarocloner')->get();
+        foreach ($jobs as $job) {
+            if ($job->id == $id) {
+                $found = true;
+                $status = 'running';
+                break;
+            }
+        }
+
+        if (!$found) {
+            $failed_jobs = DB::table('failed_jobs')->where('queue', 'zarocloner')->get();
+            foreach ($failed_jobs as $failed_job) {
+                if ($failed_job->id == $id) {
+                    $found = true;
+                    $status = 'failed';
+                    break;
+                }
+            }
+        }
+
+        if (!$found) {
+            $status = 'completed';
+        }
+
+        return response([
+            'data' => [
+                'id' => $id,
+                'status' => $status,
+            ],
         ]);
     }
 

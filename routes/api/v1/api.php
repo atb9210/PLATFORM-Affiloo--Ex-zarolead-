@@ -165,6 +165,10 @@ Route::post('domains/{id}/clone-webpage', 'api\v1\DomainController@cloneWebpage'
 Route::get('domains-namecheap', 'api\v1\DomainController@getNamecheapDomains')->middleware('auth:api')
     ->name('domains-namecheap');
 
+// TODO: Where to put this???
+Route::get('zarocloner/jobs/{id}', 'api\v1\DomainController@getJob')->middleware('auth:api')
+    ->name('zarocloner.jobs');
+
 /* Product medias routes */
 Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
     'create', 'edit', 'update',

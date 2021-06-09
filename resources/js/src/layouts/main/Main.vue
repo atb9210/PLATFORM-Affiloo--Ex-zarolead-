@@ -40,7 +40,7 @@
         :navbarType= "navbarType"
         :class="[
           {'text-white' : isNavbarDark  && !isThemeDark},
-          {'text-base'  : !isNavbarDark && isThemeDark}
+          {'text-base'  : !isNavbarDark && isThemeDark},
         ]" />
 
       <div style="height: 62px" v-if="navbarType === 'static'"></div>
@@ -58,7 +58,7 @@
         :navbarColor="navbarColor"
         :class="[
           {'text-white' : isNavbarDark  && !isThemeDark},
-          {'text-base'  : !isNavbarDark && isThemeDark}
+          {'text-base'  : !isNavbarDark && isThemeDark},
         ]" />
     </template>
     <!-- /Navbar -->

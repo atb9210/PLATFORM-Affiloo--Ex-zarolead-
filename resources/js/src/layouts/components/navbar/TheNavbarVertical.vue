@@ -31,6 +31,8 @@
         <cart-drop-down />
         -->
 
+        <jobs-drop-down />
+
         <notification-drop-down />
 
         <profile-drop-down />
@@ -48,6 +50,7 @@ import SearchBar            from './components/SearchBar.vue'
 import CartDropDown         from './components/CartDropDown.vue'
 import NotificationDropDown from './components/NotificationDropDown.vue'
 import ProfileDropDown      from './components/ProfileDropDown.vue'
+import JobsDropDown         from './components/JobsDropDown.vue'
 
 export default {
   name: 'the-navbar-vertical',
@@ -63,7 +66,8 @@ export default {
     SearchBar,
     CartDropDown,
     NotificationDropDown,
-    ProfileDropDown
+    ProfileDropDown,
+    JobsDropDown,
   },
   computed: {
     navbarColorLocal () {

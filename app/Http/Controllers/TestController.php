@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -20,17 +21,19 @@ class TestController extends Controller
 {
     public function test()
     {
-        $php = 'php';
-        $command = $php . ' ../artisan queue:work --queue=zarocloner --stop-when-empty';
-        $commands = explode(' ', $command);
-        $process = new Process($commands);
-        $process->start();
-        while ($process->isRunning()) {
-        }
-        echo $process->getOutput();
-        echo $process->getErrorOutput();
-        exit();
-        dd($process->getOutput());
+        $jobs = DB::table('jobs')->where('queue', 'zarocloner')->get();
+        dd($jobs);
+        //$php = 'php';
+        //$command = $php . ' ../artisan queue:work --queue=zarocloner --stop-when-empty';
+        //$commands = explode(' ', $command);
+        //$process = new Process($commands);
+        //$process->start();
+        //while ($process->isRunning()) {
+        //}
+        //echo $process->getOutput();
+        //echo $process->getErrorOutput();
+        //exit();
+        //dd($process->getOutput());
     }
 
     public function post(Request $request)

@@ -98,7 +98,8 @@ import '@fortawesome/fontawesome-free/js/all.js'
 
 Vue.config.productionTip = false
 
-new Vue({
+
+window.VueInstance = new Vue({
   router,
   store,
   i18n,

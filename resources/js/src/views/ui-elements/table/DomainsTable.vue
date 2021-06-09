@@ -1049,18 +1049,22 @@ export default {
         path: this.zaroclonerPath,
       }
 
-      await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain.id + '/clone-webpage', data, { headers: headers })
+      const response = await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain.id + '/clone-webpage', data, { headers: headers })
+      let job = response.data.job
 
       this.clearForm('zarocloner')
       this.showPopup['zarocloner'] = false
 
-      this.$vs.notify({
-        title: 'Success',
-        text: 'ZaroCloner is running in background',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
+      // TODO: to delete
+      //this.$vs.notify({
+      //  title: 'Success',
+      //  text: 'ZaroCloner is running in background',
+      //  iconPack: 'feather',
+      //  icon: 'icon-alert-circle',
+      //  color: 'success'
+      //})
+
+      await this.$store.commit('addJob', job)
 
       this.$vs.loading.close()
     },

@@ -23,8 +23,9 @@ Vue.use(Vuex)
 // import moduleChat from './chat/moduleChat.js'
 // import moduleEmail from './email/moduleEmail.js'
 import moduleAuth from './auth/moduleAuth.js'
-import moduleECommerce from './eCommerce/moduleECommerce.js'
+//import moduleECommerce from './eCommerce/moduleECommerce.js'
 
+import jobs from './modules/jobs.js'
 
 export default new Vuex.Store({
   getters,
@@ -37,7 +38,8 @@ export default new Vuex.Store({
     // chat: moduleChat,
     // email: moduleEmail,
     auth: moduleAuth,
-    eCommerce: moduleECommerce
+    //eCommerce: moduleECommerce
+    jobs: jobs,
   },
   strict: process.env.NODE_ENV !== 'production'
 })

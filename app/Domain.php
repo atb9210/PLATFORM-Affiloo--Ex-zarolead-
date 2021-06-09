@@ -176,7 +176,7 @@ class Domain extends Model
         }
     }
 
-    private function getDirectoryContent($directory)
+    public function getDirectoryContent($directory)
     {
         $content = [];
 
