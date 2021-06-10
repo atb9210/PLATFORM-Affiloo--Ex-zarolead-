@@ -58,18 +58,21 @@ export default {
   data () {
     return {
       jobIcons: {
-        'running': 'SettingsIcon',
-        'completed': 'CheckIcon',
+        'queued': 'SettingsIcon',
+        'executing': 'SettingsIcon',
+        'finished': 'CheckIcon',
         'failed': 'XIcon',
       },
       jobColors: {
-        'running': 'primary',
-        'completed': 'success',
+        'queued': 'primary',
+        'executing': 'primary',
+        'finished': 'success',
         'failed': 'danger',
       },
       jobMessages: {
-        'running': 'This job is currently running in background...',
-        'completed': 'This job has been successfully completed.',
+        'queued': 'This job is currently executing in background...',
+        'executing': 'This job is currently executing in background...',
+        'finished': 'This job has been successfully completed.',
         'failed': 'This job terminated with an error!',
       },
       settings: {
@@ -84,7 +87,7 @@ export default {
     numberOfRunningJobs() {
       let counter = 0
       for (let i = 0; i < this.jobs.length; i++) {
-        if (this.jobs[i].status == 'running') {
+        if (this.jobs[i].status == 'queued' | this.jobs[i].status == 'executing') {
           counter += 1
         }
       }
