@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use App\Domain as Domain;
 use App\Http\Resources\api\v1\DomainResource;
 
 class DomainController extends Controller
 {
+    use DispatchesJobs;
+
     private const DOMAIN_REGEX = '/^([a-zA-Z0-9]{1,61}\.)+[a-zA-Z]{2,}$/';
 
     /**
@@ -396,6 +399,8 @@ class DomainController extends Controller
         $this->authorize('viewAny', 'App\Domain');
         $this->authorize('create', 'App\Domain');
 
+        // TODO: TO DELETE (old code)
+        /*
         $status = 'completed';
         $found = false;
 
@@ -422,6 +427,13 @@ class DomainController extends Controller
         if (!$found) {
             $status = 'completed';
         }
+        */
+
+        $status = 'failed';
+        $jobStatuses = DB::table('job_statuses')->where('job_id', $id)->get();
+        if (count($jobStatuses) > 0) {
+            $status = $jobStatuses->first()->status;
+        }
 
         return response([
             'data' => [
@@ -433,14 +445,21 @@ class DomainController extends Controller
 
     private function zaroclonerExecuteAsync(string $url, string $path)
     {
-        $job = (new \App\Jobs\CloneWebpageJob($url, $path))->onQueue('zarocloner');
-        $jobId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($job);
+        // TODO: to delete (old code)
+        //$job = (new \App\Jobs\CloneWebpageJob($url, $path))->onQueue('zarocloner');
+        //$jobId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($job);
+
+        $job = new \App\Jobs\CloneWebpageJob($url, $path);
+        $job->onQueue('zarocloner');
+        $this->dispatch($job);
+        $jobStatus = \Imtigger\LaravelJobStatus\JobStatus::find($job->getJobStatusId());
+        $jobId = $jobStatus->job_id;
 
         /*
          * This command is used to run jobs in queue:
          *     php artisan queue:work --queue=zarocloner --stop-when-empty
          */
-        $command = 'php ../artisan queue:work --queue=zarocloner --stop-when-empty';
+        $command = 'php ../artisan queue:work --queue=zarocloner --stop-when-empty &';
         $process = Process::fromShellCommandline($command);
         $process->start();
 
