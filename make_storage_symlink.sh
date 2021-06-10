@@ -1,2 +1,2 @@
 mkdir -p storage/app/public
-ln -s public/storage storage/app/public
+ln -s storage/app/public public/storage
