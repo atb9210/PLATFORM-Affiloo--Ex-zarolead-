@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use App\Flow as Flow;
 use App\Http\Resources\api\v1\FlowResource;
+
+use App\Domain as Domain;
+use App\Landing as Landing;
 
 class FlowController extends Controller
 {
@@ -79,6 +83,9 @@ class FlowController extends Controller
         // Validate rules JSON
         $validator = Validator::make($params['rules'], [
             'landings' => 'required|array',
+            'safe_page_url' => 'string',
+            'fraud_filter_protection' => 'boolean',
+            'fraud_filter_campaign_id' => 'string',
         ]);
         if ($validator->fails()) {
             return response([
@@ -105,6 +112,20 @@ class FlowController extends Controller
         if ($type == 'redirect') {
             $flow->createFileScript();
         } else if ($type == 'hotload') {
+            $domain = Domain::findOrFail($params['domain_id']);
+            $landings = $params['rules']['landings'];
+            foreach ($landings as $landing) {
+                $l = Landing::findOrFail($landing['id']);
+                $url = $l->url;
+                $path = Str::slug($url, '-');
+                $path = 'apps/' . $domain->path . '/public/' . $path;
+
+                // Import landings if URL is external
+                // TODO: to uncomment
+                //$zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                //$zarocloner->executeAsync($url, $path);
+                // TODO: What about job id?
+            }
             $flow->createHotloadScript();
         }
 
@@ -243,7 +264,20 @@ class FlowController extends Controller
     {
         $flow = Flow::findOrFail($id);
 
-        $page_url = $flow->getLandingUrl();
+        // FraudFilter protection
+        if ($flow->isFraudFilterProtectionEnabled()) {
+            $campaignId = $flow->fraudFilterCampaignId();
+            $fraudFilter = new \Driverfury\FraudFilter\FraudFilter();
+            if ($fraudFilter->check($campaignId)) {
+                // Money page
+                $page_url = $flow->getLandingUrl();
+            } else {
+                // Safe page
+                $page_url = $flow->getSafePageUrl();
+            }
+        } else {
+            $page_url = $flow->getLandingUrl();
+        }
 
         $html = file_get_contents($page_url);
 

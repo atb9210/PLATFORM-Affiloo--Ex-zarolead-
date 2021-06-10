@@ -1,0 +1,34 @@
+{
+    "name": "driverfury/zarocloner",
+    "description": "PHP API for ZaroCloner",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "driverfury",
+            "email": "gionatanmerola@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "imtigger/laravel-job-status": "^1.2",
+        "laravel/framework": "^6|^7|^8",
+        "spatie/ssh": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Driverfury\\ZaroCloner\\": "src"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Driverfury\\ZaroCloner\\Providers\\ZaroClonerServiceProvider"
+            ]
+        }
+    },
+    "require": {}
+}

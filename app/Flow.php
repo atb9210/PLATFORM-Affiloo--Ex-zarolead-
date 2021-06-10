@@ -102,6 +102,15 @@ class Flow extends Model
         return $result;
     }
 
+    public function getSafePageUrl()
+    {
+        $result = '';
+        if (isset($this->rules['safe_page_url'])) {
+            $result = $this->rules['safe_page_url'];
+        }
+        return $result;
+    }
+
     public function createFileScript($oldPathName = '')
     {
         if ($oldPathName != '') {
@@ -141,5 +150,24 @@ class Flow extends Model
         $phpCode = str_replace('[[FLOW_ID]]', strval($this->id), $phpCode);
         $pathname = $this->domain->path . '/public/' . $this->path_name;
         $this->domain->createFile($pathname, $phpCode);
+    }
+
+    public function isFraudFilterProtectionEnabled()
+    {
+        $result = (
+            isset($this->rules['fraud_filter_protection']) &&
+            $this->rules['fraud_filter_protection'] &&
+            isset($this->rules['fraud_filter_campaign_id'])
+        );
+        return $result;
+    }
+
+    public function fraudFilterCampaignId()
+    {
+        $result = '';
+        if (isset($this->rules['fraud_filter_campaign_id'])) {
+            $result = $this->rules['fraud_filter_campaign_id'];
+        }
+        return $result;
     }
 }

@@ -9,6 +9,8 @@
         "cloudflare/sdk": "^1.1",
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/cloudflare": "dev-master",
+        "driverfury/fraudfilter": "dev-master",
+        "driverfury/zarocloner": "dev-master",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.0",
         "imtigger/laravel-job-status": "^1.2",
@@ -75,6 +77,14 @@
         {
             "type": "path",
             "url": "./packages/driverfury/cloudflare"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/zarocloner"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/fraudfilter"
         }
     ]
 }

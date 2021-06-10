@@ -174,6 +174,25 @@
             </div>
 
             <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Safe Page URL</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="url" placeholder="https://..." class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].safe_page_url" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>FraudFilter</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <vs-input placeholder="Campaign ID" class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].fraud_filter_campaign_id" />
+                    <vs-checkbox class="w-1/2" v-model="newObject['create'].fraud_filter_protection">Enabled</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
         </vs-popup>
@@ -344,6 +363,9 @@ export default {
             1,
           ],
           domain: {},
+          safe_page_url: '',
+          fraud_filter_protection: false,
+          fraud_filter_campaign_id: '',
         },
         'edit': {
           name: '',
@@ -359,6 +381,9 @@ export default {
             1,
           ],
           domain: {},
+          safe_page_url: '',
+          fraud_filter_protection: false,
+          fraud_filter_campaign_id: '',
         },
       },
 
@@ -538,19 +563,29 @@ export default {
           1,
         ],
         domain: {},
+        safe_page_url: '',
+        fraud_filter_protection: false,
+        fraud_filter_campaign_id: '',
       }
     },
     isValidForm(type) {
+      // TODO: You cannot edit for now
+      if (type == 'edit') return false
+
       let obj = this.newObject[type]
 
-      let correctRules = true
-      let landings = this.newObject[type].landings
+      let landings = obj.landings
+      let correctRules = (landings.length > 0)
 
-      let weights = this.newObject[type].weights
+      let weights = obj.weights
       for (let i = 0; i < landings.length; i++) {
         let landing = landings[i]
         let weight = weights[i]
         correctRules = (correctRules && (parseInt(weight) >= 0))
+      }
+
+      if (obj.fraud_filter_protection) {
+        correctRules = (correctRules && obj.safe_page_url != '' && obj.fraud_filter_campaign_id != '')
       }
 
       return (obj.name.length > 0 && this.typeOptions.includes(obj.type) && correctRules)
@@ -587,6 +622,9 @@ export default {
       }
       let rules = {
         landings: landings,
+        safe_page_url: this.newObject['create'].safe_page_url,
+        fraud_filter_protection: this.newObject['create'].fraud_filter_protection,
+        fraud_filter_campaign_id: this.newObject['create'].fraud_filter_campaign_id,
       }
 
       let data = {

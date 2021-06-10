@@ -5,17 +5,13 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use App\Domain as Domain;
 use App\Http\Resources\api\v1\DomainResource;
 
 class DomainController extends Controller
 {
-    use DispatchesJobs;
-
     private const DOMAIN_REGEX = '/^([a-zA-Z0-9]{1,61}\.)+[a-zA-Z]{2,}$/';
 
     /**
@@ -337,7 +333,7 @@ class DomainController extends Controller
      * @bodyParam path string Target path
      *
      * @response {
-     *  "message": "Zarocloner running asynchronously"
+     *  "message": "ZaroCloner running asynchronously"
      * }
      */
     public function cloneWebpage($id, Request $request)
@@ -355,10 +351,11 @@ class DomainController extends Controller
         if (isset($params['path']) && $params['path'] != '') {
             $path .= '/' . $params['path'];
         }
-        $jobId = $this->zaroclonerExecuteAsync($params['url'], $path);
+        $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
+        $jobId = $zaroCloner->executeAsync($params['url'], $path);
 
         return response([
-            'message' => 'Zarocloner running asynchronously',
+            'message' => 'ZaroCloner running asynchronously',
             'job' => [
                 'id' => $jobId,
                 'name' => 'ZaroCloner ' . $params['path'],
@@ -396,38 +393,9 @@ class DomainController extends Controller
      */
     public function getJob($id)
     {
+        // TODO: Move this function into driverfury/zarocloner package or not???
         $this->authorize('viewAny', 'App\Domain');
         $this->authorize('create', 'App\Domain');
-
-        // TODO: TO DELETE (old code)
-        /*
-        $status = 'completed';
-        $found = false;
-
-        $jobs = DB::table('jobs')->where('queue', 'zarocloner')->get();
-        foreach ($jobs as $job) {
-            if ($job->id == $id) {
-                $found = true;
-                $status = 'running';
-                break;
-            }
-        }
-
-        if (!$found) {
-            $failed_jobs = DB::table('failed_jobs')->where('queue', 'zarocloner')->get();
-            foreach ($failed_jobs as $failed_job) {
-                if ($failed_job->id == $id) {
-                    $found = true;
-                    $status = 'failed';
-                    break;
-                }
-            }
-        }
-
-        if (!$found) {
-            $status = 'completed';
-        }
-        */
 
         $status = 'failed';
         $jobStatuses = DB::table('job_statuses')->where('job_id', $id)->get();
@@ -441,28 +409,5 @@ class DomainController extends Controller
                 'status' => $status,
             ],
         ]);
-    }
-
-    private function zaroclonerExecuteAsync(string $url, string $path)
-    {
-        // TODO: to delete (old code)
-        //$job = (new \App\Jobs\CloneWebpageJob($url, $path))->onQueue('zarocloner');
-        //$jobId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($job);
-
-        $job = new \App\Jobs\CloneWebpageJob($url, $path);
-        $job->onQueue('zarocloner');
-        $this->dispatch($job);
-        $jobStatus = \Imtigger\LaravelJobStatus\JobStatus::find($job->getJobStatusId());
-        $jobId = $jobStatus->job_id;
-
-        /*
-         * This command is used to run jobs in queue:
-         *     php artisan queue:work --queue=zarocloner --stop-when-empty
-         */
-        $command = 'php ../artisan queue:work --queue=zarocloner --stop-when-empty &';
-        $process = Process::fromShellCommandline($command);
-        $process->start();
-
-        return $jobId;
     }
 }

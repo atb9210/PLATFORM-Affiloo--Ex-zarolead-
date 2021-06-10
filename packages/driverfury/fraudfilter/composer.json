@@ -1,0 +1,31 @@
+{
+    "name": "driverfury/fraudfilter",
+    "description": "FraudFilter.io API wrapper",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "driverfury",
+            "email": "gionatanmerola@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Driverfury\\FraudFilter\\": "src"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Driverfury\\FraudFilter\\Providers\\FraudFilterServiceProvider"
+            ]
+        }
+    },
+    "require": {}
+}
