@@ -37,7 +37,7 @@ const actions = {
   },
   async updateJobsStatus({commit, dispatch}) {
     for (let i = 0; i < state.jobs.length; i++) {
-      if (state.jobs[i].status == 'running') {
+      if (state.jobs[i].status == 'executing' || state.jobs[i].status == 'queued') {
         await dispatch('updateJobStatus', state.jobs[i].id)
         commit('saveJobs')
       }
