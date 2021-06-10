@@ -18,8 +18,6 @@ const actions = {
   },
   async fetchJobs({commit}) {
     // Get jobs stored in cookies
-    commit('resetJobs')
-
     let storedJobs = []
     let tmp = localStorage.getItem('jobs')
     if (tmp != null) {
