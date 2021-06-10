@@ -363,7 +363,7 @@ class DomainController extends Controller
                 'id' => $jobId,
                 'name' => 'ZaroCloner ' . $params['path'],
                 'created_at' => date('YYYY-mm-dd h:i:s'),
-                'status' => 'running',
+                'status' => 'queued',
             ],
         ]);
     }
