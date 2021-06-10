@@ -1,12 +1,12 @@
 <template>
   <!-- JOBS -->
   <vs-dropdown vs-custom-content vs-trigger-click class="cursor-pointer">
-    <feather-icon icon="SettingsIcon" class="cursor-pointer mt-1 sm:mr-6 mr-2" :badge="jobs.length" />
+    <feather-icon icon="SettingsIcon" class="cursor-pointer mt-1 sm:mr-6 mr-2" :badge="numberOfRunningJobs" />
 
     <vs-dropdown-menu class="notification-dropdown dropdown-custom vx-navbar-dropdown">
 
       <div class="notification-top text-center p-5 bg-primary text-white">
-        <h3 class="text-white">{{ jobs.length }} Jobs</h3>
+        <h3 class="text-white">{{ numberOfRunningJobs }} Active Jobs</h3>
         <p class="opacity-75">Background Jobs</p>
       </div>
 
@@ -25,6 +25,25 @@
         </ul>
       </component>
 
+      <div class="
+        checkout-footer
+        fixed
+        bottom-0
+        rounded-b-lg
+        text-primary
+        w-full
+        p-2
+        font-semibold
+        text-center
+        border
+        border-b-0
+        border-l-0
+        border-r-0
+        border-solid
+        d-theme-border-grey-light
+        cursor-pointer">
+        <span>What is a job?</span>
+      </div>
     </vs-dropdown-menu>
   </vs-dropdown>
 </template>
@@ -62,6 +81,15 @@ export default {
   computed: {
     scrollbarTag () { return this.$store.getters.scrollbarTag },
     jobs() { return this.$store.getters.allJobs },
+    numberOfRunningJobs() {
+      let counter = 0
+      for (let i = 0; i < this.jobs.length; i++) {
+        if (this.jobs[i].status == 'running') {
+          counter += 1
+        }
+      }
+      return counter
+    },
   },
   methods: {
     elapsedTime(startTime) {

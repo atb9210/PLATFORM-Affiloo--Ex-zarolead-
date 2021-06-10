@@ -17,11 +17,15 @@ const actions = {
     }.bind(this), 2000);
   },
   async fetchJobs({commit}) {
-    // TODO
-    //getJobsFromCookies()
+    // Get jobs stored in cookies
+    commit('resetJobs', response.data.data)
 
-    // TODO: to delete
-    return
+    let storedJobs = []
+    let tmp = localStorage.getItem('jobs')
+    if (tmp != null) {
+      storedJobs = JSON.parse(tmp)
+    }
+    commit('setJobs', storedJobs)
   },
   async updateJobStatus({commit}, jobId) {
     let headers = {
@@ -37,6 +41,7 @@ const actions = {
     for (let i = 0; i < state.jobs.length; i++) {
       if (state.jobs[i].status == 'running') {
         await dispatch('updateJobStatus', state.jobs[i].id)
+        commit('saveJobs')
       }
     }
   },
@@ -45,6 +50,7 @@ const actions = {
 const mutations = {
   addJob(state, job) {
     state.jobs.push(job)
+    localStorage.setItem('jobs', JSON.stringify(state.jobs))
     VueInstance.$vs.notify({
       title: 'New job: ' + job.name,
       text: 'New job running in background...',
@@ -55,6 +61,7 @@ const mutations = {
   },
   resetJobs(state) {
     state.jobs = []
+    localStorage.setItem('jobs', JSON.stringify(state.jobs))
   },
   setJobStatus(state, job) {
     for (let i = 0; i < state.jobs.length; i++) {
@@ -87,6 +94,14 @@ const mutations = {
         break
       }
     }
+    localStorage.setItem('jobs', JSON.stringify(state.jobs))
+  },
+  setJobs(state, jobs) {
+    state.jobs = jobs
+    localStorage.setItem('jobs', JSON.stringify(state.jobs))
+  },
+  saveJobs(state) {
+    localStorage.setItem('jobs', JSON.stringify(state.jobs))
   },
 }
 
