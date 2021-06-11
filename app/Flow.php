@@ -170,4 +170,19 @@ class Flow extends Model
         }
         return $result;
     }
+
+    public function urlIsExternal($url)
+    {
+        $result = false;
+
+        $url_domain = parse_url($url, PHP_URL_HOST);
+        $tmp = explode('.', $url_domain);
+        if ($tmp[0] == 'www') {
+            $url_domain = $tmp[count($tmp)-2] . '.' . $tmp[count($tmp)-1];
+        }
+
+        $result = ($url_domain != $this->domain->domain);
+
+        return $result;
+    }
 }

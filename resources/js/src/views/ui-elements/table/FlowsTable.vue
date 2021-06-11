@@ -590,7 +590,7 @@ export default {
 
       return (obj.name.length > 0 && this.typeOptions.includes(obj.type) && correctRules)
     },
-    createObject() {
+    async createObject() {
       this.$vs.loading()
 
       let headers = {
@@ -636,35 +636,43 @@ export default {
         domain_id: this.newObject['create'].domain.id,
       }
 
-      this.$http.post('/api/v1/flows', data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Flow created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.errors.clear()
-          this.clearForm('create')
-          this.showPopup['create'] = false
-          this.retrieveObjects()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.errors.clear()
-          if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
-            for (const [key, value] of Object.entries(error.response.data.errors)) {
-              for (let i = 0; i < value.length; i++) {
-                this.errors.add({
-                  field: key,
-                  msg: value[i]
-                })
-              }
-            }
-          }
-        })
+      const response = await this.$http.post('/api/v1/flows', data, { headers: headers })
+
+      if (response.data.hasOwnProperty('jobs')) {
+        for (let i = 0; i < response.data.jobs.length; i++) {
+          let job = response.data.jobs[i]
+          await this.$store.commit('addJob', job)
+        }
+      }
+
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Flow created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.errors.clear()
+      this.clearForm('create')
+      this.showPopup['create'] = false
+      this.retrieveObjects()
+
+      // TODO: Show errors
+      //.catch((error) => {
+      //  this.$vs.loading.close()
+      //  this.errors.clear()
+      //  if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
+      //    for (const [key, value] of Object.entries(error.response.data.errors)) {
+      //      for (let i = 0; i < value.length; i++) {
+      //        this.errors.add({
+      //          field: key,
+      //          msg: value[i]
+      //        })
+      //      }
+      //    }
+      //  }
+      //})
     },
     isValidDuplicatePopup() {
       return this.duplicatePathName != ''

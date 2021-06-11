@@ -316,4 +316,24 @@ class Domain extends Model
 
         // TODO: Check response and log errors
     }
+
+    public function getUrlFromPath($path)
+    {
+        $result = '';
+
+        $adjustedPath = $path;
+        $toRemove = [
+            '/^apps\/' . $this->path . '\/public\//',
+            '/^\/' . $this->path . '\/public\//',
+            '/^' . $this->path . '\/public\//',
+            '/^public\//',
+            '/^\/public\//',
+        ];
+        foreach ($toRemove as $regex) {
+            $adjustedPath = preg_replace($regex, '', $adjustedPath);
+        }
+        $result = 'https://' . $this->domain . '/' . $adjustedPath;
+
+        return $result;
+    }
 }

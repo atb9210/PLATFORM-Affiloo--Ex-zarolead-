@@ -1055,15 +1055,6 @@ export default {
       this.clearForm('zarocloner')
       this.showPopup['zarocloner'] = false
 
-      // TODO: to delete
-      //this.$vs.notify({
-      //  title: 'Success',
-      //  text: 'ZaroCloner is running in background',
-      //  iconPack: 'feather',
-      //  icon: 'icon-alert-circle',
-      //  color: 'success'
-      //})
-
       await this.$store.commit('addJob', job)
 
       this.$vs.loading.close()

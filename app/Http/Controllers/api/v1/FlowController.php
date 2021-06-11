@@ -107,31 +107,65 @@ class FlowController extends Controller
         // Create flow
         $flow = Flow::create($params);
 
+        $jobsIds = [];
+
         // Create file script
         $type = $params['type'];
         if ($type == 'redirect') {
             $flow->createFileScript();
         } else if ($type == 'hotload') {
             $domain = Domain::findOrFail($params['domain_id']);
+
+            // Import landings if URL is external
             $landings = $params['rules']['landings'];
+            $counter = 0;
             foreach ($landings as $landing) {
                 $l = Landing::findOrFail($landing['id']);
                 $url = $l->url;
                 $path = Str::slug($url, '-');
-                $path = 'apps/' . $domain->path . '/public/' . $path;
+                $fullPath = 'apps/' . $domain->path . '/public/' . $path;
 
-                // Import landings if URL is external
-                // TODO: to uncomment
-                //$zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
-                //$zarocloner->executeAsync($url, $path);
-                // TODO: What about job id?
+                if ($flow->urlIsExternal($url)) {
+                    $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                    $jobsIds[] =  $zarocloner->executeAsync($url, $fullPath);
+                    $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
+                }
+                $counter += 1;
             }
+
+            // Import safe page if URL is external
+            if (isset($params['rules']['safe_page_url']) &&
+                $params['rules']['safe_page_url'] != '') {
+                $url = $params['rules']['safe_page_url'];
+                $path = Str::slug($url, '-');
+                $fullPath = 'apps/' . $domain->path . '/public/' . $path;
+                if ($flow->urlIsExternal($url)) {
+                    $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                    $jobsIds[] =  $zarocloner->executeAsync($url, $fullPath);
+                    $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
+                }
+            }
+
+            $flow->rules = $params['rules'];
+            $flow->save();
+
             $flow->createHotloadScript();
+        }
+
+        $jobs = [];
+        foreach ($jobsIds as $jobId) {
+            $jobs[] = [
+                'id' => $jobId,
+                'name' => 'ZaroCloner ' . $params['path'],
+                'created_at' => date('YYYY-mm-dd h:i:s'),
+                'status' => 'queued',
+            ];
         }
 
         return response([
             "message" => "Flow created",
             "data" => new FlowResource($flow),
+            "jobs" => $jobs,
         ], 201);
     }
 

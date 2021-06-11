@@ -21,8 +21,36 @@ class TestController extends Controller
 {
     public function test()
     {
-        $jobs = DB::table('jobs')->where('queue', 'zarocloner')->get();
-        dd($jobs);
+        $tests = [
+            'https://erboristeriadelbosco.com/fucus/',
+            'https://marianaplanet.com/red-burner-2',
+            'https://it.wikipedia.org/wiki/Pagina_principale',
+            'http://icanhazip.com/',
+            'http://italiaspecialiofferta.com/asdone/',
+            'https://italiaspecialiofferta.com/asdone/',
+            'https://www.italiaspecialiofferta.com/asdone/',
+            'http://www.italiaspecialiofferta.com/asdone/',
+        ];
+        $flow = \App\Flow::findOrFail(35);
+        foreach ($tests as $test) {
+            echo $test . ' isExternal: ' . ($flow->urlIsExternal($test) ? 'true' : 'false') . '<br>';
+        }
+
+
+        //$tests = [
+        //    'apps/italianumero3/public/ciaone1/index.html',
+        //    '/italianumero3/public/ciaone2/index.html',
+        //    'italianumero3/public/ciaone3/index.html',
+        //    '/public/ciaone4/index.html',
+        //    'public/ciaone5/index.html',
+        //    'ciaone6/index.html',
+        //    'ciaone7',
+        //];
+        //$domain = \App\Domain::findOrFail(8);
+        //foreach ($tests as $test) {
+        //    echo $domain->getUrlFromPath($test) . '<br>';
+        //}
+
         //$php = 'php';
         //$command = $php . ' ../artisan queue:work --queue=zarocloner --stop-when-empty';
         //$commands = explode(' ', $command);
