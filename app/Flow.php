@@ -93,7 +93,12 @@ class Flow extends Model
                     $landingId = $landings[$winner]['id'];
                     $landingObj = Landing::find($landingId);
                     if ($landingObj != null) {
-                        $result = $landingObj->url;
+                        // TODO: Get internal URL
+                        if (isset($landings[$winner]['internal_url'])) {
+                            $result = $landings[$winner]['internal_url'];
+                        } else {
+                            $result = $landingObj->url;
+                        }
                     }
                 }
             }
