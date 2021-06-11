@@ -180,8 +180,6 @@ class Domain extends Model
     {
         $content = [];
 
-        $directory = 'app/' . $directory;
-
         $directoryPathname = $directory;
         if ($directoryPathname[strlen($directoryPathname) - 1] != '/') {
             $directoryPathname .= '/';

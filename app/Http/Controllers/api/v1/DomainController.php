@@ -151,7 +151,7 @@ class DomainController extends Controller
 
         $content = null;
         if ($domain->path != null && $domain->path != '') {
-            $content = $domain->getDirectoryContent($domain->path);
+            $content = $domain->getDirectoryContent('apps/' . $domain->path);
         }
 
         return response([
