@@ -107,7 +107,7 @@ class FlowController extends Controller
         // Create flow
         $flow = Flow::create($params);
 
-        $jobsIds = [];
+        $jobsArray = [];
 
         // Create file script
         $type = $params['type'];
@@ -127,7 +127,10 @@ class FlowController extends Controller
 
                 if ($flow->urlIsExternal($url)) {
                     $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
-                    $jobsIds[] =  $zarocloner->executeAsync($url, $fullPath);
+                    $jobsArray[] =  [
+                        'id' => $zarocloner->executeAsync($url, $fullPath),
+                        'path' => $path,
+                    ];
                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
                 }
                 $counter += 1;
@@ -141,7 +144,10 @@ class FlowController extends Controller
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
                 if ($flow->urlIsExternal($url)) {
                     $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
-                    $jobsIds[] =  $zarocloner->executeAsync($url, $fullPath);
+                    $jobsArray[] =  [
+                        'id' => $zarocloner->executeAsync($url, $fullPath),
+                        'path' => $path,
+                    ];
                     $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
                 }
             }
@@ -153,10 +159,10 @@ class FlowController extends Controller
         }
 
         $jobs = [];
-        foreach ($jobsIds as $jobId) {
+        foreach ($jobsArray as $job) {
             $jobs[] = [
-                'id' => $jobId,
-                'name' => 'ZaroCloner ' . $params['path'],
+                'id' => $job['id'],
+                'name' => 'ZaroCloner ' . $job['path'],
                 'created_at' => date('YYYY-mm-dd h:i:s'),
                 'status' => 'queued',
             ];
