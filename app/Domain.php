@@ -427,23 +427,48 @@ class Domain extends Model
         if ($this->info !== null && isset($this->info['ssl'])) {
             $result = $this->info['ssl'];
         } else {
-            if ($this->info !== null && isset($this->info['serverpilot_app_id'])) {
-                $serverpilot = $this->serverpilotGetClient();
-                $appId = $this->info['serverpilot_app_id'];
-                $app = ($serverpilot->app_info($appId))->data;
+            $serverpilot = $this->serverpilotGetClient();
+            $appId = $this->serverpilotGetAppId();
+            $app = ($serverpilot->app_info($appId))->data;
 
-                if ($app->ssl !== null) {
-                    $info['ssl'] = 'SSL';
-                } else {
-                    $info['ssl'] = 'No SSL';
-                }
-
-                $this->info = $info;
-                $this->save();
-                $result = $this->info['ssl'];
+            if ($app->ssl !== null) {
+                $info['ssl'] = 'SSL';
+            } else {
+                $info['ssl'] = 'No SSL';
             }
+
+            $this->info = $info;
+            $this->save();
+            $result = $this->info['ssl'];
         }
 
+        return $result;
+    }
+
+    public function serverpilotGetAppId(): string
+    {
+        $result = '';
+
+        if (isset($this->info) && isset($this->info['serverpilot_app_id'])) {
+            $result = $this->info['serverpilot_app_id'];
+            return $result;
+        }
+
+        $serverpilot = $this->serverpilotGetClient();
+        $apps = ($serverpilot->app_list())->data;
+        foreach ($apps as $app) {
+            if ($app->name == $this->path) {
+                $result = $app->id;
+                $info = [];
+                if (isset($this->info) && is_array($this->info)) {
+                    $info = $this->info;
+                    $info['serverpilot_app_id'] = $result;
+                    $this->info = $info;
+                    $this->save();
+                }
+                break;
+            }
+        }
         return $result;
     }
 
@@ -451,26 +476,24 @@ class Domain extends Model
     {
         $result = false;
 
-        if ($this->info !== null && isset($this->info['serverpilot_app_id'])) {
-            $appId = $this->info['serverpilot_app_id'];
-            $serverpilot = $this->serverpilotGetClient();
-            $app = ($serverpilot->app_info($appId))->data;
-            if ($app->ssl == null) {
-                if ($app->autossl->available) {
-                    $serverpilot->ssl_auto($appId);
-                    $serverpilot->ssl_force($appId, true);
-                    $result = true;
-                }
-            } elseif ($app->ssl->auto == false) {
-                if ($app->autossl->available) {
-                    $serverpilot->ssl_delete($appId);
-                    $serverpilot->ssl_auto($appId);
-                    $serverpilot->ssl_force($appId, true);
-                    $result = true;
-                }
-            } elseif ($app->ssl->auto) {
+        $appId = $this->serverpilotGetAppId();
+        $serverpilot = $this->serverpilotGetClient();
+        $app = ($serverpilot->app_info($appId))->data;
+        if ($app->ssl == null) {
+            if ($app->autossl->available) {
+                $serverpilot->ssl_auto($appId);
+                $serverpilot->ssl_force($appId, true);
                 $result = true;
             }
+        } elseif ($app->ssl->auto == false) {
+            if ($app->autossl->available) {
+                $serverpilot->ssl_delete($appId);
+                $serverpilot->ssl_auto($appId);
+                $serverpilot->ssl_force($appId, true);
+                $result = true;
+            }
+        } elseif ($app->ssl->auto) {
+            $result = true;
         }
 
         $info = [];
