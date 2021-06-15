@@ -13,6 +13,8 @@ class FraudFilter
     public function check(string $campaignId)
     {
         $url = 'http://130.211.20.155/' . $campaignId;
+
+        // TODO: WTF is this?
         $nParam = '339can';
         if (isset($_GET[$nParam])) {
             $url = $url . '&' . $nParam . '=' . $_GET[$nParam];
@@ -37,6 +39,9 @@ class FraudFilter
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
+
+        // TODO: to delete
+        return $output;
 
         $output = trim($output);
 
@@ -172,7 +177,7 @@ class FraudFilter
         $this->addHeader($headers, 'User-Agent', 'HTTP_USER_AGENT');
         $this->addHeader($headers, 'Expected', '');
 
-        $hh = $this->getallheadersFF();
+        $hh = $this->getAllHeadersFF();
         $counter = 0;
 
         foreach ($hh as $key => $value) {
@@ -202,7 +207,7 @@ class FraudFilter
         $headers[] = $out . ': ' . $value;
     }
 
-    protected function getallheadersFF()
+    protected function getAllHeadersFF()
     {
         $headers = [];
 

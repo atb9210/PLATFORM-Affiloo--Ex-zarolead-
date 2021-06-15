@@ -14,7 +14,11 @@ class Domain extends Model
      * @var array
      */
     protected $fillable = [
-        'domain', 'path',
+        'domain', 'path', 'info',
+    ];
+
+    protected $casts = [
+        'info' => 'array',
     ];
 
     /*
@@ -30,7 +34,35 @@ class Domain extends Model
      * Logic methods
      */
 
-    public function createAppAndSetDns($path)
+    public static function getFromUrl(string $url): Domain
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        $domain = Domain::where('domain', $host)->first();
+        return $domain;
+    }
+
+    public function getDirectoryFromUrl(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        if (strpos($path, '/') === false) {
+            $path = '/' . $path;
+        }
+        if (strpos($path, '.') !== false) {
+            $lastIndex = strrpos($path, '/');
+            if ($lastIndex !== false && $lastIndex !== 0) {
+                $path = substr($path, 0, $lastIndex);
+            } else if ($lastIndex == 0) {
+                $path = '/';
+            }
+        }
+        if ($path != '/' && $path[strlen($path)-1] != '/') {
+            $path .= '/';
+        }
+
+        return 'public' . $path;
+    }
+
+    public function createAppAndSetDns(string $path): bool
     {
         $result = false;
 
@@ -39,19 +71,29 @@ class Domain extends Model
             'domain' => $this->domain,
         ];
 
+        $info = [];
+        if ($this->info !== null) {
+            $info = $this->info;
+        }
+
         // Create domain's apps (folder and virtualhost) on landings' server with ServerPilot
         $serverpilot = $this->serverpilotGetClient();
         $app = $serverpilot->app_create(
             $params['path'],
             env('SERVERPILOT_LANDINGS_SYSUSER_ID'),
             env('SERVERPILOT_APPS_PHP_VERSION'),
-            [$params['domain']],
+            [$params['domain'], 'www.'.$params['domain']],
             []
         );
+        $appId = $app['data']['id'];
+        $info['serverpilot_app_id'] = $appId;
+        $this->info = $info;
+        $this->save();
+
         // TODO: What about these? Test this code.
-        //$serverpilot->ssl_delete($app->data->id);
-        //$serverpilot->ssl_auto($app->data->id);
-        //$serverpilot->ssl_force($app->data->id, true);
+        //$serverpilot->ssl_delete($appId);
+        //$serverpilot->ssl_auto($appId);
+        //$serverpilot->ssl_force($appId, true);
 
         // Set domain's record on Cloudflare
         $cloudflare = new Cloudflare(env('CLOUDFLARE_API_KEY'));
@@ -97,14 +139,14 @@ class Domain extends Model
         return $result;
     }
 
-    public function change($newDomain)
+    public function change(string $newDomain): void
     {
         // App update on Serverpilot
         $serverpilot = $this->serverpilotGetClient();
         $apps = ($serverpilot->app_list())->data;
         foreach ($apps as $app) {
             if ($app->name == $this->path) {
-                $serverpilot->app_update($app->id, env('SERVERPILOT_APPS_PHP_VERSION'), [$newDomain]);
+                $serverpilot->app_update($app->id, env('SERVERPILOT_APPS_PHP_VERSION'), [$newDomain, 'www.'.$newDomain]);
                 break;
             }
         }
@@ -151,7 +193,7 @@ class Domain extends Model
         }
     }
 
-    public function deleteAppAndZone()
+    public function deleteAppAndZone(): void
     {
         // App deletion on Serverpilot
         $serverpilot = $this->serverpilotGetClient();
@@ -176,31 +218,55 @@ class Domain extends Model
         }
     }
 
-    public function getDirectoryContent($directory)
+    // TODO: Implement recursive function
+    public function getDirectoryContent(string $directory = '', bool $recursive = false): array
     {
         $content = [];
 
-        $directoryPathname = $directory;
-        if ($directoryPathname[strlen($directoryPathname) - 1] != '/') {
-            $directoryPathname .= '/';
+        // Adjust directory format
+        if ($directory != '') {
+            if ($directory[0] == '/') {
+                $directory = substr($directory, 1);
+            }
+            if (substr($directory, 0, 2) == './') {
+                $directory = substr($directory, 2);
+            }
+            if ($directory == '.' || $directory == '/') {
+                $directory = '';
+            }
+            str_replace('/./', '/', $directory);
         }
 
-        $directories = Storage::disk('landings')->directories($directory);
+        $prefix = 'apps/' . $this->path . '/';
+        $prefixLength = strlen($prefix);
+        $directoryPathname = $prefix . $directory;
+        if ($directoryPathname[strlen($directoryPathname)-1] != '/') {
+            $directoryPathname .= '/';
+        }
+        $directoryPathnameLength = strlen($directoryPathname);
+
+        $directories = Storage::disk('landings')->directories($directoryPathname);
         foreach ($directories as $dir) {
-            $dirContent = $this->getDirectoryContent($dir);
+            $pathname = substr($dir, $prefixLength);
+            $dirContent = [];
+            if ($recursive) {
+                // TODO: It does not work with only the line below
+                //$dirContent = $this->getDirectoryContent($pathname);
+            }
             $content[] = [
-                'pathname' => substr($dir, 5),
-                'name' => str_replace($directoryPathname, '', $dir),
+                'pathname' => $pathname,
+                'name' => substr($dir, $directoryPathnameLength),
                 'type' => 'directory',
                 'data' => $dirContent,
             ];
         }
 
-        $files = Storage::disk('landings')->files($directory);
+        $files = Storage::disk('landings')->files($directoryPathname);
         foreach ($files as $file) {
+            $pathname = substr($file, $prefixLength);
             $content[] = [
-                'pathname' => substr($file, 5),
-                'name' => str_replace($directoryPathname, '', $file),
+                'pathname' => $pathname,
+                'name' => substr($file, $directoryPathnameLength),
                 'type' => 'file',
                 'data' => '',
             ];
@@ -209,35 +275,35 @@ class Domain extends Model
         return $content;
     }
 
-    public function getFileContent($pathname)
+    public function getFileContent(string $pathname): string
     {
-        $content = Storage::disk('landings')->get('apps/' . $pathname);
+        $content = Storage::disk('landings')->get('apps/' . $this->path . '/' . $pathname);
         return $content;
     }
 
     public function uploadFile($path, $file, $file_pathname)
     {
-        Storage::disk('landings')->putFileAs('apps/' . $path, $file, $file_pathname);
+        Storage::disk('landings')->putFileAs('apps/' . $this->path . '/' . $path, $file, $file_pathname);
     }
 
     public function createFile($pathname, $contents = '')
     {
-        Storage::disk('landings')->put('apps/' . $pathname, $contents);
+        Storage::disk('landings')->put('apps/' . $this->path . '/' . $pathname, $contents);
     }
 
     public function deleteFile($pathname)
     {
-        Storage::disk('landings')->delete('apps/' . $pathname);
+        Storage::disk('landings')->delete('apps/' . $this->path . '/' . $pathname);
     }
 
     public function createDirectory($pathname)
     {
-        Storage::disk('landings')->makeDirectory('apps/' . $pathname);
+        Storage::disk('landings')->makeDirectory('apps/' . $this->path . '/' . $pathname);
     }
 
     public function deleteDirectory($pathname)
     {
-        Storage::disk('landings')->deleteDirectory('apps/' . $pathname);
+        Storage::disk('landings')->deleteDirectory('apps/' . $this->path . '/' . $pathname);
     }
 
     private function serverpilotGetClient()
@@ -335,5 +401,122 @@ class Domain extends Model
         $result = 'https://' . $this->domain . '/' . $adjustedPath;
 
         return $result;
+    }
+
+    public function setSSL(string $ssl)
+    {
+        $info = [];
+        if ($this->info !== null) {
+            $info = $this->info;
+        }
+
+        $info['ssl'] = $ssl;
+        $this->info = $info;
+        $this->save();
+    }
+
+    public function getSSL(): string
+    {
+        $result = 'No SSL';
+
+        $info = [];
+        if ($this->info !== null) {
+            $info = $this->info;
+        }
+
+        if ($this->info !== null && isset($this->info['ssl'])) {
+            $result = $this->info['ssl'];
+        } else {
+            if ($this->info !== null && isset($this->info['serverpilot_app_id'])) {
+                $serverpilot = $this->serverpilotGetClient();
+                $appId = $this->info['serverpilot_app_id'];
+                $app = ($serverpilot->app_info($appId))->data;
+
+                if ($app->ssl !== null) {
+                    $info['ssl'] = 'SSL';
+                } else {
+                    $info['ssl'] = 'No SSL';
+                }
+
+                $this->info = $info;
+                $this->save();
+                $result = $this->info['ssl'];
+            }
+        }
+
+        return $result;
+    }
+
+    public function activateSSL(): bool
+    {
+        $result = false;
+
+        if ($this->info !== null && isset($this->info['serverpilot_app_id'])) {
+            $appId = $this->info['serverpilot_app_id'];
+            $serverpilot = $this->serverpilotGetClient();
+            $app = ($serverpilot->app_info($appId))->data;
+            if ($app->ssl == null) {
+                if ($app->autossl->available) {
+                    $serverpilot->ssl_auto($appId);
+                    $serverpilot->ssl_force($appId, true);
+                    $result = true;
+                }
+            } elseif ($app->ssl->auto == false) {
+                if ($app->autossl->available) {
+                    $serverpilot->ssl_delete($appId);
+                    $serverpilot->ssl_auto($appId);
+                    $serverpilot->ssl_force($appId, true);
+                    $result = true;
+                }
+            } elseif ($app->ssl->auto) {
+                $result = true;
+            }
+        }
+
+        $info = [];
+        if ($this->info !== null) {
+            $info = $this->info;
+        }
+
+        if ($result) {
+            $info['ssl'] = 'SSL';
+        } else {
+            $info['ssl'] = 'No SSL';
+        }
+        $this->info = $info;
+        $this->save();
+
+        return $result;
+    }
+
+    public static function isRegistered(string $domain): bool
+    {
+        $result = (gethostbyname($domain) != $domain);
+        return $result;
+    }
+
+    public static function isOnline(string $domainOrUrl): bool
+    {
+        $url = $domainOrUrl;
+
+        if (strpos($url, 'http://') === false && strpos($url, 'https://') === false) {
+            $url = 'http://' . $url;
+        }
+
+        // Check, if a valid url is provided
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        // cURL HTTP request
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return ($response ? true : false);
     }
 }

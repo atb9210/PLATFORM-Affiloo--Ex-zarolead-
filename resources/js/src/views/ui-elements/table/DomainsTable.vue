@@ -35,6 +35,7 @@
         <p class="flex items-center mb-4">
             <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download-cloud" @click="showForm('zarocloner')"></vs-button>
+            <vs-button v-if="view == 'domains'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-lock" @click="activateSSL">SSL</vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="#e95d0c" type="filled" icon-pack="feather" icon="icon-server" @click="showForm('namecheap')">Namecheap</vs-button>
             <vs-button v-if="view == 'domains'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
 
@@ -94,6 +95,7 @@
                     <vs-th sort-key="id">Id</vs-th>
                     <vs-th sort-key="domain">Domain</vs-th>
                     <vs-th sort-key="path">Path</vs-th>
+                    <vs-th sort-key="ssl">SSL</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -105,7 +107,7 @@
 
                         <vs-td :data="data[indextr].domain">
                             <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
-                                <vs-chip>
+                                <vs-chip :color="data[indextr].status == 'online' ? 'success' : 'danger'">
                                     {{data[indextr].domain}}
                                 </vs-chip>
                             </div>
@@ -113,6 +115,12 @@
 
                         <vs-td :data="data[indextr].path">
                             {{data[indextr].path}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].ssl">
+                            <vs-chip :color="data[indextr].ssl == 'No SSL' ? 'danger' : 'success'">
+                                {{data[indextr].ssl}}
+                            </vs-chip>
                         </vs-td>
 
                     </vs-tr>
@@ -191,6 +199,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].domain" />
+                    <span class="text-danger">{{ errors.first('domain') }}</span>
                 </div>
             </div>
             
@@ -200,6 +209,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].path" />
+                    <span class="text-danger">{{ errors.first('path') }}</span>
                 </div>
             </div>
 
@@ -220,6 +230,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].domain" />
+                    <span class="text-danger">{{ errors.first('domain') }}</span>
                 </div>
             </div>
 
@@ -229,6 +240,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input disabled class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].path" />
+                    <span class="text-danger">{{ errors.first('path') }}</span>
                 </div>
             </div>
 
@@ -307,6 +319,7 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="zaroclonerUrl" />
+                    <span class="text-danger">{{ errors.first('url') }}</span>
                 </div>
             </div>
 
@@ -327,7 +340,8 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="zaroclonerPath" />
-                    <span>{{zaroclonerPathPreview}}</span>
+                    <span>{{zaroclonerPathPreview}}</span><br>
+                    <span class="text-danger">{{ errors.first('path') }}</span>
                 </div>
             </div>
 
@@ -495,7 +509,18 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
+    fetchErrors(errorsMap) {
+      this.errors.clear()
+      for (const [key, value] of Object.entries(errorsMap)) {
+        for (let i = 0; i < value.length; i++) {
+          this.errors.add({
+            field: key,
+            msg: value[i]
+          })
+        }
+      }
+    },
+    async retrieveObjects() {
       this.selected = []
       this.$vs.loading()
 
@@ -504,21 +529,9 @@ export default {
       }
 
       // Retrieve domains
-      this.$http.get('/api/v1/domains', { headers })
-        .then((response) => {
-          this.objects = response.data.data
-          this.$vs.loading.close()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.get('/api/v1/domains', { headers })
+      this.objects = response.data.data
+      this.$vs.loading.close()
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -567,7 +580,7 @@ export default {
             this.$vs.loading.close()
             this.$vs.notify({
               title: 'Error',
-              text: error.message,
+              text: error.response.data.message,
               iconPack: 'feather',
               icon: 'icon-alert-circle',
               color: 'danger'
@@ -587,6 +600,7 @@ export default {
         await this.getNamecheapDomains()
       }
       this.showPopup[type] = true
+      this.errors.clear()
     },
     clearForm(type) {
       if (type == 'zarocloner') {
@@ -647,10 +661,12 @@ export default {
           this.showEditNameServersDialog()
         })
         .catch((error) => {
+          this.fetchErrors(error.response.data.errors)
+
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Error',
-            text: error.message,
+            text: error.response.data.message,
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'danger'
@@ -694,19 +710,20 @@ export default {
           })
           this.retrieveObjects()
           this.showEditNameServersDialog()
+          this.showPopup['edit'] = false
+          this.editingObject = -1
         })
         .catch((error) => {
+          this.fetchErrors(error.response.data.errors)
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Error',
-            text: error.message,
+            text: error.response.data.message,
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'danger'
           })
         })
-      this.showPopup['edit'] = false
-      this.editingObject = -1
     },
     deleteObject(id) {
       this.$vs.loading()
@@ -731,7 +748,7 @@ export default {
           this.$vs.loading.close()
           this.$vs.notify({
             title: 'Error',
-            text: error.message,
+            text: error.response.data.message,
             iconPack: 'feather',
             icon: 'icon-alert-circle',
             color: 'danger'
@@ -762,10 +779,13 @@ export default {
 
       this.$vs.loading.close()
     },
-    fileManagerGetCurrentDirLevel() {
-      let path = this.fileManager.dirLevel[0]
+    fileManagerGetCurrentDirLevel(withFirstOne = false) {
+      let path = ''
+      if (withFirstOne) {
+        path = this.fileManager.dirLevel[0] + '/'
+      }
       for (let i = 1; i < this.fileManager.dirLevel.length; i++) {
-        path += '/' + this.fileManager.dirLevel[i]
+        path += this.fileManager.dirLevel[i] + '/'
       }
       return path
     },
@@ -775,40 +795,60 @@ export default {
       this.currentDirectory = this.fileManager.content
       this.selectedFilesAndDirectories = []
     },
-    goToDirLevel(index) {
+    async goToDirLevel(index) {
       if (index < 0 && index >= this.fileManager.dirLevel.length) return
 
-      this.currentDirectory = this.fileManager.content
+      this.$vs.loading()
 
       let newDirLevel = []
       newDirLevel.push(this.fileManager.dirLevel[0])
 
       for (let i = 1; i <= index; i++) {
-        for (let j = 0; j < this.currentDirectory.length; j++) {
-          if (this.currentDirectory[j].name == this.fileManager.dirLevel[i]) {
-            this.currentDirectory = this.currentDirectory[j].data
-            break
-          }
-        }
         newDirLevel.push(this.fileManager.dirLevel[i])
       }
 
-      this.fileManager.dirLevel = newDirLevel
-      this.selectedFilesAndDirectories = []
-    },
-    openDir(name) {
-      let newDirLevel = this.fileManager.dirLevel
-
-      for (let j = 0; j < this.currentDirectory.length; j++) {
-        if (this.currentDirectory[j].name == name) {
-          this.currentDirectory = this.currentDirectory[j].data
-          newDirLevel.push(name)
-          break
-        }
+      let pathname = ''
+      for (let i = 1; i < newDirLevel.length; i++) {
+        pathname += newDirLevel[i] + '/'
       }
 
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        pathname: pathname
+      }
+
+      const response = await this.$http.get('/api/v1/domains/' + this.currentObject.id + '/ls', { headers, params: data })
+      this.fileManager.content = response.data.data
+      this.currentDirectory = this.fileManager.content
       this.fileManager.dirLevel = newDirLevel
       this.selectedFilesAndDirectories = []
+
+      this.$vs.loading.close()
+    },
+    async refreshCurrentDir() {
+      await this.goToDirLevel(this.fileManager.dirLevel.length - 1)
+    },
+    async openDir(name) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.fileManager.dirLevel.push(name)
+      let data = {
+        pathname: this.fileManagerGetCurrentDirLevel()
+      }
+
+      const response = await this.$http.get('/api/v1/domains/' + this.currentObject.id + '/ls', { headers, params: data })
+      this.fileManager.content = response.data.data
+      this.currentDirectory = this.fileManager.content
+      this.selectedFilesAndDirectories = []
+
+      this.$vs.loading.close()
     },
     async openFile(pathname) {
       this.$vs.loading()
@@ -885,7 +925,7 @@ export default {
         type = 'folder'
       }
 
-      for (let i = this.fileManager.dirLevel.length - 1; i >= 0; i--) {
+      for (let i = this.fileManager.dirLevel.length - 1; i > 0; i--) {
         pathname = this.fileManager.dirLevel[i] + '/' + pathname
       }
 
@@ -913,12 +953,7 @@ export default {
 
       this.$vs.loading.close()
 
-      // Refresh without losing current dir level
-      let oldDirLevel = this.fileManager.dirLevel
-      await this.refreshFileManager(this.currentObject.id)
-      for (let i = 1; i < oldDirLevel.length; i++) {
-        this.openDir(oldDirLevel[i])
-      }
+      await this.refreshCurrentDir()
     },
     dontCreateFileOrDir() {
       this.isCreatingFileOrDir = false
@@ -957,7 +992,7 @@ export default {
 
       for (let i = 0; i < this.filesToUpload.length; i++) {
         let f = this.filesToUpload[i]
-        let path = f.webkitRelativePath.substring(0,f.webkitRelativePath.lastIndexOf('/') + 1);
+        let path = f.webkitRelativePath.substring(0, f.webkitRelativePath.lastIndexOf('/') + 1);
         path = this.fileManagerGetCurrentDirLevel() + '/' + path
 
         let formData = new FormData()
@@ -977,12 +1012,7 @@ export default {
 
       this.$vs.loading.close()
 
-      // Refresh without losing current dir level
-      let oldDirLevel = this.fileManager.dirLevel
-      await this.refreshFileManager(this.currentObject.id)
-      for (let i = 1; i < oldDirLevel.length; i++) {
-        this.openDir(oldDirLevel[i])
-      }
+      await this.refreshCurrentDir()
     },
     async deleteFilesAndDirectories() {
       this.$vs.loading()
@@ -1010,12 +1040,7 @@ export default {
 
       this.$vs.loading.close()
 
-      // Refresh without losing current dir level
-      let oldDirLevel = this.fileManager.dirLevel
-      await this.refreshFileManager(this.currentObject.id)
-      for (let i = 1; i < oldDirLevel.length; i++) {
-        this.openDir(oldDirLevel[i])
-      }
+      await this.refreshCurrentDir()
     },
     confirmDeleteFilesPopup() {
       if (this.selectedFilesAndDirectories.length == 0) return
@@ -1049,13 +1074,18 @@ export default {
         path: this.zaroclonerPath,
       }
 
-      const response = await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain.id + '/clone-webpage', data, { headers: headers })
-      let job = response.data.job
+      try {
+        const response = await this.$http.post('/api/v1/domains/' + this.zaroclonerDomain.id + '/clone-webpage', data, { headers: headers })
+        let job = response.data.job
 
-      this.clearForm('zarocloner')
-      this.showPopup['zarocloner'] = false
+        this.clearForm('zarocloner')
+        this.showPopup['zarocloner'] = false
 
-      await this.$store.commit('addJob', job)
+        await this.$store.commit('addJob', job)
+      } catch (error) {
+        this.fetchErrors(error.response.data.errors)
+        this.$vs.loading.close()
+      }
 
       this.$vs.loading.close()
     },
@@ -1133,9 +1163,35 @@ export default {
       this.showPopup['namecheap'] = false
       this.retrieveObjects()
     },
+    async activateSSL() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      for (let i = 0; i < this.selected.length; i++) {
+        let obj = this.selected[i]
+        try {
+          const response = await this.$http.get('/api/v1/domains/' + obj.id + '/ssl', { headers: headers })
+        } catch (error) {
+          this.$vs.notify({
+            title: 'Error',
+            text: 'SSL cannot be activated yet for domain ' + obj.domain,
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        }
+      }
+
+      this.retrieveObjects()
+
+      this.$vs.loading.close()
+    },
   },
   async created() {
-    this.retrieveObjects()
+    await this.retrieveObjects()
   },
   mounted () {
   }

@@ -64,8 +64,19 @@ class DomainController extends Controller
             'domain' => 'required|string|unique:domains,domain|regex:' . self::DOMAIN_REGEX,
             'path' => 'required|string|landing_path|unique:domains,path',
         ]);
-        
+
+        // Check if the domain is registered
+        if (!Domain::isRegistered($params['domain'])) {
+            return response([
+                "message" => $params['domain'] . " is not a registered domain",
+                "errors" => [
+                    "domain" => [ "This is not a registered domain" ],
+                ],
+            ], 422);
+        }
+
         // Create domain
+        $params['info'] = [];
         $domain = Domain::create($params);
         $result = $domain->createAppAndSetDns($params['path']);
 
@@ -88,7 +99,6 @@ class DomainController extends Controller
      * @urlParam id int required Domain's id
      *
      * @bodyParam domain string Domain
-     * @bodyParam path string Domain's path
      *
      * @response {
      *  "data": domain,
@@ -103,6 +113,16 @@ class DomainController extends Controller
         $params = $request->validate([
             'domain' => 'string|unique:domains,domain|regex:' . self::DOMAIN_REGEX,
         ]);
+
+        // Check if the domain is registered
+        if (!Domain::isRegistered($params['domain'])) {
+            return response([
+                "message" => $params['domain'] . " is not a registered domain",
+                "errors" => [
+                    "domain" => [ "This is not a registered domain" ],
+                ],
+            ], 422);
+        }
 
         if ($params['domain'] != $domain->domain) {
             $domain->change($params['domain']);
@@ -123,7 +143,6 @@ class DomainController extends Controller
     public function destroy($id)
     {
         $domain = Domain::findOrFail($id);
-
         $this->authorize('delete', $domain);
 
         // Delete the domain
@@ -136,22 +155,60 @@ class DomainController extends Controller
     }
 
     /**
+     * Enable SSL for the specified domain.
+     *
+     * @urlParam id int required Domain's id
+     *
+     * @response {
+     *  "message": "SSL has been activated",
+     * }
+     */
+    public function activateSSL($id)
+    {
+        $domain = Domain::findOrFail($id);
+        $this->authorize('update', $domain);
+
+        // Try to activate SSL for the domain
+        $result = $domain->activateSSL();
+        if ($result) {
+            return response([
+                'message' => 'SSL has been activated'
+            ]);
+        } else {
+            return response([
+                'message' => 'SSL cannot be activated'
+            ], 400);
+        }
+    }
+
+    /**
      * Get domain's files and directories list
      *
      * @urlParam id int required Domain's id
+     *
+     * @bodyParam path string required Path
      *
      * @response {
      *  "data": [content]
      * }
      */
-    public function listFilesAndDirectories($id)
+    public function listFilesAndDirectories($id, Request $request)
     {
         $domain = Domain::findOrFail($id);
         $this->authorize('view', $domain);
 
+        // Params validation
+        $params = $request->validate([
+            'pathname' => 'nullable|string|min:0',
+        ]);
+        $pathname = '';
+        if (isset($params['pathname'])) {
+            $pathname = $params['pathname'];
+        }
+
         $content = null;
         if ($domain->path != null && $domain->path != '') {
-            $content = $domain->getDirectoryContent('apps/' . $domain->path);
+            $content = $domain->getDirectoryContent($pathname);
         }
 
         return response([
@@ -344,7 +401,7 @@ class DomainController extends Controller
         // Params validation
         $params = $request->validate([
             'url' => 'required|url',
-            'path' => 'regex:/^([A-Za-z0-9_-]+\/*)*$/',
+            'path' => 'nullable|regex:/^([A-Za-z0-9_-]*\/*)*$/',
         ]);
 
         $path = 'apps/' . $domain->path . '/public';

@@ -4,6 +4,8 @@ namespace App\Http\Resources\api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use App\Domain;
+
 class DomainResource extends JsonResource
 {
     /**
@@ -14,10 +16,24 @@ class DomainResource extends JsonResource
      */
     public function toArray($request)
     {
+        $domain = Domain::findOrFail($this->id);
+
+        $info = [];
+        if ($domain->info !== null) {
+            $info = $domain->info;
+        }
+        if (!isset($domain->info['status'])) {
+            $info['status'] = (\App\Domain::isOnline($domain->domain)) ? 'online' : 'offline';
+        }
+        $domain->info = $info;
+        $domain->save();
+
         return [
             'id' => $this->id,
             'domain' => $this->domain,
             'path' => $this->path,
+            'status' => $domain->info['status'],
+            'ssl' => $this->getSSL(),
         ];
     }
 }

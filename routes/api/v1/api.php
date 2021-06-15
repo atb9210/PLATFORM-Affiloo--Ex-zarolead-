@@ -145,6 +145,8 @@ Route::post('networks/{id}/params/validate', 'api\v1\NetworkController@validateP
 Route::apiResource('domains', 'api\v1\DomainController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::get('domains/{id}/ssl', 'api\v1\DomainController@activateSSL')->middleware('auth:api')
+    ->name('domains.ssl');
 
 // TODO: Change path?
 Route::get('domains/{id}/ls', 'api\v1\DomainController@listFilesAndDirectories')->middleware('auth:api')

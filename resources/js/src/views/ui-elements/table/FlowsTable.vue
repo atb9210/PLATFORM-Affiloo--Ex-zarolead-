@@ -218,7 +218,7 @@
                     <span>Domain</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'">
+                    <vs-select autocomplete v-model="newObject['edit'].domain" class="w-full select-large" v-validate="'required'" disabled="true">
                         <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('domain_id') }}</span>
@@ -230,7 +230,7 @@
                     <span>Type</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="newObject['edit'].type" class="w-full select-large" v-validate="'required'">
+                    <vs-select v-model="newObject['edit'].type" class="w-full select-large" v-validate="'required'" disabled="true">
                         <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in typeOptions" class="w-full" />
                     </vs-select>
                     <span class="w-full text-danger">{{ errors.first('type') }}</span>
@@ -242,7 +242,7 @@
                     <span>Path name</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['edit'].path_name" />
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-folder" icon-no-border v-model="newObject['edit'].path_name" disabled="true" />
                     <span>{{flowPathname}}</span>
                     <span class="w-full text-danger">{{ errors.first('path_name') }}</span>
                 </div>
@@ -293,6 +293,25 @@
                     <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewLanding('edit')">Add</vs-button>
                     <div class="w-1/3"></div>
                     <div class="w-1/3"></div>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Safe Page URL</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="url" placeholder="https://..." class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].safe_page_url" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>FraudFilter</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <vs-input placeholder="Campaign ID" class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].fraud_filter_campaign_id" />
+                    <vs-checkbox class="w-1/2" v-model="newObject['edit'].fraud_filter_protection">Enabled</vs-checkbox>
                 </div>
             </div>
 
@@ -569,9 +588,6 @@ export default {
       }
     },
     isValidForm(type) {
-      // TODO: You cannot edit for now
-      if (type == 'edit') return false
-
       let obj = this.newObject[type]
 
       let landings = obj.landings
@@ -754,6 +770,29 @@ export default {
         weights.push(1)
       }
 
+      let domain = {}
+      for (let i = 0; i < this.domains.length; i++) {
+        if (obj.domain.id == this.domains[i].id) {
+          domain = this.domains[i]
+          break
+        }
+      }
+
+      let safePageUrl = ''
+      if (obj.rules.hasOwnProperty('safe_page_url')) {
+        safePageUrl = obj.rules.safe_page_url
+      }
+
+      let fraudFilterProtection = false
+      if (obj.rules.hasOwnProperty('fraud_filter_protection')) {
+        fraudFilterProtection = obj.rules.fraud_filter_protection
+      }
+
+      let fraudFilterCampaignId = ''
+      if (obj.rules.hasOwnProperty('fraud_filter_campaign_id')) {
+        fraudFilterCampaignId = obj.rules.fraud_filter_campaign_id
+      }
+
       this.newObject['edit'] = {
         name: obj.name,
         type: obj.type,
@@ -761,13 +800,16 @@ export default {
         landings: landings,
         weights: weights,
         traffic_source: obj.traffic_source.id,
-        domain: obj.domain,
+        domain: domain,
+        safe_page_url: safePageUrl,
+        fraud_filter_protection: fraudFilterProtection,
+        fraud_filter_campaign_id: fraudFilterCampaignId,
       }
       this.editingObject = obj.id
       this.errors.clear()
       this.showForm('edit')
     },
-    updateObject() {
+    async updateObject() {
       if (this.editingObject <= 0) return
 
       let id = this.editingObject
@@ -803,46 +845,53 @@ export default {
       }
       let rules = {
         landings: landings,
+        safe_page_url: this.newObject['edit'].safe_page_url,
+        fraud_filter_protection: this.newObject['edit'].fraud_filter_protection,
+        fraud_filter_campaign_id: this.newObject['edit'].fraud_filter_campaign_id,
       }
 
       let data = {
         name: this.newObject['edit'].name,
-        type: this.newObject['edit'].type,
-        path_name: pathName,
-        rules: JSON.stringify(rules),
         traffic_source_id: this.newObject['edit'].traffic_source,
-        domain_id: this.newObject['edit'].domain.id,
+        rules: JSON.stringify(rules),
       }
 
-      this.$http.put('/api/v1/flows/' + id, data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Flow updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.errors.clear()
-          this.clearForm('edit')
-          this.showPopup['edit'] = false
-          this.editingObject = -1
-          this.retrieveObjects()
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
-            for (const [key, value] of Object.entries(error.response.data.errors)) {
-              for (let i = 0; i < value.length; i++) {
-                this.errors.add({
-                  field: key,
-                  msg: value[i]
-                })
-              }
-            }
-          }
-        })
+      const response = await this.$http.put('/api/v1/flows/' + id, data, { headers: headers })
+      if (response.data.hasOwnProperty('jobs')) {
+        for (let i = 0; i < response.data.jobs.length; i++) {
+          let job = response.data.jobs[i]
+          await this.$store.commit('addJob', job)
+        }
+      }
+
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Flow updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.errors.clear()
+      this.clearForm('edit')
+      this.showPopup['edit'] = false
+      this.editingObject = -1
+      this.retrieveObjects()
+
+      // TODO: Show errors
+      //.catch((error) => {
+      //  this.$vs.loading.close()
+      //  if (error.response.hasOwnProperty('data') && error.response.data.hasOwnProperty('errors')) {
+      //    for (const [key, value] of Object.entries(error.response.data.errors)) {
+      //      for (let i = 0; i < value.length; i++) {
+      //        this.errors.add({
+      //          field: key,
+      //          msg: value[i]
+      //        })
+      //      }
+      //    }
+      //  }
+      //})
     },
     deleteObject(id) {
       this.$vs.loading()

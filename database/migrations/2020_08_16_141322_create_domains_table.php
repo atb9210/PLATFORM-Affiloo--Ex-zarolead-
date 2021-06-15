@@ -17,6 +17,7 @@ class CreateDomainsTable extends Migration
             $table->id();
             $table->string('domain')->unique();
             $table->string('path')->unique();
+            $table->json('info')->nullable();
             $table->timestamps();
         });
     }

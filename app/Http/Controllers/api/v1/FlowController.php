@@ -126,9 +126,9 @@ class FlowController extends Controller
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
 
                 if ($flow->urlIsExternal($url)) {
-                    $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                    $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zarocloner->executeAsync($url, $fullPath),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath),
                         'path' => $path,
                     ];
                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
@@ -143,9 +143,9 @@ class FlowController extends Controller
                 $path = Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
                 if ($flow->urlIsExternal($url)) {
-                    $zarocloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                    $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zarocloner->executeAsync($url, $fullPath),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath),
                         'path' => $path,
                     ];
                     $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
@@ -181,11 +181,8 @@ class FlowController extends Controller
      * @urlParam id int required Flow's id
      *
      * @bodyParam name string Flow's name
-     * @bodyParam type string Flow's type (redirect, hotload)
-     * @bodyParam path_name string Flow's path name
      * @bodyParam traffic_source_id int Traffic source's id
      * @bodyParam rules json Flow's rules
-     * @bodyParam domain_id int Domain's id
      *
      * @response {
      *  "data": flow,
@@ -199,11 +196,8 @@ class FlowController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'string|min:3',
-            'type' => 'in:redirect,hotload',
-            'path_name' => 'regex:#^(\w+/){1,2}\w+\.\w+$#',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'rules' => 'json',
-            'domain_id' => 'exists:domains,id',
         ]);
         if (isset($params['rules'])) {
             $params['rules'] = json_decode($params['rules'], TRUE);
@@ -222,31 +216,173 @@ class FlowController extends Controller
             }
         }
 
-        // Check if path name already exists
-        if (isset($params['path_name'])) {
-            if ($flow->path_name != $params['path_name'] && file_exists(Flow::buildFullPathname($params['path_name']))) {
-                return response([
-                    'message' => 'The given path name already exists.',
-                    'errors' => [
-                        'path_name' => ['The given path name already exists.'],
-                    ],
-                ], 422);
+        // TODO: Is this still useful?
+        //// Check if path name already exists
+        //if (isset($params['path_name'])) {
+        //    if ($flow->path_name != $params['path_name'] && file_exists(Flow::buildFullPathname($params['path_name']))) {
+        //        return response([
+        //            'message' => 'The given path name already exists.',
+        //            'errors' => [
+        //                'path_name' => ['The given path name already exists.'],
+        //            ],
+        //        ], 422);
+        //    }
+        //}
+
+        $jobsArray = [];
+
+        // TODO: This should be in Flow.php file?????
+        if ($flow->type == 'hotload') {
+            $oldLandings = [];
+            $oldSafePage = '';
+            $newLandings = [];
+            $newSafePage = '';
+
+            if (isset($flow->rules['landings'])) {
+                foreach ($flow->rules['landings'] as $landing) {
+                    $oldLandings[] = $landing['id'];
+                }
+            }
+            if (isset($flow->rules['safe_page_url'])) {
+                $oldSafePage = $flow->rules['safe_page_url'];
+            }
+
+            if (isset($params['rules']['landings'])) {
+                foreach ($params['rules']['landings'] as $landing) {
+                    $newLandings[] = $landing['id'];
+                }
+            }
+            if (isset($params['rules']['safe_page_url'])) {
+                $newSafePage = $params['rules']['safe_page_url'];
+            }
+
+            $removedLandings = [];
+            $addedLandings = [];
+            foreach ($oldLandings as $oldLanding) {
+                if (!in_array($oldLanding, $newLandings)) {
+                    $removedLandings[] = $oldLanding;
+                }
+            }
+            foreach ($newLandings as $newLanding) {
+                if (!in_array($newLanding, $oldLandings)) {
+                    $addedLandings[] = $newLanding;
+                }
+            }
+
+            // Remove landings
+            if (isset($flow->rules['landings'])) {
+                foreach ($flow->rules['landings'] as $landing) {
+                    if (in_array($landing['id'], $removedLandings)) {
+                        $url = $landing['internal_url'];
+                        $domain = Domain::getFromUrl($url);
+                        $pathToDelete = $domain->getDirectoryFromUrl($url);
+                        $domain->deleteDirectory($pathToDelete);
+                    }
+                }
+            }
+
+            // Add landings
+            if (count($addedLandings) > 0) {
+                $counter = 0;
+                if (isset($flow->rules['landings'])) {
+                    foreach ($params['rules']['landings'] as $landing) {
+                        foreach ($addedLandings as $landingId) {
+                            if ($landing['id'] == $landingId) {
+                                $l = Landing::findOrFail($landingId);
+                                $url = $l->url;
+                                $path = Str::slug($url, '-');
+                                $domain = $flow->domain;
+                                $fullPath = 'apps/' . $domain->path . '/public/' . $path;
+
+                                if ($flow->urlIsExternal($url)) {
+                                    $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                                    $jobsArray[] =  [
+                                        'id' => $zaroCloner->executeAsync($url, $fullPath),
+                                        'path' => $path,
+                                    ];
+                                    $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
+                                }
+                                break;
+                            }
+                        }
+                        $counter += 1;
+                    }
+                }
+            }
+
+            // Get internal URLs
+            if (isset($flow->rules['landings'])) {
+                $counter = 0;
+                foreach ($params['rules']['landings'] as $newLanding) {
+                    foreach ($flow->rules['landings'] as $oldLanding) {
+                        if ($newLanding['id'] == $oldLanding['id']) {
+                            if (isset($oldLanding['internal_url']) &&
+                                !isset($newLanding['internal_url'])) {
+                                $params['rules']['landings'][$counter]['internal_url'] = $oldLanding['internal_url'];
+                            }
+                        }
+                    }
+                    $counter += 1;
+                }
+            }
+
+            // Change\delete\create safe page
+            $oldSafePage = '';
+            if (isset($flow->rules['safe_page_url'])) {
+                $oldSafePage = $flow->rules['safe_page_url'];
+            }
+            $newSafePage = '';
+            if (isset($params['rules']['safe_page_url'])) {
+                $newSafePage = $params['rules']['safe_page_url'];
+            }
+            if ($newSafePage != $oldSafePage) {
+                if ($oldSafePage != '') {
+                    // Delete the old safe page
+                    $directory = $flow->domain->getDirectoryFromUrl($oldSafePage);
+                    $flow->domain->deleteDirectory($directory);
+                }
+                if ($newSafePage != '') {
+                    // Create the new safe page
+                    $url = $newSafePage;
+                    $path = Str::slug($url, '-');
+                    $domain = $flow->domain;
+                    $fullPath = 'apps/' . $domain->path . '/public/' . $path;
+                    if ($flow->urlIsExternal($url)) {
+                        $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
+                        $jobsArray[] =  [
+                            'id' => $zaroCloner->executeAsync($url, $fullPath),
+                            'path' => $path,
+                        ];
+                        $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
+                    }
+                }
             }
         }
 
-        // TODO: What about type change???
-
-        $oldPathName = $flow->path_name;
-        $oldType = $flow->type;
         $flow->update($params);
 
-        // Create file script and delete the old one when the path name or the type has changed
-        if ((isset($params['path_name']) && $params['path_name'] != $oldPathName) ||
-            (isset($params['type']) && $params['type'] != $oldType)) {
-            $flow->createFileScript($oldPathName);
+        // TODO: Is this still useful?
+        //// Create file script and delete the old one when the path name or the type has changed
+        //if ((isset($params['path_name']) && $params['path_name'] != $oldPathName) ||
+        //    (isset($params['type']) && $params['type'] != $oldType)) {
+        //    $flow->createFileScript($oldPathName);
+        //}
+        
+        $jobs = [];
+        foreach ($jobsArray as $job) {
+            $jobs[] = [
+                'id' => $job['id'],
+                'name' => 'ZaroCloner ' . $job['path'],
+                'created_at' => date('YYYY-mm-dd h:i:s'),
+                'status' => 'queued',
+            ];
         }
 
-        return new FlowResource($flow);
+        return response([
+            "message" => "Flow updated",
+            "data" => new FlowResource($flow),
+            "jobs" => $jobs,
+        ], 201);
     }
 
     /**
