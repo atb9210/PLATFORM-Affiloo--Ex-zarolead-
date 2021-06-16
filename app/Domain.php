@@ -445,7 +445,7 @@ class Domain extends Model
         return $result;
     }
 
-    public function serverpilotGetAppId(): string
+    protected function serverpilotGetAppId(): string
     {
         $result = '';
 

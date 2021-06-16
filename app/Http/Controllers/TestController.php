@@ -23,32 +23,14 @@ class TestController extends Controller
     public function test()
     {
         $tests = [
-            'https://italiaspecialiofferta.com/ciaoneasdasd',
-            'https://italiaspecialiofferta.com/ciaoneasdasd/',
-            'https://italiaspecialiofferta.com/ciaoneasdasd/chichi.index.html',
-            'http://italiaspecialiofferta.com/index.html',
-            'http://italiaspecialiofferta.com',
-            'http://italiaspecialiofferta.com/',
+            'a55vk',
+            '5puug',
+            'c9pjd',
         ];
 
+        $ff = new \Driverfury\FraudFilter\FraudFilter();
         foreach ($tests as $test) {
-            $url = $test;
-            $path = parse_url($url, PHP_URL_PATH);
-            if (strpos($path, '/') === false) {
-                $path = '/' . $path;
-            }
-            if (strpos($path, '.') !== false) {
-                $lastIndex = strrpos($path, '/');
-                if ($lastIndex !== false && $lastIndex !== 0) {
-                    $path = substr($path, 0, $lastIndex);
-                } else if ($lastIndex == 0) {
-                    $path = '/';
-                }
-            }
-            if ($path != '/' && $path[strlen($path)-1] != '/') {
-                $path .= '/';
-            }
-            echo $url . ' => ' . $path . '<br>';
+            echo $test . ' => ' . $ff->check($test) . '<br>';
         }
     }
 
