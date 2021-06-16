@@ -190,6 +190,11 @@
                     <vs-input placeholder="Campaign ID" class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].fraud_filter_campaign_id" />
                     <vs-checkbox class="w-1/2" v-model="newObject['create'].fraud_filter_protection">Enabled</vs-checkbox>
                 </div>
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <vs-input placeholder="Campaign Key (1e6b4d4d-cfa8-...)" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].fraud_filter_campaign_key" />
+                </div>
             </div>
 
             <div class="vx-row mb-6">
@@ -313,6 +318,11 @@
                     <vs-input placeholder="Campaign ID" class="w-1/2" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].fraud_filter_campaign_id" />
                     <vs-checkbox class="w-1/2" v-model="newObject['edit'].fraud_filter_protection">Enabled</vs-checkbox>
                 </div>
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <vs-input placeholder="Campaign Key (1e6b4d4d-cfa8-...)" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].fraud_filter_campaign_key" />
+                </div>
             </div>
 
             <div class="vx-row mb-6">
@@ -385,6 +395,7 @@ export default {
           safe_page_url: '',
           fraud_filter_protection: false,
           fraud_filter_campaign_id: '',
+          fraud_filter_campaign_key: '',
         },
         'edit': {
           name: '',
@@ -403,6 +414,7 @@ export default {
           safe_page_url: '',
           fraud_filter_protection: false,
           fraud_filter_campaign_id: '',
+          fraud_filter_campaign_key: '',
         },
       },
 
@@ -585,6 +597,7 @@ export default {
         safe_page_url: '',
         fraud_filter_protection: false,
         fraud_filter_campaign_id: '',
+        fraud_filter_campaign_key: '',
       }
     },
     isValidForm(type) {
@@ -601,7 +614,8 @@ export default {
       }
 
       if (obj.fraud_filter_protection) {
-        correctRules = (correctRules && obj.safe_page_url != '' && obj.fraud_filter_campaign_id != '')
+        correctRules = (correctRules && obj.safe_page_url != '' &&
+          obj.fraud_filter_campaign_id != '' && obj.fraud_filter_campaign_key != '')
       }
 
       return (obj.name.length > 0 && this.typeOptions.includes(obj.type) && correctRules)
@@ -641,6 +655,7 @@ export default {
         safe_page_url: this.newObject['create'].safe_page_url,
         fraud_filter_protection: this.newObject['create'].fraud_filter_protection,
         fraud_filter_campaign_id: this.newObject['create'].fraud_filter_campaign_id,
+        fraud_filter_campaign_key: this.newObject['create'].fraud_filter_campaign_key,
       }
 
       let data = {
@@ -793,6 +808,11 @@ export default {
         fraudFilterCampaignId = obj.rules.fraud_filter_campaign_id
       }
 
+      let fraudFilterCampaignKey = ''
+      if (obj.rules.hasOwnProperty('fraud_filter_campaign_key')) {
+        fraudFilterCampaignId = obj.rules.fraud_filter_campaign_key
+      }
+
       this.newObject['edit'] = {
         name: obj.name,
         type: obj.type,
@@ -804,6 +824,7 @@ export default {
         safe_page_url: safePageUrl,
         fraud_filter_protection: fraudFilterProtection,
         fraud_filter_campaign_id: fraudFilterCampaignId,
+        fraud_filter_campaign_key: fraudFilterCampaignKey,
       }
       this.editingObject = obj.id
       this.errors.clear()
@@ -848,6 +869,7 @@ export default {
         safe_page_url: this.newObject['edit'].safe_page_url,
         fraud_filter_protection: this.newObject['edit'].fraud_filter_protection,
         fraud_filter_campaign_id: this.newObject['edit'].fraud_filter_campaign_id,
+        fraud_filter_campaign_key: this.newObject['edit'].fraud_filter_campaign_key,
       }
 
       let data = {

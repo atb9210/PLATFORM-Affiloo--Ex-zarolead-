@@ -86,6 +86,7 @@ class FlowController extends Controller
             'safe_page_url' => 'string',
             'fraud_filter_protection' => 'boolean',
             'fraud_filter_campaign_id' => 'string',
+            'fraud_filter_campaign_key' => 'string',
         ]);
         if ($validator->fails()) {
             return response([
@@ -443,8 +444,9 @@ class FlowController extends Controller
         // FraudFilter protection
         if ($flow->isFraudFilterProtectionEnabled()) {
             $campaignId = $flow->fraudFilterCampaignId();
+            $campaignKey = $flow->fraudFilterCampaignKey();
             $fraudFilter = new \Driverfury\FraudFilter\FraudFilter();
-            if ($fraudFilter->check($campaignId)) {
+            if ($fraudFilter->check($campaignId, $campaignKey)) {
                 // Money page
                 $page_url = $flow->getLandingUrl();
             } else {

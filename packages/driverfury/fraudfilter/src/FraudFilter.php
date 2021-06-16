@@ -10,19 +10,19 @@ class FraudFilter
      * @param  string  $campaignId
      * @return bool Returns false if detected as fraud.
      */
-    public function check(string $campaignId)
+    public function check(string $campaignId, string $key): bool
     {
         $url = 'http://130.211.20.155/' . $campaignId;
 
         // TODO: WTF is this?
-        $nParam = '339can';
-        if (isset($_GET[$nParam])) {
-            $url = $url . '&' . $nParam . '=' . $_GET[$nParam];
-        }
+        //$nParam = '339can';
+        //if (isset($_GET[$nParam])) {
+        //    $url = $url . '&' . $nParam . '=' . $_GET[$nParam];
+        //}
 
         $ch = curl_init($url);
 
-        $headers = $this->fillAllPostHeaders();
+        $headers = $this->fillAllPostHeaders($key);
 
         curl_setopt($ch, CURLOPT_POST, 1);
 
@@ -39,9 +39,6 @@ class FraudFilter
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
-
-        // TODO: to delete
-        return $output;
 
         $output = trim($output);
 
@@ -98,11 +95,11 @@ class FraudFilter
      *
      * @return array
      */
-    protected function fillAllPostHeaders()
+    protected function fillAllPostHeaders(string $key)
     {
         $headers = array();
         $headers[] = 'content-length: 0';
-        $headers[] = 'X-FF-P: 9fc7f9a2-56b3-4d65-92a2-3ab2d244f558';
+        $headers[] = 'X-FF-P: ' . $key;
         $this->addHeader($headers, 'X-FF-REMOTE-ADDR', 'REMOTE_ADDR');
         $this->addHeader(
             $headers,

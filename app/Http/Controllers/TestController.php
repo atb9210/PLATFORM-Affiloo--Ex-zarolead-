@@ -19,19 +19,41 @@ use App\User;
 
 class TestController extends Controller
 {
-
     public function test()
     {
         $tests = [
-            'a55vk',
-            '5puug',
-            'c9pjd',
+            [
+                'id' => 'a55vk',
+                'key' => '9fc7f9a2-56b3-4d65-92a2-3ab2d244f558',
+            ],
+            [
+                'id' => '5puug',
+                'key' => '1e6b4d4d-cfa8-46ee-8c32-81cb8aced48d',
+            ],
+            [
+                'id' => 'c9pjd',
+                'key' => '4e13e802-3fcf-4f43-8a42-ab278715e32e',
+            ],
+            [
+                'id' => 'dbd70',
+                'key' => '94cc6baa-3ae0-4da5-a295-330ea8667d2e',
+            ],
+        ];
+
+        $results = [
+            'yes' => '<span style="color:green;font-weight:bold;">OK</span>',
+            'no'  => '<span style="color:red;font-weight:bold;">NO</span>',
         ];
 
         $ff = new \Driverfury\FraudFilter\FraudFilter();
+
+        $output = '<pre>';
         foreach ($tests as $test) {
-            echo $test . ' => ' . $ff->check($test) . '<br>';
+            $response = $ff->check($test['id'], $test['key']);
+            $output .= '[' . $results[($response ? 'yes' : 'no')] . '] campaign id: ' . $test['id'] . ' => ' . ($response ? 'MONEY' : 'SAFE') . '<br>';
         }
+        $output .= '<pre>';
+        echo $output;
     }
 
     public function post(Request $request)

@@ -176,6 +176,15 @@ class Flow extends Model
         return $result;
     }
 
+    public function fraudFilterCampaignKey()
+    {
+        $result = '';
+        if (isset($this->rules['fraud_filter_campaign_key'])) {
+            $result = $this->rules['fraud_filter_campaign_key'];
+        }
+        return $result;
+    }
+
     public function urlIsExternal($url)
     {
         $result = false;
