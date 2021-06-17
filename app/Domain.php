@@ -85,7 +85,7 @@ class Domain extends Model
             [$params['domain'], 'www.'.$params['domain']],
             []
         );
-        $appId = $app['data']['id'];
+        $appId = $app->data->id;
         $info['serverpilot_app_id'] = $appId;
         $this->info = $info;
         $this->save();
