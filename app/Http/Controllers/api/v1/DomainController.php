@@ -112,20 +112,29 @@ class DomainController extends Controller
         // Param validation
         $params = $request->validate([
             'domain' => 'string|unique:domains,domain|regex:' . self::DOMAIN_REGEX,
+            'info' => 'json',
         ]);
 
         // Check if the domain is registered
-        if (!Domain::isRegistered($params['domain'])) {
-            return response([
-                "message" => $params['domain'] . " is not a registered domain",
-                "errors" => [
-                    "domain" => [ "This is not a registered domain" ],
-                ],
-            ], 422);
+        if (isset($params['domain'])) {
+            if (!Domain::isRegistered($params['domain'])) {
+                return response([
+                    "message" => $params['domain'] . " is not a registered domain",
+                    "errors" => [
+                        "domain" => [ "This is not a registered domain" ],
+                    ],
+                ], 422);
+            }
+
+            if ($params['domain'] != $domain->domain) {
+                $domain->change($params['domain']);
+            }
         }
 
-        if ($params['domain'] != $domain->domain) {
-            $domain->change($params['domain']);
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+            $domain->info = $params['info'];
+            $domain->save();
         }
 
         return new DomainResource($domain);
@@ -378,6 +387,42 @@ class DomainController extends Controller
 
         return response([
             'message' => $type . ' deleted successfully',
+        ]);
+    }
+
+    /**
+     * Add DNS record
+     *
+     * @urlParam id int required Domain's id
+     *
+     * @bodyParam type string required Is it a file or a directory?
+     * @bodyParam pathname string required Pathname
+     *
+     * @response {
+     *  "message": "File saved successfully"
+     * }
+     */
+    public function addDNSRecord($id, Request $request)
+    {
+        $domain = Domain::findOrFail($id);
+        $this->authorize('update', $domain);
+
+        // Params validation
+        $params = $request->validate([
+            'type' => 'required|string|min:1',
+            'name' => 'required|string|min:1',
+            'content' => 'required|string|min:1',
+        ]);
+
+        if ($domain->addDNSRecord($params['type'], $params['name'], $params['content']) === false) {
+            return response([
+                'message' => 'Cannot add DNS record',
+            ], 400);
+        }
+
+        return response([
+            'message' => $params['type'] . ' record added successfully',
+            'data' => new DomainResource($domain),
         ]);
     }
 

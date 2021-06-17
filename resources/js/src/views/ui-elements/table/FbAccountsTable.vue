@@ -138,6 +138,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.context_menu.close();showForm('domain_verification');" class="flex items-center text-sm">
+                <feather-icon icon="ServerIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Verify Domain</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
@@ -955,6 +961,20 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col w-full flex items-center mb-2">
+                    <h2>Domains:</h2>
+                    <ul v-if="bmInfoObj.hasOwnProperty('owned_domains') && bmInfoObj.owned_domains.length > 0">
+                        <li v-for="(item, index) in bmInfoObj.owned_domains" :key="index">
+                          {{item.domain_name}} - {{item.status}}
+                        </li>
+                    </ul>
+                    <div v-else>
+                        No domains
+                    </div>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full flex items-center mb-2">
                     <a class="mr-auto ml-auto" :href="'https://business.facebook.com/home/accounts?business_id=' + bmInfoObj.id">
                         https://business.facebook.com/home/accounts?business_id={{bmInfoObj.id}}
                     </a>
@@ -1531,6 +1551,59 @@
             </div>
         </vs-popup>
 
+        <!-- Domain verification popup -->
+        <vs-popup title="Verify Domain" :active.sync="showPopup['domain_verification']">
+            <div v-if="domainVerificationStep == 1">
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Domain*</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="domainVerificationDomain" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Verification Type*</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="domainVerificationType" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in domainVerificationTypes" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Verification ID*</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input :placeholder="domainVerificationIdPlaceholder" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="domainVerificationId" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="verifyDomain" color="primary" type="filled" :disabled="!isValidForm('domain_verification')">Continue</vs-button>
+                </div>
+            </div>
+
+            <div v-if="domainVerificationStep == 2">
+                <div class="vx-row mb-6">
+                    <h1 class="pr-3 pl-3">
+                        Now you can verify domain on Facebook clicking on "Verify domain" button.
+                        When you have successfully verified the domain, click on the button below, it will
+                        mark the domain as already used by Facebook.
+                    </h1>
+                </div>
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="markDomainAsVerified" color="primary" type="filled">Mark {{domainVerificationDomain.domain}} as verified</vs-button>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -1615,6 +1688,7 @@ export default {
         'ad_rules': false,
         'ad_account': false,
         'create_page': false,
+        'domain_verification': false,
       },
       newObject: {
         'create': {
@@ -1843,6 +1917,18 @@ export default {
 
       createPageName: '',
       createPageImageURL: '',
+
+      domains: [],
+      domainVerificationTypes: [
+        'meta tag',
+        'HTML file upload',
+        'TXT DNS record',
+      ],
+
+      domainVerificationStep: 1,
+      domainVerificationDomain: '',
+      domainVerificationType: 'TXT DNS record',
+      domainVerificationId: '',
     }
   },
   computed: {
@@ -1866,6 +1952,9 @@ export default {
     canCreateAsAdmin() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
               this.$store.getters.userHasRole('account_manager'))
+    },
+    domainVerificationIdPlaceholder() {
+      return 'hwoawozds5x...'
     },
   },
   methods: {
@@ -1978,7 +2067,23 @@ export default {
       this.applyFilters()
     },
     async showForm(type) {
-      if (type == 'multi_create') {
+      if (type == 'domain_verification') {
+        this.$vs.loading()
+
+        this.clearForm(type)
+
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+
+        // Retrieve domains
+        const domainsResponse = await this.$http.get('/api/v1/domains', { headers })
+        this.domains = domainsResponse.data.data
+
+        this.showPopup[type] = true
+
+        this.$vs.loading.close()
+      } else if (type == 'multi_create') {
         for (let i = 0; i < 3; i++) {
           this.multiCreate.push({
             name: '',
@@ -2027,7 +2132,12 @@ export default {
       }
     },
     clearForm(type) {
-      if (type == 'multi_create') {
+      if (type == 'domain_verification') {
+        this.domainVerificationStep = 1
+        this.domainVerificationDomain = ''
+        this.domainVerificationType = this.domainVerificationTypes[1]
+        this.domainVerificationId = ''
+      } else if (type == 'multi_create') {
         this.multiCreate = []
       } else {
         this.newObject[type] = {
@@ -2051,7 +2161,14 @@ export default {
     },
     isValidForm(type) {
       let isValid = false
-      if (type == 'multi_create') {
+      if (type == 'domain_verification') {
+        isValid = (
+          this.domainVerificationDomain != '' &&
+          this.domainVerificationDomain != null &&
+          this.domainVerificationType != '' &&
+          this.domainVerificationTypes.includes(this.domainVerificationType) &&
+          this.domainVerificationId != '')
+      } else if (type == 'multi_create') {
         let flag = false
         for (let i = 0; i < this.multiCreate.length; i++) {
           if (this.multiCreate[i].name != '') {
@@ -2321,9 +2438,11 @@ export default {
 
       try {
         // Retrieve businesses
-        const businessesResponse = await this.$http.get('https://graph.facebook.com/me/businesses?access_token=' + obj.token)
+        let businessesFields = 'id,name,owned_domains{id,domain_name,status}'
+        const businessesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/businesses?access_token=' + obj.token + '&fields=' + businessesFields)
         let businesses = {}
-        businessesResponse.data.data.forEach((bm) => {
+        for (let bmIndex = 0; bmIndex < businessesResponse.data.data.length; bmIndex++) {
+          let bm = businessesResponse.data.data[bmIndex]
           businesses[bm.id] = {
             id: bm.id,
             name: bm.name,
@@ -2332,8 +2451,13 @@ export default {
             total: 0,
             funding_sources: [],
             ad_accounts: [],
+            owned_domains: [],
           }
-        })
+
+          if (bm.hasOwnProperty('owned_domains')) {
+            businesses[bm.id].owned_domains = bm.owned_domains.data
+          }
+        }
         let adAccounts = []
 
         // Retrieve ad accounts
@@ -4991,9 +5115,153 @@ export default {
         return 'icon-refresh-cw'
       }
     },
+    getDomainVerificationId(verificationId) {
+      if (verificationId.includes('<meta')) {
+        verificationId = verificationId.replace('<meta name="facebook-domain-verification" content="', '')
+        verificationId = verificationId.replace('" />', '')
+      } else if (verificationId.includes('facebook-domain-verification=')) {
+        verificationId = verificationId.replace('facebook-domain-verification=', '')
+      }
+      return verificationId
+    },
+    async verifyDomain() {
+      // TODO: Try/catch when sending requests?
+
+      this.$vs.loading()
+
+      let verificationId = this.getDomainVerificationId(this.domainVerificationId)
+      let verificationType = this.domainVerificationType
+      let domainId = this.domainVerificationDomain.id
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      if (verificationType == 'meta tag') {
+        let metaTag = '<meta name="facebook-domain-verification" content="' + verificationId + '" />'
+
+        // Add meta tag to index.html and index.php
+        let data = {
+          pathname: 'public',
+        }
+        const lsResponse = await this.$http.get('/api/v1/domains/' + domainId + '/ls', { headers: headers, params: data })
+        let filesAndDirectories = lsResponse.data.data
+        let indexFound = false
+        for (let i = 0; i < filesAndDirectories.length; i++) {
+          let obj = filesAndDirectories[i]
+          if (obj.type != 'file') {
+            continue
+          }
+          if (obj.name == 'index.html' || obj.name == 'index.php') {
+            indexFound = true
+
+            // Get file current content
+            data = {
+              pathname: obj.pathname,
+            }
+            const fileContentResponse = await this.$http.get('/api/v1/domains/' + domainId + '/cat', { headers: headers, params: data })
+            let fileContent = ''
+            if (fileContentResponse.data.data != null &&
+              fileContentResponse.data.data != false &&
+              fileContentResponse.data.data != '') {
+              fileContent = fileContentResponse.data.data
+            }
+
+            // Add meta tag
+            if (fileContent.includes('<head>')) {
+              fileContent = fileContent.replace('<head>', '<head>' + metaTag)
+            } else if (fileContent.includes('<html>')) {
+              fileContent = fileContent.replace('<html>', '<html>' + metaTag)
+            } else {
+              fileContent = metaTag + fileContent
+            }
+
+            // Upload file with the new content
+            let newHeaders = {
+              'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+              'Content-Type': 'multipart/form-data',
+            }
+            let path = 'public'
+            let blob = new Blob([fileContent])
+            let formData = new FormData()
+            formData.append('path', path)
+            formData.append('file', blob, obj.name)
+            const response = await this.$http.post('/api/v1/domains/' + domainId + '/upload', formData, { headers: newHeaders })
+          }
+        }
+
+        // Create index.html if none of index.php and index.html is found
+        if (!indexFound) {
+          let fileContent = metaTag
+          // Upload file with the new content
+            let newHeaders = {
+              'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+              'Content-Type': 'multipart/form-data',
+            }
+            let path = 'public'
+            let blob = new Blob([fileContent])
+            let formData = new FormData()
+            formData.append('path', path)
+            formData.append('file', blob, 'index.html')
+            const response = await this.$http.post('/api/v1/domains/' + domainId + '/upload', formData, { headers: newHeaders })
+        }
+      } else if (verificationType == 'HTML file upload') {
+        let newHeaders = {
+          'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+          'Content-Type': 'multipart/form-data',
+        }
+        let fileContent = verificationId
+        let path = 'public'
+        let fileName = verificationId + '.html'
+        let blob = new Blob([fileContent])
+        let formData = new FormData()
+        formData.append('path', path)
+        formData.append('file', blob, fileName)
+        const response = await this.$http.post('/api/v1/domains/' + domainId + '/upload', formData, { headers: newHeaders })
+      } else if (verificationType == 'TXT DNS record') {
+        let data = {
+          type: 'TXT',
+          name: '@',
+          content: 'facebook-domain-verification=' + verificationId,
+        }
+        const response = await this.$http.post('/api/v1/domains/' + domainId + '/dns-records', data, { headers: headers })
+      }
+
+      // Go to step 2
+      this.domainVerificationStep = 2
+
+      this.$vs.loading.close()
+    },
+    async markDomainAsVerified() {
+      this.$vs.loading()
+
+      let domainId = this.domainVerificationDomain.id
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let info = this.domainVerificationDomain.info
+      info['fb_domain_verified'] = true
+      let data = {
+        info: JSON.stringify(info),
+      }
+      await this.$http.put('/api/v1/domains/' + domainId, data, { headers })
+
+      this.showPopup['domain_verification'] = false
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Domain marked as verified',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
   },
   async created() {
-    // TODO: to delete
+    //// TODO: to delete
     ////let businessId = '633051938086773'
     ////let fbToken = 'EAAGNO4a7r2wBAJAJsRhpU0GZBx0fMumogL5Fbe70ioL4UKPwlWDcgiCCDeinKOeXcG7T6TZCOUctJnZCJK9gVToMCShiU1A8NFegmyUKPwdRXTaTEfNknL0s0jqwZAdk9uTVf6dCCmtYI3rDY7E6FhSlZCRRGZCadaTBhOpORoHAZDZD'
     //let businessId = '2228218624074488'
@@ -5003,6 +5271,21 @@ export default {
     //}
     //const fbResponse = await this.$http.get('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken)
     ////const fbResponse = await this.$http.post('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken, data)
+    //return
+
+    // TODO: to delete
+    //let fbToken = 'EAABsbCS1iHgBAFynPs0L3ZC0cwBEafquKdD71Xa5ZAjy3iLJM8WBMxxcIiJdKNUVRb8HgfeECd0CZCAOkFILsV6PkxWmnXmi3SuQDRs7NKX0H9KhDOnMawj4cnwJH4Ebpj7M73SU2o0XoarGYkLNYhVEC1embS38MX9msVIQHqWCLbMBlzW'
+    //let fields = 'id,name,owned_domains'
+    //const businessesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/businesses?access_token=' + fbToken + '&fields=' + fields)
+    //fields = 'id,name'
+    //const businessesResponse2 = await this.$http.get('https://graph.facebook.com/v9.0/me?access_token=' + fbToken + '&fields=' + fields)
+    //return
+
+    // TODO: to delete
+    //let fbToken = 'EAABsbCS1iHgBAFynPs0L3ZC0cwBEafquKdD71Xa5ZAjy3iLJM8WBMxxcIiJdKNUVRb8HgfeECd0CZCAOkFILsV6PkxWmnXmi3SuQDRs7NKX0H9KhDOnMawj4cnwJH4Ebpj7M73SU2o0XoarGYkLNYhVEC1embS38MX9msVIQHqWCLbMBlzW'
+    //let businessId = '1944244455656526'
+    //let fields = 'id,domain_name,status'
+    //await this.$http.get('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken + '&fields=' + fields)
     //return
 
     let userInfo = this.$store.getters.getUserInfo()

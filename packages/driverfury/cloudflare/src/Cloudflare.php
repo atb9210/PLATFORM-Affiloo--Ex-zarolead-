@@ -3,6 +3,7 @@
 /*
  * TODO
  * - What about errors? Leave as it is or throw exceptions?
+ * - Types
  */
 
 namespace Driverfury\Cloudflare;
@@ -43,6 +44,19 @@ class Cloudflare
     private function getHeaders()
     {
         return $this->headers;
+    }
+
+    public function getZoneId(string $name)
+    {
+        $result = '';
+        $zones = $this->getZones();
+        foreach ($zones as $zone) {
+            if ($zone['name'] == $name) {
+                $result = $zone['id'];
+                break;
+            }
+        }
+        return $result;
     }
 
     public function getZones()
@@ -140,6 +154,42 @@ class Cloudflare
         $response = json_decode($response, true);
         if (isset($response['success']) && $response['success']) {
             $toReturn = true;
+        }
+
+        return $toReturn;
+    }
+
+    public function createDNSRecord(
+        string $zone_id,
+        string $type,
+        string $name,
+        string $content,
+    )
+    {
+        $toReturn = false;
+
+        $url = self::CLOUDFLARE_API_URL . 'zones/' . $zone_id . '/dns_records';
+        $headers = $this->getHeaders();
+        $params = [
+            'type' => $type,
+            'name' => $name,
+            'content' => $content,
+            'ttl' => 1,
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        if (isset($response['success']) && $response['success']) {
+            $toReturn = $response['result'];
+        } else {
+            $this->addError('Cannot create DNS record for zone ' . $zone_id . ' on Cloudflare - RESPONSE: ' . json_encode($response));
         }
 
         return $toReturn;

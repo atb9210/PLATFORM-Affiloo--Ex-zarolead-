@@ -19,7 +19,7 @@ use App\User;
 
 class TestController extends Controller
 {
-    public function test()
+    private function testFraudFilter()
     {
         $tests = [
             [
@@ -54,6 +54,27 @@ class TestController extends Controller
         }
         $output .= '<pre>';
         echo $output;
+    }
+
+    private function testCloudflare()
+    {
+        $cloudflare = new \Driverfury\Cloudflare\Cloudflare(env('CLOUDFLARE_API_KEY'));
+        $zoneId = '5bc44efbb4f17dc137fa7c114aa96971';
+        dd($cloudflare->createDNSRecord($zoneId, 'TXT', '@', 'mycontent'));
+    }
+
+    public function test()
+    {
+        $fbAccounts = \App\third\FbAccount::all();
+        foreach ($fbAccounts as $fbAccount) {
+            echo '<br>--------<br>' . $fbAccount->name . '<br>';
+            foreach ($fbAccount->info['bm'] as $bm) {
+                if (isset($bm['owned_domains'])) {
+                    var_dump($bm['owned_domains']);
+                    echo '<br>';
+                }
+            }
+        }
     }
 
     public function post(Request $request)

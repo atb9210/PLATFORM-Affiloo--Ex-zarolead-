@@ -76,6 +76,12 @@
                   </a>
                 </li>
                 <li>
+                  <a href="#" @click="$refs.context_menu.close();addDNSRecordForm(data.id);" class="flex items-center text-sm">
+                    <feather-icon icon="HardDriveIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Add DNS Record</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.context_menu.close();showFileManager(data.id);" class="flex items-center text-sm">
                     <feather-icon icon="FolderIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">File Manager</span>
@@ -96,6 +102,7 @@
                     <vs-th sort-key="domain">Domain</vs-th>
                     <vs-th sort-key="path">Path</vs-th>
                     <vs-th sort-key="ssl">SSL</vs-th>
+                    <vs-th>Facebook verified</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -120,6 +127,12 @@
                         <vs-td :data="data[indextr].ssl">
                             <vs-chip :color="data[indextr].ssl == 'No SSL' ? 'danger' : 'success'">
                                 {{data[indextr].ssl}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].info['fb_domain_verified']">
+                            <vs-chip :color="data[indextr].info['fb_domain_verified'] ? 'success' : 'danger'">
+                                {{(data[indextr].info['fb_domain_verified'] ? 'Yes' : 'No')}}
                             </vs-chip>
                         </vs-td>
 
@@ -265,6 +278,46 @@
 
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="showPopup['update_name_servers'] = false" color="primary" type="filled">OK</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Create DNS record popup -->
+        <vs-popup title="Create DNS Record" :active.sync="showPopup['create_dns_record']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto" color="primary">DSN RECORD: {{dnsType}} {{dnsName}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Type</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="dnsType" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in dnsTypes" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="dnsName" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Content</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="dnsContent" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="addDNSRecord" color="primary" type="filled" :disabled="!isValidForm('create_dns_record')">Create DNS Record</vs-button>
             </div>
         </vs-popup>
 
@@ -422,6 +475,7 @@ export default {
         'create': false,
         'edit': false,
         'update_name_servers': false,
+        'create_dns_record': false,
         'find_and_replace': false,
         'zarocloner': false,
         'namecheap': false,
@@ -458,6 +512,16 @@ export default {
       findValue: '',
       replaceValue: '',
       findAndReplaceStatus: '',
+
+      dnsTypes: [
+        'A', 'AAAA', 'CNAME', 'HTTPS', 'TXT', 'SRV', 'LOC', 'MX', 'NS',
+        'SPF', 'CERT', 'DNSKEY', 'DS', 'NAPTR', 'SMIMEA', 'SSHFP', 'SVCB',
+        'TLSA',
+      ],
+
+      dnsType: 'TXT',
+      dnsName: '@',
+      dnsContent: '',
 
       zaroclonerUrl: '',
       zaroclonerDomain: null,
@@ -589,7 +653,9 @@ export default {
       })
     },
     async showForm(type) {
-      if (type == 'zarocloner') {
+      if (type == 'create_dns_record') {
+        this.clearForm(type)
+      } else if (type == 'zarocloner') {
         this.zaroclonerUrl = ''
         this.zaroclonerDomain = null
         this.zaroclonerPath = ''
@@ -603,7 +669,11 @@ export default {
       this.errors.clear()
     },
     clearForm(type) {
-      if (type == 'zarocloner') {
+      if (type == 'create_dns_record') {
+        this.dnsType = 'TXT'
+        this.dnsName = '@'
+        this.dnsContent = ''
+      } else if (type == 'zarocloner') {
         this.zaroclonerUrl = ''
         this.zaroclonerDomain = null
         this.zaroclonerPath = ''
@@ -617,9 +687,14 @@ export default {
       }
     },
     isValidForm(type) {
-      if (type == 'zarocloner') {
+      if (type == 'create_dns_record') {
+        if (this.dnsType != '' && this.dnsTypes.includes(this.dnsType) &&
+          this.dnsName != '' && this.dnsContent != '') {
+          return true
+        }
+      } else if (type == 'zarocloner') {
         if (this.zaroclonerUrl != '' && isValidHttpUrl(this.zaroclonerUrl) &&
-            this.zaroclonerDomain != null && this.zaroclonerDomain != '') {
+          this.zaroclonerDomain != null && this.zaroclonerDomain != '') {
           return true
         }
       } else if (type == 'namecheap') {
@@ -992,7 +1067,7 @@ export default {
 
       for (let i = 0; i < this.filesToUpload.length; i++) {
         let f = this.filesToUpload[i]
-        let path = f.webkitRelativePath.substring(0, f.webkitRelativePath.lastIndexOf('/') + 1);
+        let path = f.webkitRelativePath.substring(0, f.webkitRelativePath.lastIndexOf('/') + 1)
         path = this.fileManagerGetCurrentDirLevel() + '/' + path
 
         let formData = new FormData()
@@ -1188,6 +1263,36 @@ export default {
       this.retrieveObjects()
 
       this.$vs.loading.close()
+    },
+    addDNSRecordForm(id) {
+      this.currentObject = this.objects[this.getObjectIndexById(id)]
+      this.showForm('create_dns_record')
+    },
+    async addDNSRecord() {
+      this.$vs.loading()
+
+      let domainId = this.currentObject.id
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        type: this.dnsType,
+        name: this.dnsName,
+        content: this.dnsContent,
+      }
+      const response = await this.$http.post('/api/v1/domains/' + domainId + '/dns-records', data, { headers: headers })
+
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'DNS record added successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['create_dns_record'] = false
     },
   },
   async created() {

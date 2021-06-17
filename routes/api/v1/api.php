@@ -147,6 +147,8 @@ Route::apiResource('domains', 'api\v1\DomainController')->except([
 ])->middleware('auth:api');
 Route::get('domains/{id}/ssl', 'api\v1\DomainController@activateSSL')->middleware('auth:api')
     ->name('domains.ssl');
+Route::post('domains/{id}/dns-records', 'api\v1\DomainController@addDNSRecord')->middleware('auth:api')
+    ->name('domains.dns-records');
 
 // TODO: Change path?
 Route::get('domains/{id}/ls', 'api\v1\DomainController@listFilesAndDirectories')->middleware('auth:api')

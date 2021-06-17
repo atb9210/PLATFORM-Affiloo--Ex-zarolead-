@@ -32,6 +32,7 @@ class DomainResource extends JsonResource
             'id' => $this->id,
             'domain' => $this->domain,
             'path' => $this->path,
+            'info' => $this->info,
             'status' => $domain->info['status'],
             'ssl' => $this->getSSL(),
         ];

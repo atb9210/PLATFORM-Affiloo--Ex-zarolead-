@@ -512,6 +512,13 @@ class Domain extends Model
         return $result;
     }
 
+    public function addDNSRecord(string $type, string $name, string $content): bool
+    {
+        $cloudflare = new Cloudflare(env('CLOUDFLARE_API_KEY'));
+        $zoneId = $cloudflare->getZoneId($this->domain);
+        return ($cloudflare->createDNSRecord($zoneId, $type, $name, $content) !== false);
+    }
+
     public static function isRegistered(string $domain): bool
     {
         $result = (gethostbyname($domain) != $domain);
