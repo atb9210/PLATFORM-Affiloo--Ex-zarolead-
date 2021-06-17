@@ -120,6 +120,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.context_menu.close();checkIfUserIsAllowedToAdvertise(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CheckIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Check if allowed to advertise</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.context_menu.close();showAdAccounts(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Show ad accounts</span>
@@ -1657,6 +1663,16 @@ export default {
         user: '',
         status: 'run',
         product: '',
+      },
+
+      fbStatuses: {
+        '1':   'Active',
+        '2':   'Disabled',
+        '3':   'Unsettled',
+        '7':   'Pending Review',
+        '9':   'In Grace Period',
+        '101': 'temporarily unavailable',
+        '100': 'pending closure',
       },
 
       statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'request', 'ban'],
@@ -5259,33 +5275,61 @@ export default {
         color: 'success'
       })
     },
+    getFbAdAccountStatus(statusNumber) {
+      let result = 'unknown'
+      let status = statusNumber.toString()
+      if (this.fbStatuses.includes(status)) {
+        result = this.fbStatuses[status]
+      }
+      return result
+    },
+    async checkIfUserIsAllowedToAdvertise(id) {
+      this.$vs.loading()
+
+      let objIndex = this.getObjectIndexById(this.objects, id)
+      let token = this.objects[objIndex].token
+
+      let result = false
+      try {
+        const response = await this.$http.get('https://graph.facebook.com/v10.0/me/personal_ad_accounts?access_token=' + token + '&fields=id,name,is_user_allowed_to_advertise,account_status')
+        let personalAdAccounts = response.data.data
+        let atLeastOneIsAllowed = false
+        for (let i = 0; i < personalAdAccounts.length; i++) {
+          let adAccount = personalAdAccounts[i]
+          if (adAccount.hasOwnProperty('is_user_allowed_to_advertise') && adAccount.is_user_allowed_to_advertise) {
+            atLeastOneIsAllowed = true
+            break
+          }
+        }
+        result = atLeastOneIsAllowed
+      } catch (error) {
+        result = false
+      }
+
+      this.objects[objIndex].is_user_allowed_to_advertise = result
+
+      this.$vs.loading.close()
+
+      this.$vs.dialog({
+        color: (result ? 'success' : 'danger'),
+        title: (result ? '' : 'Not ') + 'Allowed',
+        text: 'The user is ' + (result ? '' : 'not ') + 'allowed to advertise',
+      })
+    },
   },
   async created() {
     //// TODO: to delete
-    ////let businessId = '633051938086773'
-    ////let fbToken = 'EAAGNO4a7r2wBAJAJsRhpU0GZBx0fMumogL5Fbe70ioL4UKPwlWDcgiCCDeinKOeXcG7T6TZCOUctJnZCJK9gVToMCShiU1A8NFegmyUKPwdRXTaTEfNknL0s0jqwZAdk9uTVf6dCCmtYI3rDY7E6FhSlZCRRGZCadaTBhOpORoHAZDZD'
-    //let businessId = '2228218624074488'
-    //let fbToken = 'EAABsbCS1iHgBAPOn8lZCdr7dnHhnJCZBpJ12VwNnInBF6o886wPjJX9meEFOlsEqZBSolVZAnMD9StNJ2tcCPcIMrfAo7GD5pLdw5wgp2oedQMNpsKUK47xO2UMlcrc7DoFq4UA2Evt7HxfaQ1UJF01zXJoXmNrjE2ehqZCOf0dgGbr2cZC7qNkX6qF235FKoZD'
-    //let data = {
-    //  domain_name: 'maniabeauty.store',
+    //let tokens = {
+    //  'restricted_not_sent':    'EAABsbCS1iHgBAMCwRD3pJZCqsOeGFYv80QEv4aiJY9YUfmZAPzpl1ZBksGbmdF8hjc083Cd8ZCSSQwAsiXCFgkXKbnAZBNHu0UthrCn4c1dXZBeIjI2WxZBlrZAHvPZAlHhTCfgn8pnKicmkQzG2iM3PyRw39ZA00OYrosdvpvhoHsx4KPw7nleqzsFbWdJtZBDUcYZD',
+    //  'unrestricted_banned':    'EAABsbCS1iHgBABSRCFDZBpy6XLaEd4RDujo8f8z1AUN4pFJlAkgkuZCMrZC3XIuEblR122fknr7ll4P5gBZA9Uh0yCQfKJ6A6bfBEzU2gPTh7WSeZAQthB5V962pHVzdbDCiZAFyRTA7WAPRuHCTH43qz3TKdQizPRKayel1tEZA6w3AmSuZB2RWBtAj15zm9PoZD',
+    //  'restricted_sent':        'EAABsbCS1iHgBANjOeY7YAulRZCXIvZAnmVpRmA8FOAkkMGmkECGMVVwfgg2XNaZBM1O4dOrDubMuiagVAdBpoCu7EdB50fj64kFBxFkmvZAx3qiVleRGihgv7JhZAbCKcYudysmX2UZBPZAyZBZBeT6oWZCHyyvlWZB3OB60Wqib8cscGVKZAYGx31EYkJ8LMoF6LDYZD',
+    //  'restricted_uncompleted': 'EAABsbCS1iHgBAA4PVdyi2WarG9zUKsf1UCEz22nBukGcWKNCfDD6ADg0HODsnK8CaZAQ1gKCOdTpYuahrsPHgrKJPf0mFhmY7w39BMYtDiimPr8EZC2R5MMYkxkrfTCboBV0RMxzkKHk1uT5pjuDtfb7suAA1Ubs5R2qzRXQZDZD',
+    //  'verified':               'EAABsbCS1iHgBAHdcr0H6rTwkmvbCZCUqvA3Vx3st43cXblWPhZBPVwDZAOG8A6oBdgoFXkmJ9nFj2MEKnaHo2O4ZCZCK0SXChbfKBgJjCNRAJoA5GGSwXO0CoLiFs8oyoUt3PSQolQEPWIKuKAoJ1dZAbzPuUu1lerRLW5IVndJcdpj9Jj6bNKs3UOUhksHzIZD',
     //}
-    //const fbResponse = await this.$http.get('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken)
-    ////const fbResponse = await this.$http.post('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken, data)
-    //return
-
-    // TODO: to delete
-    //let fbToken = 'EAABsbCS1iHgBAFynPs0L3ZC0cwBEafquKdD71Xa5ZAjy3iLJM8WBMxxcIiJdKNUVRb8HgfeECd0CZCAOkFILsV6PkxWmnXmi3SuQDRs7NKX0H9KhDOnMawj4cnwJH4Ebpj7M73SU2o0XoarGYkLNYhVEC1embS38MX9msVIQHqWCLbMBlzW'
-    //let fields = 'id,name,owned_domains'
-    //const businessesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/businesses?access_token=' + fbToken + '&fields=' + fields)
-    //fields = 'id,name'
-    //const businessesResponse2 = await this.$http.get('https://graph.facebook.com/v9.0/me?access_token=' + fbToken + '&fields=' + fields)
-    //return
-
-    // TODO: to delete
-    //let fbToken = 'EAABsbCS1iHgBAFynPs0L3ZC0cwBEafquKdD71Xa5ZAjy3iLJM8WBMxxcIiJdKNUVRb8HgfeECd0CZCAOkFILsV6PkxWmnXmi3SuQDRs7NKX0H9KhDOnMawj4cnwJH4Ebpj7M73SU2o0XoarGYkLNYhVEC1embS38MX9msVIQHqWCLbMBlzW'
-    //let businessId = '1944244455656526'
-    //let fields = 'id,domain_name,status'
-    //await this.$http.get('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken + '&fields=' + fields)
+    //for (const [key, value] of Object.entries(tokens)) {
+    //  let isAllowed = await this.fbUserIsAllowedToAdvertise(value)
+    //  console.log(key + ' => ' + ((isAllowed) ? 'OK' : 'NO'))
+    //}
     //return
 
     let userInfo = this.$store.getters.getUserInfo()
