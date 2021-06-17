@@ -4993,6 +4993,18 @@ export default {
     },
   },
   async created() {
+    // TODO: to delete
+    ////let businessId = '633051938086773'
+    ////let fbToken = 'EAAGNO4a7r2wBAJAJsRhpU0GZBx0fMumogL5Fbe70ioL4UKPwlWDcgiCCDeinKOeXcG7T6TZCOUctJnZCJK9gVToMCShiU1A8NFegmyUKPwdRXTaTEfNknL0s0jqwZAdk9uTVf6dCCmtYI3rDY7E6FhSlZCRRGZCadaTBhOpORoHAZDZD'
+    //let businessId = '2228218624074488'
+    //let fbToken = 'EAABsbCS1iHgBAPOn8lZCdr7dnHhnJCZBpJ12VwNnInBF6o886wPjJX9meEFOlsEqZBSolVZAnMD9StNJ2tcCPcIMrfAo7GD5pLdw5wgp2oedQMNpsKUK47xO2UMlcrc7DoFq4UA2Evt7HxfaQ1UJF01zXJoXmNrjE2ehqZCOf0dgGbr2cZC7qNkX6qF235FKoZD'
+    //let data = {
+    //  domain_name: 'maniabeauty.store',
+    //}
+    //const fbResponse = await this.$http.get('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken)
+    ////const fbResponse = await this.$http.post('https://graph.facebook.com/v9.0/' + businessId + '/owned_domains?access_token=' + fbToken, data)
+    //return
+
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId

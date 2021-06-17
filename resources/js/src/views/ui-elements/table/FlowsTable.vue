@@ -810,7 +810,7 @@ export default {
 
       let fraudFilterCampaignKey = ''
       if (obj.rules.hasOwnProperty('fraud_filter_campaign_key')) {
-        fraudFilterCampaignId = obj.rules.fraud_filter_campaign_key
+        fraudFilterCampaignKey = obj.rules.fraud_filter_campaign_key
       }
 
       this.newObject['edit'] = {
