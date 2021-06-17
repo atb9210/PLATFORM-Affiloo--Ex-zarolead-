@@ -19,8 +19,8 @@ class FraudFilter
     {
         if (count($serverRequest) == 0) {
             $serverRequest = $_SERVER;
-            $this->serverRequest = $serverRequest;
         }
+        $this->serverRequest = $serverRequest;
 
         $url = 'http://130.211.20.155/' . $campaignId;
 
