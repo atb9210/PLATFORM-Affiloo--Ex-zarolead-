@@ -448,7 +448,7 @@ class FlowController extends Controller
             $campaignId = $flow->fraudFilterCampaignId();
             $campaignKey = $flow->fraudFilterCampaignKey();
             $fraudFilter = new \Driverfury\FraudFilter\FraudFilter();
-            if ($fraudFilter->check($campaignId, $campaignKey)) {
+            if ($fraudFilter->check($campaignId, $campaignKey, $_SERVER)) {
                 // Money page
                 $page_url = $flow->getLandingUrl();
             } else {

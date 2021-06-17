@@ -4,14 +4,24 @@ namespace Driverfury\FraudFilter;
 
 class FraudFilter
 {
+    protected array $serverRequest = [];
+
     /**
      * Check fraud protection with FraudFilter.
      *
      * @param  string  $campaignId
      * @return bool Returns false if detected as fraud.
      */
-    public function check(string $campaignId, string $key): bool
+    public function check(
+        string $campaignId,
+        string $key,
+        array $serverRequest = []): bool
     {
+        if (count($serverRequest) == 0) {
+            $serverRequest = $_SERVER;
+            $this->serverRequest = $serverRequest;
+        }
+
         $url = 'http://130.211.20.155/' . $campaignId;
 
         // TODO: WTF is this?
@@ -95,11 +105,12 @@ class FraudFilter
      *
      * @return array
      */
-    protected function fillAllPostHeaders(string $key)
+    protected function fillAllPostHeaders(string $key): array
     {
         $headers = array();
         $headers[] = 'content-length: 0';
         $headers[] = 'X-FF-P: ' . $key;
+
         $this->addHeader($headers, 'X-FF-REMOTE-ADDR', 'REMOTE_ADDR');
         $this->addHeader(
             $headers,
@@ -191,11 +202,11 @@ class FraudFilter
 
     protected function addHeader(&$headers, $out, $in)
     {
-        if (!isset($_SERVER[$in])) {
+        if (!isset($this->serverRequest[$in])) {
             return;
         }
 
-        $value = $_SERVER[$in];
+        $value = $this->serverRequest[$in];
 
         if (is_array($value)) {
             $value = implode(',', $value);
@@ -208,7 +219,7 @@ class FraudFilter
     {
         $headers = [];
 
-        foreach ($_SERVER as $name => $value) {
+        foreach ($this->serverRequest as $name => $value) {
             if (substr($name, 0, 5) == 'HTTP_') {
                 $headers[
                     str_replace(
