@@ -401,6 +401,8 @@ class FlowController extends Controller
 
         $this->authorize('delete', $flow);
 
+        // TODO: if it is hotload, delete imported landings and safe page??
+
         $flow->delete();
 
         return response([

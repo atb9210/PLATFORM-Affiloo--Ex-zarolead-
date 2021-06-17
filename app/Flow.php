@@ -153,7 +153,7 @@ class Flow extends Model
         $phpCode = $contents;
         $phpCode = str_replace('[[APP_URL]]', env('APP_URL'), $phpCode);
         $phpCode = str_replace('[[FLOW_ID]]', strval($this->id), $phpCode);
-        $pathname = $this->domain->path . '/public/' . $this->path_name;
+        $pathname = 'public/' . $this->path_name;
         $this->domain->createFile($pathname, $phpCode);
     }
 

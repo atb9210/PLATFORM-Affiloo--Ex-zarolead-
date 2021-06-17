@@ -286,22 +286,22 @@ class Domain extends Model
         Storage::disk('landings')->putFileAs('apps/' . $this->path . '/' . $path, $file, $file_pathname);
     }
 
-    public function createFile($pathname, $contents = '')
+    public function createFile(string $pathname, $contents = '')
     {
         Storage::disk('landings')->put('apps/' . $this->path . '/' . $pathname, $contents);
     }
 
-    public function deleteFile($pathname)
+    public function deleteFile(string $pathname)
     {
         Storage::disk('landings')->delete('apps/' . $this->path . '/' . $pathname);
     }
 
-    public function createDirectory($pathname)
+    public function createDirectory(string $pathname)
     {
         Storage::disk('landings')->makeDirectory('apps/' . $this->path . '/' . $pathname);
     }
 
-    public function deleteDirectory($pathname)
+    public function deleteDirectory(string $pathname)
     {
         Storage::disk('landings')->deleteDirectory('apps/' . $this->path . '/' . $pathname);
     }
