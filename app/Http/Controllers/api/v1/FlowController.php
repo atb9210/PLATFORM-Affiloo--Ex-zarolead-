@@ -435,6 +435,8 @@ class FlowController extends Controller
      *
      * @urlParam id int required Flow's id
      *
+     * @bodyParam server_request array required Client request
+     *
      * @response {
      *  "data": url,
      * }
@@ -443,12 +445,18 @@ class FlowController extends Controller
     {
         $flow = Flow::findOrFail($id);
 
+        $params = $request->validate([
+            'server_request' => 'required|json',
+        ]);
+
+        $serverRequest = json_decode($params['server_request'], true);
+
         // FraudFilter protection
         if ($flow->isFraudFilterProtectionEnabled()) {
             $campaignId = $flow->fraudFilterCampaignId();
             $campaignKey = $flow->fraudFilterCampaignKey();
             $fraudFilter = new \Driverfury\FraudFilter\FraudFilter();
-            if ($fraudFilter->check($campaignId, $campaignKey, $_SERVER)) {
+            if ($fraudFilter->check($campaignId, $campaignKey, $serverRequest)) {
                 // Money page
                 $page_url = $flow->getLandingUrl();
             } else {
