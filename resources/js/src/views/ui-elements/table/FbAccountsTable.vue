@@ -164,18 +164,21 @@
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <!--<vs-th sort-key="">Cards</vs-th>-->
+                <vs-th sort-key="">Allowed to advertise</vs-th>
                 <vs-th sort-key="token_status">Token Status</vs-th>
                 <vs-th sort-key="">BM</vs-th>
+                <vs-th sort-key="">Active campaigns</vs-th>
+                <vs-th sort-key="">Last check</vs-th>
                 <vs-th sort-key="amount_spent">Spent</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="cpl">CPL</vs-th>
+                <vs-th sort-key="result">Result</vs-th>
+                <vs-th sort-key="cpa">CPA</vs-th>
                 <vs-th sort-key="notes">Notes</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data" :style="(data[indextr].status == 'request') ? 'background-color: #f5ca73 !important;' : ''">
 
-                    <vs-td :data="data[indextr].status">
+                    <vs-td class="column-no-padding" :data="data[indextr].status">
                         <!--<vs-chip transparent :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>-->
                         <vs-switch
                             :color="statusColors[data[indextr].status]"
@@ -187,7 +190,7 @@
                         </vs-switch>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip
                                 transparent
@@ -198,7 +201,7 @@
                     </vs-td>
 
                     <!--
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vs-chip v-for="(card, index) in getCardsArray(data[indextr].info)" :key="index">
                                 <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
@@ -207,13 +210,22 @@
                     </vs-td>
                     -->
 
-                    <vs-td :data="data[indextr].token_status">
+                    <vs-td class="column-no-padding">
+                        <vs-chip v-if="data[indextr].info.hasOwnProperty('advertising_status')" transparent :color="advertisingStatusColor[data[indextr].info.advertising_status]">
+                            {{data[indextr].info.advertising_status}}
+                        </vs-chip>
+                        <vs-chip v-else transparent color="dark">
+                            Not checked
+                        </vs-chip>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].token_status">
                         <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">
                             {{data[indextr].token_status}}
                         </vs-chip>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="bm-badge flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vx-tooltip :text="bm.name + ' (' + bm.id + ')'" v-for="(bm, index) in data[indextr].info['bm']" :key="index">
                                 <vs-avatar size="24px" @click="showBmInfo(data[indextr].id, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
@@ -221,25 +233,37 @@
                         </div>
                     </vs-td>
 
-                    <vs-td>
-                        <div v-if="typeof data[indextr].amount_spent != 'undefined'">
-                            € {{data[indextr].amount_spent.toFixed(2)}}
+                    <vs-td class="column-no-padding">
+                        <div class="w-full pl-4 pr-4">
+                            {{data[indextr].info.active_campaigns}}
                         </div>
                     </vs-td>
 
-                    <vs-td>
-                        <div v-if="typeof data[indextr].leads != 'undefined'">
-                            {{data[indextr].leads}}
+                    <vs-td class="column-no-padding">
+                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.last_check != 'undefined'">
+                            {{data[indextr].info.stats.last_check}}
                         </div>
                     </vs-td>
 
-                    <vs-td>
-                        <div v-if="typeof data[indextr].cpl != 'undefined'">
-                            € {{data[indextr].cpl.toFixed(2)}}
+                    <vs-td class="column-no-padding">
+                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.spent != 'undefined'">
+                            € {{data[indextr].info.stats.spent.toFixed(2)}}
                         </div>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
+                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.result != 'undefined'">
+                            {{data[indextr].info.stats.result}}
+                        </div>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.cpa != 'undefined'">
+                            € {{data[indextr].info.stats.cpa.toFixed(2)}}
+                        </div>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
                         <div class="bm-badge flex items-center">
                             <vx-tooltip :text="data[indextr].notes">
                                 <!--<vs-button :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNote(data[indextr].id)"></vs-button>-->
@@ -251,26 +275,30 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
+                </vs-td>
+                <vs-td class="column-no-padding">
+                </vs-td>
+                <vs-td class="column-no-padding">
                     € {{totalStats.amount_spent.toFixed(2)}}
                 </vs-td>
-                <vs-td>
-                    {{totalStats.leads}}
+                <vs-td class="column-no-padding">
+                    {{totalStats.result}}
                 </vs-td>
-                <vs-td>
-                    € {{totalStats.cpl.toFixed(2)}}
+                <vs-td class="column-no-padding">
+                    € {{totalStats.cpa.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
                 <!-- END TOTAL STATS -->
             </template>
@@ -289,23 +317,23 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].time">
+                    <vs-td class="column-no-padding" :data="data[indextr].time">
                         {{formatDate(new Date(data[indextr].time * 1000))}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].id">
+                    <vs-td class="column-no-padding" :data="data[indextr].id">
                         {{data[indextr].id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].amountFloat">
+                    <vs-td class="column-no-padding" :data="data[indextr].amountFloat">
                         {{data[indextr].amount}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].currency">
+                    <vs-td class="column-no-padding" :data="data[indextr].currency">
                         {{data[indextr].currency}}
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vs-button @click="showInvoicePreview(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                         </div>
@@ -313,23 +341,23 @@
 
                 </vs-tr>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{invoicesTotalStats.amount.toFixed(2)}}
                 </vs-td>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
 
-                <vs-td>
+                <vs-td class="column-no-padding">
                 </vs-td>
 
             </template>
@@ -357,15 +385,15 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].status">
+                    <vs-td class="column-no-padding" :data="data[indextr].status">
                         <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('campaign', data[indextr].id)">
                             <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
                             <span slot="on" v-else>Review</span>
@@ -373,39 +401,39 @@
                         </vs-switch>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].spent">
+                    <vs-td class="column-no-padding" :data="data[indextr].spent">
                         € {{data[indextr].spent.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].result">
+                    <vs-td class="column-no-padding" :data="data[indextr].result">
                         {{data[indextr].result}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpa">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpa">
                         € {{data[indextr].cpa.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
+                    <vs-td class="column-no-padding" :data="data[indextr].cr">
                         {{data[indextr].cr.toFixed(2)}}%
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpm">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpm">
                         € {{data[indextr].cpm.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].ctr">
+                    <vs-td class="column-no-padding" :data="data[indextr].ctr">
                         {{data[indextr].ctr.toFixed(2)}}%
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpc">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpc">
                         € {{data[indextr].cpc.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roas">
+                    <vs-td class="column-no-padding" :data="data[indextr].roas">
                         {{data[indextr].roas.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].daily_budget">
+                    <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                         <span v-if="data[indextr].cbo">
                             € {{data[indextr].daily_budget.toFixed(2)}}
                         </span>
@@ -414,7 +442,7 @@
                         </span>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vs-button @click="editBudgetPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign"></vs-button>
                             <vs-button @click="editBidPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-minus-circle"></vs-button>
@@ -424,31 +452,31 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>{{data.length}}</vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.spent.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.result}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpa.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.cr.toFixed(2)}}%
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpm.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.ctr.toFixed(2)}}%
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpc.toFixed(2)}}
                 </vs-td>
-                <vs-td></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
@@ -474,15 +502,15 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-button size="small" radius type="filled" icon-pack="feather" :icon="objectIcon(data[indextr])" :color="objectColor(data[indextr])"></vs-button>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].status">
+                    <vs-td class="column-no-padding" :data="data[indextr].status">
                         <vs-switch :color="(data[indextr].status == 'ACTIVE') ? 'success' : 'warning'" v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'PENDING_REVIEW'" vs-icon-off="pause" vs-icon-on="done" @input="switchStatus('ad', data[indextr].id)">
                             <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
                             <span slot="on" v-else>Review</span>
@@ -490,39 +518,39 @@
                         </vs-switch>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].spent">
+                    <vs-td class="column-no-padding" :data="data[indextr].spent">
                         € {{data[indextr].spent.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].result">
+                    <vs-td class="column-no-padding" :data="data[indextr].result">
                         {{data[indextr].result}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpa">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpa">
                         € {{data[indextr].cpa.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
+                    <vs-td class="column-no-padding" :data="data[indextr].cr">
                         {{data[indextr].cr.toFixed(2)}}%
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpm">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpm">
                         € {{data[indextr].cpm.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].ctr">
+                    <vs-td class="column-no-padding" :data="data[indextr].ctr">
                         {{data[indextr].ctr.toFixed(2)}}%
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpc">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpc">
                         € {{data[indextr].cpc.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roas">
+                    <vs-td class="column-no-padding" :data="data[indextr].roas">
                         {{data[indextr].roas.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vs-button @click="viewAdPopup(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye"></vs-button>
                         </div>
@@ -531,31 +559,31 @@
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>{{data.length}}</vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.spent.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.result}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpa.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.cr.toFixed(2)}}%
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpm.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_ads_stats.ctr.toFixed(2)}}%
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_ads_stats.cpc.toFixed(2)}}
                 </vs-td>
-                <vs-td></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
@@ -573,21 +601,21 @@
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
-                    <vs-td :data="tr.status">
+                    <vs-td class="column-no-padding" :data="tr.status">
                         <div @click="showAdAccountPopup(tr)">
                             <vs-chip transparent :color="tr.status == 2 ? 'danger' : 'success'">{{tr.name}}</vs-chip>
                         </div>
                     </vs-td>
-                    <vs-td>{{tr.adtrust_dsl}}</vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">{{tr.adtrust_dsl}}</vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vs-chip v-for="(card, index) in tr.funding_sources" :key="index">
                                 <vs-avatar v-if="getCardIcon(card) != ''" :src="getCardIcon(card)" />{{getCardValue(card)}}
                             </vs-chip>
                         </div>
                     </vs-td>
-                    <vs-td>{{tr.pixel}}</vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">{{tr.pixel}}</vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-avatar size="24px" icon-pack="feather" :icon="tr.has_ad_rules ? 'icon-check' : 'icon-x'" :color="tr.has_ad_rules ? 'success' : 'danger'" />
                     </vs-td>
                 </vs-tr>
@@ -1124,16 +1152,16 @@
 
                         <template slot-scope="{data}">
                             <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
-                                <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
+                                <vs-td class="column-no-padding" v-if="viewingObject.hasOwnProperty('ctr')">
                                     {{data[indextr].ctr.toFixed(2)}}%
                                 </vs-td>
-                                <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
+                                <vs-td class="column-no-padding" v-if="viewingObject.hasOwnProperty('cpc')">
                                     € {{data[indextr].cpc.toFixed(2)}}
                                 </vs-td>
-                                <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
+                                <vs-td class="column-no-padding" v-if="viewingObject.hasOwnProperty('cpa')">
                                     € {{data[indextr].cpa.toFixed(2)}}
                                 </vs-td>
-                                <vs-td>
+                                <vs-td class="column-no-padding">
                                     <div class="flex items-center">
                                         <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
                                         <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
@@ -1692,6 +1720,13 @@ export default {
 
       maxItems: 20,
 
+      advertisingStatusColor: {
+        'active': 'success',
+        'verified': 'success',
+        'verification': 'warning',
+        'disabled': 'danger',
+      },
+
       showFilters: false,
       filters: {
         date_from: '',
@@ -1809,8 +1844,8 @@ export default {
       },
       totalStats: {
         amount_spent: 0,
-        leads: 0,
-        cpl: 0,
+        result: 0,
+        cpa: 0,
       },
       checked: [],
 
@@ -2077,15 +2112,20 @@ export default {
       // Retrieve fb accounts
       const response = await this.$http.get('/api/3rd/fb-accounts', { headers, params: data })
       this.objects = response.data.data
+
+      // TODO: to delete
+      /*
       if (Object.keys(this.dynamicStats).length > 2) {
         for (let i = 0; i < this.objects.length; i++) {
           if (Object.keys(this.dynamicStats).includes("id" + this.objects[i].id)) {
             this.objects[i].amount_spent = this.dynamicStats["id" + this.objects[i].id].amount_spent
-            this.objects[i].leads = this.dynamicStats["id" + this.objects[i].id].leads
-            this.objects[i].cpl = this.dynamicStats["id" + this.objects[i].id].cpl
+            this.objects[i].result = this.dynamicStats["id" + this.objects[i].id].result
+            this.objects[i].cpa = this.dynamicStats["id" + this.objects[i].id].cpa
           }
         }
       }
+      */
+
       this.calculateStats()
       this.$vs.loading.close()
     },
@@ -2502,26 +2542,40 @@ export default {
       }
 
       try {
+        let activeCampaigns = 0
+
         // Retrieve businesses
         let businessesFields = 'id,name,owned_domains{id,domain_name,status}'
         const businessesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/businesses?access_token=' + obj.token + '&fields=' + businessesFields)
         let businesses = {}
         for (let bmIndex = 0; bmIndex < businessesResponse.data.data.length; bmIndex++) {
           let bm = businessesResponse.data.data[bmIndex]
+
+          let oldFundingSources = []
+          if (obj.info.hasOwnProperty('bm')) {
+            for (let i = 0; i < obj.info.bm.length; i++) {
+              let infoBm = obj.info.bm[i]
+              if (infoBm.id == bm.id && infoBm.hasOwnProperty('funding_sources')) {
+                oldFundingSources = infoBm.funding_sources
+                break
+              }
+            }
+          }
+
           businesses[bm.id] = {
             id: bm.id,
             name: bm.name,
             active: 0,
             warning: 0,
             total: 0,
-            funding_sources: [],
+            funding_sources: oldFundingSources,
             ad_accounts: [],
             owned_domains: [],
           }
-
           if (bm.hasOwnProperty('owned_domains')) {
             businesses[bm.id].owned_domains = bm.owned_domains.data
           }
+
         }
         let adAccounts = []
 
@@ -2545,10 +2599,8 @@ export default {
         let totalAmountSpent = 0
         let totalResult = 0
         let transactions = []
+
         this.dynamicStats["id" + obj.id] = {
-          amount_spent: 0,
-          leads: 0,
-          cpl: 0,
           transactions: [],
         }
 
@@ -2557,11 +2609,12 @@ export default {
           let adAccount = adAccountsResponse.data.data[adAccountIndex]
           
           // TODO: remove this block and put when switch view to ad accounts?
-          const adRulesResponse = await this.$http.get('https://graph.facebook.com/v9.0/act_' + adAccount.account_id + '/adrules_library?access_token=' + obj.token)
-          let hasAdRules = false
-          if (adRulesResponse.data.data.length > 0) {
-            hasAdRules = true
-          }
+          // TODO: to delete
+          //const adRulesResponse = await this.$http.get('https://graph.facebook.com/v9.0/act_' + adAccount.account_id + '/adrules_library?access_token=' + obj.token)
+          //let hasAdRules = false
+          //if (adRulesResponse.data.data.length > 0) {
+          //  hasAdRules = true
+          //}
 
           let pixel = ''
           if (adAccount.hasOwnProperty('adspixels') && adAccount.adspixels.hasOwnProperty('data') &&
@@ -2569,15 +2622,26 @@ export default {
             pixel = adAccount.adspixels.data[0].id
           }
 
+          let oldFundingSources = []
+          if (obj.info.hasOwnProperty('ad_accounts')) {
+            for (let i = 0; i < obj.info.ad_accounts.length; i++) {
+              let infoAdAccount = obj.info.ad_accounts
+              if (infoAdAccount.id == adAccount.account_id && infoAdAccount.hasOwnProperty('funding_sources')) {
+                oldFundingSources = infoAdAccount.funding_sources
+                break
+              }
+            }
+          }
+
           let adAccountToPush = {
             id: adAccount.account_id,
             name: adAccount.name,
-            funding_sources: [],
+            funding_sources: oldFundingSources,
             business: adAccount.business,
             status: adAccount.account_status,
             adtrust_dsl: adAccount.adtrust_dsl,
             pixel: pixel,
-            has_ad_rules: hasAdRules,
+            has_ad_rules: false,
           }
 
           let adAccountHasBusiness = false
@@ -2645,8 +2709,12 @@ export default {
 
           // Get campaigns
           if (adAccount.hasOwnProperty('campaigns')) {
-            for (let adIndex = 0; adIndex < adAccount.campaigns.data.length; adIndex++) {
-              let campaign = adAccount.campaigns.data[adIndex]
+            for (let campaignIndex = 0; campaignIndex < adAccount.campaigns.data.length; campaignIndex++) {
+              let campaign = adAccount.campaigns.data[campaignIndex]
+
+              if (campaign.effective_status == 'ACTIVE') {
+                activeCampaigns += 1
+              }
 
               let spent = parseFloat(campaign.spent/100)
               let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
@@ -2818,14 +2886,20 @@ export default {
                       post_url: adLinkUrl,
                     }
                     this.ads.push(adToPush)
-
-                    totalAmountSpent += parseFloat(adToPush.spent)
-                    totalResult += parseInt(adToPush.result)
                   }
                 }
               }
+
+              totalAmountSpent += parseFloat(campaign.spent)/100
+
+              // TODO: This is a momentary patch (check also FbAdsTable.vue)
+              if (campaign.objective != 'PAGE_LIKES' && campaign.objective != 'POST_ENGAGEMENT') {
+                totalResult += parseInt(campaign.result)
+              }
             }
           }
+
+          let totalCpa = ((totalResult > 0) ? (totalAmountSpent/totalResult) : totalAmountSpent)
 
           adAccounts.push(adAccountToPush)
 
@@ -2835,20 +2909,26 @@ export default {
 
           adAccountCounter++
           if (adAccountCounter >= adAccounts.length) {
-            this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
-            this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
-            this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
             this.dynamicStats["id" + obj.id].transactions = parseInt(transactions.length)
 
             let info = obj.info
             if (info == null) {
               info = {}
             }
-            info["bm"] = []
+            info['bm'] = []
             for (const [key, value] of Object.entries(businesses)) {
-              info["bm"].push(value)
+              info['bm'].push(value)
             }
-            info["ad_accounts"] = adAccounts
+            info['ad_accounts'] = adAccounts
+            info['active_campaigns'] = activeCampaigns
+            info['stats'] = {
+              from: this.filters.date_from,
+              to: this.filters.date_to,
+              last_check: this.formatDate(new Date()),
+              spent: totalAmountSpent,
+              result: totalResult,
+              cpa: totalCpa,
+            }
 
             // Update fb account object (token status and businesses status)
             let headers = {
@@ -2889,6 +2969,7 @@ export default {
             }
           }
         }
+        info['active_campaigns'] = activeCampaigns
         let data = {
           token_status: 'disabled',
           info: JSON.stringify(info),
@@ -2902,398 +2983,6 @@ export default {
           color: 'danger'
         })
       }
-
-      // TODO: to delete
-      /*
-      //////////////////////////////////////////////////////////////////////////////////
-      // Check FB API token status and get business accounts
-      this.$vs.loading()
-      this.$http.get('https://graph.facebook.com/me/businesses?access_token=' + obj.token)
-        .then((response) => {
-          let businesses = {}
-          response.data.data.forEach((bm) => {
-            businesses[bm.id] = {
-              id: bm.id,
-              name: bm.name,
-              active: 0,
-              warning: 0,
-              total: 0,
-              funding_sources: [],
-              ad_accounts: [],
-            }
-          })
-          let adAccounts = []
-
-          // Get FB ad accounts
-          let since = this.filters.date_from
-          let until = this.filters.date_to
-          let sinceDate = new Date(since + ' 00:00:00')
-          let untilDate = new Date(until + ' 23:59:59')
-          let sinceTimestamp = parseInt(sinceDate.valueOf() / 1000)
-          let untilTimestamp = parseInt(untilDate.valueOf() / 1000)
-          let fields = 'account_id,name,business,account_status,funding_source_details,amount_spent,adtrust_dsl,adspixels'
-          fields += ',transactions.time_range({"since":"' + since + '", "until":"' + until +'"})'
-          fields += ',campaigns.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,objective,result,spent,impressions,clicks,bid_strategy,daily_budget'
-          //fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"}){result,spent}'
-          fields += ',ads.time_range({"since":"' + since + '", "until":"' + until +'"})\{id,name,status,effective_status,result,spent,impressions,clicks,bid_strategy,bid_amount,daily_budget'
-          fields += ',creative\{image_url,body,title,call_to_action_type,object_url,link_url\}'
-          fields += '\}'
-          fields += '\}'
-
-          this.$http.get('https://graph.facebook.com/v5.0/me/adaccounts?access_token=' + obj.token + '&fields=' + fields)
-            .then((response) => {
-              let totalAmountSpent = 0
-              let totalResult = 0
-              let transactions = []
-              this.dynamicStats["id" + obj.id] = {
-                amount_spent: 0,
-                leads: 0,
-                cpl: 0,
-                transactions: [],
-              }
-
-              let adAccountCounter = 0
-              for (let adAccountIndex = 0; adAccountIndex < response.data.data.length; adAccountIndex++) {
-                let adAccount = response.data.data[adAccountIndex]
-
-                this.$http.get('https://graph.facebook.com/v9.0/act_' + adAccount.account_id + '/adrules_library?access_token=' + obj.token)
-                  .then((response2) => {
-                    let hasAdRules = false
-                    if (response2.data.data.length > 0) {
-                      hasAdRules = true
-                    }
-
-                    let pixel = ''
-                    if (adAccount.hasOwnProperty('adspixels') && adAccount.adspixels.hasOwnProperty('data') &&
-                        adAccount.adspixels.data.length > 0) {
-                      pixel = adAccount.adspixels.data[0].id
-                    }
-
-                    let adAccountToPush = {
-                      id: adAccount.account_id,
-                      name: adAccount.name,
-                      funding_sources: [],
-                      business: adAccount.business,
-                      status: adAccount.account_status,
-                      adtrust_dsl: adAccount.adtrust_dsl,
-                      pixel: pixel,
-                      has_ad_rules: hasAdRules,
-                    }
-
-                    let adAccountHasBusiness = false
-                    if (adAccount.hasOwnProperty('business') && adAccount.business.hasOwnProperty('id') &&
-                        (adAccount.business.id in businesses)) {
-                      adAccountHasBusiness = true
-                      businesses[adAccount.business.id].total += 1
-                      if (adAccount.account_status == 1) {
-                        businesses[adAccount.business.id].active += 1
-                      }
-                    }
-                    if (adAccount.hasOwnProperty('funding_source_details') && adAccount.funding_source_details.hasOwnProperty('display_string')) {
-                      if (adAccountHasBusiness && (adAccount.business.id in businesses)) {
-                        if (!businesses[adAccount.business.id].funding_sources.includes(adAccount.funding_source_details.display_string)) {
-                          businesses[adAccount.business.id].funding_sources.push(adAccount.funding_source_details.display_string)
-                        }
-                      }
-                      if (!adAccountToPush.funding_sources.includes(adAccount.funding_source_details.display_string)) {
-                        adAccountToPush.funding_sources.push(adAccount.funding_source_details.display_string)
-                      }
-                    }
-                    if (adAccount.hasOwnProperty('transactions') && adAccount.transactions.hasOwnProperty('data') && Array.isArray(adAccount.transactions.data)) {
-                      for (let tIndex = 0; tIndex < adAccount.transactions.data.length; tIndex++) {
-                        let t = adAccount.transactions.data[tIndex]
-                        if (t.time < sinceTimestamp || t.time > untilTimestamp) {
-                          continue
-                        }
-                        transactions.push({
-                          id: t.id,
-                          dateTime: this.formatDate(new Date(t.time * 1000)),
-                          amount: t.amount.total_amount,
-                          status: t.status,
-                        })
-
-                        if (t.status == 'completed') {
-                          let fSource = 'Credit card payment'
-                          if (adAccountHasBusiness && (adAccount.business.id in businesses) && businesses[adAccount.business.id].funding_sources.length > 0) {
-                            fSource = businesses[adAccount.business.id].funding_sources[0]
-                          } else if (adAccountToPush.funding_sources.length > 0) {
-                            fSource = adAccountToPush.funding_sources[0]
-                          }
-                          this.invoices.push({
-                            'id': t.id,
-                            'ad_account_id': adAccount.account_id,
-                            'ad_account_name': adAccount.name,
-                            'time': t.time,
-                            'funding_source': fSource,
-                            'reference_number': t.tracking_id,
-                            'amount': t.amount.total_amount,
-                            'amountFloat': parseFloat(t.amount.total_amount),
-                            'currency': t.amount.currency,
-                            'billing_reason': t.billing_reason,
-                            'billing_start_time': t.billing_start_time,
-                            'billing_end_time': t.billing_end_time,
-                            'vat_invoice_id': t.vat_invoice_id,
-                          })
-                          this.invoicesTotalStats.amount += parseFloat(t.amount.total_amount)
-                        }
-                      }
-                    }
-
-                    // Collect campaigns
-                    if (adAccount.hasOwnProperty('campaigns')) {
-                      for (let adIndex = 0; adIndex < adAccount.campaigns.data.length; adIndex++) {
-                        let campaign = adAccount.campaigns.data[adIndex]
-
-                        let spent = parseFloat(campaign.spent/100)
-                        let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
-                        let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
-                        let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
-                        let ctr = (campaign.impressions > 0) ? ((campaign.clicks/campaign.impressions)*100) : ((campaign.clicks > 0) ? 9999.99 : 0)
-                        let cpc = (campaign.clicks > 0) ? (spent/campaign.clicks) : spent
-
-                        let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
-                        let daily_budget = 0
-                        let bid_strategy = ''
-                        if (campaign.hasOwnProperty('daily_budget')) {
-                          daily_budget = parseFloat(parseInt(campaign.daily_budget) / 100)
-                        }
-                        if (campaign.hasOwnProperty('bid_strategy')) {
-                          bid_strategy = campaign.bid_strategy
-                        }
-
-                        let adAlreadyExists = false
-                        for (let j = 0; j < this.campaigns.length; j++) {
-                          if (this.campaigns[j].id == campaign.id) {
-                            adAlreadyExists = true
-                            break
-                          }
-                        }
-
-                        if (!adAlreadyExists) {
-                          let campaignToPush = {
-                            object_type: 'campaign',
-                            fb_account_token: obj.token,
-                            account_id: adAccount.id,
-                            id: campaign.id,
-                            name: campaign.name,
-                            status: campaign.effective_status,
-                            spent: spent,
-                            result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
-                            cpa: cpa,
-                            impressions: campaign.impressions,
-                            clicks: campaign.clicks,
-                            cr: cr,
-                            cpm: cpm,
-                            ctr: ctr,
-                            cpc: cpc,
-                            cbo: cbo,
-                            daily_budget: daily_budget,
-                            bid_strategy: bid_strategy,
-                          }
-                          this.campaigns.push(campaignToPush)
-                        }
-
-                        // Collect ads
-                        if (campaign.hasOwnProperty('ads')) {
-                          for (let adIndex = 0; adIndex < campaign.ads.data.length; adIndex++) {
-                            let ad = campaign.ads.data[adIndex]
-
-                            let adSpent = parseFloat(ad.spent/100)
-                            let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
-                            let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
-                            let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                            let adCtr = (ad.impressions > 0) ? ((ad.clicks/ad.impressions)*100) : ((ad.clicks > 0) ? 9999.99 : 0)
-                            let adCpc = (ad.clicks > 0) ? (adSpent/ad.clicks) : adSpent
-
-                            let adDailyBudget = 0
-                            let adBidStrategy = ''
-                            if (ad.hasOwnProperty('daily_budget')) {
-                              adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
-                            }
-                            if (ad.hasOwnProperty('bid_strategy')) {
-                              adBidStrategy = ad.bid_strategy
-                            }
-
-                            let adUrl = ''
-                            if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
-                              adUrl = ad.creative.object_url
-                            }
-                            let adLinkUrl = ''
-                            if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
-                              adLinkUrl = ad.creative.link_url
-                            }
-                            let adImageUrl = ''
-                            if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
-                              adImageUrl = ad.creative.image_url
-                            }
-
-                            let adAlreadyExists = false
-                            for (let j = 0; j < this.ads.length; j++) {
-                              if (this.ads[j].id == ad.id) {
-                                adAlreadyExists = true
-                                break
-                              }
-                            }
-
-                            if (!adAlreadyExists) {
-                              let adToPush = {
-                                object_type: 'ad',
-                                fb_account_token: obj.token,
-                                account_id: adAccount.id,
-                                id: ad.id,
-                                name: ad.name,
-                                status: ad.effective_status,
-                                spent: adSpent,
-                                result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
-                                cpa: adCpa,
-                                impressions: ad.impressions,
-                                clicks: ad.clicks,
-                                cr: adCr,
-                                cpm: adCpm,
-                                ctr: adCtr,
-                                cpc: adCpc,
-                                daily_budget: adDailyBudget,
-                                bid_strategy: adBidStrategy,
-                                image_url: adImageUrl,
-                                body: ad.creative.body,
-                                title: ad.creative.title,
-                                call_to_action_type: ad.creative.call_to_action_type,
-                                url: adUrl,
-                                post_url: adLinkUrl,
-                              }
-                              this.ads.push(adToPush)
-
-                              totalAmountSpent += parseFloat(adToPush.spent)
-                              totalResult += parseInt(adToPush.result)
-                            }
-                          }
-                        }
-                      }
-                    }
-
-                    adAccounts.push(adAccountToPush)
-
-                    if (adAccountHasBusiness) {
-                      businesses[adAccount.business.id].ad_accounts.push(adAccountToPush)
-                    }
-
-                    adAccountCounter++
-                    if (adAccountCounter >= adAccounts.length) {
-                      this.dynamicStats["id" + obj.id].amount_spent = parseFloat(totalAmountSpent)
-                      this.dynamicStats["id" + obj.id].leads = parseInt(totalResult)
-                      this.dynamicStats["id" + obj.id].cpl = ((totalResult > 0) ? (parseFloat(totalAmountSpent)/totalResult) : parseFloat(totalAmountSpent))
-                      this.dynamicStats["id" + obj.id].transactions = parseInt(transactions.length)
-
-                      let info = obj.info
-                      if (info == null) {
-                        info = {}
-                      }
-                      info["bm"] = []
-                      for (const [key, value] of Object.entries(businesses)) {
-                        info["bm"].push(value)
-                      }
-                      info["ad_accounts"] = adAccounts
-
-                      // Update fb account object (token status and businesses status)
-                      let headers = {
-                        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-                      }
-                      let data = {
-                        token_status: 'active',
-                        info: JSON.stringify(info),
-                      }
-
-                      this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
-                        .then((response) => {
-                          this.calculateStats()
-                          this.$vs.loading.close()
-                          this.$vs.notify({
-                            title: 'Success',
-                            text: 'Token is active',
-                            iconPack: 'feather',
-                            icon: 'icon-alert-circle',
-                            color: 'success'
-                          })
-                          this.applyFilters()
-                        })
-                        .catch((error) => {
-                          this.$vs.loading.close()
-                          this.$vs.notify({
-                            title: 'Error',
-                            text: error.message,
-                            iconPack: 'feather',
-                            icon: 'icon-alert-circle',
-                            color: 'danger'
-                          })
-                        })
-                    }
-                  })
-                  .catch((erorr) => {
-                    this.$vs.loading.close()
-                    this.$vs.notify({
-                      title: 'Error',
-                      text: error.message,
-                      iconPack: 'feather',
-                      icon: 'icon-alert-circle',
-                      color: 'danger'
-                    })
-                  })
-              }
-            })
-            .catch((error) => {
-              // TODO: to delete
-              console.log("My fkin error")
-              console.log(error)
-            })
-        })
-        .catch((error) => {
-          // FB API token is disabled
-          let headers = {
-            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-          }
-
-          let info = obj.info
-          if (info == null) {
-            info = {}
-          }
-          if (info.hasOwnProperty('bm')) {
-            for (let i = 0; i < info['bm'].length; i++) {
-              if (obj.token_status == 'active') {
-                if (info['bm'][i].active > 0) {
-                  info['bm'][i].warning = info['bm'][i].active
-                  info['bm'][i].active = 0
-                }
-              }
-            }
-          }
-          let data = {
-            token_status: 'disabled',
-            info: JSON.stringify(info),
-          }
-          this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
-            .then((response) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Error',
-                text: 'Token is disabled',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
-              this.applyFilters()
-            })
-            .catch((error) => {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Error',
-                text: error.message,
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'danger'
-              })
-            })
-        })
-        */
     },
     async checkStatus(id) {
       this.$vs.loading()
@@ -3656,13 +3345,25 @@ export default {
       this.bmInfoObj = bm
       this.showPopup['bm_info'] = true
     },
-    showAdAccounts(id) {
+    async showAdAccounts(id) {
       let objIndex = this.getObjectIndexById(this.objects, id)
       let obj = this.objects[objIndex]
       this.adAccounts = obj.info['ad_accounts']
       this.currentObjectId = obj.id
       this.currentAccessToken = obj.token
       this.selectedAdAccounts = []
+
+      // Get ad rules
+      for (let adAccountIndex = 0; adAccountIndex < this.adAccounts.length; adAccountIndex++) {
+        let adAccount = this.adAccounts[adAccountIndex]
+        const adRulesResponse = await this.$http.get('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/adrules_library?access_token=' + obj.token)
+        let hasAdRules = false
+        if (adRulesResponse.data.data.length > 0) {
+          hasAdRules = true
+        }
+        this.adAccounts[adAccountIndex].has_ad_rules = hasAdRules
+      }
+
       this.view = 'ad_accounts'
     },
     tryToShowAdAccounts() {
@@ -3697,20 +3398,20 @@ export default {
     calculateStats() {
       this.totalStats =  {
         amount_spent: 0,
-        leads: 0,
-        cpl: 0,
+        result: 0,
+        cpa: 0,
       }
 
       for (let i = 0; i < this.objects.length; i++) {
         if (this.objects[i].hasOwnProperty('amount_spent')) {
           this.totalStats.amount_spent += this.objects[i].amount_spent
         }
-        if (this.objects[i].hasOwnProperty('leads')) {
-          this.totalStats.leads += this.objects[i].leads
+        if (this.objects[i].hasOwnProperty('result')) {
+          this.totalStats.result += this.objects[i].result
         }
       }
 
-      this.totalStats.cpl = ((this.totalStats.leads > 0) ? (parseFloat(this.totalStats.amount_spent)/this.totalStats.leads) : parseFloat(this.totalStats.amount_spent))
+      this.totalStats.cpl = ((this.totalStats.result > 0) ? (parseFloat(this.totalStats.amount_spent)/this.totalStats.result) : parseFloat(this.totalStats.amount_spent))
     },
     changeView(view) {
       this.$vs.loading()
@@ -4770,7 +4471,7 @@ export default {
           })
         })
     },
-    switchFbAccountsStatus() {
+    async switchFbAccountsStatus() {
       this.$vs.loading()
 
       let headers = {
@@ -4779,49 +4480,27 @@ export default {
 
       let counter = 0
 
-      this.selected.forEach((obj) => {
-        let newStatus = 'request'
-        if (obj.status == 'request') {
-          newStatus = 'run'
-        }
+      for (let i = 0; i < this.selected.length; i++) {
+        let obj = this.selected[i]
 
+        let info = obj.info
+        info['is_user_allowed_to_advertise'] = false
+        info['advertising_status'] = 'verification'
         let data = {
-          status: newStatus,
+          info: JSON.stringify(info)
         }
+        await this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+      }
 
-        this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
-        .then((response) => {
-          counter++
-          if (counter == this.selected.length) {
-            this.selected = []
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Success',
-              text: 'Status changed to: ' + newStatus,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'success'
-            })
-            this.applyFilters()
-          }
-        })
-        .catch((error) => {
-          counter++
-          if (counter == this.selected.length) {
-            this.selected = []
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Success',
-              text: 'Status changed to: ' + newStatus,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'success'
-            })
-            this.applyFilters()
-          }
-        })
-
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Advertising status changed to: verification',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
       })
+      this.applyFilters()
     },
     startEditingNote(id) {
       let obj = this.objects[this.getObjectIndexById(this.objects, id)]
@@ -5343,7 +5022,8 @@ export default {
       this.$vs.loading()
 
       let objIndex = this.getObjectIndexById(this.objects, id)
-      let token = this.objects[objIndex].token
+      let obj = this.objects[objIndex]
+      let token = obj.token
 
       let result = false
       try {
@@ -5364,30 +5044,43 @@ export default {
 
       this.objects[objIndex].is_user_allowed_to_advertise = result
 
+      // TODO: HERE....
+      let advertisingStatus = 'disabled'
+      if (result) {
+        if (obj.info.hasOwnProperty('advertising_status') && obj.info.advertising_status == 'verification') {
+          advertisingStatus = 'verified'
+        } else {
+          advertisingStatus = 'active'
+        }
+      } else {
+        if (obj.info.hasOwnProperty('advertising_status') && obj.info.advertising_status == 'verification') {
+          let advertisingStatus = 'verification'
+        }
+      }
+      let info = obj.info
+      info['is_user_allowed_to_advertise'] = result
+      info['advertising_status'] = advertisingStatus
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        info: JSON.stringify(info)
+      }
+      const response = await this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers: headers })
+
       this.$vs.loading.close()
 
-      this.$vs.dialog({
-        color: (result ? 'success' : 'danger'),
-        title: (result ? '' : 'Not ') + 'Allowed',
-        text: 'The user is ' + (result ? '' : 'not ') + 'allowed to advertise',
-      })
+      this.applyFilters()
+
+      //this.$vs.dialog({
+      //  color: (result ? 'success' : 'danger'),
+      //  title: (result ? '' : 'Not ') + 'Allowed',
+      //  text: 'The user is ' + (result ? '' : 'not ') + 'allowed to advertise',
+      //})
     },
   },
   async created() {
-    //// TODO: to delete
-    //let tokens = {
-    //  'restricted_not_sent':    'EAABsbCS1iHgBAMCwRD3pJZCqsOeGFYv80QEv4aiJY9YUfmZAPzpl1ZBksGbmdF8hjc083Cd8ZCSSQwAsiXCFgkXKbnAZBNHu0UthrCn4c1dXZBeIjI2WxZBlrZAHvPZAlHhTCfgn8pnKicmkQzG2iM3PyRw39ZA00OYrosdvpvhoHsx4KPw7nleqzsFbWdJtZBDUcYZD',
-    //  'unrestricted_banned':    'EAABsbCS1iHgBABSRCFDZBpy6XLaEd4RDujo8f8z1AUN4pFJlAkgkuZCMrZC3XIuEblR122fknr7ll4P5gBZA9Uh0yCQfKJ6A6bfBEzU2gPTh7WSeZAQthB5V962pHVzdbDCiZAFyRTA7WAPRuHCTH43qz3TKdQizPRKayel1tEZA6w3AmSuZB2RWBtAj15zm9PoZD',
-    //  'restricted_sent':        'EAABsbCS1iHgBANjOeY7YAulRZCXIvZAnmVpRmA8FOAkkMGmkECGMVVwfgg2XNaZBM1O4dOrDubMuiagVAdBpoCu7EdB50fj64kFBxFkmvZAx3qiVleRGihgv7JhZAbCKcYudysmX2UZBPZAyZBZBeT6oWZCHyyvlWZB3OB60Wqib8cscGVKZAYGx31EYkJ8LMoF6LDYZD',
-    //  'restricted_uncompleted': 'EAABsbCS1iHgBAA4PVdyi2WarG9zUKsf1UCEz22nBukGcWKNCfDD6ADg0HODsnK8CaZAQ1gKCOdTpYuahrsPHgrKJPf0mFhmY7w39BMYtDiimPr8EZC2R5MMYkxkrfTCboBV0RMxzkKHk1uT5pjuDtfb7suAA1Ubs5R2qzRXQZDZD',
-    //  'verified':               'EAABsbCS1iHgBAHdcr0H6rTwkmvbCZCUqvA3Vx3st43cXblWPhZBPVwDZAOG8A6oBdgoFXkmJ9nFj2MEKnaHo2O4ZCZCK0SXChbfKBgJjCNRAJoA5GGSwXO0CoLiFs8oyoUt3PSQolQEPWIKuKAoJ1dZAbzPuUu1lerRLW5IVndJcdpj9Jj6bNKs3UOUhksHzIZD',
-    //}
-    //for (const [key, value] of Object.entries(tokens)) {
-    //  let isAllowed = await this.fbUserIsAllowedToAdvertise(value)
-    //  console.log(key + ' => ' + ((isAllowed) ? 'OK' : 'NO'))
-    //}
-    //return
-
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId
@@ -5454,6 +5147,9 @@ export default {
 </script>
 
 <style>
+.column-no-padding {
+  padding: 0px !important;
+}
 .bm-badge > .con-vs-tooltip > .con-vs-avatar {
   margin-top: 0px;
   margin-bottom: 0px;

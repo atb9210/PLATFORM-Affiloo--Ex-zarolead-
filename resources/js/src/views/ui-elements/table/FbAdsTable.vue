@@ -9,7 +9,7 @@
 
 
 <template>
-    <vx-card title="Form Stats" code-toggler>
+    <vx-card title="FB Ads" code-toggler>
 
         <!-- TODO: Fix this
         <div class="vx-row mb-2">
@@ -1860,318 +1860,8 @@ export default {
       this.adsetsLoaded = false
       this.adsLoaded = false
 
-      this.loadCampaigns()
-
-      // TODO: to delete from now on??
-      return
-
-      // OLD CODE ///////////////////////////////////////////////
-      let timeRange = {}
-      if (this.filters.date_from != '') {
-        timeRange['since'] = this.filters.date_from
-      }
-      if (this.filters.date_to != '') {
-        timeRange['until'] = this.filters.date_to
-      }
-      timeRange = JSON.stringify(timeRange)
-      
-      let fields = 'id,name,account_status'
-      fields += ',campaigns.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,daily_budget'
-      fields += ',adsets.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',ads.time_range(' + timeRange + ')\{id,name,status,effective_status,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,bid_amount,daily_budget'
-      fields += ',creative.thumbnail_width(512).thumbnail_height(512)\{image_url,body,title,call_to_action_type,object_url,link_url,thumbnail_url,effective_object_story_id\}'
-      fields += '\}'
-      fields += '\}'
-      fields += '\}'
-
-      // Retrieve campaigns
-      this.campaigns = []
-      this.adsets = []
-      this.ads = []
-      const response = await this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields + '&thumbnail_width=512&thumbnail_height=512')
-      for (let j = 0; j < response.data.data.length; j++) {
-        let adAccount = response.data.data[j]
-
-        if (adAccount.hasOwnProperty('campaigns') && adAccount.campaigns.hasOwnProperty('data') && Array.isArray(adAccount.campaigns.data)) {
-          for (let i = 0; i < adAccount.campaigns.data.length; i++) {
-            let campaign = adAccount.campaigns.data[i]
-
-            let campaignEffectiveStatus = campaign.effective_status
-            if (campaignEffectiveStatus == 'ACTIVE') {
-              campaignEffectiveStatus = 'REVIEW'
-            }
-            if (adAccount.account_status == 2) {
-              campaignEffectiveStatus = 'DISABLED'
-            }
-
-            if (this.filters.status != '') {
-              if (this.filters.status == 'REVIEW') {
-                if (campaign.effective_status != 'REVIEW') {
-                  continue
-                }
-              } else if (campaign.effective_status != this.filters.status) {
-                continue
-              }
-            }
-            
-            let spent = parseFloat(campaign.spent/100)
-            let cpa = (campaign.result > 0) ? (spent/campaign.result) : spent
-            let cr = (campaign.clicks > 0) ? ((campaign.result/campaign.clicks)*100) : ((campaign.result > 0) ? 9999.99 : 0)
-            let cpm = (campaign.impressions > 0) ? ((spent*1000)/campaign.impressions) : (spent*1000)
-            let ctr = 0.0
-            let cpc = 0.0
-            let roas = 0.0
-
-            if (campaign.hasOwnProperty('insights') && campaign.insights.hasOwnProperty('data') &&
-                campaign.insights.data.length > 0)
-            {
-                if (campaign.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
-                  ctr = parseFloat(campaign.insights.data[0].inline_link_click_ctr)
-                }
-                if (campaign.insights.data[0].hasOwnProperty('cpc')) {
-                  cpc = parseFloat(campaign.insights.data[0].cpc)
-                }
-                if (campaign.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                  roas = parseFloat(campaign.insights.data[0].website_purchase_roas[0].value)
-                }
-            }
-
-            let cbo = (campaign.hasOwnProperty('daily_budget') && campaign.hasOwnProperty('bid_strategy'))
-            let daily_budget = 0
-            let bid_strategy = ''
-            if (campaign.hasOwnProperty('daily_budget')) {
-              daily_budget = parseFloat(parseInt(campaign.daily_budget) / 100)
-            }
-            if (campaign.hasOwnProperty('bid_strategy')) {
-              bid_strategy = campaign.bid_strategy
-            }
-
-            // Get adsets
-            let adsets = []
-            if (campaign.hasOwnProperty('adsets')) {
-              for (let adsetIndex = 0; adsetIndex < campaign.adsets.data.length; adsetIndex++) {
-                let adset = campaign.adsets.data[adsetIndex]
-
-                let adsetEffectiveStatus = adset.effective_status
-                if (adAccount.account_status == 2) {
-                  adsetEffectiveStatus = 'DISABLED'
-                }
-                if (adsetEffectiveStatus == 'ACTIVE') {
-                  adsetEffectiveStatus = 'REVIEW'
-                }
-
-                // Get ads
-                let ads = []
-                if (adset.hasOwnProperty('ads')) {
-                  for (let adIndex = 0; adIndex < adset.ads.data.length; adIndex++) {
-                    let ad = adset.ads.data[adIndex]
-
-                    let adEffectiveStatus = ad.effective_status
-                    if (adAccount.account_status == 2) {
-                      adEffectiveStatus = 'DISABLED'
-                    }
-                    if (adsetEffectiveStatus == 'REVIEW' && adEffectiveStatus == 'ACTIVE') {
-                      adsetEffectiveStatus = 'ACTIVE'
-                    }
-
-                    let adSpent = parseFloat(ad.spent/100)
-                    let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
-                    let adCr = (ad.clicks > 0) ? ((ad.result/ad.clicks)*100) : ((ad.result > 0) ? 9999.99 : 0)
-                    let adCpm = (ad.impressions > 0) ? ((adSpent*1000)/ad.impressions) : (adSpent*1000)
-                    let adCtr = 0.0
-                    let adCpc = 0.0
-                    let adRoas = 0.0
-
-                    if (ad.hasOwnProperty('insights') && ad.insights.hasOwnProperty('data') &&
-                        ad.insights.data.length > 0)
-                    {
-                        if (ad.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
-                          adCtr = parseFloat(ad.insights.data[0].inline_link_click_ctr)
-                        }
-                        if (ad.insights.data[0].hasOwnProperty('cpc')) {
-                          adCpc = parseFloat(ad.insights.data[0].cpc)
-                        }
-                        if (ad.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                          adRoas = parseFloat(ad.insights.data[0].website_purchase_roas[0].value)
-                        }
-                    }
-
-                    let adDailyBudget = 0
-                    let adBidStrategy = ''
-                    if (ad.hasOwnProperty('daily_budget')) {
-                      adDailyBudget = parseFloat(parseInt(ad.daily_budget) / 100)
-                    }
-                    if (ad.hasOwnProperty('bid_strategy')) {
-                      adBidStrategy = ad.bid_strategy
-                    }
-
-                    let adUrl = ''
-                    if (ad.creative.hasOwnProperty('object_url') && ad.creative.object_url != null && ad.creative.object_url != '') {
-                      adUrl = ad.creative.object_url
-                    }
-                    let adLinkUrl = ''
-                    if (ad.creative.hasOwnProperty('link_url') && ad.creative.link_url != null && ad.creative.link_url != '') {
-                      adLinkUrl = ad.creative.link_url
-                    }
-                    if (adLinkUrl == '') {
-                      adLinkUrl = 'https://www.facebook.com/' + ad.creative.effective_object_story_id
-                    }
-
-                    let adImageUrl = ''
-                    if (ad.creative.hasOwnProperty('image_url') && ad.creative.image_url != null && ad.creative.image_url != '') {
-                      adImageUrl = ad.creative.image_url
-                    }
-                    let thumbnailUrl = ''
-                    if (ad.creative.hasOwnProperty('thumbnail_url') && ad.creative.thumbnail_url != null && ad.creative.thumbnail_url != '') {
-                      thumbnailUrl = ad.creative.thumbnail_url
-                    }
-                    if (adImageUrl == '') {
-                      adImageUrl = thumbnailUrl
-                    }
-
-                    let adToPush = {
-                      object_type: 'ad',
-                      campaign_id: campaign.id,
-                      adset_id: adset.id,
-                      id: ad.id,
-                      name: ad.name,
-                      status: adEffectiveStatus,
-                      spent: adSpent,
-                      result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : ad.result, // TODO: This is a momentary patch (it will no count page likes)
-                      cpa: adCpa,
-                      impressions: ad.impressions,
-                      clicks: ad.clicks,
-                      cr: adCr,
-                      cpm: adCpm,
-                      ctr: adCtr,
-                      cpc: adCpc,
-                      roas: adRoas,
-                      daily_budget: adDailyBudget,
-                      bid_strategy: adBidStrategy,
-                      image_url: adImageUrl,
-                      body: ad.creative.body,
-                      title: ad.creative.title,
-                      call_to_action_type: ad.creative.call_to_action_type,
-                      url: adUrl,
-                      post_url: adLinkUrl,
-                      trend: {},
-                    }
-                    ads.push(adToPush)
-                    this.ads.push(adToPush)
-                  }
-                }
-
-                let adsetSpent = parseFloat(adset.spent/100)
-                let adsetCpa = (adset.result > 0) ? (adsetSpent/adset.result) : adsetSpent
-                let adsetCr = (adset.clicks > 0) ? ((adset.result/adset.clicks)*100) : ((adset.result > 0) ? 9999.99 : 0)
-                let adsetCpm = (adset.impressions > 0) ? ((adsetSpent*1000)/adset.impressions) : (adsetSpent*1000)
-                let adsetCtr = 0.0
-                let adsetCpc = 0.0
-                let adsetRoas = 0.0
-
-                if (adset.hasOwnProperty('insights') && adset.insights.hasOwnProperty('data') &&
-                    adset.insights.data.length > 0)
-                {
-                    if (adset.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
-                      adsetCtr = parseFloat(adset.insights.data[0].inline_link_click_ctr)
-                    }
-                    if (adset.insights.data[0].hasOwnProperty('cpc')) {
-                      adsetCpc = parseFloat(adset.insights.data[0].cpc)
-                    }
-                    if (adset.insights.data[0].hasOwnProperty('website_purchase_roas')) {
-                      adsetRoas = parseFloat(adset.insights.data[0].website_purchase_roas[0].value)
-                    }
-                }
-
-                let adsetDailyBudget = 0
-                let adsetBidStrategy = ''
-                if (adset.hasOwnProperty('daily_budget')) {
-                  adsetDailyBudget = parseFloat(parseInt(adset.daily_budget) / 100)
-                }
-                if (adset.hasOwnProperty('bid_strategy')) {
-                  adsetBidStrategy = adset.bid_strategy
-                }
-
-                if (campaignEffectiveStatus == 'REVIEW' && adsetEffectiveStatus == 'ACTIVE') {
-                  campaignEffectiveStatus = 'ACTIVE'
-                }
-
-                let adsetToPush = {
-                  object_type: 'adset',
-                  campaign_id: campaign.id,
-                  id: adset.id,
-                  name: adset.name,
-                  status: adsetEffectiveStatus,
-                  spent: adsetSpent,
-                  result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : adset.result, // TODO: This is a momentary patch (it will no count page likes)
-                  cpa: adsetCpa,
-                  impressions: adset.impressions,
-                  clicks: adset.clicks,
-                  cr: adsetCr,
-                  cpm: adsetCpm,
-                  ctr: adsetCtr,
-                  cpc: adsetCpc,
-                  roas: adsetRoas,
-                  cbo: cbo,
-                  daily_budget: adsetDailyBudget,
-                  bid_strategy: adsetBidStrategy,
-                  ads: ads,
-                  trend: {},
-                }
-                adsets.push(adsetToPush)
-                this.adsets.push(adsetToPush)
-              }
-            }
-
-            let campaignToPush = {
-              object_type: 'campaign',
-              account_id: adAccount.id,
-              id: campaign.id,
-              name: campaign.name,
-              status: campaignEffectiveStatus,
-              spent: spent,
-              result: (campaign.objective == 'PAGE_LIKES' || campaign.objective == 'POST_ENGAGEMENT') ? 0 : campaign.result, // TODO: This is a momentary patch (it will no count page likes)
-              cpa: cpa,
-              impressions: campaign.impressions,
-              clicks: campaign.clicks,
-              cr: cr,
-              cpm: cpm,
-              ctr: ctr,
-              cpc: cpc,
-              roas: roas,
-              cbo: cbo,
-              daily_budget: daily_budget,
-              bid_strategy: bid_strategy,
-              adsets: adsets,
-              trend: {},
-              form: null,
-            }
-            this.campaigns.push(campaignToPush)
-          }
-        }
-      }
-
+      await this.loadCampaigns()
       this.calculateStats()
-      this.sortByStatus()
-
-      let fbCampaignsArray = []
-      for (let campaignIndex = 0; campaignIndex < this.campaigns.length; campaignIndex++) {
-        fbCampaignsArray.push(this.campaigns[campaignIndex].id)
-      }
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let fbCampaignsData = {
-        fb_campaign: fbCampaignsArray,
-      }
-      const fbCampaignsResponse = await this.$http.get('/api/3rd/fb-campaigns', { headers, params: fbCampaignsData })
-      for (let fbCampaignIndex = 0; fbCampaignIndex < fbCampaignsResponse.data.data.length; fbCampaignIndex++) {
-        let fbCampaign = fbCampaignsResponse.data.data[fbCampaignIndex]
-        this.campaigns[this.getObjectIndexById(this.campaigns, fbCampaign.id)].form = fbCampaign.form
-      }
-
-      this.$vs.loading.close()
     },
     filterDatesShortcut(period) {
       let invalidPeriod = false
@@ -2603,7 +2293,7 @@ export default {
         this.$vs.loading.close()
       }
     },
-    changeView(view) {
+    async changeView(view) {
       // TODO: to fix
       //this.onPageChanged(1)
       //this.gridApi.paginationGoToPage(0)
@@ -2611,11 +2301,11 @@ export default {
       this.view = view
 
       if (view == 'campaigns') {
-        if (!this.campaignsLoaded) this.loadCampaigns()
+        if (!this.campaignsLoaded) await this.loadCampaigns()
       } else if (view == 'adsets') {
-        if (!this.adsetsLoaded) this.loadAdsets()
+        if (!this.adsetsLoaded) await this.loadAdsets()
       } else if (view == 'ads') {
-        if (!this.adsLoaded) this.loadAds()
+        if (!this.adsLoaded) await this.loadAds()
       }
 
       this.calculateStats()
