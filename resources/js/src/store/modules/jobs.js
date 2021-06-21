@@ -29,10 +29,8 @@ const actions = {
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
-
-    // Retrieve domains
+    // Retrieve job status
     const response = await axios.get('/api/v1/zarocloner/jobs/' + jobId, { headers })
-
     commit('setJobStatus', response.data.data)
   },
   async updateJobsStatus({commit, dispatch}) {
