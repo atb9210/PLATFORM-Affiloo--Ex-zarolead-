@@ -172,7 +172,7 @@
 
                     <vs-td>
                         <div class="flex items-center">
-                            <vs-button @click="downloadInvoice(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button>
+                            <vs-button @click="downloadInvoice(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button>
                             <vs-button @click="setAutoInvoice(data[indextr].id)" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-bookmark"></vs-button>
                             <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
                         </div>
@@ -930,24 +930,28 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd;
       return formattedDate;
     },
-    downloadInvoice(i) {
+    downloadInvoice(id) {
       this.$vs.loading()
+
+      let objIndex = this.getObjectIndexById(id)
+      let obj = this.objects[objIndex]
+
       this.$nextTick(() => {
         setTimeout(() => {
-          let invoiceD = new Date(this.objects[i].invoice_date)
+          let invoiceD = new Date(obj.invoice_date)
           let invoice = {
-            'id': this.objects[i].transaction_id,
-            'ad_account_name': this.objects[i].info['ad_account_name'],
-            'ad_account_id': this.objects[i].info['ad_account_id'],
+            'id': obj.transaction_id,
+            'ad_account_name': obj.info['ad_account_name'],
+            'ad_account_id': obj.info['ad_account_id'],
             'time': parseInt(invoiceD.getTime() / 1000),
-            'funding_source': this.objects[i].info['funding_source'],
-            'reference_number': this.objects[i].info['reference_number'],
-            'amount': this.objects[i].amount,
-            'currency': this.objects[i].currency,
-            'billing_reason': this.objects[i].info['billing_reason'],
-            'billing_start_time': this.objects[i].info['billing_start_time'],
-            'billing_end_time': this.objects[i].info['billing_end_time'],
-            'vat_invoice_id': this.objects[i].number,
+            'funding_source': obj.info['funding_source'],
+            'reference_number': obj.info['reference_number'],
+            'amount': obj.amount,
+            'currency': obj.currency,
+            'billing_reason': obj.info['billing_reason'],
+            'billing_start_time': obj.info['billing_start_time'],
+            'billing_end_time': obj.info['billing_end_time'],
+            'vat_invoice_id': obj.number,
           }
           let doc = generateInvoicePDF(invoice)
           let d = new Date(invoice.time * 1000)

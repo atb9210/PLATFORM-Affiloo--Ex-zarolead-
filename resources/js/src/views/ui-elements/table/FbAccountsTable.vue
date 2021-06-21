@@ -1281,6 +1281,42 @@
                     </div>
                 </div>
 
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Device</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="launchAdTargetingDevice" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in launchAdTargetingDeviceOptions" class="w-full" />
+                        </vs-select>
+                        <vs-checkbox v-model="launchAdTargetingWifi">Only when connected to Wi-Fi</vs-checkbox>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Platforms</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <div class="vx-row w-full">
+                            <div class="vx-col sm:w-1/2 w-full">
+                                <vs-checkbox v-model="launchAdTargetingPlatformFacebook">Facebook</vs-checkbox>
+                            </div>
+                            <div class="vx-col sm:w-1/2 w-full">
+                                <vs-checkbox v-model="launchAdTargetingPlatformInstagram">Instagram</vs-checkbox>
+                            </div>
+                        </div>
+                        <div class="vx-row w-full">
+                            <div class="vx-col sm:w-1/2 w-full">
+                                <vs-checkbox v-model="launchAdTargetingPlatformAudience">Audience</vs-checkbox>
+                            </div>
+                            <div class="vx-col sm:w-1/2 w-full">
+                                <vs-checkbox v-model="launchAdTargetingPlatformMessenger">Messenger</vs-checkbox>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <hr>
 
                 <!-- TODO: Creative info -->
@@ -1854,6 +1890,17 @@ export default {
         { value: 'US', label: 'United States'},
       ],
       launchAdTargetingCountry: 'IT',
+      launchAdTargetingDeviceOptions: [
+        { label: 'All', value: '' },
+        { label: 'Mobile', value: 'mobile' },
+        { label: 'Desktop', value: 'desktop' },
+      ],
+      launchAdTargetingDevice: '',
+      launchAdTargetingWifi: true,
+      launchAdTargetingPlatformFacebook: true,
+      launchAdTargetingPlatformInstagram: true,
+      launchAdTargetingPlatformAudience: true,
+      launchAdTargetingPlatformMessenger: true,
 
       launchAdTitle: '',
       launchAdText: '',
@@ -2129,12 +2176,14 @@ export default {
 
         // Retrieve facebook pages of this account
         this.fbAccountPages = []
-        const fbPagesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/accounts?access_token=' + this.currentAccessToken)
+        const fbPagesResponse = await this.$http.get('https://graph.facebook.com/v9.0/me/accounts?fields=id,name,is_published&is_promotable=true&access_token=' + this.currentAccessToken)
         fbPagesResponse.data.data.forEach((page) => {
-          this.fbAccountPages.push({
-            id: page.id,
-            name: page.name,
-          })
+          if (page.hasOwnProperty('is_published') && page.is_published) {
+            this.fbAccountPages.push({
+              id: page.id,
+              name: page.name,
+            })
+          }
         })
 
         this.$vs.loading.close()
@@ -4129,27 +4178,6 @@ export default {
       return f.type.split("/")[0]
     },
     launchAd() {
-      // TODO: to delete
-      /*
-      let videoUrl = 'https://beta2.zarolead.com/storage/product_medias/product_109/V1.mp4'
-      let adAccount = this.selectedAdAccounts[0]
-      let tok = this.currentAccessToken
-      console.log("adAccount", adAccount)
-      let fileToUpload = this.launchAdFilesToUpload[0]
-      toBase64(fileToUpload)
-        .then((result) => {
-          let toSearch = 'base64,'
-          let fileBase64 = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
-          let data = {
-            access_token: tok,
-            name: fileToUpload.name,
-            file_url: videoUrl,
-            //video_file_chuck: fileBase64,
-          }
-        })
-      return
-      */
-
       this.$vs.loading()
 
       this.adCounter = 0
@@ -4225,6 +4253,34 @@ export default {
                   data.targeting.genders = [1]
                 } else if (this.launchAdTargetingGender == 'Female') {
                   data.targeting.genders = [2]
+                }
+
+                if (this.launchAdTargetingDevice != '') {
+                  data.targeting.device_platforms = []
+                  data.targeting.device_platforms.push(this.launchAdTargetingDevice)
+                }
+                if (this.launchAdTargetingWifi) {
+                  data.targeting.wireless_carrier = []
+                  data.targeting.wireless_carrier.push('Wifi')
+                }
+
+                if (this.launchAdTargetingPlatformFacebook ||
+                  this.launchAdTargetingPlatformInstagram ||
+                  this.launchAdTargetingPlatformAudience ||
+                  this.launchAdTargetingPlatformMessenger) {
+                  data.targeting.publisher_platforms = []
+                  if (this.launchAdTargetingPlatformFacebook) {
+                    data.targeting.publisher_platforms.push('facebook')
+                  }
+                  if (this.launchAdTargetingPlatformInstagram) {
+                    data.targeting.publisher_platforms.push('instagram')
+                  }
+                  if (this.launchAdTargetingPlatformMessenger) {
+                    data.targeting.publisher_platforms.push('messenger')
+                  }
+                  if (this.launchAdTargetingPlatformAudience) {
+                    data.targeting.publisher_platforms.push('audience_network')
+                  }
                 }
 
                 if (this.launchAdCampaignObjective == 'CONVERSIONS') {
