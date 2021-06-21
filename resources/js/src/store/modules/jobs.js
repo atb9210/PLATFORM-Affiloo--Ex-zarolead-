@@ -68,7 +68,7 @@ const mutations = {
 
           let message = ''
           let color = ''
-          if (oldStatus == 'running') {
+          if (oldStatus == 'running' || oldStatus == 'queued') {
             if (newStatus == 'completed') {
               message = 'Job successfully completed.'
               color = 'success'
