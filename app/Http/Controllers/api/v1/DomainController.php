@@ -508,6 +508,7 @@ class DomainController extends Controller
         return response([
             'data' => [
                 'id' => $id,
+                'name' => 'Job ZaroCloner',
                 'status' => $status,
             ],
         ]);
