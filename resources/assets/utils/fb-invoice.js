@@ -124,7 +124,7 @@ export function generateInvoicePDF(invoice) {
 
   // Add template
   let imgData = 'data:image/png;base64,' + FbInvoiceTemplate
-  doc.addImage(imgData, "PNG", 0, 0, docW, docH)
+  doc.addImage(imgData, 'PNG', 0, 0, docW, docH, '', 'FAST')
 
   // Header
   doc.setFont('OpenSans-Regular')
