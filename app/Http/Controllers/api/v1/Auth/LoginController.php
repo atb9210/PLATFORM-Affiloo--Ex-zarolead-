@@ -37,9 +37,20 @@ class LoginController extends Controller
         ]);
 
         // Check if the user is archived
-        if (User::where('email', $params['email'])->where('archived', 1)->get()->count()) {
+        $user = User::where('email', $params['email'])->first();
+        if ($user === null) {
             return response([
-                'message' => 'User archived!'
+                'message' => 'Invalid email!'
+            ], 401);
+        }
+        if ($user->archived == 1) {
+            return response([
+                'message' => 'Archived user!'
+            ], 404);
+        }
+        if ($user->status == 'blocked') {
+            return response([
+                'message' => 'Blocked user!'
             ], 404);
         }
 

@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'info',
+        'name', 'email', 'password', 'status', 'info',
     ];
 
     /**
@@ -83,7 +83,7 @@ class User extends Authenticatable
         return $this->hasMany('App\Invoice');
     }
 
-    public function hasRole(string $roleName) : bool
+    public function hasRole(string $roleName): bool
     {
         $result = false;
         foreach ($this->roles as $role) {
@@ -95,7 +95,38 @@ class User extends Authenticatable
         return $result;
     }
 
-    public function hasPermission(string $object, string $permission) : bool
+    public function setOnlyRole(string $roleName): bool
+    {
+        $roles = Role::all();
+
+        foreach ($roles as $role) {
+            if ($this->roles()->where('id', $role->id)->exists()) {
+                $this->roles()->detach($role->id);
+            }
+        }
+
+        $role = Role::where('name', $roleName)->first();
+        if ($role === null) {
+            return false;
+        }
+        $this->roles()->attach($role->id);
+
+        return true;
+    }
+
+    public function addRole(string $roleName): bool
+    {
+        $role = Role::where('name', $roleName)->first();
+        if ($role === null) {
+            return false;
+        }
+        if (!$this->roles()->where('name', $role->name)->exists()) {
+            $this->roles()->attach($role->id);
+        }
+        return true;
+    }
+
+    public function hasPermission(string $object, string $permission): bool
     {
         foreach ($this->roles as $role) {
             if ($role->hasPermission($object, $permission)) {
@@ -105,7 +136,7 @@ class User extends Authenticatable
         return false;
     }
 
-    public function setPermission(string $permission, string $value)
+    public function setPermission(string $permission, string $value): void
     {
         $data = array();
         if (isset($this->info) && is_array($this->info)) {

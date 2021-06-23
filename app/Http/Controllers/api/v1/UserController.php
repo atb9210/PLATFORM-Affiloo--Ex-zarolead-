@@ -61,12 +61,55 @@ class UserController extends Controller
     }
 
     /**
+     * Create user.
+     *
+     * @bodyParam name string required User's name
+     * @bodyParam email string required User's email
+     * @bodyParam password string required User's password
+     * @bodyParam role string required User's role
+     *
+     * @response {
+     *  "data": user,
+     * }
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', 'App\User');
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string|min:3|max:255',
+            'email' => 'email|min:4|max:255|unique:users,email',
+            'password' => 'string|min:7|max:255',
+            'role' => 'required|in:admin,mediabuyer,affiliate,advertiser,accountant,buyer,account_manager',
+        ]);
+
+        // Create user
+        $user = User::create([
+            'name' => $params['name'],
+            'email' => $params['email'],
+            'password' => Hash::make($params['password']),
+        ]);
+
+        // Set role
+        $role = Role::where('name', $params['role'])->first();
+        $user->roles()->attach($role->id);
+
+        return response([
+            'data' => new UserResource($user)
+        ], 201);
+    }
+
+    /**
      * Update the user's fields.
      *
      * @urlParam id int required User's id
      *
      * @bodyParam name string User's new name
      * @bodyParam email string User's new email
+     * @bodyParam password string User's new password
+     * @bodyParam status string User's new status
+     * @bodyParam role string User's new role
      * @bodyParam info json User's new info
      *
      * @response {
@@ -83,13 +126,23 @@ class UserController extends Controller
         $params = $request->validate([
             'name' => 'string|min:3|max:255',
             'email' => 'email|min:4|max:255',
+            'password' => 'string|min:7|max:255',
+            'status' => 'string|in:active,blocked',
+            'role' => 'in:admin,mediabuyer,affiliate,advertiser,accountant,buyer,account_manager',
             'info' => 'json',
         ]);
+        if (isset($params['password'])) {
+            $params['password'] = Hash::make($params['password']);
+        }
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], TRUE);
         }
 
         $user->update($params);
+
+        if (isset($params['role'])) {
+            $user->setOnlyRole($params['role']);
+        }
 
         return new UserResource($user);
     }
@@ -171,6 +224,8 @@ class UserController extends Controller
      * @bodyParam affiliate boolean Admin role
      * @bodyParam advertiser boolean Admin role
      * @bodyParam accountant boolean Admin role
+     * @bodyParam buyer boolean Admin role
+     * @bodyParam account_manager boolean Admin role
      *
      * @response {
      *  "data": user,
