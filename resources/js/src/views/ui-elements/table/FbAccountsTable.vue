@@ -1376,6 +1376,15 @@
                         <span>Final URL: {{launchAdUrl}}?pi={pixel_id}</span>
                     </div>
                 </div>
+                <div class="vx-row mb-6 mt-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Conversion domain</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="launchAdConversionDomain" />
+                        <span>Pixel name: {{(this.selectedAdAccounts.length > 0 && this.selectedAdAccounts[0].hasOwnProperty('pixel_name')) ? this.selectedAdAccounts[0].pixel_name : ''}}</span>
+                    </div>
+                </div>
                 <div class="vx-row mb-6">
                     <div class="vx-col sm:w-1/3 w-full">
                         <span>Image/Video</span>
@@ -1940,6 +1949,7 @@ export default {
       launchAdTitle: '',
       launchAdText: '',
       launchAdUrl: '',
+      launchAdConversionDomain: '',
 
       launchAdFilesToUpload: [],
 
@@ -2608,18 +2618,19 @@ export default {
         for (let adAccountIndex = 0; adAccountIndex < adAccountsResponse.data.data.length; adAccountIndex++) {
           let adAccount = adAccountsResponse.data.data[adAccountIndex]
           
-          // TODO: remove this block and put when switch view to ad accounts?
-          // TODO: to delete
-          //const adRulesResponse = await this.$http.get('https://graph.facebook.com/v9.0/act_' + adAccount.account_id + '/adrules_library?access_token=' + obj.token)
-          //let hasAdRules = false
-          //if (adRulesResponse.data.data.length > 0) {
-          //  hasAdRules = true
-          //}
-
           let pixel = ''
+          let pixel_name = ''
           if (adAccount.hasOwnProperty('adspixels') && adAccount.adspixels.hasOwnProperty('data') &&
               adAccount.adspixels.data.length > 0) {
             pixel = adAccount.adspixels.data[0].id
+
+            let pixelFields = 'id,name'
+            try {
+              const pixelResponse = await this.$http.get('https://graph.facebook.com/v11.0/' + pixel + '?access_token=' + obj.token + '&fields=' + pixelFields)
+              pixel_name = pixelResponse.data.name
+            } catch (error) {
+              pixel_name = ''
+            }
           }
 
           let oldFundingSources = []
@@ -2641,6 +2652,7 @@ export default {
             status: adAccount.account_status,
             adtrust_dsl: adAccount.adtrust_dsl,
             pixel: pixel,
+            pixel_name: pixel_name,
             has_ad_rules: false,
           }
 
@@ -3346,6 +3358,8 @@ export default {
       this.showPopup['bm_info'] = true
     },
     async showAdAccounts(id) {
+      this.$vs.loading()
+
       let objIndex = this.getObjectIndexById(this.objects, id)
       let obj = this.objects[objIndex]
       this.adAccounts = obj.info['ad_accounts']
@@ -3365,6 +3379,8 @@ export default {
       }
 
       this.view = 'ad_accounts'
+
+      this.$vs.loading.close()
     },
     tryToShowAdAccounts() {
       if (this.selected.length == 1) {
@@ -4041,12 +4057,14 @@ export default {
                                   let adsetId = adsetIds[adsetIndex]
                                   adsetIndex++
 
+                                  let conversionDomain = this.launchAdConversionDomain
                                   let pageId = this.launchAdPageId // TODO: Better
                                   let data = {
                                     access_token: accessToken,
                                     adset_id: adsetId,
                                     name: 'ad',
                                     status: this.launchAdCampaignStatus,
+                                    conversion_domain: conversionDomain,
                                   }
 
                                   if (productMedia.type == 'image') {
@@ -4081,7 +4099,7 @@ export default {
                                             },
                                             instagram_actor_id: pbia_id,
                                           }
-                                          this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
+                                          this.$http.post('https://graph.facebook.com/v11.0/act_' + adAccount.id + '/ads', data)
                                             .then((response) => {
                                               this.adCounter += 1
                                               if (this.adCounter == this.selectedAdAccounts.length) {
@@ -5080,6 +5098,12 @@ export default {
     },
   },
   async created() {
+    // TODO: to delete
+    //let pixel = '	964570361060679'
+    //let fbToken = 'EAABsbCS1iHgBAPGR6qt1GUaJs2FyXZAQ2kniHW8iZAq64z76R7Kg7K3PZCH189G4MYx2TnkwPNXUAPrkw9RSDeIkV8WLZAJAnf3ZCfFZAhBGUcpY8L46t83JLJxJ0yqZADXfUzsf0v0jPotlyK3wDuG6m7d82tMa85QjIKHcZCz9olb9m3dpvPr9u3Xx4AeK7G8ZD'
+    //let pixelFields = 'id,name'
+    //const pixelResponse = await this.$http.get('https://graph.facebook.com/v11.0/' + pixel + '?access_token=' + fbToken + '&fields=' + pixelFields)
+
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId
