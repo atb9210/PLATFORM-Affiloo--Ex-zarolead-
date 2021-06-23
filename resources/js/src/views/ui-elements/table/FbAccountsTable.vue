@@ -5044,7 +5044,6 @@ export default {
 
       this.objects[objIndex].is_user_allowed_to_advertise = result
 
-      // TODO: HERE....
       let advertisingStatus = 'disabled'
       if (result) {
         if (obj.info.hasOwnProperty('advertising_status') && obj.info.advertising_status == 'verification') {
@@ -5054,7 +5053,7 @@ export default {
         }
       } else {
         if (obj.info.hasOwnProperty('advertising_status') && obj.info.advertising_status == 'verification') {
-          let advertisingStatus = 'verification'
+          advertisingStatus = 'verification'
         }
       }
       let info = obj.info
