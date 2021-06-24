@@ -44,3 +44,9 @@ Route::post('/fb-campaigns/associate', 'api\third\FbCampaignController@associate
 /* Finapsy routes */
 Route::get('/finapsy', 'api\third\FinapsyController@index')->name('finapsy.index');
 Route::post('/finapsy', 'api\third\FinapsyController@store')->name('finapsy.store');
+
+/* Marketplace routes */
+Route::get('/marketplace/campaigns', 'api\third\MarketplaceController@campaigns')->middleware('auth:api')
+    ->name('marketplace.campaigns');
+Route::get('/marketplace/campaigns/{id}/landings', 'api\third\MarketplaceController@landings')->middleware('auth:api')
+    ->name('marketplace.campaigns.landings');

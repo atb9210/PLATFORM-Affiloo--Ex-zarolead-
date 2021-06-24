@@ -208,6 +208,15 @@ export default [
       },
 
       {
+        url: '/dashboard/marketplace',
+        name: 'Marketplace',
+        slug: 'marketplace',
+        icon: 'ArchiveIcon',
+        i18n: 'Marketplace',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+      },
+
+      {
         url: '/dashboard/forms',
         name: 'Forms',
         slug: 'forms',

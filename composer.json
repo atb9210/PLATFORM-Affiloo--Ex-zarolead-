@@ -10,6 +10,7 @@
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/cloudflare": "dev-master",
         "driverfury/fraudfilter": "dev-master",
+        "driverfury/worldfilia": "dev-master",
         "driverfury/zarocloner": "dev-master",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.0",
@@ -85,6 +86,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/fraudfilter"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/worldfilia"
         }
     ]
 }

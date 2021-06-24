@@ -63,18 +63,19 @@ class TestController extends Controller
         dd($cloudflare->createDNSRecord($zoneId, 'TXT', '@', 'mycontent'));
     }
 
+    private function testWorldfilia()
+    {
+        $token = env('WORLDFILIA_API_KEY');
+        $worldfilia = new \Driverfury\Worldfilia\Worldfilia($token);
+        //$campaigns = $worldfilia->getCampaigns();
+        //echo "<pre>".var_export($campaigns,true)."</pre>";
+        $landings = $worldfilia->getLandings(1611);
+        echo "<pre>".var_export($landings,true)."</pre>";
+    }
+
     public function test()
     {
-        $fbAccounts = \App\third\FbAccount::all();
-        foreach ($fbAccounts as $fbAccount) {
-            echo '<br>--------<br>' . $fbAccount->name . '<br>';
-            foreach ($fbAccount->info['bm'] as $bm) {
-                if (isset($bm['owned_domains'])) {
-                    var_dump($bm['owned_domains']);
-                    echo '<br>';
-                }
-            }
-        }
+        $this->testWorldfilia();
     }
 
     public function post(Request $request)

@@ -1666,6 +1666,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/marketplace',
+          name: 'marketplace',
+          component: () => import('./views/Marketplace.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Marketplace', active: true }
+            ],
+            pageTitle: 'Marketplace',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/fb-accounts',
           name: 'fb-accounts',
           component: () => import('./views/FbAccounts.vue'),
