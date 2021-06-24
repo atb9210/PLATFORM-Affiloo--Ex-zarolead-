@@ -1415,6 +1415,38 @@ export default {
       }
       this.filterDatesShortcut('this_month')
     },
+    applyAdStatus(ad, adEffectiveStatus) {
+      // TODO: HERE
+
+      // Update adset status
+      let adsetIndex = this.getObjectIndexById(this.adsets, ad.adset_id)
+      if (adsetIndex == -1) return
+
+      // TODO: What about this error: It happened that certain ads have adset_id that does not exist
+      // inside adsets
+
+      let adset = this.adsets[adsetIndex]
+
+      let adsetEffectiveStatus = adset.status
+      if (adsetEffectiveStatus == 'REVIEW' && adEffectiveStatus == 'ACTIVE') {
+        adsetEffectiveStatus = 'ACTIVE'
+      }
+
+      this.adsets[adsetIndex].status = adsetEffectiveStatus
+
+      // Update campaign status
+      let campaignIndex = this.getObjectIndexById(this.campaigns, adset.campaign_id)
+      if (campaignIndex == -1) return
+
+      let campaign = this.campaigns[campaignIndex]
+
+      let campaignEffectiveStatus = campaign.status
+      if (campaignEffectiveStatus == 'REVIEW' && adsetEffectiveStatus == 'ACTIVE') {
+        campaignEffectiveStatus = 'ACTIVE'
+      }
+
+      this.campaigns[campaignIndex].status = campaignEffectiveStatus
+    },
     async loadCampaigns() {
       this.$vs.loading()
 
@@ -1595,12 +1627,6 @@ export default {
 
             let cbo = campaign.cbo
 
-            // TODO: Momentary patch (how to do this????)
-            let campaignEffectiveStatus = 'ACTIVE'
-            if (campaignEffectiveStatus == 'REVIEW' && adsetEffectiveStatus == 'ACTIVE') {
-              campaignEffectiveStatus = 'ACTIVE'
-            }
-
             let adsetToPush = {
               object_type: 'adset',
               id: adset.id,
@@ -1670,6 +1696,14 @@ export default {
           for (let adIndex = 0; adIndex < adAccount.ads.data.length; adIndex++) {
             let ad = adAccount.ads.data[adIndex]
 
+            let adEffectiveStatus = ad.effective_status
+            if (adAccount.account_status == 2) {
+              adEffectiveStatus = 'DISABLED'
+            }
+
+            // Apply ad status
+            this.applyAdStatus(ad, adEffectiveStatus)
+
             let adsetIndex = this.getObjectIndexById(this.adsets, ad.adset_id)
             if (adsetIndex == -1) continue
 
@@ -1677,17 +1711,6 @@ export default {
             // inside adsets
 
             let adset = this.adsets[adsetIndex]
-
-            let adEffectiveStatus = ad.effective_status
-            if (adAccount.account_status == 2) {
-              adEffectiveStatus = 'DISABLED'
-            }
-
-            // TODO: Momentary patch (how to do this???)
-            let adsetEffectiveStatus = 'ACTIVE'
-            if (adsetEffectiveStatus == 'REVIEW' && adEffectiveStatus == 'ACTIVE') {
-              adsetEffectiveStatus = 'ACTIVE'
-            }
 
             let adSpent = parseFloat(ad.spent/100)
             let adCpa = (ad.result > 0) ? (adSpent/ad.result) : adSpent
@@ -1861,6 +1884,9 @@ export default {
       this.adsLoaded = false
 
       await this.loadCampaigns()
+      await this.loadAdsets()
+      await this.loadAds()
+
       this.calculateStats()
     },
     filterDatesShortcut(period) {
@@ -2300,6 +2326,7 @@ export default {
 
       this.view = view
 
+      /*
       if (view == 'campaigns') {
         if (!this.campaignsLoaded) await this.loadCampaigns()
       } else if (view == 'adsets') {
@@ -2307,6 +2334,7 @@ export default {
       } else if (view == 'ads') {
         if (!this.adsLoaded) await this.loadAds()
       }
+      */
 
       this.calculateStats()
       this.$nextTick(() => {
