@@ -134,64 +134,64 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].invoice_date">
+                    <vs-td class="column-no-padding" :data="data[indextr].invoice_date">
                         {{data[indextr].invoice_date}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].uploaded">
+                    <vs-td class="column-no-padding" :data="data[indextr].uploaded">
                         {{(data[indextr].uploaded) ? 'Yes' : 'No'}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].transaction">
+                    <vs-td class="column-no-padding" :data="data[indextr].transaction">
                         {{(data[indextr].transaction) ? 'Yes' : 'No'}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].transaction_id">
+                    <vs-td class="column-no-padding" :data="data[indextr].transaction_id">
                         {{data[indextr].transaction_id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].number">
+                    <vs-td class="column-no-padding" :data="data[indextr].number">
                         {{data[indextr].number}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].amount">
+                    <vs-td class="column-no-padding" :data="data[indextr].amount">
                         {{data[indextr].amount}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].currency">
+                    <vs-td class="column-no-padding" :data="data[indextr].currency">
                         {{data[indextr].currency}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].status">
+                    <vs-td class="column-no-padding" :data="data[indextr].status">
                         <vs-chip :color="statusColor[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-chip :color="invoiceTypeColor[data[indextr].type]">{{data[indextr].type}}</vs-chip>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
-                            <vs-button @click="downloadInvoice(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download"></vs-button>
-                            <vs-button @click="setAutoInvoice(data[indextr].id)" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-bookmark"></vs-button>
-                            <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
+                            <vs-avatar color="primary" size="24px" @click="downloadInvoice(data[indextr].id)" icon-pack="feather" icon="icon-download" />
+                            <vs-avatar color="warning" size="24px" @click="setAutoInvoice(data[indextr].id)" icon-pack="feather" icon="icon-bookmark" />
+                            <vs-avatar color="danger" size="24px" @click="deleteObject(data[indextr].id)" icon-pack="feather" icon="icon-trash" />
                         </div>
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>{{total_amount.toFixed(2)}}</vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">{{total_amount.toFixed(2)}}</vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
@@ -1143,3 +1143,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

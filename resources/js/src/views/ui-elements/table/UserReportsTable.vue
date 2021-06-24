@@ -9,7 +9,7 @@
 
 
 <template>
-    <vx-card title="Users reports" code-toggler>
+    <vx-card title="My reports" code-toggler>
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
@@ -95,62 +95,63 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-button size="small" radius :color="(data[indextr].cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].day">
+                    <vs-td class="column-no-padding" :data="data[indextr].day">
                         {{data[indextr].day}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].visits">
+                    <vs-td class="column-no-padding" :data="data[indextr].visits">
                         {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].tq">
+                    <vs-td class="column-no-padding" :data="data[indextr].tq">
                         {{data[indextr].tq}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission" v-if="isAdmin">
+                    <vs-td class="column-no-padding" :data="data[indextr].commission" v-if="isAdmin">
                         <vs-input v-if="isAdmin && isEditingCommission && editingObjectId == data[indextr].id" :ref="'editCommissionInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCommissionValue" @keyup.enter="editCommission" @keyup.escape="dontEditCommission" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>€ {{data[indextr].commission}} <span v-if="isAdmin" class="underline" @click="showEditCommissionInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cost">
+                    <vs-td class="column-no-padding" :data="data[indextr].cost">
                         <vs-input v-if="isAdmin && isEditingCost && editingObjectId == data[indextr].id" :ref="'editCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingCostValue" @keyup.enter="editCost" @keyup.escape="dontEditCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>€ {{data[indextr].cost}} <span v-if="isAdmin" class="underline" @click="showEditCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].extra_cost" v-if="canViewStats">
+                    <vs-td class="column-no-padding" :data="data[indextr].extra_cost" v-if="canViewStats">
                         <vs-input v-if="isEditingExtraCost && editingObjectId == data[indextr].id" :ref="'editExtraCostInput' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingExtraCostValue" @keyup.enter="editExtraCost" @keyup.escape="dontEditExtraCost" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>€ {{data[indextr].extra_cost}} <span class="underline" @click="showEditExtraCostInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit" v-if="isAdmin">
+                    <vs-td class="column-no-padding" :data="data[indextr].profit" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit}}</vs-chip>
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <vs-button style="width: 30px !important; height: 30px !important;" :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNote(data[indextr].id)"></vs-button>
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>{{total_stats.visits}}</vs-td>
-                <vs-td>{{total_stats.leads}}</vs-td>
-                <vs-td>{{total_stats.tq}}</vs-td>
-                <vs-td v-if="isAdmin">€ {{total_stats.commission}}</vs-td>
-                <vs-td>€ {{total_stats.cost}}</vs-td>
-                <vs-td v-if="canViewStats">€ {{total_stats.extra_cost}}</vs-td>
-                <vs-td v-if="isAdmin">€ {{total_stats.profit}}</vs-td>
-                <vs-td></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">{{total_stats.visits}}</vs-td>
+                <vs-td class="column-no-padding">{{total_stats.leads}}</vs-td>
+                <vs-td class="column-no-padding">{{total_stats.tq}}</vs-td>
+                <vs-td class="column-no-padding" v-if="isAdmin">€ {{total_stats.commission}}</vs-td>
+                <vs-td class="column-no-padding">€ {{total_stats.cost}}</vs-td>
+                <vs-td class="column-no-padding" v-if="canViewStats">€ {{total_stats.extra_cost}}</vs-td>
+                <vs-td class="column-no-padding" v-if="isAdmin">€ {{total_stats.profit}}</vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
@@ -668,3 +669,10 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+</style>

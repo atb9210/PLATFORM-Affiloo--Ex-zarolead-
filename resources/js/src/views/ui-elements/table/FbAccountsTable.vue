@@ -5247,7 +5247,9 @@ export default {
 
 <style scoped>
 .column-no-padding {
-  padding: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
 }
 .icon-badge > .con-vs-tooltip > .con-vs-avatar {
   margin-top: 0px;

@@ -91,53 +91,53 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].id">
+                    <vs-td class="column-no-padding" :data="data[indextr].id">
                         {{data[indextr].id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].day">
+                    <vs-td class="column-no-padding" :data="data[indextr].day">
                         {{data[indextr].day}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].visits">
+                    <vs-td class="column-no-padding" :data="data[indextr].visits">
                         {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_commission" v-if="canViewStats">
                         € {{data[indextr].total_commission}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
+                    <vs-td class="column-no-padding" :data="data[indextr].cr">
                         {{data[indextr].cr}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                    <vs-td class="column-no-padding" :data="data[indextr].epv" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv}}</vs-chip>
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.visits}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.leads}}
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td class="column-no-padding" v-if="canViewStats">
                     € {{total_stats.total_commission}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.cr}} %
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td class="column-no-padding" v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv}}</vs-chip>
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -744,3 +744,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

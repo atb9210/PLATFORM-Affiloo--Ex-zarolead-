@@ -123,6 +123,7 @@ export default [
         i18n: 'Reports',
         roles: ['developer', 'admin'],
         submenu: [
+          /*
           {
             url: '/dashboard/reports/users',
             name: 'Users',
@@ -130,6 +131,7 @@ export default [
             i18n: 'Users',
             roles: ['developer', 'admin'],
           },
+          */
           {
             url: '/dashboard/reports/mediabuyers',
             name: 'Mediabuyers',

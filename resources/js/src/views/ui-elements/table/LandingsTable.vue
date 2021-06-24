@@ -131,11 +131,11 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].id">
+                    <vs-td class="column-no-padding" :data="data[indextr].id">
                         {{data[indextr].id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip>
                                 {{data[indextr].name}}
@@ -143,50 +143,50 @@
                         </div>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].product.name">
+                    <vs-td class="column-no-padding" :data="data[indextr].product.name">
                         {{data[indextr].product.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].visits">
+                    <vs-td class="column-no-padding" :data="data[indextr].visits">
                         {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_commission">
                         € {{data[indextr].total_commission.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
+                    <vs-td class="column-no-padding" :data="data[indextr].cr">
                         {{data[indextr].cr.toFixed(2)}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].epv">
+                    <vs-td class="column-no-padding" :data="data[indextr].epv">
                         <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">
                     {{totalStats.visits}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{totalStats.leads}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{totalStats.total_commission.toFixed(2)}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{totalStats.cr.toFixed(2)}} %
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     <vs-chip transparent :color="(totalStats.epv > 0) ? 'success' : 'danger'">€ {{totalStats.epv.toFixed(2)}}</vs-chip>
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -815,3 +815,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

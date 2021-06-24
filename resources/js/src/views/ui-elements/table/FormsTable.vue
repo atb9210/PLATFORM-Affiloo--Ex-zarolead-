@@ -155,7 +155,7 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip>
                                 <vs-avatar :src="data[indextr].traffic_source.icon"/>
@@ -164,7 +164,7 @@
                         </div>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].archived">
+                    <vs-td class="column-no-padding" :data="data[indextr].archived">
                         <vs-switch
                             :color="(data[indextr].archived == 0) ? 'success' : 'danger'"
                             v-model="data[indextr].archived == 0"
@@ -175,80 +175,80 @@
                         </vs-switch>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].visits">
+                    <vs-td class="column-no-padding" :data="data[indextr].visits">
                         {{data[indextr].visits}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_cost">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_cost">
                         <span>€ {{data[indextr].total_cost.toFixed(2)}}</span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission" v-if="isAdmin">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_commission" v-if="isAdmin">
                         € {{data[indextr].total_commission.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit" v-if="isAdmin">
+                    <vs-td class="column-no-padding" :data="data[indextr].profit" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : 'danger'">€ {{data[indextr].profit.toFixed(2)}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roi" v-if="isAdmin">
+                    <vs-td class="column-no-padding" :data="data[indextr].roi" v-if="isAdmin">
                         <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : 'danger'">{{data[indextr].roi.toFixed(2)}} %</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cr">
+                    <vs-td class="column-no-padding" :data="data[indextr].cr">
                         {{data[indextr].cr.toFixed(2)}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpv" v-if="canViewStats">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpv" v-if="canViewStats">
                         € {{data[indextr].cpv.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                    <vs-td class="column-no-padding" :data="data[indextr].epv" v-if="canViewStats">
                         <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : 'danger'">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].cpl">
+                    <vs-td class="column-no-padding" :data="data[indextr].cpl">
                         € {{data[indextr].cpl.toFixed(2)}}
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.visits}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.leads}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_stats.total_cost.toFixed(2)}}
                 </vs-td>
-                <vs-td v-if="isAdmin">
+                <vs-td class="column-no-padding" v-if="isAdmin">
                     € {{total_stats.total_commission.toFixed(2)}}
                 </vs-td>
-                <vs-td v-if="isAdmin">
+                <vs-td class="column-no-padding" v-if="isAdmin">
                     <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit.toFixed(2)}}</vs-chip>
                 </vs-td>
-                <vs-td v-if="isAdmin">
+                <vs-td class="column-no-padding" v-if="isAdmin">
                     <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi.toFixed(2)}} %</vs-chip>
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.cr.toFixed(2)}} %
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td class="column-no-padding" v-if="canViewStats">
                     € {{total_stats.cpv.toFixed(2)}}
                 </vs-td>
-                <vs-td v-if="canViewStats">
+                <vs-td class="column-no-padding" v-if="canViewStats">
                     <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv.toFixed(2)}}</vs-chip>
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     € {{total_stats.cpl.toFixed(2)}}
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -1818,3 +1818,12 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+</style>

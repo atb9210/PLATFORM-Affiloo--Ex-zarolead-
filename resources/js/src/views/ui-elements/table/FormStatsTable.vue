@@ -118,99 +118,99 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td>
+                        <vs-td class="column-no-padding">
                             <vs-button size="small" radius :color="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'success' : 'danger') : '#d9d9d9'" type="filled" icon-pack="feather" :icon="(data[indextr].total_cost != 0) ? ((data[indextr].profit >= 0) ? 'icon-plus' : 'icon-minus') : 'icon-refresh-cw'"></vs-button>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].day">
+                        <vs-td class="column-no-padding" :data="data[indextr].day">
                             {{data[indextr].day}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].visits">
+                        <vs-td class="column-no-padding" :data="data[indextr].visits">
                             <vs-input v-if="isEditing['visits'] && editingObject == data[indextr].id" :ref="'editInputVisits' + data[indextr].id" type="number" step="1" min="0" v-model="editingValue['visits']" @keyup.enter="edit('visits')" @keyup.escape="dontEdit('visits')" icon-pack="feather" icon="icon-user" placeholder="Visits" class="is-label-placeholder"></vs-input>
                             <span v-else>{{data[indextr].visits}} <span class="underline" @click="showEditInput('visits', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].leads">
+                        <vs-td class="column-no-padding" :data="data[indextr].leads">
                             <vs-input v-if="isEditing['leads'] && editingObject == data[indextr].id" :ref="'editInputLeads' + data[indextr].id" type="number" step="1" min="0" v-model="editingValue['leads']" @keyup.enter="edit('leads')" @keyup.escape="dontEdit('leads')" icon-pack="feather" icon="icon-user" placeholder="Visits" class="is-label-placeholder"></vs-input>
                             <span v-else>{{data[indextr].leads}} <span class="underline" @click="showEditInput('leads', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].total_cost">
+                        <vs-td class="column-no-padding" :data="data[indextr].total_cost">
                             <vs-input v-if="isEditing['total_cost'] && editingObject == data[indextr].id" :ref="'editInputCost' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingValue['total_cost']" @keyup.enter="edit('total_cost')" @keyup.escape="dontEdit('total_cost')" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                             <span v-else>€ {{data[indextr].total_cost.toFixed(2)}} <span class="underline" @click="showEditInput('total_cost', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].total_commission" v-if="canViewStats">
                             <vs-input v-if="isEditing['total_commission'] && editingObject == data[indextr].id" :ref="'editInputCommission' + data[indextr].id" type="number" step="0.01" min="0" v-model="editingValue['total_commission']" @keyup.enter="edit('total_commission')" @keyup.escape="dontEdit('total_commission')" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                             <span v-else>€ {{data[indextr].total_commission.toFixed(2)}} <span class="underline" @click="showEditInput('total_commission', data[indextr].id)">(edit)</span></span>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].profit" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].profit" v-if="canViewStats">
                             <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit.toFixed(2)}}</vs-chip>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].roi" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].roi" v-if="canViewStats">
                             <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : '')">{{data[indextr].roi.toFixed(2)}} %</vs-chip>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cr">
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
                             {{data[indextr].cr.toFixed(2)}} %
                         </vs-td>
 
-                        <vs-td :data="data[indextr].tq">
+                        <vs-td class="column-no-padding" :data="data[indextr].tq">
                             {{data[indextr].tq}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpv" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpv" v-if="canViewStats">
                             € {{data[indextr].cpv.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].epv" v-if="canViewStats">
                             <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv.toFixed(2)}}</vs-chip>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cpl">
+                        <vs-td class="column-no-padding" :data="data[indextr].cpl">
                             € {{data[indextr].cpl.toFixed(2)}}
                         </vs-td>
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.visits}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.leads}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.total_cost.toFixed(2)}}
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         € {{total_stats.total_commission.toFixed(2)}}
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">€ {{total_stats.profit.toFixed(2)}}</vs-chip>
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : 'danger'">{{total_stats.roi.toFixed(2)}} %</vs-chip>
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.cr.toFixed(2)}} %
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{total_stats.tq}}
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         € {{total_stats.cpv.toFixed(2)}}
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         <vs-chip transparent :color="(total_stats.epv > 0) ? 'success' : 'danger'">€ {{total_stats.epv.toFixed(2)}}</vs-chip>
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.cpl.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
@@ -241,48 +241,48 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td :data="data[indextr].value">
+                        <vs-td class="column-no-padding" :data="data[indextr].value">
                             {{data[indextr].value}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].visits">
+                        <vs-td class="column-no-padding" :data="data[indextr].visits">
                             {{data[indextr].visits}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].leads">
+                        <vs-td class="column-no-padding" :data="data[indextr].leads">
                             {{data[indextr].leads}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].total_commission" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].total_commission" v-if="canViewStats">
                             € {{data[indextr].total_commission}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].cr">
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
                             {{data[indextr].cr}} %
                         </vs-td>
 
-                        <vs-td :data="data[indextr].epv" v-if="canViewStats">
+                        <vs-td class="column-no-padding" :data="data[indextr].epv" v-if="canViewStats">
                             <vs-chip transparent :color="(data[indextr].epv > 0) ? 'success' : ((data[indextr].epv < 0) ? 'danger' : '')">€ {{data[indextr].epv}}</vs-chip>
                         </vs-td>
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
-                    <vs-td></vs-td>
-                    <vs-td></vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">
                         {{customParamsStatsTotal[currentParam].visits}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{customParamsStatsTotal[currentParam].leads}}
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         € {{customParamsStatsTotal[currentParam].total_commission}}
                     </vs-td>
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         {{customParamsStatsTotal[currentParam].cr}} %
                     </vs-td>
-                    <vs-td v-if="canViewStats">
+                    <vs-td class="column-no-padding" v-if="canViewStats">
                         <vs-chip transparent :color="(customParamsStatsTotal[currentParam].epv > 0) ? 'success' : 'danger'">€ {{customParamsStatsTotal[currentParam].epv}}</vs-chip>
                     </vs-td>
                     <!-- END TOTAL STATS-->
@@ -1319,7 +1319,13 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
 .note {
     border: 1px solid gray;
     background-color: #eaeaea;

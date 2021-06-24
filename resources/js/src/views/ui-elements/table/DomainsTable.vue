@@ -1369,7 +1369,9 @@ export default {
 
 <style scoped>
 .column-no-padding {
-  padding: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
 }
 .dir-level {
     text-decoration: underline;

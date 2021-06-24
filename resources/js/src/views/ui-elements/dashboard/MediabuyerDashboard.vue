@@ -89,25 +89,22 @@
     <div class="vx-row">
 
       <!-- Monthly overview -->
-      <div class="vx-col w-full sm:w-full md:w-full lg:w-1/2 mb-base">
+      <div class="vx-col w-full sm:w-full md:w-full lg:w-full mb-base">
         <vx-card title="Monthly Overview">
           <vue-apex-charts ref="chart" type="line" height="350" :options="lineAreaChartSpline.chartOptions" :series="lineAreaChartSpline.series"></vue-apex-charts> 
         </vx-card>
       </div>
 
       <!-- Goals overview -->
+      <!--
       <div class="vx-col w-full lg:w-1/2 mb-base">
         <vx-card title="Goals Overview (fake)">
-            <!-- CARD ACTION -->
             <template slot="actions">
                 <change-time-duration-dropdown />
             </template>
-
-            <!-- Chart -->
             <div slot="no-body">
                 <vue-apex-charts type="radialBar" height="420" :options="analyticsData.productOrdersRadialBar.chartOptions" :series="productsOrder.series" />
             </div>
-
             <ul>
                 <li v-for="orderData in productsOrder.analyticsData" :key="orderData.orderType" class="flex mb-3 justify-between">
                     <span class="flex items-center">
@@ -119,6 +116,7 @@
             </ul>
         </vx-card>
       </div>
+      -->
 
     </div>
 
@@ -141,23 +139,23 @@
               <template slot-scope="{data}">
                 <vs-tr :key="indextr" v-for="(tr, indextr) in data">
 
-                  <vs-td :data="data[indextr].created_at">
+                  <vs-td class="column-no-padding" :data="data[indextr].created_at">
                     <span>{{formatDate(new Date(data[indextr].created_at))}}</span>
                   </vs-td>
 
-                  <vs-td :data="data[indextr].product">
+                  <vs-td class="column-no-padding" :data="data[indextr].product">
                     <span>{{data[indextr].product}}</span>
                   </vs-td>
 
-                  <vs-td :data="data[indextr].quantity">
+                  <vs-td class="column-no-padding" :data="data[indextr].quantity">
                     <span>{{data[indextr].quantity}}</span>
                   </vs-td>
 
-                  <vs-td :data="data[indextr].commission">
+                  <vs-td class="column-no-padding" :data="data[indextr].commission">
                     <span>{{data[indextr].commission}} €</span>
                   </vs-td>
 
-                  <vs-td :data="data[indextr].status">
+                  <vs-td class="column-no-padding" :data="data[indextr].status">
                     <span class="flex items-center px-2 py-1 rounded">
                       <vs-chip :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                     </span>
@@ -785,6 +783,11 @@ export default {
 </script>
 
 <style lang="scss">
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
 /*! rtl:begin:ignore */
 #dashboard-analytics {
   .greet-user{

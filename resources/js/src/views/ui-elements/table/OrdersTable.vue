@@ -101,47 +101,48 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].id">
+                    <vs-td class="column-no-padding" :data="data[indextr].id">
                         {{data[indextr].id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].created_at">
+                    <vs-td class="column-no-padding" :data="data[indextr].created_at">
                         {{formatDateTime(new Date(data[indextr].created_at))}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].product">
+                    <vs-td class="column-no-padding" :data="data[indextr].product">
                         {{data[indextr].product}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
                         {{data[indextr].name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].phone">
+                    <vs-td class="column-no-padding" :data="data[indextr].phone">
                         {{data[indextr].phone}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].quantity">
+                    <vs-td class="column-no-padding" :data="data[indextr].quantity">
                         {{data[indextr].quantity}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission">
+                    <vs-td class="column-no-padding" :data="data[indextr].commission">
                         {{data[indextr].commission}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].status">
+                    <vs-td class="column-no-padding" :data="data[indextr].status">
                         <span class="flex items-center px-2 py-1 rounded">
                             <vs-chip :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                         </span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].network">
+                    <vs-td class="column-no-padding" :data="data[indextr].network">
                         {{data[indextr].network}}
                     </vs-td>
 
-                    <vs-td>
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
-                            <vs-button @click="showInfo(indextr)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-alert-circle"></vs-button>
+                            <!--<vs-button @click="showInfo(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-alert-circle"></vs-button>-->
+                            <vs-avatar color="primary" size="24px" @click="showInfo(data[indextr].id)" icon-pack="feather" icon="icon-alert-circle" />
                         </div>
                     </vs-td>
 
@@ -261,6 +262,17 @@ export default {
     },
   },
   methods: {
+    getObjectIndexById(id) {
+      let index = -1;
+      for (let i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+        if (obj.id == id) {
+          index = i
+          break
+        }
+      }
+      return index
+    },
     retrieveObjects() {
       this.selected = []
       this.$vs.loading()
@@ -505,7 +517,8 @@ export default {
           })
         })
     },
-    showInfo(index) {
+    showInfo(id) {
+      let index = this.getObjectIndexById(id)
       this.orderInfo = this.objects[index].info
       this.showPopup['orderInfo'] = true
     },
@@ -544,3 +557,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

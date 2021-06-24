@@ -90,53 +90,53 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].product.id">
+                    <vs-td class="column-no-padding" :data="data[indextr].product.id">
                         {{data[indextr].product.id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].product.name">
+                    <vs-td class="column-no-padding" :data="data[indextr].product.name">
                         {{data[indextr].product.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_commission">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_commission">
                         {{data[indextr].total_commission}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_cost">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_cost">
                         {{data[indextr].total_cost}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].profit">
+                    <vs-td class="column-no-padding" :data="data[indextr].profit">
                         <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].profit}} €</vs-chip>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].roi">
+                    <vs-td class="column-no-padding" :data="data[indextr].roi">
                         <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi}} %</vs-chip>
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.leads}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.total_commission}} €
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.total_cost}} €
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : 'danger'">{{total_stats.profit}} €</vs-chip>
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : '')">{{total_stats.roi}} %</vs-chip>
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -394,3 +394,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

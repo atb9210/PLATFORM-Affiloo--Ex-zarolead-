@@ -39,6 +39,27 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
+        <vue-context ref="context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.context_menu.close();editForm(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Delete</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <vs-table v-if="mode == 'view'" stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
@@ -47,37 +68,33 @@
                 <vs-th sort-key="advertiser_name">Advertiser</vs-th>
                 <vs-th sort-key="tag.name">Tag</vs-th>
                 <vs-th sort-key="country">Country</vs-th>
-                <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].id">
+                    <vs-td class="column-no-padding" :data="data[indextr].id">
                         {{data[indextr].id}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].name">
-                        {{data[indextr].name}}
+                    <vs-td class="column-no-padding" :data="data[indextr].name">
+                        <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
+                            <vs-chip>
+                                {{data[indextr].name}}
+                            </vs-chip>
+                        </div>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].advertiser_name">
+                    <vs-td class="column-no-padding" :data="data[indextr].advertiser_name">
                         {{data[indextr].advertiser_name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].tag.name">
+                    <vs-td class="column-no-padding" :data="data[indextr].tag.name">
                         {{data[indextr].tag.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].country">
+                    <vs-td class="column-no-padding" :data="data[indextr].country">
                         {{data[indextr].country}}
-                    </vs-td>
-
-                    <vs-td>
-                        <div class="flex items-center">
-                            <vs-button @click="editForm(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            <vs-button @click="deleteObject(data[indextr].id)" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
-                        </div>
                     </vs-td>
 
                 </vs-tr>
@@ -312,11 +329,11 @@
 </template>
 
 <script>
-import vSelect from 'vue-select'
+import { VueContext } from 'vue-context'
 
 export default {
   components: {
-    'v-select': vSelect,
+    VueContext,
   },
   data () {
     return {
@@ -827,3 +844,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>

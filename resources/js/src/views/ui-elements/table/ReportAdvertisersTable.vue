@@ -90,56 +90,56 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td :data="data[indextr].user.name">
+                    <vs-td class="column-no-padding" :data="data[indextr].user.name">
                         {{data[indextr].user.name}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].leads">
+                    <vs-td class="column-no-padding" :data="data[indextr].leads">
                         {{data[indextr].leads}}
                     </vs-td>
 
-                    <vs-td :data="data[indextr].total_cost">
+                    <vs-td class="column-no-padding" :data="data[indextr].total_cost">
                         {{data[indextr].total_cost.toFixed(2)}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].commission">
+                    <vs-td class="column-no-padding" :data="data[indextr].commission">
                         {{data[indextr].commission.toFixed(2)}} €
                     </vs-td>
 
-                    <vs-td :data="data[indextr].approved_commission">
+                    <vs-td class="column-no-padding" :data="data[indextr].approved_commission">
                         <vs-input v-if="isEditing && editingObjectId == data[indextr].id" :ref="'editInput' + data[indextr].id" type="number" step="0.01" min="0" :max="data[indextr].commission" v-model="editingValue" @keyup.enter="edit" @keyup.escape="dontEdit" icon-pack="feather" icon="icon-dollar-sign" placeholder="Amount" class="is-label-placeholder"></vs-input>
                         <span v-else>{{data[indextr].approved_commission.toFixed(2)}} € <span class="underline" @click="showEditInput(data[indextr].id)">(edit)</span></span>
                     </vs-td>
 
-                    <vs-td :data="data[indextr].approved_commission_percentage">
+                    <vs-td class="column-no-padding" :data="data[indextr].approved_commission_percentage">
                         {{data[indextr].approved_commission_percentage.toFixed(2)}} %
                     </vs-td>
 
-                    <vs-td :data="data[indextr].net_profit">
+                    <vs-td class="column-no-padding" :data="data[indextr].net_profit">
                         {{data[indextr].net_profit.toFixed(2)}} €
                     </vs-td>
 
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
-                <vs-td></vs-td>
-                <vs-td></vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">
                     {{total_stats.leads}}
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{parseFloat(total_stats.total_cost).toFixed(2)}} €
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{parseFloat(total_stats.commission).toFixed(2)}} €
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{parseFloat(total_stats.approved_commission).toFixed(2)}} €
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{parseFloat(total_stats.approved_commission_percentage).toFixed(2)}} %
                 </vs-td>
-                <vs-td>
+                <vs-td class="column-no-padding">
                     {{parseFloat(total_stats.net_profit).toFixed(2)}} €
                 </vs-td>
                 <!-- END TOTAL STATS-->
@@ -561,3 +561,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  white-space: nowrap;
+}
+</style>
