@@ -40,7 +40,7 @@ class CreateRolesTable extends Migration
                         "*" => true,
                     ],
                     "product" => [
-                        "viewAny" => true,
+                        "*" => true,
                     ],
                     "flow" => [
                         "viewAny" => false,
