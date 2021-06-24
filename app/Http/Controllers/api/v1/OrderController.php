@@ -28,6 +28,7 @@ class OrderController extends Controller
      * @urlParam filter_date_to string To date (Y-m-d format)
      * @urlParam filter_status int Order's status id
      * @urlParam filter_product int Order's product id
+     * @urlParam filter_user int Order's user id
      *
      * @response {
      *  "data": [orders]
@@ -41,6 +42,7 @@ class OrderController extends Controller
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_status' => 'integer|min:0',
             'filter_product' => 'integer|exists:products,id',
+            'filter_user' => 'integer|exists:users,id',
         ]);
 
         // Query orders (applying filters)
@@ -64,6 +66,9 @@ class OrderController extends Controller
         }
         if (isset($params['filter_product'])) {
             $orders = $orders->where('orders.product_id', $params['filter_product']);
+        }
+        if (isset($params['filter_user'])) {
+            $orders = $orders->where('orders.user_id', $params['filter_user']);
         }
         $orders = $orders->where('orders.archived', 0);
         $orders = $orders->orderBy('orders.created_at', 'desc');

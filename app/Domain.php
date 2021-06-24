@@ -14,7 +14,7 @@ class Domain extends Model
      * @var array
      */
     protected $fillable = [
-        'domain', 'path', 'info',
+        'user_id', 'domain', 'path', 'info', 'archived',
     ];
 
     protected $casts = [
@@ -24,6 +24,11 @@ class Domain extends Model
     /*
      * Relationships methods
      */
+    
+    public function user()
+    {
+        return $this->belongsTo('App\User', 'user_id');
+    }
 
     public function flows()
     {

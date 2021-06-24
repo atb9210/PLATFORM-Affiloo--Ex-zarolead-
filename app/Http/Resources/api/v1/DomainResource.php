@@ -30,6 +30,10 @@ class DomainResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'user' => [
+                'id' => $this->user->id,
+                'email' => $this->user->email,
+            ],
             'domain' => $this->domain,
             'path' => $this->path,
             'info' => $this->info,

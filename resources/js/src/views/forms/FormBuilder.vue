@@ -581,11 +581,8 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-
-      this.$vs.loading()
       const response = await this.$http.get('/api/v1/forms-styles', { headers })
       this.formsStyles = response.data.data
-      this.$vs.loading.close()
     },
     previewFormsStyle() {
       if (this.selectedFormsStyle == null) return
@@ -873,99 +870,85 @@ export default {
       }
     },
   },
-  created() {
+  async created() {
+    this.$vs.loading()
+
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
     // Retrieve forms styles
-    this.getFormsStyles()
+    await this.getFormsStyles()
 
     // Retrieve users
-    this.$vs.loading()
-    this.$http.get('/api/v1/users', { headers })
-      .then((response) => {
-        this.traffic_sources = []
-        response.data.data.forEach((user) => {
-          this.users.push({
-            id: user.id,
-            label: user.email,
-          })
-          this.user = user.id;
+    try {
+      this.users = []
+      const userResponse = await this.$http.get('/api/v1/users', { headers })
+      for (let i = 0; i < userResponse.data.data.length; i++) {
+        let user = userResponse.data.data[i]
+        this.users.push({
+          id: user.id,
+          label: user.email,
         })
+        this.user = user.id;
+      }
+    } catch (error) {
+    }
 
-        // Retrieve traffic sources
-        this.$http.get('/api/v1/traffic-sources', { headers })
-          .then((response) => {
-            this.traffic_sources = []
-            response.data.data.forEach((traffic_source) => {
-              this.traffic_sources.push({
-                id: traffic_source.id,
-                label: traffic_source.name,
-              })
-              this.traffic_source = traffic_source.id;
-            })
-
-            // Retrieve products
-            this.$http.get('/api/v1/products', { headers })
-              .then((response) => {
-                this.products = []
-                response.data.data.forEach((product) => {
-                  this.products.push({
-                    id: product.id,
-                    label: product.name,
-                    quantity: product.quantity,
-                  })
-                  this.product = product.id;
-                })
-
-                // Retrieve networks
-                this.$http.get('/api/v1/networks', { headers })
-                  .then((response) => {
-                    this.networks = response.data.data
-                    this.networks.forEach((network) => {
-                      this.networksOptions.push({
-                        id: network.id,
-                        label: network.name,
-                      })
-                      this.network = network.id;
-                    })
-
-                    // Close loading here, we don't need forms in the first step
-                    this.$vs.loading.close()
-
-                    // Retrieve forms
-                    this.$http.get('/api/v1/forms', { headers })
-                      .then((response) => {
-                        this.forms = response.data.data
-                        for (let i = 0; i < this.forms.length; i++) {
-                          let form = this.forms[i]
-                          this.formsOptions.push({
-                            id: form.id,
-                            label: form.name + " - ID: " + form.id,
-                          })
-                          this.plugins['double_recovery'].form_id = form.id;
-                        }
-                      })
-                      .catch((error) => {
-                        this.$vs.loading.close()
-                      })
-                  })
-                  .catch((error) => {
-                    this.$vs.loading.close()
-                  })
-              })
-              .catch((error) => {
-                this.$vs.loading.close()
-              })
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-          })
+    // Retrieve traffic sources
+    this.traffic_sources = []
+    const trafficSourceResponse = await this.$http.get('/api/v1/traffic-sources', { headers })
+    for (let i = 0; i < trafficSourceResponse.data.data.length; i++) {
+      let ts = trafficSourceResponse.data.data[i]
+      this.traffic_sources.push({
+        id: ts.id,
+        label: ts.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
+      this.traffic_source = ts.id;
+    }
+
+    // Retrieve products
+    this.products = []
+    const productResponse = await this.$http.get('/api/v1/products', { headers })
+    for (let i = 0; i < productResponse.data.data.length; i++) {
+      let p = productResponse.data.data[i]
+      this.products.push({
+        id: p.id,
+        label: p.name,
+        quantity: p.quantity,
       })
+      this.product = p.id;
+    }
+
+    // Retrieve networks
+    this.networks = []
+    const networkResponse = await this.$http.get('/api/v1/networks', { headers })
+    this.networks = networkResponse.data.data
+    this.networksOptions = []
+    for (let i = 0; i < this.networks.length; i++) {
+      let network = this.networks[i]
+      this.networksOptions.push({
+        id: network.id,
+        label: network.name,
+      })
+      this.network = network.id;
+    }
+
+    // Close loading here, we don't need forms in the first step
+    this.$vs.loading.close()
+
+    // Retrieve forms
+    const formResponse = await this.$http.get('/api/v1/forms', { headers })
+    this.forms = formResponse.data.data
+    this.formsOptions = []
+    for (let i = 0; i < this.forms.length; i++) {
+      let form = this.forms[i]
+      this.formsOptions.push({
+        id: form.id,
+        label: form.name + " - ID: " + form.id,
+      })
+      this.plugins['double_recovery'].form_id = form.id;
+    }
   },
 }
 </script>

@@ -403,7 +403,7 @@ export default {
     },
     canCreateAndEdit() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
-              this.$store.getters.userHasRole('advertiser'))
+              this.$store.getters.userHasRole('advertiser') || this.$store.getters.userHasRole('mediabuyer'))
     },
   },
   methods: {

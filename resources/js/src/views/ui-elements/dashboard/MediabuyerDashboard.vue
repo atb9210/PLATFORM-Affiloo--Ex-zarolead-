@@ -124,55 +124,6 @@
 
     <div class="vx-row">
 
-      <!-- Top products -->
-      <div class="vx-col lg:w-1/2 mb-base">
-        <vx-card title="Top Products">
-          <div slot="no-body" class="mt-4">
-            <vs-table stripe :data="productsReports" max-items="10" pagination class="table-dark-inverted">
-
-              <template slot="thead">
-                <vs-th sort-key="product">Product</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="total_cost">Cost</vs-th>
-                <vs-th sort-key="total_commission">Commission</vs-th>
-                <vs-th sort-key="profit">Profit</vs-th>
-                <vs-th sort-key="roi">ROI</vs-th>
-              </template>
-
-              <template slot-scope="{data}">
-                <vs-tr :key="indextr" v-for="(tr, indextr) in data">
-
-                  <vs-td :data="data[indextr].product">
-                    {{data[indextr].product}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].leads">
-                    {{data[indextr].leads}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].total_commission">
-                    {{data[indextr].total_commission.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].total_cost">
-                    {{data[indextr].total_cost.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].profit">
-                    <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].profit.toFixed(2)}} €</vs-chip>
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].roi">
-                    <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi.toFixed(2)}}%</vs-chip>
-                  </vs-td>
-
-                </vs-tr>
-              </template>
-            </vs-table>
-          </div>
-        </vx-card>
-      </div>
-
       <!-- Orders -->
       <div class="vx-col lg:w-1/2 mb-base">
         <vx-card title="Orders">
@@ -210,128 +161,6 @@
                     <span class="flex items-center px-2 py-1 rounded">
                       <vs-chip :color="statusColors[data[indextr].status]">{{data[indextr].status}}</vs-chip>
                     </span>
-                  </vs-td>
-
-                </vs-tr>
-              </template>
-            </vs-table>
-          </div>
-        </vx-card>
-      </div>
-
-    </div>
-
-    <div class="vx-row">
-
-      <!-- Advertisers reports -->
-      <div class="vx-col lg:w-1/2 mb-base">
-        <vx-card title="Advertisers">
-          <div slot="no-body" class="mt-4">
-            <vs-table stripe :data="advertisersReports" max-items="10" pagination class="table-dark-inverted">
-
-              <template slot="thead">
-                <vs-th sort-key="user">Advertiser</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="total_cost">Cost</vs-th>
-                <vs-th sort-key="commission">Revenue</vs-th>
-                <vs-th sort-key="approved_commission">Approved</vs-th>
-                <vs-th sort-key="approved_commission_percentage">% Approved</vs-th>
-                <vs-th sort-key="net_profit">Net Profit</vs-th>
-              </template>
-
-              <template slot-scope="{data}">
-                <vs-tr :key="indextr" v-for="(tr, indextr) in data">
-
-                  <vs-td :data="data[indextr].user">
-                    {{data[indextr].user}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].leads">
-                    {{data[indextr].leads}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].total_cost">
-                    {{data[indextr].total_cost.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].commission">
-                    {{data[indextr].commission.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].approved_commission">
-                    <span>{{data[indextr].approved_commission.toFixed(2)}} €</span>
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].approved_commission_percentage">
-                    {{data[indextr].approved_commission_percentage.toFixed(2)}} %
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].net_profit">
-                    <vs-chip transparent :color="(data[indextr].net_profit > 0) ? 'success' : ((data[indextr].net_profit < 0) ? 'danger' : '')">{{data[indextr].net_profit.toFixed(2)}} €</vs-chip>
-                  </vs-td>
-
-                </vs-tr>
-              </template>
-            </vs-table>
-          </div>
-        </vx-card>
-      </div>
-
-      <!-- Mediabuyers reports -->
-      <div class="vx-col lg:w-1/2 mb-base">
-        <vx-card title="Mediabuyers">
-          <div slot="no-body" class="mt-4">
-            <vs-table stripe :data="mediabuyersReports" max-items="10" pagination class="table-dark-inverted">
-
-              <template slot="thead">
-                <vs-th sort-key="user">User</vs-th>
-                <vs-th sort-key="leads">Leads</vs-th>
-                <vs-th sort-key="commission">Commission</vs-th>
-                <vs-th sort-key="cost">Cost</vs-th>
-                <vs-th sort-key="extra_cost">Extra Cost</vs-th>
-                <vs-th sort-key="profit">Profit</vs-th>
-                <vs-th sort-key="roi">ROI</vs-th>
-                <vs-th>Approved</vs-th>
-                <vs-th>Net Profit</vs-th>
-              </template>
-
-              <template slot-scope="{data}">
-                <vs-tr :key="indextr" v-for="(tr, indextr) in data">
-
-                  <vs-td :data="data[indextr].user">
-                    {{data[indextr].user}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].leads">
-                    {{data[indextr].leads}}
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].commission">
-                    {{data[indextr].commission.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].cost">
-                    {{data[indextr].cost.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].extra_cost">
-                    {{data[indextr].extra_cost.toFixed(2)}} €
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].profit">
-                    <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">€ {{data[indextr].profit.toFixed(2)}}</vs-chip>
-                  </vs-td>
-
-                  <vs-td :data="data[indextr].roi">
-                    <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi.toFixed(2)}}%</vs-chip>
-                  </vs-td>
-
-                  <vs-td>
-                    0,00 €
-                  </vs-td>
-
-                  <vs-td>
-                    0,00 €
                   </vs-td>
 
                 </vs-tr>
@@ -752,90 +581,6 @@ export default {
         this.loadDailyCharts()
       }
 
-      // Retrieve products reports
-      this.productsReports = []
-      const productsReportsResponse = await this.$http.get('/api/v1/reports/products', { headers, params: data })
-      for (let i = 0; i < productsReportsResponse.data.data.length; i++) {
-        let obj = productsReportsResponse.data.data[i]
-
-        let total_commission = parseFloat(obj.total_commission)
-        let total_cost = parseFloat(obj.total_cost)
-        let profit = total_commission - total_cost
-        let roi = (total_cost > 0) ? ((profit / total_cost)*100) : ((profit > 0) ? 9999.99 : 0)
-
-        this.productsReports.push({
-          product: obj.product.name,
-          visits: obj.visits,
-          leads: obj.leads,
-          total_commission: total_commission,
-          total_cost: total_cost,
-          profit: profit,
-          roi: roi,
-        })
-      }
-      this.productsReports.sort(function(a, b) {
-        if (a.roi < b.roi) return 1
-        if (a.roi > b.roi) return -1
-        return 0
-      })
-
-      // Retrieve advertisers reports
-      let d = new Date(data['filter_date_from'])
-      let advertisersReportsData = {
-        month: d.getMonth() + 1,
-        year: d.getFullYear(),
-      }
-      this.advertisersReports = []
-      const advertisersReportsResponse = await this.$http.get('/api/v1/reports/advertisers', { headers, params: advertisersReportsData })
-      for (let i = 0; i < advertisersReportsResponse.data.data.length; i++) {
-        let obj = advertisersReportsResponse.data.data[i]
-
-        let total_cost = parseFloat(obj.total_cost)
-        let commission = parseFloat(obj.commission)
-        let approved_commission = parseFloat(obj.approved_commission)
-        let approved_commission_percentage = parseFloat((commission > 0) ? ((approved_commission / commission)*100) : 0)
-        let net_profit = approved_commission - total_cost
-
-        this.advertisersReports.push({
-          id: obj.id,
-          user: obj.user.name,
-          month: obj.month,
-          year: obj.year,
-          visits: obj.visits,
-          leads: obj.leads,
-          total_cost: total_cost,
-          commission: commission,
-          approved_commission: approved_commission,
-          approved_commission_percentage: approved_commission_percentage,
-          net_profit: net_profit,
-        })
-      }
-
-      // Retrieve mediabuyers reports
-      data['filter_roles'] = [3, 7]
-      this.mediabuyersReports = []
-      const mediabuyersReportsResponse = await this.$http.get('/api/v1/reports/users', { headers, params: data })
-      for (let i = 0; i < mediabuyersReportsResponse.data.data.length; i++) {
-        let obj = mediabuyersReportsResponse.data.data[i]
-
-        let leads = parseInt(obj.leads)
-        let cost = parseFloat(obj.cost)
-        let extra_cost = parseFloat(obj.extra_cost)
-        let commission = parseFloat(obj.commission)
-        let profit = parseFloat(obj.profit)
-        let roi = (((cost + extra_cost) > 0) ? (profit / (cost + extra_cost)) : 9.99) * 100
-
-        this.mediabuyersReports.push({
-          user: obj.user.email,
-          leads: leads,
-          commission: commission,
-          cost: cost,
-          extra_cost: extra_cost,
-          profit: profit,
-          roi: roi,
-        })
-      }
-
       this.$vs.loading.close()
     },
     filterDatesShortcut(period) {
@@ -958,14 +703,14 @@ export default {
         })
     }
 
-    // TODO: delete all of this
-
-    // Fetch orders
+    // Fetch orders of the current user
+    let userInfo = this.$store.getters.getUserInfo()
     let fromObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth(), 1);
     let toObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() + 1, 0);
     let data = {
       filter_date_from: this.formatDate(fromObj),
       filter_date_to: this.formatDate(toObj),
+      filter_user: userInfo.id,
     }
 
     const ordersResponse = await this.$http.get('/api/v1/orders', { headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') }, params: data })

@@ -28,7 +28,7 @@ class FbAccountController extends Controller
         //$this->authorize('viewAny', 'App\Tag');
         $params = $request->validate([
             'filter_user' => 'integer|exists:users,id',
-            'filter_status' => 'in:setup,warm,ready,run,request,ban',
+            'filter_status' => 'in:setup,run,ban',
             'filter_product' => 'integer|exists:products,id',
         ]);
 
@@ -98,7 +98,7 @@ class FbAccountController extends Controller
             'notes' => 'string|nullable',
             'token' => 'nullable|string',
             'info' => 'nullable|json',
-            'status' => 'in:setup,warm,ready,run,request,ban',
+            'status' => 'in:setup,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy_enabled' => 'boolean',
@@ -219,7 +219,7 @@ class FbAccountController extends Controller
             'notes' => 'string|nullable',
             'token' => 'nullable|string',
             'info' => 'nullable|json',
-            'status' => 'in:setup,warm,ready,run,request,ban',
+            'status' => 'in:setup,run,ban',
             'token_status' => 'in:active,disabled',
             'user_agent' => 'nullable|string',
             'proxy_enabled' => 'boolean',
@@ -417,7 +417,7 @@ class FbAccountController extends Controller
                     'notes' => 'string|nullable',
                     'token' => 'string|nullable',
                     'info' => 'json|nullable',
-                    'status' => 'in:setup,warm,ready,run,request,ban',
+                    'status' => 'in:setup,run,ban',
                     'token_status' => 'in:active,disabled',
                     'user_agent' => 'string|nullable',
                     'proxy_enabled' => 'boolean',

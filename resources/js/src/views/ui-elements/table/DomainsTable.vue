@@ -108,30 +108,30 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                        <vs-td :data="data[indextr].id">
+                        <vs-td class="column-no-padding" :data="data[indextr].id">
                             {{data[indextr].id}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].domain">
+                        <vs-td class="column-no-padding" :data="data[indextr].domain">
                             <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
-                                <vs-chip :color="data[indextr].status == 'online' ? 'success' : 'danger'">
+                                <vs-chip transparent color="dark" v-clipboard:copy="data[indextr].domain" v-clipboard:success="onDomainCopied">
                                     {{data[indextr].domain}}
                                 </vs-chip>
                             </div>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].path">
+                        <vs-td class="column-no-padding" :data="data[indextr].path">
                             {{data[indextr].path}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].ssl">
-                            <vs-chip :color="data[indextr].ssl == 'No SSL' ? 'danger' : 'success'">
+                        <vs-td class="column-no-padding" :data="data[indextr].ssl">
+                            <vs-chip transparent :color="data[indextr].ssl == 'No SSL' ? 'danger' : 'success'">
                                 {{data[indextr].ssl}}
                             </vs-chip>
                         </vs-td>
 
-                        <vs-td :data="data[indextr].info['fb_domain_verified']">
-                            <vs-chip :color="data[indextr].info['fb_domain_verified'] ? 'success' : 'danger'">
+                        <vs-td class="column-no-padding" :data="data[indextr].info['fb_domain_verified']">
+                            <vs-chip transparent :color="data[indextr].info['fb_domain_verified'] ? 'success' : 'danger'">
                                 {{(data[indextr].info['fb_domain_verified'] ? 'Yes' : 'No')}}
                             </vs-chip>
                         </vs-td>
@@ -226,6 +226,18 @@
                 </div>
             </div>
 
+            <div class="vx-row mb-6" v-if="canCreateAsAdmin">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['create'].user_id" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.email" v-for="(item, index) in users" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('user_id') }}</span>
+                </div>
+            </div>
+
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
@@ -254,6 +266,18 @@
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input disabled class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].path" />
                     <span class="text-danger">{{ errors.first('path') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" v-if="canCreateAsAdmin">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>User</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="newObject['edit'].user_id" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.email" v-for="(item, index) in users" class="w-full" />
+                    </vs-select>
+                    <span class="text-danger">{{ errors.first('user_id') }}</span>
                 </div>
             </div>
 
@@ -471,6 +495,8 @@ export default {
 
       editingObject: -1,
 
+      users: [],
+
       showPopup: {
         'create': false,
         'edit': false,
@@ -482,10 +508,12 @@ export default {
       },
       newObject: {
         'create': {
+          user_id: '',
           domain: '',
           path: '',
         },
         'edit': {
+          user_id: '',
           domain: '',
           path: '',
         },
@@ -548,6 +576,9 @@ export default {
       set (val) {
         this.gridApi.paginationGoToPage(val - 1)
       }
+    },
+    canCreateAsAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
     },
     zaroclonerPathPreview() {
       if (this.zaroclonerDomain == '' || this.zaroclonerDomain == null) {
@@ -681,6 +712,7 @@ export default {
         this.namecheapDomainsToImport = []
       } else {
         this.newObject[type] = {
+          user_id: '',
           domain: '',
           path: '',
         }
@@ -719,6 +751,10 @@ export default {
         path: this.newObject['create'].path,
       }
 
+      if (this.newObject['create'].user_id != '') {
+        data.user_id = this.newObject['create'].user_id
+      }
+
       // Create domain
       this.$http.post('/api/v1/domains', data, { headers: headers })
         .then((response) => {
@@ -752,6 +788,7 @@ export default {
       let obj = this.objects[this.getObjectIndexById(id)]
 
       this.newObject['edit'] = {
+        user_id: obj.user.id,
         domain: obj.domain,
         path: obj.path,
       }
@@ -771,6 +808,10 @@ export default {
 
       let data = {
         domain: this.newObject['edit'].domain,
+      }
+
+      if (this.newObject['edit'].user_id != '') {
+        data.user_id = this.newObject['edit'].user_id
       }
 
       this.$http.put('/api/v1/domains/' + id, data, { headers })
@@ -1294,8 +1335,30 @@ export default {
 
       this.showPopup['create_dns_record'] = false
     },
+    onDomainCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Domain copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
   },
   async created() {
+    // Retrieve users
+    this.users = []
+    if (this.canCreateAsAdmin) {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      // Retrieve domains
+      const response = await this.$http.get('/api/v1/users', { headers })
+      this.users = response.data.data
+      this.$vs.loading.close()
+    }
+
     await this.retrieveObjects()
   },
   mounted () {
@@ -1304,18 +1367,19 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
+.column-no-padding {
+  padding: 0px !important;
+}
 .dir-level {
     text-decoration: underline;
     margin-right: 0.4em;
     cursor: pointer;
 }
-
 .file-editor > h4 {
     background-color: #bababa;
     border: 1px solid white;
 }
-
 .zarocloner-header {
     font-size: 0.6em;
 }

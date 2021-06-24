@@ -80,7 +80,10 @@ class CreateRolesTable extends Migration
                         "*" => true,
                     ],
                     "domain" => [
-                        "*" => true,
+                        "viewAny" => false,
+                        "create" => true,
+                        "update" => true,
+                        "delete" => true,
                     ],
                 ],
             ],

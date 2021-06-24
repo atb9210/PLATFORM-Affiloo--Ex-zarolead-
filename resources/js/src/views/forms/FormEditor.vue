@@ -599,11 +599,8 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-
-      this.$vs.loading()
       const response = await this.$http.get('/api/v1/forms-styles', { headers })
       this.formsStyles = response.data.data
-      this.$vs.loading.close()
     },
     previewFormsStyle() {
       if (this.selectedFormsStyle == null) return
@@ -891,213 +888,167 @@ export default {
       }
     },
   },
-  created() {
+  async created() {
+    this.$vs.loading()
+
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
     // Retrieve forms styles
-    this.getFormsStyles()
+    await this.getFormsStyles()
 
     // Retrieve form info
-    this.$vs.loading()
-    this.$http.get('/api/v1/forms/' + this.form_id, { headers })
-      .then((response) => {
-        this.form = response.data.data
+    const formInfoResponse = await this.$http.get('/api/v1/forms/' + this.form_id, { headers })
+    this.form = formInfoResponse.data.data
 
-        // Fetch general info
-        this.name = this.form.name
+    // Fetch general info
+    this.name = this.form.name
 
-        // Fetch up sell
-        this.upSell = this.form.up_sell.enabled
-        if (this.form.up_sell != null) {
-          if (this.form.up_sell.hasOwnProperty('best_seller')) {
-            this.upSellBestSeller = this.form.up_sell.best_seller
+    // Fetch up sell
+    this.upSell = this.form.up_sell.enabled
+    if (this.form.up_sell != null) {
+      if (this.form.up_sell.hasOwnProperty('best_seller')) {
+        this.upSellBestSeller = this.form.up_sell.best_seller
+      }
+    }
+
+    // Fetch cross sell
+    if (this.form.cross_sell != null) {
+      if (this.form.cross_sell.hasOwnProperty('enabled')) {
+        this.crossSell.enabled = (this.form.cross_sell.enabled == true)
+      }
+      if (this.form.cross_sell.hasOwnProperty('sku')) {
+        this.crossSell.sku = this.form.cross_sell.sku
+      }
+      if (this.form.cross_sell.hasOwnProperty('title')) {
+        this.crossSell.title = this.form.cross_sell.title
+      }
+      if (this.form.cross_sell.hasOwnProperty('description')) {
+        this.crossSell.description = this.form.cross_sell.description
+      }
+      if (this.form.cross_sell.hasOwnProperty('img')) {
+        this.crossSell.img = this.form.cross_sell.img
+      }
+      if (this.form.cross_sell.hasOwnProperty('old_price')) {
+        this.crossSell.old_price = this.form.cross_sell.old_price
+      }
+      if (this.form.cross_sell.hasOwnProperty('price')) {
+        this.crossSell.price = this.form.cross_sell.price
+      }
+      if (this.form.cross_sell.hasOwnProperty('commission')) {
+        this.crossSell.commission = this.form.cross_sell.commission
+      }
+      if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
+        this.crossSell.sub_commission = this.form.cross_sell.sub_commission
+      }
+    }
+
+    // Fetch delivery
+    if (this.form.delivery != null) {
+      if (this.form.delivery.hasOwnProperty('enabled')) {
+        this.delivery.enabled = (this.form.delivery.enabled == true)
+      }
+      if (this.form.delivery.hasOwnProperty('options')) {
+        this.delivery.options = this.form.delivery.options
+      }
+    }
+
+    // Fetch plugins
+    for (const [key, value] of Object.entries(this.form.plugins)) {
+      if (!this.plugins.hasOwnProperty(key)) {
+        this.plugins[key] = this.form.plugins[key]
+      } else {
+        for (const [key2, value2] of Object.entries(this.form.plugins[key])) {
+          this.plugins[key][key2] = this.form.plugins[key][key2]
+        }
+      }
+    }
+    if (this.plugins.hasOwnProperty('css_style') && this.plugins['css_style'].hasOwnProperty('style_id')) {
+      let style_id = this.plugins['css_style'].style_id
+      if (style_id !== null && style_id !== '' && style_id !== 0) {
+        let styleObj = null
+        for (let i = 0; i < this.formsStyles.length; i++) {
+          if (this.formsStyles[i].id == style_id) {
+            styleObj = this.formsStyles[i]
+            break
           }
         }
-
-        // Fetch cross sell
-        if (this.form.cross_sell != null) {
-          if (this.form.cross_sell.hasOwnProperty('enabled')) {
-            this.crossSell.enabled = (this.form.cross_sell.enabled == true)
-          }
-          if (this.form.cross_sell.hasOwnProperty('sku')) {
-            this.crossSell.sku = this.form.cross_sell.sku
-          }
-          if (this.form.cross_sell.hasOwnProperty('title')) {
-            this.crossSell.title = this.form.cross_sell.title
-          }
-          if (this.form.cross_sell.hasOwnProperty('description')) {
-            this.crossSell.description = this.form.cross_sell.description
-          }
-          if (this.form.cross_sell.hasOwnProperty('img')) {
-            this.crossSell.img = this.form.cross_sell.img
-          }
-          if (this.form.cross_sell.hasOwnProperty('old_price')) {
-            this.crossSell.old_price = this.form.cross_sell.old_price
-          }
-          if (this.form.cross_sell.hasOwnProperty('price')) {
-            this.crossSell.price = this.form.cross_sell.price
-          }
-          if (this.form.cross_sell.hasOwnProperty('commission')) {
-            this.crossSell.commission = this.form.cross_sell.commission
-          }
-          if (this.form.cross_sell.hasOwnProperty('sub_commission')) {
-            this.crossSell.sub_commission = this.form.cross_sell.sub_commission
-          }
+        if (styleObj !== null) {
+          this.selectedFormsStyle = styleObj
         }
+      }
+    }
 
-        // Fetch delivery
-        if (this.form.delivery != null) {
-          if (this.form.delivery.hasOwnProperty('enabled')) {
-            this.delivery.enabled = (this.form.delivery.enabled == true)
-          }
-          if (this.form.delivery.hasOwnProperty('options')) {
-            this.delivery.options = this.form.delivery.options
-          }
-        }
+    // Retrieve users
+    try {
+      this.users = []
+      const userResponse = await this.$http.get('/api/v1/users', { headers })
+      for (let i = 0; i < userResponse.data.data.length; i++) {
+        let user = userResponse.data.data[i]
+        this.users.push({
+          id: user.id,
+          label: user.email,
+        })
+        this.user = user.id;
+      }
+    } catch (error) {
+    }
 
-        // Fetch plugins
-        for (const [key, value] of Object.entries(this.form.plugins)) {
-          if (!this.plugins.hasOwnProperty(key)) {
-            this.plugins[key] = this.form.plugins[key]
-          } else {
-            for (const [key2, value2] of Object.entries(this.form.plugins[key])) {
-              this.plugins[key][key2] = this.form.plugins[key][key2]
-            }
-          }
-        }
-        if (this.plugins.hasOwnProperty('css_style') && this.plugins['css_style'].hasOwnProperty('style_id')) {
-          let style_id = this.plugins['css_style'].style_id
-          if (style_id !== null && style_id !== '' && style_id !== 0) {
-            let styleObj = null
-            for (let i = 0; i < this.formsStyles.length; i++) {
-              if (this.formsStyles[i].id == style_id) {
-                styleObj = this.formsStyles[i]
-                break
-              }
-            }
-            if (styleObj !== null) {
-              this.selectedFormsStyle = styleObj
-            }
-          }
-        }
-
-        // Retrieve users
-        this.$http.get('/api/v1/users', { headers })
-          .then((response) => {
-            this.traffic_sources = []
-            response.data.data.forEach((user) => {
-              this.users.push({
-                id: user.id,
-                label: user.email,
-              })
-              if (user.id == this.form.user.id) {
-                this.user = user.id;
-              }
-            })
-
-            // Retrieve traffic sources
-            this.$http.get('/api/v1/traffic-sources', { headers })
-              .then((response) => {
-                this.traffic_sources = []
-                response.data.data.forEach((traffic_source) => {
-                  this.traffic_sources.push({
-                    id: traffic_source.id,
-                    label: traffic_source.name,
-                  })
-                  if (traffic_source.id == this.form.traffic_source.id) {
-                    this.traffic_source = traffic_source.id;
-                  }
-                })
-
-                // Retrieve products
-                this.$http.get('/api/v1/products', { headers })
-                  .then((response) => {
-                    this.products = []
-                    response.data.data.forEach((product) => {
-                      this.products.push({
-                        id: product.id,
-                        label: product.name,
-                        quantity: product.quantity,
-                      })
-                      if (product.id == this.form.product.id) {
-                        this.product = product.id;
-                      }
-                    })
-
-                    // Retrieve networks
-                    this.$http.get('/api/v1/networks', { headers })
-                      .then((response) => {
-                        this.networks = response.data.data
-                        this.networks.forEach((network) => {
-                          this.networksOptions.push({
-                            id: network.id,
-                            label: network.name,
-                          })
-                          if (network.id == this.form.network.id) {
-                            this.network = network.id;
-                          }
-                        })
-
-                        // Close loading here, we don't need forms in the first step
-                        this.$vs.loading.close()
-
-                        // Retrieve forms
-                        this.$http.get('/api/v1/forms', { headers })
-                          .then((response) => {
-                            this.forms = response.data.data
-                            this.forms.forEach((form) => {
-                              this.formsOptions.push({
-                                id: form.id,
-                                label: form.name + " - ID: " + form.id,
-                              })
-                              if (this.form.plugins.hasOwnProperty('double_recovery') && 
-                                  form.id == this.form.plugins.double_recovery.form_id) {
-                                this.plugins['double_recovery'].form_id = form.id;
-                              }
-                            })
-
-                            // Retrieve forms styles
-                            this.$http.get('/api/v1/forms-styles', { headers })
-                              .then((response) => {
-                                this.formsStyles = response.data.data
-                                for (let i = 0; i < this.formsStyles.length; i++) {
-                                  let formsStyle = this.formsStyles[i]
-                                  if (this.form.plugins.hasOwnProperty('css_style') && 
-                                      formsStyle.url == this.form.plugins.css_style.stylesheet_url) {
-                                    this.plugins['css_style'].stylesheet_url = formsStyle.url
-                                  }
-                                }
-                                this.$vs.loading.close()
-                              })
-                              .catch((error) => {
-                                this.$vs.loading.close()
-                              })
-                          })
-                          .catch((error) => {
-                            this.$vs.loading.close()
-                          })
-                      })
-                      .catch((error) => {
-                        this.$vs.loading.close()
-                      })
-                  })
-                  .catch((error) => {
-                    this.$vs.loading.close()
-                  })
-              })
-              .catch((error) => {
-                this.$vs.loading.close()
-              })
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-          })
+    // Retrieve traffic sources
+    this.traffic_sources = []
+    const trafficSourceResponse = await this.$http.get('/api/v1/traffic-sources', { headers })
+    for (let i = 0; i < trafficSourceResponse.data.data.length; i++) {
+      let ts = trafficSourceResponse.data.data[i]
+      this.traffic_sources.push({
+        id: ts.id,
+        label: ts.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
+      this.traffic_source = ts.id;
+    }
+
+    // Retrieve products
+    this.products = []
+    const productResponse = await this.$http.get('/api/v1/products', { headers })
+    for (let i = 0; i < productResponse.data.data.length; i++) {
+      let p = productResponse.data.data[i]
+      this.products.push({
+        id: p.id,
+        label: p.name,
+        quantity: p.quantity,
       })
+      this.product = p.id;
+    }
+
+    // Retrieve networks
+    this.networks = []
+    const networkResponse = await this.$http.get('/api/v1/networks', { headers })
+    this.networks = networkResponse.data.data
+    this.networksOptions = []
+    for (let i = 0; i < this.networks.length; i++) {
+      let network = this.networks[i]
+      this.networksOptions.push({
+        id: network.id,
+        label: network.name,
+      })
+      this.network = network.id;
+    }
+
+    // Close loading here, we don't need forms in the first step
+    this.$vs.loading.close()
+
+    // Retrieve forms
+    const formResponse = await this.$http.get('/api/v1/forms', { headers })
+    this.forms = formResponse.data.data
+    this.formsOptions = []
+    for (let i = 0; i < this.forms.length; i++) {
+      let form = this.forms[i]
+      this.formsOptions.push({
+        id: form.id,
+        label: form.name + " - ID: " + form.id,
+      })
+      this.plugins['double_recovery'].form_id = form.id;
+    }
   },
 }
 </script>

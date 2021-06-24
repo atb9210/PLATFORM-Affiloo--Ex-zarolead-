@@ -93,7 +93,7 @@ class FormPolicy
     }
 
     /**
-     * Determine whether the user can create models.
+     * Determine whether the user can change the user_id.
      *
      * @param  \App\User  $user
      * @return mixed

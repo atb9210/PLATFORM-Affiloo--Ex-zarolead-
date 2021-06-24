@@ -24,7 +24,11 @@ class DomainController extends Controller
     public function index(Request $request)
     {
         $domains = Domain::query();
-        $this->authorize('viewAny', 'App\Domain');
+        if (!Auth::user()->can('viewAny', 'App\Domain')) {
+            $domains = $domains->where('user_id', Auth::user()->id);
+        }
+        $domains = $domains->where('archived', 0);
+
         return DomainResource::collection($domains->get());
     }
 
@@ -41,12 +45,20 @@ class DomainController extends Controller
     {
         $domain = Domain::findOrFail($id);
         $this->authorize('view', $domain);
+
+        if ($domain->archived) {
+            return response([
+                "message" => "That domain is archived"
+            ], 403);
+        }
+
         return new DomainResource($domain);
     }
 
     /**
      * Create a new domain.
      *
+     * @bodyParam user_id int User's id
      * @bodyParam domain string required Domain
      * @bodyParam path string required Domain's path
      *
@@ -61,9 +73,14 @@ class DomainController extends Controller
 
         // Params validation
         $params = $request->validate([
+            'user_id' => 'integer|exists:users,id',
             'domain' => 'required|string|unique:domains,domain|regex:' . self::DOMAIN_REGEX,
             'path' => 'required|string|landing_path|unique:domains,path',
         ]);
+
+        if ((!Auth::user()->can('changeUser', 'App\Domain')) || !isset($params['user_id'])) {
+            $params['user_id'] = Auth::user()->id;
+        }
 
         // Check if the domain is registered
         if (!Domain::isRegistered($params['domain'])) {
@@ -98,6 +115,7 @@ class DomainController extends Controller
      *
      * @urlParam id int required Domain's id
      *
+     * @bodyParam user_id int User's id
      * @bodyParam domain string Domain
      *
      * @response {
@@ -111,9 +129,26 @@ class DomainController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'domain' => 'string|unique:domains,domain|regex:' . self::DOMAIN_REGEX,
+            'user_id' => 'integer|exists:users,id',
+            'domain' => 'string|regex:' . self::DOMAIN_REGEX,
             'info' => 'json',
         ]);
+
+        if (isset($params['user_id']) && !Auth::user()->can('changeUser', 'App\Domain')) {
+            unset($params['user_id']);
+        }
+
+        // Check if the domain has already been taken
+        if (isset($params['domain']) && $params['domain'] != $domain->domain) {
+            if (Domain::where('domain', $params['domain'])->count() > 0) {
+                return response([
+                    "message" => $params['domain'] . " has already been taken",
+                    "errors" => [
+                        "domain" => [ "The domain has already been taken." ],
+                    ],
+                ], 422);
+            }
+        }
 
         // Check if the domain is registered
         if (isset($params['domain'])) {
@@ -133,9 +168,9 @@ class DomainController extends Controller
 
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], true);
-            $domain->info = $params['info'];
-            $domain->save();
         }
+
+        $domain->update($params);
 
         return new DomainResource($domain);
     }
@@ -156,7 +191,11 @@ class DomainController extends Controller
 
         // Delete the domain
         $domain->deleteAppAndZone();
+
+        // TODO: Delete or archive?
         $domain->delete();
+        //$domain->archived = 1;
+        //$domain->save();
 
         return response([
             'message' => 'Domain has been deleted'

@@ -26,9 +26,11 @@
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-eye" @click="checkStatusGlobal" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-download" @click="downloadInvoices" v-if="view == 'invoices'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-briefcase" @click="showBM = !showBM" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-database" @click="showForm('multi_create')" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-upload" @click="showForm('import')" v-if="view == 'accounts'"></vs-button>
-            <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-map-pin" @click="switchFbAccountsStatus()" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-map-pin" @click="switchFbAccountsAdvertisingStatus()" v-if="view == 'accounts'"></vs-button>
+            <vs-button class="mr-2" color="danger"  type="filled" icon-pack="feather" icon="icon-slash" @click="changeFbAccountsStatus('ban')" v-if="view == 'accounts'"></vs-button>
             <vs-button class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-play" @click="showForm('launch_ad')" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="createPixels" v-if="view == 'ad_accounts'"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-square" @click="showForm('ad_rules')" v-if="view == 'ad_accounts'" :disabled="this.selectedAdAccounts.length == 0"></vs-button>
@@ -64,22 +66,28 @@
             </div>
 
             <div class="vx-row mb-2">
-                <div class="vx-col md:w-1/3 w-full" v-if="canCreateAsAdmin">
+                <div class="vx-col md:w-1/4 w-full" v-if="canCreateAsAdmin">
                     <label>User</label>
                     <vs-select autocomplete v-model="filters.user" class="w-full select-large">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in userOptions" class="w-full" />
                     </vs-select>
                 </div>
-                <div class="vx-col md:w-1/3 w-full">
+                <div class="vx-col md:w-1/4 w-full">
                     <label>Status</label>
                     <vs-select autocomplete v-model="filters.status" class="w-full select-large">
                         <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptionsForFilters" class="w-full" />
                     </vs-select>
                 </div>
-                <div class="vx-col md:w-1/3 w-full">
+                <div class="vx-col md:w-1/4 w-full">
                     <label>Product</label>
                     <vs-select autocomplete v-model="filters.product" class="w-full select-large">
                         <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col md:w-1/4 w-full">
+                    <label>Advertising status</label>
+                    <vs-select autocomplete v-model="filters.advertising_status" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in advertisingStatuses" class="w-full" />
                     </vs-select>
                 </div>
             </div>
@@ -127,7 +135,7 @@
             </li>
             <li>
               <a href="#" @click="$refs.context_menu.close();showAdAccounts(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <feather-icon icon="UsersIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Show ad accounts</span>
               </a>
             </li>
@@ -162,14 +170,14 @@
 
             <template slot="thead">
                 <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="token_status">Token</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <!--<vs-th sort-key="">Cards</vs-th>-->
-                <vs-th sort-key="">Allowed to advertise</vs-th>
-                <vs-th sort-key="token_status">Token Status</vs-th>
-                <vs-th sort-key="">BM</vs-th>
-                <vs-th sort-key="">Active campaigns</vs-th>
-                <vs-th sort-key="">Last check</vs-th>
-                <vs-th sort-key="amount_spent">Spent</vs-th>
+                <vs-th sort-key="advertising_status">Advertise status</vs-th>
+                <vs-th sort-key="" v-if="showBM">BM</vs-th>
+                <vs-th sort-key="active_campaigns">Active campaigns</vs-th>
+                <vs-th sort-key="last_check">Last check</vs-th>
+                <vs-th sort-key="spent">Spent</vs-th>
                 <vs-th sort-key="result">Result</vs-th>
                 <vs-th sort-key="cpa">CPA</vs-th>
                 <vs-th sort-key="notes">Notes</vs-th>
@@ -188,6 +196,20 @@
                             <span slot="on">{{data[indextr].status}}</span>
                             <span slot="off">{{data[indextr].status}}</span>
                         </vs-switch>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].token_status">
+                      <!--
+                        <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">
+                            {{data[indextr].token_status}}
+                        </vs-chip>
+                      -->
+
+                        <div class="icon-badge flex items-center w-full" v-if="data[indextr].token_status != '' && data[indextr].token_status != null">
+                            <vs-avatar size="24px" icon-pack="feather"
+                              :icon="(data[indextr].token_status == 'active') ? 'icon-check' : 'icon-x'"
+                              :color="(data[indextr].token_status) ? 'success' : 'danger'" />
+                        </div>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="data[indextr].name">
@@ -211,22 +233,13 @@
                     -->
 
                     <vs-td class="column-no-padding">
-                        <vs-chip v-if="data[indextr].info.hasOwnProperty('advertising_status')" transparent :color="advertisingStatusColor[data[indextr].info.advertising_status]">
-                            {{data[indextr].info.advertising_status}}
-                        </vs-chip>
-                        <vs-chip v-else transparent color="dark">
-                            Not checked
+                        <vs-chip transparent :color="advertisingStatusColor[data[indextr].advertising_status]">
+                            {{data[indextr].advertising_status}}
                         </vs-chip>
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="data[indextr].token_status">
-                        <vs-chip v-if="data[indextr].token_status != '' && data[indextr].token_status != null" transparent :color="(data[indextr].token_status == 'active') ? 'success' : 'danger'">
-                            {{data[indextr].token_status}}
-                        </vs-chip>
-                    </vs-td>
-
-                    <vs-td class="column-no-padding">
-                        <div class="bm-badge flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
+                    <vs-td class="column-no-padding" v-if="showBM">
+                        <div class="icon-badge flex items-center" v-if="data[indextr].info != null && data[indextr].info.hasOwnProperty('bm')">
                             <vx-tooltip :text="bm.name + ' (' + bm.id + ')'" v-for="(bm, index) in data[indextr].info['bm']" :key="index">
                                 <vs-avatar size="24px" @click="showBmInfo(data[indextr].id, index)" icon-pack="feather" icon="icon-briefcase" :color="(bm.active > 0) ? 'success' : ((bm.warning > 0) ? 'warning' : 'danger')" />
                             </vx-tooltip>
@@ -240,34 +253,33 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.last_check != 'undefined'">
-                            {{data[indextr].info.stats.last_check}}
+                        <div v-if="data[indextr].hasOwnProperty('last_check') && typeof data[indextr].last_check != 'undefined'">
+                            {{data[indextr].last_check}}
                         </div>
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.spent != 'undefined'">
-                            € {{data[indextr].info.stats.spent.toFixed(2)}}
+                        <div v-if="data[indextr].hasOwnProperty('spent') && typeof data[indextr].spent != 'undefined'">
+                            € {{data[indextr].spent.toFixed(2)}}
                         </div>
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.result != 'undefined'">
-                            {{data[indextr].info.stats.result}}
+                        <div v-if="data[indextr].hasOwnProperty('result') && typeof data[indextr].result != 'undefined'">
+                            {{data[indextr].result}}
                         </div>
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <div v-if="data[indextr].info.hasOwnProperty('stats') && typeof data[indextr].info.stats.cpa != 'undefined'">
-                            € {{data[indextr].info.stats.cpa.toFixed(2)}}
+                        <div v-if="data[indextr].hasOwnProperty('cpa') && typeof data[indextr].cpa != 'undefined'">
+                            € {{data[indextr].cpa.toFixed(2)}}
                         </div>
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <div class="bm-badge flex items-center">
+                        <div class="icon-badge flex items-center">
                             <vx-tooltip :text="data[indextr].notes">
-                                <!--<vs-button :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNote(data[indextr].id)"></vs-button>-->
-                                <vs-avatar color="primary" size="24px" @click="startEditingNote(data[indextr].id)" icon-pack="feather" icon="icon-message-square" />
+                                <vs-avatar :color="(data[indextr].notes != null && data[indextr].notes.length > 0) ? 'warning' : 'primary'" size="24px" @click="startEditingNote(data[indextr].id)" icon-pack="feather" icon="icon-message-square" />
                             </vx-tooltip>
                         </div>
                     </vs-td>
@@ -284,6 +296,8 @@
                 <vs-td class="column-no-padding">
                 </vs-td>
                 <vs-td class="column-no-padding">
+                </vs-td>
+                <vs-td class="column-no-padding" v-if="showBM">
                 </vs-td>
                 <vs-td class="column-no-padding">
                 </vs-td>
@@ -1727,14 +1741,7 @@ export default {
       selectedAds: [],
       selectedAdAccounts: [],
 
-      maxItems: 20,
-
-      advertisingStatusColor: {
-        'active': 'success',
-        'verified': 'success',
-        'verification': 'warning',
-        'disabled': 'danger',
-      },
+      maxItems: 150,
 
       showFilters: false,
       filters: {
@@ -1743,7 +1750,10 @@ export default {
         user: '',
         status: 'run',
         product: '',
+        advertising_status: '',
       },
+
+      showBM: false,
 
       fbStatuses: {
         '1':   'Active',
@@ -1755,8 +1765,24 @@ export default {
         '100': 'pending closure',
       },
 
-      statusOptionsForFilters: ['all', 'setup', 'warm', 'ready', 'run', 'request', 'ban'],
-      statusOptions: ['setup', 'warm', 'ready', 'run', 'request', 'ban'],
+      advertisingStatuses: [
+        'verified',
+        'active',
+        'verification',
+        'disabled',
+        'not_checked',
+      ],
+
+      advertisingStatusColor: {
+        'active': 'success',
+        'verified': 'success',
+        'verification': 'warning',
+        'disabled': 'danger',
+        'not_checked': 'dark',
+      },
+
+      statusOptionsForFilters: ['all', 'setup', 'run', 'ban'],
+      statusOptions: ['setup', 'run', 'ban'],
       userOptions: [],
       productOptions: [],
       myId: 0,
@@ -1840,10 +1866,7 @@ export default {
       },
       statusColors: {
         'setup': 'primary',
-        'warm': 'dark',
-        'ready': 'warning',
         'run': 'success',
-        'request': 'warning',
         'ban': 'danger',
       },
 
@@ -2083,6 +2106,7 @@ export default {
         user: '',
         status: 'run',
         product: '',
+        advertising_status: '',
       }
       this.filterDatesShortcut('this_month')
     },
@@ -2121,20 +2145,51 @@ export default {
 
       // Retrieve fb accounts
       const response = await this.$http.get('/api/3rd/fb-accounts', { headers, params: data })
-      this.objects = response.data.data
+      let objects = response.data.data
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
 
-      // TODO: to delete
-      /*
-      if (Object.keys(this.dynamicStats).length > 2) {
-        for (let i = 0; i < this.objects.length; i++) {
-          if (Object.keys(this.dynamicStats).includes("id" + this.objects[i].id)) {
-            this.objects[i].amount_spent = this.dynamicStats["id" + this.objects[i].id].amount_spent
-            this.objects[i].result = this.dynamicStats["id" + this.objects[i].id].result
-            this.objects[i].cpa = this.dynamicStats["id" + this.objects[i].id].cpa
-          }
+        if (obj.hasOwnProperty('info') && obj.info.hasOwnProperty('advertising_status')) {
+          objects[i].advertising_status = obj.info.advertising_status
+        } else {
+          objects[i].advertising_status = 'not_checked'
+        }
+
+        if (obj.hasOwnProperty('info') && obj.info.hasOwnProperty('stats')) {
+          objects[i].last_check = obj.info.stats.last_check
+          objects[i].spent = obj.info.stats.spent
+          objects[i].result = obj.info.stats.result
+          objects[i].cpa = obj.info.stats.cpa
         }
       }
-      */
+
+      // TODO: to delete
+      console.log("objects", objects)
+
+      let filteredObjects = []
+      if (this.filters.advertising_status != '') {
+        for (let i = 0; i < objects.length; i++) {
+          let obj = objects[i]
+          if (obj.advertising_status == this.filters.advertising_status) {
+            filteredObjects.push(obj)
+          }
+        }
+      } else {
+        filteredObjects = objects
+      }
+
+      this.objects = filteredObjects
+
+      // Sort by advertising status
+      this.objects.sort(function (a, b) {
+        let ia = this.advertisingStatuses.indexOf(a.advertising_status)
+        if (ia == -1) ia = 9999
+        let ib = this.advertisingStatuses.indexOf(b.advertising_status)
+        if (ib == -1) ib = 9999
+        if (ib == ia) return 0
+        else if (ib < ia) return 1
+        else if (ia < ib) return -1
+      }.bind(this))
 
       this.calculateStats()
       this.$vs.loading.close()
@@ -4489,7 +4544,7 @@ export default {
           })
         })
     },
-    async switchFbAccountsStatus() {
+    async switchFbAccountsAdvertisingStatus() {
       this.$vs.loading()
 
       let headers = {
@@ -4514,6 +4569,33 @@ export default {
       this.$vs.notify({
         title: 'Success',
         text: 'Advertising status changed to: verification',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+    },
+    async changeFbAccountsStatus(newStatus) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let counter = 0
+
+      for (let i = 0; i < this.selected.length; i++) {
+        let obj = this.selected[i]
+        let data = {
+          status: newStatus
+        }
+        await this.$http.put('/api/3rd/fb-accounts/' + obj.id, data, { headers })
+      }
+
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Status changed to: ban',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
@@ -5098,12 +5180,6 @@ export default {
     },
   },
   async created() {
-    // TODO: to delete
-    //let pixel = '	964570361060679'
-    //let fbToken = 'EAABsbCS1iHgBAPGR6qt1GUaJs2FyXZAQ2kniHW8iZAq64z76R7Kg7K3PZCH189G4MYx2TnkwPNXUAPrkw9RSDeIkV8WLZAJAnf3ZCfFZAhBGUcpY8L46t83JLJxJ0yqZADXfUzsf0v0jPotlyK3wDuG6m7d82tMa85QjIKHcZCz9olb9m3dpvPr9u3Xx4AeK7G8ZD'
-    //let pixelFields = 'id,name'
-    //const pixelResponse = await this.$http.get('https://graph.facebook.com/v11.0/' + pixel + '?access_token=' + fbToken + '&fields=' + pixelFields)
-
     let userInfo = this.$store.getters.getUserInfo()
     this.myId = userInfo.id
     this.newObject['create'].user = this.myId
@@ -5169,11 +5245,11 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 .column-no-padding {
   padding: 0px !important;
 }
-.bm-badge > .con-vs-tooltip > .con-vs-avatar {
+.icon-badge > .con-vs-tooltip > .con-vs-avatar {
   margin-top: 0px;
   margin-bottom: 0px;
 }

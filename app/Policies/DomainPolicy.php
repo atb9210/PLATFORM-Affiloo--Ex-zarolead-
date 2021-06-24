@@ -30,7 +30,7 @@ class DomainPolicy
      */
     public function view(User $user, Domain $domain)
     {
-        return $user->hasPermission('domain', 'viewAny');
+        return $user->hasPermission('domain', 'viewAny') || ($user->id === $domain->user_id && !$domain->archived);
     }
 
     /**
@@ -53,7 +53,7 @@ class DomainPolicy
      */
     public function update(User $user, Domain $domain)
     {
-        return $user->hasPermission('domain', 'update');
+        return $user->hasPermission('domain', 'update') || ($user->id === $domain->user_id && !$domain->archived);
     }
 
     /**
@@ -65,7 +65,7 @@ class DomainPolicy
      */
     public function delete(User $user, Domain $domain)
     {
-        return $user->hasPermission('domain', 'delete');
+        return $user->hasPermission('domain', 'delete') || ($user->id === $domain->user_id);
     }
 
     /**
@@ -90,5 +90,16 @@ class DomainPolicy
     public function forceDelete(User $user, Domain $domain)
     {
         //
+    }
+
+    /**
+     * Determine whether the user can change the user_id.
+     *
+     * @param  \App\User  $user
+     * @return mixed
+     */
+    public function changeUser(User $user)
+    {
+        return $user->hasPermission('domain', 'changeUser');
     }
 }

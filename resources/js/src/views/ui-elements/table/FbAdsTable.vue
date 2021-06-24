@@ -1416,8 +1416,6 @@ export default {
       this.filterDatesShortcut('this_month')
     },
     applyAdStatus(ad, adEffectiveStatus) {
-      // TODO: HERE
-
       // Update adset status
       let adsetIndex = this.getObjectIndexById(this.adsets, ad.adset_id)
       if (adsetIndex == -1) return

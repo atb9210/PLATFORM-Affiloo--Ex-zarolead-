@@ -48,6 +48,11 @@ class User extends Authenticatable
         return $this->hasMany('App\Flows');
     }
 
+    public function domains()
+    {
+        return $this->hasMany('App\Domain');
+    }
+
     public function landings()
     {
         return $this->hasMany('App\Landing');
