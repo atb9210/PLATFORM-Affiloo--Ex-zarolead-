@@ -4061,6 +4061,9 @@ export default {
                     pixel_id: adAccount.pixel,
                   }
                   data.optimization_goal = 'OFFSITE_CONVERSIONS'
+                  data.tracking_specs = [
+                    { 'action.type': 'offsite_conversion', 'fb_pixel': adAccount.pixel },
+                  ]
                 }
 
                 let adsetCounter = 0
