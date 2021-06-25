@@ -1095,10 +1095,17 @@ export default {
             fContent = fContent.replace(/--DATE--/g, dateNoTime)
 
             let d = new Date(invoice.time * 1000)
+
+            let xmlFilename = ''
+            xmlFilename += 'IE9692928F' + '_' + progressiveId
+            xmlFilename += '.xml'
+
+            /*
             let filename = ''
             filename += this.formatDate(d) + 'T' + d.getHours() + '-' + d.getMinutes()
             filename += ' Transaction #' + invoice.id
             filename += '.xml'
+            */
 
             zip.folder(d.getFullYear().toString())
               .folder((d.getMonth() + 1).toString().padStart(2, '0'))
