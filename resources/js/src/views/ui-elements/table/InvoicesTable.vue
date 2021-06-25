@@ -1109,7 +1109,7 @@ export default {
 
             zip.folder(d.getFullYear().toString())
               .folder((d.getMonth() + 1).toString().padStart(2, '0'))
-              .file(filename, fContent)
+              .file(xmlFilename, fContent)
           }
 
           // Create zip file and download
