@@ -71,6 +71,12 @@ class Worldfilia
         $this->apiToken = $apiToken;
     }
 
+    public function getUserInfo()
+    {
+        $output = $this->getRequest('/me');
+        return $output;
+    }
+
     public function getCampaigns()
     {
         $campaigns = [];
@@ -142,5 +148,67 @@ class Worldfilia
         } while ($currentPage <= $lastPage);
 
         return $landings;
+    }
+
+    public function getProductJson(
+        int $campaignId,
+        string $sourceId): string
+    {
+        $json = '';
+
+        $landings = $this->getLandings($campaignId);
+        foreach ($landings as $landing) {
+            if ($landing['name'] === 'IFRAME') {
+                $url = parse_url($landing['landing_preview_url']);
+                $urlParams = [];
+                parse_str($url['query'], $urlParams);
+                if ($urlParams === NULL) {
+                    $urlParams = [];
+                }
+                if (isset($urlParams['pub_id'])) {
+                    $urlParams['pub_id'] = $sourceId;
+                }
+                if (isset($urlParams['ref'])) {
+                    $urlParams['ref'] = $sourceId;
+                }
+                $url = $url['scheme'] . '://' . $url['host'] . $url['path'];
+                $url = $url . '?' . http_build_query($urlParams);
+
+                $sourceHTML = file_get_contents($url);
+
+                $needle = ' action="';
+                $needlePos = strpos($sourceHTML, $needle);
+                if ($needlePos !== false) {
+                    $tmp = substr($sourceHTML, $needlePos + strlen($needle));
+
+                    $needle2 = '"';
+                    $needlePos2 = strpos($tmp, $needle2);
+                    if ($needlePos2 !== false) {
+                        $formAction = substr($tmp, 0, $needlePos2);
+
+                        $scheme = 'http';
+                        if (substr($formAction, 0, strlen($scheme)) !== $scheme) {
+                            if ($formAction != '' && $formAction[0] != '/') {
+                                $formAction = '/' . $formAction;
+                            }
+                            $formAction =
+                                'https://network.worldfilia.net' .
+                                $formAction;
+
+                            $formActionUrl = parse_url($formAction);
+
+                            $json =
+                                $formActionUrl['scheme'] . '://' .
+                                $formActionUrl['host'] .
+                                $formActionUrl['path'] .
+                                '.json';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $json;
     }
 }

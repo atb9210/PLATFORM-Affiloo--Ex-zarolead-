@@ -100,32 +100,47 @@
 
         <!-- Landings popup -->
         <vs-popup title="Landings" :active.sync="showPopup['landings']">
+            <div class="w-full vx-row">
+                <div class="vx-col w-full">
+                    <h2>Product JSON</h2>
+                    <vx-input-group class="w-full mb-base">
+                        <vs-input v-model="productJson" disabled="disabled" />
+                        
+                        <template slot="append">
+                            <div class="append-text btn-addon">
+                                <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard="productJson" v-clipboard:success="onProductJsonCopied"></vs-button>
+                            </div>
+                        </template>
+                    </vx-input-group>
+                </div>
+            </div>
+
             <vs-table v-model="selectedLandings" stripe multiple search :data="landings">
 
-                  <template slot="thead">
-                      <vs-th sort-key="name">Name</vs-th>
-                      <vs-th sort-key="epc">EPC</vs-th>
-                      <vs-th sort-key="">Preview</vs-th>
-                  </template>
+                <template slot="thead">
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="epc">EPC</vs-th>
+                    <vs-th sort-key="">Preview</vs-th>
+                </template>
 
-                  <template slot-scope="{data}">
-                      <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                          <vs-td class="column-no-padding" :data="data[indextr].name">
-                              {{data[indextr].name}}
-                          </vs-td>
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            {{data[indextr].name}}
+                        </vs-td>
 
-                          <vs-td class="column-no-padding" :data="data[indextr].epc">
-                              {{data[indextr].epc}}
-                          </vs-td>
+                        <vs-td class="column-no-padding" :data="data[indextr].epc">
+                            {{data[indextr].epc}}
+                        </vs-td>
 
-                          <vs-td class="column-no-padding">
-                              <a :href="data[indextr].landing_preview_url">
-                                  <img :src="data[indextr].landing_preview_image" class="landing-preview" />
-                              </a>
-                          </vs-td>
-                      </vs-tr>
-                  </template>
+                        <vs-td class="column-no-padding">
+                            <a :href="data[indextr].landing_preview_url" target="_blank">
+                                <img :src="data[indextr].landing_preview_image" class="landing-preview" />
+                            </a>
+                        </vs-td>
+                    </vs-tr>
+                </template>
             </vs-table>
         </vs-popup>
 
@@ -141,6 +156,8 @@ export default {
   },
   data () {
     return {
+      userInfo: {},
+
       objects: [],
       selected: [],
       deleted: [],
@@ -153,6 +170,8 @@ export default {
 
       landings: [],
       selectedLandings: [],
+
+      productJson: '',
     }
   },
   computed: {
@@ -241,13 +260,57 @@ export default {
       const response = await this.$http.get('/api/3rd/marketplace/campaigns/' + id + '/landings', { headers })
       this.landings = response.data.data
 
+      // Adjust landing preview URLs by inserting pub_id (which is userInfo.source_id)
+      for (let i = 0; i < this.landings.length; i++) {
+        let landing = this.landings[i]
+        if (landing.hasOwnProperty('landing_preview_url')) {
+          let effectiveUrl = landing.landing_preview_url
+          let u = new URL(effectiveUrl)
+          if (u.searchParams.has('pub_id')) {
+            u.searchParams.set('pub_id', this.userInfo.source_id)
+          }
+          if (u.searchParams.has('ref')) {
+            u.searchParams.set('ref', this.userInfo.source_id)
+          }
+          effectiveUrl = u.href
+          this.landings[i].landing_preview_url = effectiveUrl
+        }
+      }
+
+      this.productJson = await this.fetchProductJson(id)
+
       this.showPopup['landings'] = true
 
       this.$vs.loading.close()
     },
+    async fetchProductJson(campaignId) {
+      // Get product JSON of the specified campaign
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      const response = await this.$http.get('/api/3rd/marketplace/campaigns/' + campaignId + '/product-json', { headers })
+      return response.data.data
+    },
+    onProductJsonCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Product JSON copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
   },
   async created() {
-    this.retrieveObjects()
+    // Get user info
+    let headers = {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+    }
+    const response = await this.$http.get('/api/3rd/marketplace/me', { headers })
+    this.userInfo = response.data.data
+
+    // Get marketplace campaigns
+    await this.retrieveObjects()
   },
 }
 

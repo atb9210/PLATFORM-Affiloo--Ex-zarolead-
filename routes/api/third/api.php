@@ -46,7 +46,11 @@ Route::get('/finapsy', 'api\third\FinapsyController@index')->name('finapsy.index
 Route::post('/finapsy', 'api\third\FinapsyController@store')->name('finapsy.store');
 
 /* Marketplace routes */
+Route::get('/marketplace/me', 'api\third\MarketplaceController@me')->middleware('auth:api')
+    ->name('marketplace.me');
 Route::get('/marketplace/campaigns', 'api\third\MarketplaceController@campaigns')->middleware('auth:api')
     ->name('marketplace.campaigns');
 Route::get('/marketplace/campaigns/{id}/landings', 'api\third\MarketplaceController@landings')->middleware('auth:api')
     ->name('marketplace.campaigns.landings');
+Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceController@productJson')->middleware('auth:api')
+    ->name('marketplace.campaigns.product-json');

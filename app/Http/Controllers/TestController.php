@@ -65,12 +65,10 @@ class TestController extends Controller
 
     private function testWorldfilia()
     {
-        $token = env('WORLDFILIA_API_KEY');
+        $token = env('WORLDFILIA_API_TOKEN');
         $worldfilia = new \Driverfury\Worldfilia\Worldfilia($token);
-        //$campaigns = $worldfilia->getCampaigns();
-        //echo "<pre>".var_export($campaigns,true)."</pre>";
-        $landings = $worldfilia->getLandings(1611);
-        echo "<pre>".var_export($landings,true)."</pre>";
+        $productJson = $worldfilia->getProductJson(1611, env('WORLDFILIA_SOURCE_ID'));
+        echo "<pre>".var_export($productJson,true)."</pre>";
     }
 
     public function test()
