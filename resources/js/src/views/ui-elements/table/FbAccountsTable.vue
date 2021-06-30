@@ -4055,15 +4055,17 @@ export default {
                   }
                 }
 
+                let trackingSpecs = ''
                 if (this.launchAdCampaignObjective == 'CONVERSIONS') {
                   data.promoted_object = {
                     custom_event_type: this.launchAdConversionEvent,
                     pixel_id: adAccount.pixel,
                   }
                   data.optimization_goal = 'OFFSITE_CONVERSIONS'
-                  data.tracking_specs = [
+                  trackingSpecs = [
                     { 'action.type': 'offsite_conversion', 'fb_pixel': adAccount.pixel },
                   ]
+                  data.tracking_specs = trackingSpecs
                 }
 
                 let adsetCounter = 0
@@ -4156,6 +4158,9 @@ export default {
                                               instagram_actor_id: pbia_id,
                                             },
                                             instagram_actor_id: pbia_id,
+                                          }
+                                          if (trackingSpecs != '') {
+                                            data.tracking_specs = trackingSpecs
                                           }
                                           this.$http.post('https://graph.facebook.com/v11.0/act_' + adAccount.id + '/ads', data)
                                             .then((response) => {
