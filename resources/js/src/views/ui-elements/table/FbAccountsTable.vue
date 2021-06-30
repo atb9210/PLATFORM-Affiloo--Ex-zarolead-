@@ -3399,10 +3399,15 @@ export default {
       }.bind(this))
     },
     showAds(id) {
+      let routeData = this.$router.resolve({name: 'fb-ads', params: {fb_account_id: id}});
+      window.open(routeData.href, '_blank');
+
+      /*
       this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
         .catch(error => {
           this.$router.push({name: 'fb-ads', params: {fb_account_id: id}})
         })
+      */
     },
     showBmInfo(id, bmIndex) {
       this.bmInfoObjId = id
@@ -4270,6 +4275,9 @@ export default {
                                         instagram_actor_id: pbia_id,
                                       },
                                       instagram_actor_id: pbia_id,
+                                    }
+                                    if (trackingSpecs != '') {
+                                      data.tracking_specs = trackingSpecs
                                     }
                                     this.$http.post('https://graph.facebook.com/v9.0/act_' + adAccount.id + '/ads', data)
                                       .then((response) => {

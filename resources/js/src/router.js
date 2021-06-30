@@ -55,6 +55,7 @@ const router = new Router({
           meta: {
             authRequired: true,
             rule: 'editor',
+            pageTitle: 'Dashboard',
           }
         },
         {
@@ -1270,7 +1271,7 @@ const router = new Router({
               { title: 'Users', active: true }
             ],
             pageTitle: 'Users',
-            rule: 'editor'
+            rule: 'editor',
           }
         },
         {
@@ -1886,12 +1887,24 @@ const router = new Router({
   ]
 })
 
-router.afterEach(() => {
+const DEFAULT_TITLE = 'ZaroLead';
+
+router.afterEach((to, from) => {
   // Remove initial loading
   const appLoading = document.getElementById('loading-bg')
   if (appLoading) {
     appLoading.style.display = 'none'
   }
+
+  Vue.nextTick(() => {
+    let title = DEFAULT_TITLE
+    if (to.hasOwnProperty('meta') && to.meta.hasOwnProperty('pageTitle') &&
+        to.meta.pageTitle != '')
+    {
+      title = to.meta.pageTitle + ' - ' + DEFAULT_TITLE
+    }
+    document.title = title
+  });
 })
 
 router.beforeEach((to, from, next) => {
