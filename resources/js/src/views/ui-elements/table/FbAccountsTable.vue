@@ -1474,7 +1474,9 @@
                             <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
                         </vs-select>
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full">
+                    <div class="vx-col sm:w-1/3 w-full flex items-center">
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias"></vs-button>
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
                     </div>
                 </div>
                 <div class="vx-row mb-6">
@@ -2305,14 +2307,7 @@ export default {
         }
 
         // Retrieve product medias
-        const productMediasResponse = await this.$http.get('/api/v1/product-medias', { headers })
-        this.productMedias = productMediasResponse.data.data
-        this.productMediasFiltered = []
-        for (let i = 0; i < this.productMedias.length; i++) {
-          if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
-            this.productMediasFiltered.push(this.productMedias[i])
-          }
-        }
+        await this.fetchProductMedias()
 
         // Retrieve facebook pages of this account
         this.fbAccountPages = []
@@ -5367,6 +5362,24 @@ export default {
       //  title: (result ? '' : 'Not ') + 'Allowed',
       //  text: 'The user is ' + (result ? '' : 'not ') + 'allowed to advertise',
       //})
+    },
+    openProductMediaPage() {
+      let routeData = this.$router.resolve({name: 'product-medias'});
+      window.open(routeData.href, '_blank');
+    },
+    async fetchProductMedias() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      const productMediasResponse = await this.$http.get('/api/v1/product-medias', { headers })
+      this.productMedias = productMediasResponse.data.data
+      this.productMediasFiltered = []
+      for (let i = 0; i < this.productMedias.length; i++) {
+        if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
+          this.productMediasFiltered.push(this.productMedias[i])
+        }
+      }
     },
   },
   async created() {
