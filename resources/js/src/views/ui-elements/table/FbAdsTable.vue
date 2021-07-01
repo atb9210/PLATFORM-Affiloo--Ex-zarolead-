@@ -3001,10 +3001,66 @@ export default {
         return 'icon-refresh-cw'
       }
     },
-    fetchAdvancedStats() {
+    async fetchAdvancedStats() {
       this.$vs.loading()
 
-      // TODO: HERE
+      let type = this.view
+      let objects = this.objects
+
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      timeRange = JSON.stringify(timeRange)
+
+      let fields = 'id,name,account_status'
+      fields += ',' + type + '.time_range(' + timeRange + ')\{id,name,status,effective_status,objective,result,spent,impressions,insights.time_range(' + timeRange + ')\{inline_link_click_ctr,cpc,website_purchase_roas\},clicks,bid_strategy,daily_budget\}'
+      const response = await this.$http.get('https://graph.facebook.com/v10.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
+      for (let j = 0; j < response.data.data.length; j++) {
+        let adAccount = response.data.data[j]
+
+        if (adAccount.hasOwnProperty(type) && adAccount[type].hasOwnProperty('data') && Array.isArray(adAccount[type].data)) {
+          for (let i = 0; i < adAccount[type].data.length; i++) {
+            let tmpObj = adAccount[type].data[i]
+
+            let ctr = 0.0
+            let cpc = 0.0
+            let roas = 0.0
+
+            if (tmpObj.hasOwnProperty('insights') && tmpObj.insights.hasOwnProperty('data') &&
+                tmpObj.insights.data.length > 0)
+            {
+                if (tmpObj.insights.data[0].hasOwnProperty('inline_link_click_ctr')) {
+                  ctr = parseFloat(tmpObj.insights.data[0].inline_link_click_ctr)
+                }
+                if (tmpObj.insights.data[0].hasOwnProperty('cpc')) {
+                  cpc = parseFloat(tmpObj.insights.data[0].cpc)
+                }
+                if (tmpObj.insights.data[0].hasOwnProperty('website_purchase_roas')) {
+                  roas = parseFloat(tmpObj.insights.data[0].website_purchase_roas[0].value)
+                }
+            }
+
+            let index = this.getObjectIndexById(objects, tmpObj.id)
+            objects[index].ctr = ctr
+            objects[index].cpc = cpc
+            objects[index].roas = roas
+          }
+        }
+      }
+
+      if (type == 'campaigns') {
+        this.campaigns = objects
+      } else if (type == 'adsets') {
+        this.adsets = objects
+      } else if (type == 'ads') {
+        this.ads = objects
+      }
+
+      this.showAdvancedStats = true
 
       this.$vs.loading.close()
     },
