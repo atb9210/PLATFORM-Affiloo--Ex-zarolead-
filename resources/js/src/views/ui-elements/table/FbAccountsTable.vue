@@ -1197,6 +1197,31 @@
             <div v-if="launchAdView == 'normal'">
                 <div class="vx-row mb-6">
                     <div class="vx-col sm:w-1/3 w-full">
+                        <span>Choose ad template</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="adTemplate" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in adTemplates" class="w-full" />
+                        </vs-select>
+                        <p class="flex items-center w-full">
+                          <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="loadAdTemplate(adTemplate)"></vs-button>
+                          <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate)"></vs-button>
+                        </p>
+                    </div>
+                </div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>New ad template name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newAdTemplateName" />
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
                         <span>Page</span>
                     </div>
                     <div class="vx-col sm:w-2/3 w-full">
@@ -1434,6 +1459,7 @@
                 </div>
 
                 <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate" color="primary" type="filled">Save Ad Template</vs-button>
                     <vs-button class="mt-12 mr-auto ml-auto" @click="launchAd" color="primary" type="filled" :disabled="!isValidForm('launch_ad')">Launch Ad(s)</vs-button>
                 </div>
             </div>
@@ -1510,7 +1536,7 @@
                         <vs-select autocomplete v-model="adRuleTemplate" class="w-full select-large" @change="changeAdRule">
                             <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adRulesOptions" class="w-full" />
                         </vs-select>
-                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdRuleTemplate"></vs-button>
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdRule"></vs-button>
                     </div>
                 </div>
 
@@ -1991,6 +2017,13 @@ export default {
 
       fbAccountPages: [],
 
+      adTemplate: {
+        'name': 'new',
+        'value': {},
+      },
+      adTemplates: [],
+      newAdTemplateName: '',
+
       adRuleTemplate: 0,
 
       adRuleEntityTypeOptions: [
@@ -2262,6 +2295,8 @@ export default {
         this.showPopup[type] = true
       } else if (type == 'launch_ad') {
         this.launchAdView = 'normal'
+
+        await this.fetchAdTemplates()
 
         this.$vs.loading()
 
@@ -4814,6 +4849,145 @@ export default {
           })
       })
     },
+    getAdObject() {
+      return {
+        campaign_name: this.launchAdCampaignName,
+        campaign_status: this.launchAdCampaignStatus,
+        campaign_objective: this.launchAdCampaignObjective,
+        pixel_id: this.launchAdPixelId,
+        conversion_event: this.launchAdConversionEvent,
+        campaign_budget_strategy: this.launchAdCampaignBudgetStrategy,
+        campaign_budget: this.launchAdCampaignBudget,
+        campaign_bid_strategy: this.launchAdCampaignBidStrategy,
+        campaign_bid: this.launchAdCampaignBid,
+        split_adset: this.launchAdSplitAdset,
+
+        targeting_gender: this.launchAdTargetingGender,
+        targeting_age_min: this.launchAdTargetingAgeMin,
+        targeting_age_max: this.launchAdTargetingAgeMax,
+        targeting_country: this.launchAdTargetingCountry,
+        targeting_device: this.launchAdTargetingDevice,
+        targeting_wifi: this.launchAdTargetingWifi,
+        targeting_platform_facebook: this.launchAdTargetingPlatformFacebook,
+        targeting_platform_instagram: this.launchAdTargetingPlatformInstagram,
+        targeting_platform_audience: this.launchAdTargetingPlatformAudience,
+        targeting_platform_messenger: this.launchAdTargetingPlatformMessenger,
+
+        title: this.launchAdTitle,
+        text: this.launchAdText,
+        url: this.launchAdUrl,
+        conversion_domain: this.launchAdConversionDomain,
+      }
+    },
+    loadAdTemplate(adTemplate) {
+      this.launchAdCampaignName = adTemplate.value.campaign_name
+      this.launchAdCampaignStatus = adTemplate.value.campaign_status
+      this.launchAdCampaignObjective = adTemplate.value.campaign_objective
+      this.launchAdPixelId = adTemplate.value.pixel_id
+      this.launchAdConversionEvent = adTemplate.value.conversion_event
+      this.launchAdCampaignBudgetStrategy = adTemplate.value.campaign_budget_strategy
+      this.launchAdCampaignBudget = adTemplate.value.campaign_budget
+      this.launchAdCampaignBidStrategy = adTemplate.value.campaign_bid_strategy
+      this.launchAdCampaignBid = adTemplate.value.campaign_bid
+      this.launchAdSplitAdset = adTemplate.value.split_adset
+
+      this.launchAdTargetingGender = adTemplate.value.targeting_gender
+      this.launchAdTargetingAgeMin = adTemplate.value.targeting_age_min
+      this.launchAdTargetingAgeMax = adTemplate.value.targeting_age_max
+      this.launchAdTargetingCountry = adTemplate.value.targeting_country
+      this.launchAdTargetingDevice = adTemplate.value.targeting_device
+      this.launchAdTargetingWifi = adTemplate.value.targeting_wifi
+      this.launchAdTargetingPlatformFacebook = adTemplate.value.targeting_platform_facebook
+      this.launchAdTargetingPlatformInstagram = adTemplate.value.targeting_platform_instagram
+      this.launchAdTargetingPlatformAudience = adTemplate.value.targeting_platform_audience
+      this.launchAdTargetingPlatformMessenger = adTemplate.value.targeting_platform_messenger
+
+      this.launchAdTitle = adTemplate.value.title
+      this.launchAdText = adTemplate.value.text
+      this.launchAdUrl = adTemplate.value.url
+      this.launchAdConversionDomain = adTemplate.value.conversion_domain
+
+      this.newAdTemplateName = adTemplate.name
+    },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+    },
+    async saveAdTemplate() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let value = this.getAdObject()
+
+      let data = {
+        name: this.newAdTemplateName,
+        value: JSON.stringify(value),
+      }
+
+      let alreadyExists = false
+      let adTemplateId = ''
+      for (let i = 0; i < this.adTemplates.length; i++) {
+        if (this.adTemplates[i].name == this.newAdTemplateName) {
+          alreadyExists = true
+          adTemplateId = this.adTemplates[i].id
+        }
+      }
+
+      try {
+        if (!alreadyExists) {
+          const response = await this.$http.post('/api/3rd/fb-ad-templates', data, { headers })
+        } else {
+          const response = await this.$http.put('/api/3rd/fb-ad-templates/' + adTemplateId, data, { headers })
+        }
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad template saved',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        await this.fetchAdTemplates()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Unknown error while saving ad template',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async deleteAdTemplate() {
+      this.$vs.loading()
+
+      let id = this.adTemplate.id
+
+      if (id <= 0) return
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      await this.$http.delete('/api/3rd/fb-ad-templates/' + id, { headers })
+
+      this.$vs.loading.close()
+
+      await this.fetchAdTemplates()
+    },
     saveAdRule() {
       this.$vs.loading()
 
@@ -4863,7 +5037,7 @@ export default {
         this.adRule = this.adRulesOptions[index].value
       }
     },
-    async deleteAdRuleTemplate() {
+    async deleteAdRule() {
       let id = this.adRuleTemplate
 
       if (id <= 0) return
