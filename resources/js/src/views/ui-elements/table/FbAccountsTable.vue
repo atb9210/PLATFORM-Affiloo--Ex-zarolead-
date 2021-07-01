@@ -4047,11 +4047,11 @@ export default {
                   status: this.launchAdCampaignStatus,
                 }
                 if (this.launchAdCampaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
-                  data.bid_amount = this.launchAdCampaignBid
+                  data.bid_amount = parseInt(this.launchAdCampaignBid)*100
                 }
                 if (this.launchAdCampaignBudgetStrategy != 'CBO') {
                   data.bid_strategy = this.launchAdCampaignBidStrategy
-                  data.daily_budget = this.launchAdCampaignBudget*100
+                  data.daily_budget = parseInt(this.launchAdCampaignBudget)*100
                 }
                 if (this.launchAdTargetingAgeMin > 0) {
                   data.targeting.age_min = this.launchAdTargetingAgeMin
