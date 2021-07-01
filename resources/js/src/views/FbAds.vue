@@ -32,7 +32,8 @@ export default{
         return
       }
 
-      this.$router.push({name: 'fb-ads', params: {fb_account_id: value}})
+      let newFbAccountId = parseInt(value)
+      this.$router.push({name: 'fb-ads', params: {fb_account_id: newFbAccountId}})
       this.fb_account_id = parseInt(this.$route.params.fb_account_id)
     }
   },

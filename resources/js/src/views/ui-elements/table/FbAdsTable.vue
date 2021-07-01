@@ -11,7 +11,6 @@
 <template>
     <vx-card title="FB Ads" code-toggler>
 
-        <!-- TODO: Fix this
         <div class="vx-row mb-2">
             <div class="vx-col w-1/3">
             </div>
@@ -28,7 +27,6 @@
             <div class="vx-col w-1/3">
             </div>
         </div>
-        -->
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
@@ -1237,8 +1235,9 @@ export default {
     }
   },
   watch: {
-    fb_account_id: function(newVal, oldVal) {
-      this.applyFilters()
+    fb_account_id: async function(newVal, oldVal) {
+      await this.fetchFbAccounts()
+      this.resetFilters()
     }
   },
   computed: {
@@ -1464,7 +1463,7 @@ export default {
 
       // Retrieve campaigns
       this.campaigns = []
-      const response = await this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
+      const response = await this.$http.get('https://graph.facebook.com/v10.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
       for (let j = 0; j < response.data.data.length; j++) {
         let adAccount = response.data.data[j]
 
@@ -1572,7 +1571,7 @@ export default {
 
       // Retrieve adsets
       this.adsets = []
-      const response = await this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
+      const response = await this.$http.get('https://graph.facebook.com/v10.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields)
       for (let j = 0; j < response.data.data.length; j++) {
         let adAccount = response.data.data[j]
 
@@ -1684,7 +1683,7 @@ export default {
 
       // Retrieve ads
       this.ads = []
-      const response = await this.$http.get('https://graph.facebook.com/v9.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields + '&thumbnail_width=512&thumbnail_height=512')
+      const response = await this.$http.get('https://graph.facebook.com/v10.0/me/adaccounts?access_token=' + this.fb_account.token + '&fields=' + fields + '&thumbnail_width=512&thumbnail_height=512')
       for (let j = 0; j < response.data.data.length; j++) {
         let adAccount = response.data.data[j]
 
@@ -2040,7 +2039,10 @@ export default {
         })
       }
     },
-    onFbAccountSwitch(value) {
+    async onFbAccountSwitch(value) {
+      this.campaignsLoaded = false
+      this.adsetsLoaded = false
+      this.adsLoaded = false
       this.$parent.switchFbAccount(value)
     },
     isValidForm(type) {
@@ -3006,28 +3008,31 @@ export default {
 
       this.$vs.loading.close()
     },
+    async fetchFbAccounts() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve Fb Accounts
+      this.$vs.loading()
+      const response = await this.$http.get('/api/3rd/fb-accounts', { headers })
+      this.fbAccountSwitchOptions = []
+      for (let i = 0; i < response.data.data.length; i++) {
+        let obj = response.data.data[i]
+        this.fbAccountSwitchOptions.push({
+          label: obj.name,
+          value: obj.id,
+        });
+        if (this.fb_account_id == obj.id) {
+          this.fb_account = obj
+        }
+      }
+      this.fbAccountSwitch = this.fb_account.id
+      this.$vs.loading.close()
+    },
   },
   async created() {
-    let headers = {
-      Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-    }
-
-    // Retrieve Fb Accounts
-    this.$vs.loading()
-    const response = await this.$http.get('/api/3rd/fb-accounts', { headers })
-    this.fbAccountSwitchOptions = []
-    for (let i = 0; i < response.data.data.length; i++) {
-      let obj = response.data.data[i]
-      this.fbAccountSwitchOptions.push({
-        label: obj.name,
-        value: obj.id,
-      });
-      if (this.fb_account_id == obj.id) {
-        this.fb_account = obj
-      }
-    }
-    this.fbAccountSwitch = this.fb_account.id
-    this.$vs.loading.close()
+    await this.fetchFbAccounts()
     this.resetFilters()
   },
   mounted () {
