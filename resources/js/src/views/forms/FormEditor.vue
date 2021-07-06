@@ -990,7 +990,7 @@ export default {
           id: user.id,
           label: user.email,
         })
-        this.user = user.id;
+        this.user = this.form.user.id;
       }
     } catch (error) {
     }
@@ -1004,7 +1004,7 @@ export default {
         id: ts.id,
         label: ts.name,
       })
-      this.traffic_source = ts.id;
+      this.traffic_source = this.form.traffic_source.id;
     }
 
     // Retrieve products
@@ -1017,7 +1017,7 @@ export default {
         label: p.name,
         quantity: p.quantity,
       })
-      this.product = p.id;
+      this.product = this.form.product.id;
     }
 
     // Retrieve networks
@@ -1031,7 +1031,7 @@ export default {
         id: network.id,
         label: network.name,
       })
-      this.network = network.id;
+      this.network = this.form.network.id;
     }
 
     // Close loading here, we don't need forms in the first step
