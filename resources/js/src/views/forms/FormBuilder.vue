@@ -954,7 +954,7 @@ export default {
       let plugins = {
         'Facebook': 'facebook',
         'TikTok': 'tiktok',
-        'Google': 'google',
+        'Google ads': 'google',
         'Outbrain': 'outbrain',
       }
 

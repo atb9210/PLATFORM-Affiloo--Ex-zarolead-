@@ -506,7 +506,7 @@ export default {
       let defaultPixel = ''
       let defaultEnabled = false
 
-      if (obj.script.hasOwnProperty('default')) {
+      if (obj.script != null && obj.script.hasOwnProperty('default')) {
         if (obj.script.default.hasOwnProperty('pixel')) {
           defaultPixel = obj.script.default.pixel
         }

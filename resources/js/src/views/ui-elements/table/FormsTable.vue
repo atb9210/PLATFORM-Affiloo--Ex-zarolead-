@@ -53,6 +53,10 @@
                     <v-select :options="userOptions" v-model="filters.user" />
                 </div>
                 <div class="vx-col md:w-1/3 w-full">
+                    <label>Traffic Source</label>
+                    <v-select :options="traffic_sources" v-model="filters.traffic_source" />
+                </div>
+                <div class="vx-col md:w-1/3 w-full">
                     <label>Tag</label>
                     <v-select :options="tagOptions" v-model="filters.tag" />
                 </div>
@@ -138,7 +142,7 @@
         <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="formatted_name">Name</vs-th>
                 <vs-th sort-key="archived">Status</vs-th>
                 <vs-th sort-key="visits">Visits</vs-th>
                 <vs-th sort-key="leads">Leads</vs-th>
@@ -155,11 +159,11 @@
             <template slot-scope="{data}">
                 <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
-                    <vs-td class="column-no-padding" :data="data[indextr].name">
+                    <vs-td class="column-no-padding" :data="data[indextr].formatted_name">
                         <div @contextmenu.prevent="$refs.context_menu.open($event, data[indextr])">
                             <vs-chip>
                                 <vs-avatar :src="data[indextr].traffic_source.icon"/>
-                                {{data[indextr].name}}
+                                {{ data[indextr].formatted_name }}
                             </vs-chip>
                         </div>
                     </vs-td>
@@ -666,6 +670,17 @@ export default {
       selected: [],
       deleted: [],
 
+      trafficSourcesShortcuts: {
+        'Facebook': 'FB',
+        'Google ads': 'GL',
+        'TikTok': 'TK',
+        'SMS': 'SMS',
+        'Taboola': 'TBL',
+        'Outbrain': 'OUT',
+        'Yahoo Gemini': 'YHO',
+        'MGID': 'MGID',
+      },
+
       maxItems: 20,
 
       editingObject: -1,
@@ -750,6 +765,7 @@ export default {
         date_from: '',
         date_to: '',
         tag: '',
+        traffic_source: '',
         status: 'active',
         user: '',
       },
@@ -1335,6 +1351,7 @@ export default {
         date_from: '',
         date_to: '',
         tag: '',
+        traffic_source: '',
         status: 'active',
         user: '',
       }
@@ -1366,6 +1383,7 @@ export default {
           this.objects = []
           for(let i = 0; i < this.allObjects.length; i++ ) {
             let obj = this.allObjects[i]
+            obj.formatted_name = this.formatFormName(obj)
 
             let flag = false
             switch (this.filters.status) {
@@ -1386,6 +1404,10 @@ export default {
 
             if (this.filters.tag != '') {
               flag = flag && (obj.product.tag.id == this.filters.tag.id)
+            }
+
+            if (this.filters.traffic_source != '') {
+              flag = flag && (obj.traffic_source.id == this.filters.traffic_source.id)
             }
 
             if (this.filters.user != '') {
@@ -1409,6 +1431,16 @@ export default {
               this.allObjects[i].traffic_source.icon = this.traffic_sources[tsIndex].icon
             }
           }
+
+          this.objects.sort((a, b) => {
+            if (a.traffic_source.id < b.traffic_source.id) {
+              return -1
+            } else if (a.traffic_source.id > b.traffic_source.id) {
+              return 1
+            } else {
+              return 0
+            }
+          })
 
           this.calculateStats()
 
@@ -1731,6 +1763,13 @@ export default {
             }
           })
       })
+    },
+    formatFormName(form) {
+      let shortcut = 'NULL'
+      if (this.trafficSourcesShortcuts.hasOwnProperty(form.traffic_source.name)) {
+        shortcut = this.trafficSourcesShortcuts[form.traffic_source.name]
+      }
+      return shortcut + ' - ' + form.name
     },
   },
   created() {

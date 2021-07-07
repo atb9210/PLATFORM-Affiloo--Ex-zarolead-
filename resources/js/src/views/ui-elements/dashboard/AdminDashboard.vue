@@ -343,6 +343,59 @@
 
     </div>
 
+    <div class="vx-row">
+
+      <!-- Top traffic sources -->
+      <div class="vx-col lg:w-1/2 mb-base">
+        <vx-card title="Top Traffic Sources">
+          <div slot="no-body" class="mt-4">
+            <vs-table stripe :data="trafficSourcesReports" max-items="10" pagination>
+
+              <template slot="thead">
+                <vs-th sort-key="traffic_source">Source</vs-th>
+                <vs-th sort-key="leads">Leads</vs-th>
+                <vs-th sort-key="total_cost">Cost</vs-th>
+                <vs-th sort-key="total_commission">Commission</vs-th>
+                <vs-th sort-key="profit">Profit</vs-th>
+                <vs-th sort-key="roi">ROI</vs-th>
+              </template>
+
+              <template slot-scope="{data}">
+                <vs-tr :key="indextr" v-for="(tr, indextr) in data">
+
+                  <vs-td class="column-no-padding" :data="data[indextr].product">
+                    {{data[indextr].product}}
+                  </vs-td>
+
+                  <vs-td class="column-no-padding" :data="data[indextr].leads">
+                    {{data[indextr].leads}}
+                  </vs-td>
+
+                  <vs-td class="column-no-padding" :data="data[indextr].total_commission">
+                    {{data[indextr].total_commission.toFixed(2)}} €
+                  </vs-td>
+
+                  <vs-td class="column-no-padding" :data="data[indextr].total_cost">
+                    {{data[indextr].total_cost.toFixed(2)}} €
+                  </vs-td>
+
+                  <vs-td class="column-no-padding" :data="data[indextr].profit">
+                    <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].profit.toFixed(2)}} €</vs-chip>
+                  </vs-td>
+
+                  <vs-td class="column-no-padding" :data="data[indextr].roi">
+                    <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : '')">{{data[indextr].roi.toFixed(2)}}%</vs-chip>
+                  </vs-td>
+
+                </vs-tr>
+              </template>
+            </vs-table>
+          </div>
+        </vx-card>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
@@ -396,6 +449,7 @@ export default {
       roiSeries:     [{ data: [30, 35, 48, 7], name: 'ROI' }],
 
       productsReports: [],
+      trafficSourcesReports: [],
       advertisersReports: [],
       mediabuyersReports: [],
 
@@ -772,6 +826,31 @@ export default {
         })
       }
       this.productsReports.sort(function(a, b) {
+        if (a.roi < b.roi) return 1
+        if (a.roi > b.roi) return -1
+        return 0
+      })
+
+      // Retrieve traffic sources reports
+      this.trafficSourcesReports = []
+      const tsReportsResponse = await this.$http.get('/api/v1/reports/traffic-sources', { headers, params: data })
+      for (let i = 0; i < tsReportsResponse.data.data.length; i++) {
+        let obj = tsReportsResponse.data.data[i]
+        let total_commission = parseFloat(obj.total_commission)
+        let total_cost = parseFloat(obj.total_cost)
+        let profit = total_commission - total_cost
+        let roi = (total_cost > 0) ? ((profit / total_cost)*100) : ((profit > 0) ? 9999.99 : 0)
+        this.trafficSourcesReports.push({
+          traffic_source: obj.traffic_source.name,
+          visits: obj.visits,
+          leads: obj.leads,
+          total_commission: total_commission,
+          total_cost: total_cost,
+          profit: profit,
+          roi: roi,
+        })
+      }
+      this.trafficSourcesReports.sort(function(a, b) {
         if (a.roi < b.roi) return 1
         if (a.roi > b.roi) return -1
         return 0
