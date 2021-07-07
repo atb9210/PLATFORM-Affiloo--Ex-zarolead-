@@ -169,6 +169,13 @@ export default [
             i18n: 'Products',
             roles: ['developer', 'admin'],
           },
+          {
+            url: '/dashboard/reports/traffic-sources',
+            name: 'Traffic Sources',
+            slug: 'report-traffic-sources',
+            i18n: 'Traffic Sources',
+            roles: ['developer', 'admin'],
+          },
         ]
       },
 

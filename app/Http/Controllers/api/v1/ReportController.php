@@ -158,6 +158,7 @@ class ReportController extends Controller
      *
      * @urlParam filter_date_from string From date (Y-m-d format)
      * @urlParam filter_date_to string To date (Y-m-d format)
+     * @urlParam filter_advertiser int Advertiser id
      *
      * @response {
      *  "data": [report]
@@ -178,7 +179,7 @@ class ReportController extends Controller
             'filter_advertiser' => 'integer|exists:users,id',
         ]);
 
-        // Retrieve orders
+        // Retrieve form stats
         $formsStats = FormStats::query();
         if (isset($params['filter_date_from'])) {
             $formsStats = $formsStats->where('day', '>=', $params['filter_date_from']);
@@ -206,6 +207,75 @@ class ReportController extends Controller
                 ];
             }
             $index = $lookupTable[$product->id];
+            $reports[$index]['visits'] += intval($stats->visits);
+            $reports[$index]['leads'] += intval($stats->leads);
+            $reports[$index]['total_commission'] += floatval($stats->total_commission);
+            $reports[$index]['total_cost'] += (float)$stats->total_cost;
+        }
+
+        // Format currencies (2 decimal digits)
+        for ($i = 0; $i < count($reports); $i++) {
+            $reports[$i]['total_commission'] = round($reports[$i]['total_commission'], 2);
+            $reports[$i]['total_cost'] = round($reports[$i]['total_cost'], 2);
+        }
+
+        return response([
+            'data' => $reports
+        ]);
+    }
+
+    /**
+     * Get traffic sources report.
+     *
+     * @urlParam filter_date_from string From date (Y-m-d format)
+     * @urlParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [report]
+     * }
+     */
+    public function trafficSources(Request $request)
+    {
+        if (!Auth::user()->hasPermission('report', 'traffic_sources')) {
+            return response([
+                "message" => "You don't have permissions to access reports"
+            ], 403);
+        }
+
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+        ]);
+
+        // Retrieve form stats
+        $formsStats = FormStats::query();
+        if (isset($params['filter_date_from'])) {
+            $formsStats = $formsStats->where('day', '>=', $params['filter_date_from']);
+        }
+        if (isset($params['filter_date_to'])) {
+            $formsStats = $formsStats->where('day', '<=', $params['filter_date_to']);
+        }
+
+        // Calculate report for each traffic source
+        $reports = [];
+        $lookupTable = []; // Id => reports array index
+        foreach ($formsStats->get() as $stats) {
+            $traffic_source = $stats->form->traffic_source;
+            if (!array_key_exists($traffic_source->id, $lookupTable)) {
+                $lookupTable[$traffic_source->id] = count($reports);
+                $reports[] = [
+                    'traffic_source' => [
+                        'id' => $traffic_source->id,
+                        'name' => $traffic_source->name,
+                    ],
+                    'visits' => 0,
+                    'leads' => 0,
+                    'total_commission' => 0.0,
+                    'total_cost' => 0.0,
+                ];
+            }
+            $index = $lookupTable[$traffic_source->id];
             $reports[$index]['visits'] += intval($stats->visits);
             $reports[$index]['leads'] += intval($stats->leads);
             $reports[$index]['total_commission'] += floatval($stats->total_commission);

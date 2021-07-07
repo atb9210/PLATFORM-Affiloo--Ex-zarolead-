@@ -168,6 +168,15 @@ export default {
 
       products: [],
       advertisers: [],
+
+      total_stats: {
+        visits: 0,
+        leads: 0,
+        total_commission: 0,
+        total_cost: 0,
+        profit: 0,
+        roi: 0,
+      },
     }
   },
   computed: {

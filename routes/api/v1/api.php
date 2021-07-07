@@ -192,6 +192,7 @@ Route::apiResource('ads', 'api\v1\AdController')->except([
 Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::get('users', 'api\v1\ReportController@users')->name('reports.users');
     Route::get('products', 'api\v1\ReportController@products')->name('reports.products');
+    Route::get('traffic-sources', 'api\v1\ReportController@trafficSources')->name('reports.traffic-sources');
     Route::get('advertisers', 'api\v1\ReportController@advertisers')->name('reports.advertisers');
     Route::put('advertisers/{user_id}', 'api\v1\ReportController@advertisersUpdate')->name('reports.advertisers.update');
 });

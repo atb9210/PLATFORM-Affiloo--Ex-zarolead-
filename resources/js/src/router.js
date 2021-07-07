@@ -1653,6 +1653,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/reports/traffic-sources',
+          name: 'report-traffic-sources',
+          component: () => import('./views/ReportTrafficSources.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Report Traffic Sources', active: true }
+            ],
+            pageTitle: 'Report Traffic Sources',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/invoices',
           name: 'invoices',
           component: () => import('./views/Invoices.vue'),
