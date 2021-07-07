@@ -12,7 +12,7 @@ class TrafficSource extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'custom_params', 'ad_model', 'icon',
+        'name', 'script', 'custom_params', 'ad_model', 'icon',
     ];
 
     /**
@@ -24,6 +24,7 @@ class TrafficSource extends Model
     ];
 
     protected $casts = [
+        'script' => 'array',
         'custom_params' => 'array',
         'ad_model' => 'array'
     ];

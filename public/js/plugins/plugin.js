@@ -24,6 +24,8 @@ PluginManager.prototype.add = function(plugin, data) {
         this.plugins.push(new ThankyouRedirectPlugin(data));
     } else if(plugin == "facebook") {
         this.plugins.push(new FacebookPlugin(data));
+    } else if(plugin == "tiktok") {
+        this.plugins.push(new TikTokPlugin(data));
     } else if(plugin == "zeustrack") {
         this.plugins.push(new ZeusTrackPlugin(data));
     } else if(plugin == "double_recovery") {

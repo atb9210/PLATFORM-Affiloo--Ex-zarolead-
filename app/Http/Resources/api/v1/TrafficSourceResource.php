@@ -22,6 +22,7 @@ class TrafficSourceResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'script' => $this->script,
             'custom_params' => $this->custom_params,
             'ad_model' => $this->ad_model,
             'icon' => $public_url,

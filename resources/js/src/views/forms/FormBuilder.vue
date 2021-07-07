@@ -168,7 +168,7 @@
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
                   v-model="plugins['facebook'].pixel"
-                  name="fb_pixel" placeholder="Facebook pixel"
+                  placeholder="Facebook pixel"
                 />
                 <vs-select v-model="plugins['facebook'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
@@ -184,6 +184,69 @@
                 />
                 <vs-select v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
+
+            <!-- TikTok pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">TikTok Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['tiktok'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-music" icon-no-border
+                  v-model="plugins['tiktok'].pixel"
+                  placeholder="TikTok pixel"
+                />
+                <vs-select v-model="plugins['tiktok'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div> 
+
+            <!-- Google pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Google Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['google'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-goole" icon-no-border
+                  v-model="plugins['google'].pixel"
+                  placeholder="Google pixel"
+                />
+                <vs-select v-model="plugins['google'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in googleEventNameOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
+
+            <!-- Outbrain pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Outbrain Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['outbrain'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-brain" icon-no-border
+                  v-model="plugins['outbrain'].pixel"
+                  placeholder="Outbrain pixel"
+                />
+                <vs-select v-model="plugins['outbrain'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in outbrainEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
             </div>
@@ -468,6 +531,21 @@ export default {
           eventValue: '',
           eventCurrency: 'EUR',
         },
+        'tiktok': {
+          enabled: false,
+          pixel: '',
+          eventName: 'SubmitForm',
+        },
+        'google': {
+          enabled: false,
+          pixel: '',
+          eventName: 'Purchase',
+        },
+        'outbrain': {
+          enabled: false,
+          pixel: '',
+          eventName: 'Purchase',
+        },
         'zeustrack': {
           enabled: false,
           sub_id: '',
@@ -489,6 +567,9 @@ export default {
       },
       facebookEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
       facebookEventCurrencyOptions: ['EUR', 'USD'],
+      tiktokEventNameOptions: ['SubmitForm', 'ClickButton'],
+      googleEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
+      outbrainEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
 
       showPopup: {
         'create': false,
@@ -869,6 +950,30 @@ export default {
         this.upSellBestSeller = key
       }
     },
+    async fetchTrafficSourcesDefaultInfo() {
+      let plugins = {
+        'Facebook': 'facebook',
+        'TikTok': 'tiktok',
+        'Google': 'google',
+        'Outbrain': 'outbrain',
+      }
+
+      for (let i = 0; i < this.traffic_sources.length; i++) {
+        let ts = this.traffic_sources[i]
+        if (plugins.hasOwnProperty(ts.name)) {
+          let p = plugins[ts.name]
+          if (this.plugins.hasOwnProperty(p)) {
+            if (ts.script != null && ts.script.hasOwnProperty('default')) {
+              for (const [key, value] of Object.entries(ts.script.default)) {
+                if (this.plugins[p].hasOwnProperty(key)) {
+                  this.plugins[p][key] = value
+                }
+              }
+            }
+          }
+        }
+      }
+    },
   },
   async created() {
     this.$vs.loading()
@@ -903,9 +1008,12 @@ export default {
       this.traffic_sources.push({
         id: ts.id,
         label: ts.name,
+        name: ts.name,
+        script: ts.script,
       })
       this.traffic_source = ts.id;
     }
+    await this.fetchTrafficSourcesDefaultInfo()
 
     // Retrieve products
     this.products = []

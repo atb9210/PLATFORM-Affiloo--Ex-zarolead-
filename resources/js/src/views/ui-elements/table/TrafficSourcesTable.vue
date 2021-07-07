@@ -167,6 +167,26 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col md:w-1/3 w-full">
+                    <span>Default pixel</span>
+                </div>
+                <div class="vx-col md:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].default_pixel" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col md:w-1/3 w-full">
+                    <span>Default plugin enabled</span>
+                </div>
+                <div class="vx-col md:w-2/3 w-full">
+                    <vs-checkbox v-model="newObject['edit'].default_enabled">
+                      {{ (newObject['edit'].default_enabled) ? 'Enabled' : 'Disabled' }}
+                    </vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col md:w-1/3 w-full">
                 </div>
                 <div class="vx-col md:w-1/3" vs-justify="center" vs-align="center">
                     <vs-card class="cardx">
@@ -262,6 +282,8 @@ export default {
               name: '',
             }
           ],
+          default_pixel: '',
+          default_enabled: false,
         },
         'edit': {
           name: '',
@@ -275,6 +297,8 @@ export default {
               name: '',
             }
           ],
+          default_pixel: '',
+          default_enabled: false,
         },
       },
     }
@@ -478,12 +502,27 @@ export default {
       if (obj.custom_params.length > 0) {
         custom_params = obj.custom_params
       }
+
+      let defaultPixel = ''
+      let defaultEnabled = false
+
+      if (obj.script.hasOwnProperty('default')) {
+        if (obj.script.default.hasOwnProperty('pixel')) {
+          defaultPixel = obj.script.default.pixel
+        }
+        if (obj.script.default.hasOwnProperty('enabled')) {
+          defaultEnabled = obj.script.default.enabled
+        }
+      }
+
       this.newObject['edit'] = {
         name: obj.name,
         custom_params: custom_params,
         fileToUpload: '',
         imagePreviewUrl: obj.icon,
         uploadProgress: 0,
+        default_pixel: defaultPixel,
+        default_enabled: defaultEnabled,
       }
       this.editingObject = obj.id
       this.showForm('edit')
@@ -509,6 +548,13 @@ export default {
           }
       }
 
+      let script = {
+        default: {
+          'pixel': this.newObject['edit'].default_pixel,
+          'enabled': this.newObject['edit'].default_enabled,
+        },
+      }
+
       let custom_params = []
       this.newObject['edit'].custom_params.forEach((custom_param) => {
         if (custom_param.query_param == '' && custom_param.token == '') return
@@ -521,6 +567,7 @@ export default {
       if (this.newObject['edit'].fileToUpload != '') {
         formData.append('icon', this.newObject['edit'].fileToUpload)
       }
+      formData.append('script', JSON.stringify(script))
 
       this.$http.post('/api/v1/traffic-sources/' + id + '/update', formData, config)
         .then((response) => {

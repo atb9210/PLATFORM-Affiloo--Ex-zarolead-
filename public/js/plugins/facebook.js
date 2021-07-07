@@ -30,7 +30,7 @@ function FacebookPlugin(data) {
 
     // NOTE: This is a custom code
     $(".addtocart-button").each(function() {
-        this.fbAddToCart();
+        this.onAddToCart();
     }.bind(this));
 }
 
@@ -82,7 +82,7 @@ FacebookPlugin.prototype.afterSubmit = function(response) {
 FacebookPlugin.prototype.onRedirect = function() {
 }
 
-FacebookPlugin.prototype.fbAddToCart = function() {
+FacebookPlugin.prototype.onAddToCart = function() {
     // Grab those link clickers!!
     fbq('track', 'AddToCart');
 }

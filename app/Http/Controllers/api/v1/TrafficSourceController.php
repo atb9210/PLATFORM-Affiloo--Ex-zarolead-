@@ -103,6 +103,7 @@ class TrafficSourceController extends Controller
      *
      * @bodyParam name string Traffic source's name
      * @bodyParam icon file Traffic source's icon
+     * @bodyParam script json Script info
      * @bodyParam custom_params json Custom params
      *
      * @response {
@@ -124,9 +125,13 @@ class TrafficSourceController extends Controller
         $params = $request->validate([
             'name' => 'string|min:3',
             'icon' => 'mimes:jpeg,jpg,png,bmp,gif',
+            'script' => 'json',
             'custom_params' => 'json',
         ]);
 
+        if (isset($params['script'])) {
+            $params['script'] = json_decode($params['script']);
+        }
         if (isset($params['custom_params'])) {
             $params['custom_params'] = json_decode($params['custom_params']);
         }
