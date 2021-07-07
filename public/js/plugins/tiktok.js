@@ -37,7 +37,7 @@ TikTokPlugin.prototype.onRedirect = function() {
 }
 
 TikTokPlugin.prototype.ttTriggerEvent = function(eventName) {
-    ttq(eventName);
+    ttq.track(eventName);
 }
 
 // TikTok stuff
