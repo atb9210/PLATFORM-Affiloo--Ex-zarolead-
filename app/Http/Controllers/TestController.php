@@ -73,7 +73,40 @@ class TestController extends Controller
 
     public function test()
     {
-        $this->testWorldfilia();
+        $ch = curl_init();
+
+        $params = [
+            'app_id' => '6922555156701642753',
+            'secret' => '49aad18291b3c0fd96441b863adbc02630b5518c',
+            'auth_code' => '45258b07f354d71c3ceb50f22184aebdacc68ee5',
+        ];
+        $url = 'https://ads.tiktok.com/open_api/v1.2/oauth2/access_token/';
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+        ]);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        /*
+        $app_id = '6922555156701642753';
+        $secret = '49aad18291b3c0fd96441b863adbc02630b5518c';
+        $access_token = 'b642829183a89ee4150942db354b0c67cf4539c9';
+        $params = [
+            'app_id' => $app_id,
+            'secret' => $secret,
+            'access_token' => $access_token,
+        ];
+        $url = 'https://ads.tiktok.com/open_api/v1.2/advertiser/info/?'.http_build_query($params);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Access-Token: ' . $access_token,
+        ]);
+         */
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $server_output = curl_exec($ch);
+        curl_close ($ch);
+
+        echo '<pre>'.var_export($server_output, true).'</pre>';
     }
 
     public function post(Request $request)

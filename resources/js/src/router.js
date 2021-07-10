@@ -1753,6 +1753,21 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/tiktok-ads',
+          props: true,
+          name: 'tiktok-ads',
+          component: () => import('./views/TikTokAds.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'TikTok Ads', active: true }
+            ],
+            pageTitle: 'TikTok Ads',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

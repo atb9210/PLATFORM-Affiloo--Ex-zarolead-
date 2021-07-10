@@ -215,6 +215,15 @@ export default [
       },
 
       {
+        url: '/dashboard/tiktok-ads',
+        name: 'TikTok Ads',
+        slug: 'tiktok-ads',
+        icon: 'MusicIcon',
+        i18n: 'TikTok Ads',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+      },
+
+      {
         url: '/dashboard/marketplace',
         name: 'Marketplace',
         slug: 'marketplace',
