@@ -1183,6 +1183,9 @@ export default {
     },
   },
   async created() {
+    if (location.host == 'beta2.zarolead.com') {
+      this.api.accessToken = '843140c3c74c2a73a033a4b3338ffa30f1d6c75d'
+    }
     await this.fetchAdvertisers()
     this.resetFilters()
   },
