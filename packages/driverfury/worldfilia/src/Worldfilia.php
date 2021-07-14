@@ -7,6 +7,11 @@ class Worldfilia
     protected string $apiToken = '';
     protected string $apiUrl = 'https://worldfilia.net/affiliateproject/rest';
 
+    public function __construct(string $apiToken)
+    {
+        $this->apiToken = $apiToken;
+    }
+
     protected function getRequest(
         string $path,
         array $params = []): array
@@ -64,11 +69,6 @@ class Worldfilia
         }
 
         return $output;
-    }
-
-    public function __construct(string $apiToken)
-    {
-        $this->apiToken = $apiToken;
     }
 
     public function getUserInfo()

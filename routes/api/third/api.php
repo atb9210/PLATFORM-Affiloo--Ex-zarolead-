@@ -59,3 +59,19 @@ Route::get('/marketplace/campaigns/{id}/landings', 'api\third\MarketplaceControl
     ->name('marketplace.campaigns.landings');
 Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceController@productJson')->middleware('auth:api')
     ->name('marketplace.campaigns.product-json');
+
+/* TikTok routes */
+Route::get('/tiktok/campaigns', 'api\third\TikTokController@campaigns')->middleware('auth:api')
+    ->name('tiktok.campaigns');
+Route::get('/tiktok/adgroups', 'api\third\TikTokController@adgroups')->middleware('auth:api')
+    ->name('tiktok.adgroups');
+Route::get('/tiktok/ads', 'api\third\TikTokController@ads')->middleware('auth:api')
+    ->name('tiktok.ads');
+Route::put('/tiktok/campaigns/{id}', 'api\third\TikTokController@updateCampaign')->middleware('auth:api')
+    ->name('tiktok.campaigns.update');
+Route::put('/tiktok/adgroups/{id}', 'api\third\TikTokController@updateAdgroup')->middleware('auth:api')
+    ->name('tiktok.adgroups.update');
+Route::put('/tiktok/ads/{id}', 'api\third\TikTokController@updateAd')->middleware('auth:api')
+    ->name('tiktok.ads.update');
+Route::get('/tiktok/images', 'api\third\TikTokController@imageInfo')->middleware('auth:api')
+    ->name('tiktok.images');

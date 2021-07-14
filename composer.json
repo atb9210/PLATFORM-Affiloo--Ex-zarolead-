@@ -10,6 +10,7 @@
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/cloudflare": "dev-master",
         "driverfury/fraudfilter": "dev-master",
+        "driverfury/tiktok": "dev-master",
         "driverfury/worldfilia": "dev-master",
         "driverfury/zarocloner": "dev-master",
         "fideloper/proxy": "^4.0",
@@ -90,6 +91,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/worldfilia"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/tiktok"
         }
     ]
 }

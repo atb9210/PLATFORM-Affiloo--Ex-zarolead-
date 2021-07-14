@@ -27,9 +27,9 @@ class FormController extends Controller
     /**
      * Get all forms list (also the archived ones).
      *
-     * @urlParam get_stats bool Set to 1 if you want to retrieve stats
-     * @urlParam filter_date_from string From date (Y-m-d format)
-     * @urlParam filter_date_to string To date (Y-m-d format)
+     * @bodyParam get_stats bool Set to 1 if you want to retrieve stats
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
      *
      * @response {
      *  "data": [forms],

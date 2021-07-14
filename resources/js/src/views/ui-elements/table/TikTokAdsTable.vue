@@ -19,8 +19,8 @@
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
             </span>
 
-            <!--
             <vs-button :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
+            <!--
             <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
             <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdsets.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
             <vs-button v-if="view == 'ads'" :disabled="!((view == 'ads') && (selectedAds.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('ads')"></vs-button>
@@ -73,7 +73,7 @@
         <vue-context ref="campaign_context_menu" v-slot="{ data }">
             <!--
             <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();editBudgetPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.campaign_context_menu.close();editBudgetPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit Budget</span>
               </a>
@@ -93,35 +93,35 @@
             </li>
         </vue-context>
 
-        <vue-context ref="adset_context_menu" v-slot="{ data }">
-            <!--
+        <vue-context ref="adgroup_context_menu" v-slot="{ data }">
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close();editBudgetPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close();editBudgetPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit Budget</span>
               </a>
             </li>
+            <!--
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit bid</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close();duplicateAdsetPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close();duplicateAdsetPopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Duplicate</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close();duplicateBidderAdsetPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close();duplicateBidderAdsetPopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Bidder</span>
               </a>
             </li>
             -->
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
               </a>
@@ -129,14 +129,12 @@
         </vue-context>
 
         <vue-context ref="ad_context_menu" v-slot="{ data }">
-            <!--
             <li>
-              <a href="#" @click="$refs.ad_context_menu.close();viewAdPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.ad_context_menu.close();viewAdPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">View ad</span>
               </a>
             </li>
-            -->
             <li>
               <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
@@ -172,7 +170,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
@@ -196,15 +194,15 @@
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].status">
+                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
                             <vs-switch
                                 :color="campaignStatusColor[data[indextr].status]"
-                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
                                 vs-icon-off="pause" vs-icon-on="done"
                                 @input="switchStatus('campaign', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
+                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -266,7 +264,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
@@ -279,7 +277,7 @@
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
+                            <div @contextmenu.prevent="$refs.adgroup_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
                                     class="disabled-object"
@@ -290,15 +288,15 @@
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].status">
+                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
                             <vs-switch
                                 :color="adgroupStatusColor[data[indextr].status]"
-                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
                                 vs-icon-off="pause" vs-icon-on="done"
-                                @input="switchStatus('adset', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
+                                @input="switchStatus('adgroup', data[indextr].id)">
+                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -365,7 +363,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="result">Result</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
@@ -388,15 +386,15 @@
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].status">
+                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
                             <vs-switch
                                 :color="adStatusColor[data[indextr].status]"
-                                v-model="data[indextr].status == 'ACTIVE' || data[indextr].status == 'REVIEW' || data[indextr].status == 'DISABLED'"
+                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
                                 vs-icon-off="pause" vs-icon-on="done"
                                 @input="switchStatus('ad', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else="data[indextr].status == 'DISABLED'">Disabled</span>
+                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
+                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
@@ -448,6 +446,243 @@
 
         </div>
 
+        <!-- Edit budget popup -->
+        <vs-popup title="Edit budget" :active.sync="showPopup['edit_budget']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{editingObject.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Budget</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.budget" />
+                </div>
+                <!--
+                <div class="vx-col w-full mt-2" v-if="(editingObject.object_type == 'campaign') && (editingObject.hasOwnProperty('cbo')) && (!editingObject.cbo)">
+                    <span>* This campaign is non-CBO: this daily budget will be assigned to every adset of this campaign.</span>
+                </div>
+                -->
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="editBudget" color="primary" type="filled" :disabled="!isValidForm('edit_budget')">Update budget</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Update form cost popup -->
+        <vs-popup title="Update form cost" :active.sync="showPopup['update_form_cost']">
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Total amount spent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    € {{updateFormTotalCost.toFixed(2)}}
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Form</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select
+                      autocomplete
+                      v-model="updateFormId"
+                      class="w-full">
+                        <vs-select-item :key="index" :value="item.id" :text="item.id + ' - ' + item.name" v-for="(item, index) in forms" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Form association</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                   <vs-checkbox v-model="updateFormAssociate">Associate</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Date</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="updateFormDate" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateFormCost" color="primary" type="filled" :disabled="!isValidForm('update_form_cost')">Update Form Cost</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- View ad popup -->
+        <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
+
+            <div>
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{ad.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img v-if="adImage.url != ''" :src="adImage.url" class="w-full">
+                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>{{ad.ad_text}}</span>
+                    </div>
+                </div>
+
+                <!--
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span><b>{{viewingObject.title}}</b></span>
+                    </div>
+                </div>
+                
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
+                            <template slot="thead">
+                                <vs-th sort-key="ctr">CTR</vs-th>
+                                <vs-th sort-key="cpc">CPC</vs-th>
+                                <vs-th sort-key="cpa">CPA</vs-th>
+                                <vs-th>Actions</vs-th>
+                            </template>
+
+                            <template slot-scope="{data}">
+                                <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
+                                    <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
+                                        {{data[indextr].ctr.toFixed(2)}}%
+                                    </vs-td>
+                                    <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
+                                        € {{data[indextr].cpc.toFixed(2)}}
+                                    </vs-td>
+                                    <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
+                                        € {{data[indextr].cpa.toFixed(2)}}
+                                    </vs-td>
+                                    <vs-td>
+                                        <div class="flex items-center">
+                                            <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
+                                            <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
+                                            <vs-button @click="saveAdBegin(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
+                                        </div>
+                                    </vs-td>
+                                </vs-tr>
+                            </template>
+                            
+                        </vs-table>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="viewAdSaving = false"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <vs-select v-model="viewAdSavingProduct" class="w-full select-large" label="Product" v-validate="'required'" autocomplete>
+                            <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <vs-select v-model="viewAdSavingType" class="w-full select-large" label="Type" v-validate="'required'">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in typesOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="viewAdSavingType == 'video'">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker('main')">Upload media</vs-button>
+                        <div class="vx-col w-full flex items-center">
+                            <span class="ml-auto mr-auto">{{ (fileToUpload.length == 0) ? 'No file selected' : fileToUpload.name }}</span>
+                        </div>
+                        <div class="vx-col w-full flex items-center">
+                            <span class="text-danger">{{ errors.first('file') }}</span>
+                        </div>
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <input type="file" ref="fileUpload" class="hidden" :accept="viewAdSavingType + '/*'" @change="onFileUploadChange">
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        {{ (viewAdSavingType == 'video') ? 'Preview' : 'Media' }}
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img ref="viewAdSavingImg" v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
+                        <img ref="viewAdSavingImg" v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        CTR
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        CPC
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        CPA
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCtr" />
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpc" />
+                    </div>
+                    <div class="vx-col sm:w-1/3 w-full mt-2">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpa" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="adSave" color="primary" type="filled" :disabled="!isValidForm('save_ad')">Save Ad</vs-button>
+                </div>
+                -->
+            </div>
+            
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -490,12 +725,6 @@ export default {
       campaigns: [],
       adgroups: [],
       ads: [],
-
-      api: {
-        accessToken: 'e191120b6cd3f1edf434f5c1527284799ef2839c',
-        appId: '6922555156701642753',
-        secret: '49aad18291b3c0fd96441b863adbc02630b5518c',
-      },
 
       advertisers: [],
 
@@ -668,6 +897,80 @@ export default {
         'AD_STATUS_ALL'                  : 'danger',
         'AD_STATUS_NOT_DELETE'           : 'danger',
       },
+
+      effectiveStatus: {
+        'CAMPAIGN_STATUS_DELETE'               : 'DISABLED',
+        'CAMPAIGN_STATUS_ADVERTISER_AUDIT_DENY': 'DISABLED',
+        'CAMPAIGN_STATUS_ADVERTISER_AUDIT'     : 'REVIEW',
+        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
+        'CAMPAIGN_STATUS_BUDGET_EXCEED'        : 'ACTIVE',
+        'CAMPAIGN_STATUS_DISABLE'              : 'DISABLED',
+        'CAMPAIGN_STATUS_ENABLE'               : 'ACTIVE',
+        'CAMPAIGN_STATUS_ALL'                  : 'DISABLED',
+        'CAMPAIGN_STATUS_NOT_DELETE'           : 'DISABLED',
+
+        'ADGROUP_STATUS_DELETE'                : 'DISABLED',
+        'ADGROUP_STATUS_CAMPAIGN_DELETE'       : 'DISABLED',
+        'ADGROUP_STATUS_ADVERTISER_AUDIT_DENY' : 'DISABLED',
+        'ADGROUP_STATUS_ADVERTISER_AUDIT'      : 'REVIEW',
+        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
+        'ADGROUP_STATUS_CAMPAIGN_EXCEED'       : 'ACTIVE',
+        'ADGROUP_STATUS_BUDGET_EXCEED'         : 'ACTIVE',
+        'ADGROUP_STATUS_BALANCE_EXCEED'        : 'DISABLED',
+        'ADGROUP_STATUS_AUDIT_DENY'            : 'DISABLED',
+        'ADGROUP_STATUS_REAUDIT'               : 'REVIEW',
+        'ADGROUP_STATUS_AUDIT'                 : 'REVIEW',
+        'ADGROUP_STATUS_CREATE'                : 'ACTIVE',
+        'ADGROUP_STATUS_NOT_START'             : 'DISABLED',
+        'ADGROUP_STATUS_TIME_DONE'             : 'ACTIVE',
+        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'DISABLED',
+        'ADGROUP_STATUS_DISABLE'               : 'DISABLED',
+        'ADGROUP_STATUS_DELIVERY_OK'           : 'ACTIVE',
+        'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT': 'REVIEW',
+        'ADGROUP_STATUS_ALL'                   : 'DISABLED',
+        'ADGROUP_STATUS_NOT_DELETE'            : 'DISABLED',
+
+        'AD_STATUS_CAMPAIGN_DELETE'            : 'DISABLED',
+        'AD_STATUS_ADGROUP_DELETE'             : 'DISABLED',
+        'AD_STATUS_DELETE'                     : 'DISABLED',
+        'AD_STATUS_ADVERTISER_AUDIT_DENY'      : 'DISABLED',
+        'AD_STATUS_ADVERTISER_AUDIT'           : 'REVIEW',
+        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
+        'AD_STATUS_BALANCE_EXCEED'             : 'DISABLED',
+        'AD_STATUS_CAMPAIGN_EXCEED'            : 'ACTIVE',
+        'AD_STATUS_BUDGET_EXCEED'              : 'ACTIVE',
+        'AD_STATUS_AUDIT'                      : 'REVIEW',
+        'AD_STATUS_REAUDIT'                    : 'REVIEW',
+        'AD_STATUS_AUDIT_DENY'                 : 'DISABLED',
+        'AD_STATUS_ADGROUP_AUDIT_DENY'         : 'DISABLED',
+        'AD_STATUS_NOT_START'                  : 'DISABLED',
+        'AD_STATUS_DONE'                       : 'ACTIVE',
+        'AD_STATUS_CAMPAIGN_DISABLE'           : 'DISABLED',
+        'AD_STATUS_ADGROUP_DISABLE'            : 'DISABLED',
+        'AD_STATUS_DISABLE'                    : 'DISABLED',
+        'AD_STATUS_DELIVERY_OK'                : 'ACTIVE',
+        'AD_STATUS_ALL'                        : 'DISABLED',
+        'AD_STATUS_NOT_DELETE'                 : 'DISABLED',
+      },
+
+      showPopup: {
+        'edit_budget': false,
+        'update_form_cost': false,
+        'view_ad': false,
+      },
+
+      editingObject: '',
+
+      updateFormId: '',
+      updateFormTotalCost: 0,
+      updateFormAssociate: false,
+      updateFormDate: '',
+
+      formsLoaded: false,
+      forms: [],
+
+      ad: {},
+      adImage: {},
     }
   },
   computed: {
@@ -776,93 +1079,36 @@ export default {
       }
       this.filterDatesShortcut('this_month')
     },
-    async tiktokRequestPaginated(url, params) {
-      let data = []
-
-      let headers = {
-        'Access-Token': this.api.accessToken,
-      }
-
-      let totalPages = 2
-      let currentPage = 1
-      while (currentPage < totalPages) {
-        params.page_size = 1000
-        params.page = currentPage
-        const response = await this.$http.get(url, { headers: headers, params: params })
-        if (response.data.code !== 0) {
-          totalPages = 0
-          continue
-        }
-        currentPage = response.data.data.page_info.page
-        totalPages = response.data.data.page_info.total_page
-        for (let i = 0; i < response.data.data.list.length; i++) {
-          data.push(response.data.data.list[i])
-        }
-      }
-
-      return data
-    },
-    async fetchAdvertisers() {
-      // TODO: This is a momentary patch because I don't know how to get ad accounts
-      this.advertisers = [
-        { id: '6937588729175392257' },
-      ]
-      return
-    },
     async loadCampaigns() {
       this.$vs.loading()
 
       let headers = {
-        'Access-Token': this.api.accessToken,
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+      let params = {
+      }
+
+      if (this.filters.date_from != '') {
+        params.filter_data_from = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        params.filter_data_to = this.filters.date_to
+      }
+
       this.campaigns = []
-      for (let advertiserIndex = 0; advertiserIndex < this.advertisers.length; advertiserIndex++) {
-        let advertiser = this.advertisers[advertiserIndex]
+      const response = await this.$http.get('/api/3rd/tiktok/campaigns', { headers: headers, params: params })
 
-        let params = {
-          advertiser_id: advertiser.id,
+      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
+        let object = response.data.data[objectIndex]
+
+        if (this.filters.status != '' && object.status != this.filters.status) {
+          continue
         }
-        const data = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/campaign/get/', params)
 
-        for (let campaignIndex = 0; campaignIndex < data.length; campaignIndex++) {
-          let campaign = data[campaignIndex]
-
-          if (this.filters.status != '' && campaign.status != this.filters.status) {
-            continue
-          }
-
-          let campaignToPush = campaign
-          campaignToPush.id     = campaign.campaign_id
-          campaignToPush.name   = campaign.campaign_name
-          campaignToPush.spent  = 0.0
-          campaignToPush.result = 0
-          campaignToPush.cpa    = 0.0
-          campaignToPush.cr     = 0.0
-          campaignToPush.cpm    = 0.0
-          this.campaigns.push(campaignToPush)
-        }
-      }
-
-      let reportsParams = {
-        advertiser_id: this.advertisers[0].id, // TODO: This is a momentary patch
-        report_type: 'BASIC',
-        data_level: 'AUCTION_CAMPAIGN',
-        dimensions: JSON.stringify(['campaign_id']),
-        metrics: ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        lifetime: true,
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.start_date = this.filters.date_from
-        reportsParams.lifetime = false
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.end_date = this.filters.date_to
-        reportsParams.lifetime = false
-      }
-
-      const reports = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/reports/integrated/get/', reportsParams)
-      for (let reportIndex = 0; reportIndex < reports.length; reportIndex++) {
-        let report = reports[reportIndex]
+        let objectToPush  = object
+        objectToPush.id   = object.campaign_id
+        objectToPush.name = object.campaign_name
+        objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
         let result = 0
@@ -871,34 +1117,35 @@ export default {
         let cpm = 0.0
         let impressions = 0
 
-        if (report.hasOwnProperty('metrics')) {
-          if (report.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(report.metrics.spend)
+        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
+          let reports = object.reports
+          if (reports.metrics.hasOwnProperty('spend')) {
+            spent = parseFloat(reports.metrics.spend)
           }
-          if (report.metrics.hasOwnProperty('result')) {
-            result = parseInt(report.metrics.result)
+          if (reports.metrics.hasOwnProperty('result')) {
+            result = parseInt(reports.metrics.result)
           }
-          if (report.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(report.metrics.cost_per_conversion)
+          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
+            cpa = parseFloat(reports.metrics.cost_per_conversion)
           }
-          if (report.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(report.metrics.conversion_rate)
+          if (reports.metrics.hasOwnProperty('conversion_rate')) {
+            cr = parseFloat(reports.metrics.conversion_rate)
           }
-          if (report.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(report.metrics.cpm)
+          if (reports.metrics.hasOwnProperty('cpm')) {
+            cpm = parseFloat(reports.metrics.cpm)
           }
-          if (report.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(report.metrics.impressions)
+          if (reports.metrics.hasOwnProperty('impressions')) {
+            impressions = parseFloat(reports.metrics.impressions)
           }
         }
 
-        let campaignIndex = this.getObjectIndexById(this.campaigns, report.dimensions.campaign_id)
-        this.campaigns[campaignIndex].spent       = spent
-        this.campaigns[campaignIndex].result      = result
-        this.campaigns[campaignIndex].cpa         = cpa
-        this.campaigns[campaignIndex].cr          = cr
-        this.campaigns[campaignIndex].cpm         = cpm
-        this.campaigns[campaignIndex].impressions = impressions
+        objectToPush.spent  = spent
+        objectToPush.result = result
+        objectToPush.cpa    = cpa
+        objectToPush.cr     = cr
+        objectToPush.cpm    = cpm
+
+        this.campaigns.push(objectToPush)
       }
 
       this.$vs.loading.close()
@@ -907,55 +1154,32 @@ export default {
       this.$vs.loading()
 
       let headers = {
-        'Access-Token': this.api.accessToken,
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+      let params = {
+      }
+
+      if (this.filters.date_from != '') {
+        params.filter_data_from = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        params.filter_data_to = this.filters.date_to
+      }
+
       this.adgroups = []
-      for (let advertiserIndex = 0; advertiserIndex < this.advertisers.length; advertiserIndex++) {
-        let advertiser = this.advertisers[advertiserIndex]
+      const response = await this.$http.get('/api/3rd/tiktok/adgroups', { headers: headers, params: params })
 
-        let params = {
-          advertiser_id: advertiser.id,
+      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
+        let object = response.data.data[objectIndex]
+
+        if (this.filters.status != '' && object.status != this.filters.status) {
+          continue
         }
-        const data = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/adgroup/get/', params)
-        for (let adgroupIndex = 0; adgroupIndex < data.length; adgroupIndex++) {
-          let adgroup = data[adgroupIndex]
 
-          if (this.filters.status != '' && adgroup.status != this.filters.status) {
-            continue
-          }
-
-          let adgroupToPush = adgroup
-          adgroupToPush.id     = adgroup.adgroup_id
-          adgroupToPush.name   = adgroup.adgroup_name
-          adgroupToPush.spent  = 0.0
-          adgroupToPush.result = 0
-          adgroupToPush.cpa    = 0.0
-          adgroupToPush.cr     = 0.0
-          adgroupToPush.cpm    = 0.0
-          this.adgroups.push(adgroupToPush)
-        }
-      }
-
-      let reportsParams = {
-        advertiser_id: this.advertisers[0].id, // TODO: This is a momentary patch
-        report_type: 'BASIC',
-        data_level: 'AUCTION_CAMPAIGN',
-        dimensions: JSON.stringify(['adgroup_id']),
-        metrics: ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        lifetime: true,
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.start_date = this.filters.date_from
-        reportsParams.lifetime = false
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.end_date = this.filters.date_to
-        reportsParams.lifetime = false
-      }
-
-      const reports = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/reports/integrated/get/', reportsParams)
-      for (let reportIndex = 0; reportIndex < reports.length; reportIndex++) {
-        let report = reports[reportIndex]
+        let objectToPush      = object
+        objectToPush.id     = object.adgroup_id
+        objectToPush.name   = object.adgroup_name
+        objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
         let result = 0
@@ -964,34 +1188,35 @@ export default {
         let cpm = 0.0
         let impressions = 0
 
-        if (report.hasOwnProperty('metrics')) {
-          if (report.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(report.metrics.spend)
+        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
+          let reports = object.reports
+          if (reports.metrics.hasOwnProperty('spend')) {
+            spent = parseFloat(reports.metrics.spend)
           }
-          if (report.metrics.hasOwnProperty('result')) {
-            result = parseInt(report.metrics.result)
+          if (reports.metrics.hasOwnProperty('result')) {
+            result = parseInt(reports.metrics.result)
           }
-          if (report.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(report.metrics.cost_per_conversion)
+          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
+            cpa = parseFloat(reports.metrics.cost_per_conversion)
           }
-          if (report.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(report.metrics.conversion_rate)
+          if (reports.metrics.hasOwnProperty('conversion_rate')) {
+            cr = parseFloat(reports.metrics.conversion_rate)
           }
-          if (report.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(report.metrics.cpm)
+          if (reports.metrics.hasOwnProperty('cpm')) {
+            cpm = parseFloat(reports.metrics.cpm)
           }
-          if (report.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(report.metrics.impressions)
+          if (reports.metrics.hasOwnProperty('impressions')) {
+            impressions = parseFloat(reports.metrics.impressions)
           }
         }
 
-        let adgroupIndex = this.getObjectIndexById(this.adgroups, report.dimensions.adgroup_id)
-        this.adgroups[adgroupIndex].spent      = spent
-        this.adgroups[adgroupIndex].result     = result
-        this.adgroups[adgroupIndex].cpa        = cpa
-        this.adgroups[adgroupIndex].cr         = cr
-        this.adgroups[adgroupIndex].cpm        = cpm
-        this.adgroups[adgroupIndex].impressions = impressions
+        objectToPush.spent  = spent
+        objectToPush.result = result
+        objectToPush.cpa    = cpa
+        objectToPush.cr     = cr
+        objectToPush.cpm    = cpm
+
+        this.adgroups.push(objectToPush)
       }
 
       this.$vs.loading.close()
@@ -1000,90 +1225,69 @@ export default {
       this.$vs.loading()
 
       let headers = {
-        'Access-Token': this.api.accessToken,
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
+      let params = {
+      }
+
+      if (this.filters.date_from != '') {
+        params.filter_data_from = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        params.filter_data_to = this.filters.date_to
+      }
+
       this.ads = []
-      for (let advertiserIndex = 0; advertiserIndex < this.advertisers.length; advertiserIndex++) {
-        let advertiser = this.advertisers[advertiserIndex]
+      const response = await this.$http.get('/api/3rd/tiktok/ads', { headers: headers, params: params })
 
-        let params = {
-          advertiser_id: advertiser.id,
+      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
+        let object = response.data.data[objectIndex]
+
+        if (this.filters.status != '' && object.status != this.filters.status) {
+          continue
         }
-        const data = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/ad/get/', params)
-        for (let adIndex = 0; adIndex < data.length; adIndex++) {
-          let ad = data[adIndex]
 
-          if (this.filters.status != '' && ad.status != this.filters.status) {
-            continue
-          }
-
-          let adToPush = ad
-          adToPush.id     = ad.ad_id
-          adToPush.name   = ad.ad_name
-          adToPush.spent  = 0.0
-          adToPush.result = 0
-          adToPush.cpa    = 0.0
-          adToPush.cr     = 0.0
-          adToPush.cpm    = 0.0
-          this.ads.push(adToPush)
-        }
-      }
-
-      let reportsParams = {
-        advertiser_id: this.advertisers[0].id, // TODO: This is a momentary patch
-        report_type: 'BASIC',
-        data_level: 'AUCTION_CAMPAIGN',
-        dimensions: JSON.stringify(['ad_id']),
-        metrics: ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        lifetime: true,
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.start_date = this.filters.date_from
-        reportsParams.lifetime = false
-      }
-      if (this.filters.date_from != '') {
-        reportsParams.end_date = this.filters.date_to
-        reportsParams.lifetime = false
-      }
-
-      const reports = await this.tiktokRequestPaginated('https://ads.tiktok.com/open_api/v1.2/reports/integrated/get/', reportsParams)
-      for (let reportIndex = 0; reportIndex < reports.length; reportIndex++) {
-        let report = reports[reportIndex]
+        let objectToPush      = object
+        objectToPush.id     = object.ad_id
+        objectToPush.name   = object.ad_name
+        objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
         let result = 0
         let cpa = 0.0
         let cr = 0.0
         let cpm = 0.0
+        let impressions = 0
 
-        if (report.hasOwnProperty('metrics')) {
-          if (report.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(report.metrics.spend)
+        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
+          let reports = object.reports
+          if (reports.metrics.hasOwnProperty('spend')) {
+            spent = parseFloat(reports.metrics.spend)
           }
-          if (report.metrics.hasOwnProperty('result')) {
-            result = parseInt(report.metrics.result)
+          if (reports.metrics.hasOwnProperty('result')) {
+            result = parseInt(reports.metrics.result)
           }
-          if (report.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(report.metrics.cost_per_conversion)
+          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
+            cpa = parseFloat(reports.metrics.cost_per_conversion)
           }
-          if (report.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(report.metrics.conversion_rate)
+          if (reports.metrics.hasOwnProperty('conversion_rate')) {
+            cr = parseFloat(reports.metrics.conversion_rate)
           }
-          if (report.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(report.metrics.cpm)
+          if (reports.metrics.hasOwnProperty('cpm')) {
+            cpm = parseFloat(reports.metrics.cpm)
           }
-          if (report.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(report.metrics.impressions)
+          if (reports.metrics.hasOwnProperty('impressions')) {
+            impressions = parseFloat(reports.metrics.impressions)
           }
         }
 
-        let adIndex = this.getObjectIndexById(this.ads, report.dimensions.ad_id)
-        this.ads[adIndex].spent       = spent
-        this.ads[adIndex].result      = result
-        this.ads[adIndex].cpa         = cpa
-        this.ads[adIndex].cr          = cr
-        this.ads[adIndex].cpm         = cpm
-        this.ads[adIndex].impressions = impressions
+        objectToPush.spent  = spent
+        objectToPush.result = result
+        objectToPush.cpa    = cpa
+        objectToPush.cr     = cr
+        objectToPush.cpm    = cpm
+
+        this.ads.push(objectToPush)
       }
 
       this.$vs.loading.close()
@@ -1181,12 +1385,200 @@ export default {
         this.showTrend = false
       })
     },
+    async switchStatus(type, id) {
+      this.$vs.loading()
+
+      let newStatus = 'DISABLE'
+
+      let objIndex = getObjectIndexById(this.objects, id)
+      let obj = this.objects[obj]
+      if (obj.effective_status == 'DISABLED') {
+        newStatus = 'ENABLE'
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        status: newStatus,
+      }
+
+      try {
+        if(type == 'campaign') {
+          const response = await this.$http.put('/api/3rd/tiktok/campaigns/' + id, params, { headers: headers })
+        } else if(type == 'adgroup') {
+          const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + id, params, { headers: headers })
+        } else if(type == 'ad') {
+          const response = await this.$http.put('/api/3rd/tiktok/ads/' + id, params, { headers: headers })
+        }
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot switch status',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async loadAdImage(id) {
+      this.$vs.loading()
+
+      let result = false
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        let params = {
+          image_id: id,
+        }
+        const response = await this.$http.get('/api/3rd/tiktok/images', { headers: headers, params: params })
+        this.adImage = response.data.data
+        result = true
+      } catch(error) {
+        result = false
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot load ad image',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+      return result
+    },
+    async viewAdPopup(ad) {
+      const adImageLoaded = await this.loadAdImage(ad.image_ids[0])
+      if(adImageLoaded) {
+        this.ad = ad
+        this.showPopup['view_ad'] = true
+      }
+    },
+    async showUpdateFormCost() {
+      if (this.selectedCampaigns.length == 0) {
+        return
+      }
+
+      this.updateFormTotalCost = 0
+      for (let i = 0; i < this.selectedCampaigns.length; i++) {
+        let campaign = this.selectedCampaigns[i]
+        this.updateFormTotalCost += parseFloat(campaign.spent)
+      }
+      this.updateFormDate = this.filters.date_to
+
+      if (!this.formsLoaded) {
+        this.$vs.loading()
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+
+        // Retrieve forms
+        const response = await this.$http.get('/api/v1/forms', { headers })
+        this.$vs.loading.close()
+        this.forms = response.data.data
+        if (this.forms.length > 0) {
+          this.updateFormId = this.forms[0].id
+        }
+        this.formsLoaded = true
+        this.showPopup['update_form_cost'] = true
+      } else {
+        this.showPopup['update_form_cost'] = true
+      }
+    },
+    isValidForm(type) {
+      if (type == 'edit_budget') {
+        if (this.editingObject.hasOwnProperty('budget') &&
+            this.editingObject.budget > 0) {
+          return true
+        }
+      } else if (type == 'update_form_cost') {
+        if (this.updateFormId != '' && this.updateFormId > 0 &&
+            this.updateFormTotalCost > 0 && this.updateFormDate != '') {
+          return true
+        }
+      }
+    },
+    async updateFormCost() {
+      this.$vs.loading()
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        day: this.updateFormDate,
+        cost_to_add: this.updateFormTotalCost,
+      }
+
+      // Form cost update
+      await this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
+
+      // Form association
+      /*
+      if (this.updateFormAssociate) {
+        let fbCampaigns = []
+        for (let i = 0; i < this.selectedCampaigns.length; i++) {
+          fbCampaigns.push(this.selectedCampaigns[i].id)
+        }
+        data = {
+          fb_campaigns: fbCampaigns,
+          form_id: this.updateFormId,
+        }
+        const fbCampaignsResponse = await this.$http.post('/api/3rd/fb-campaigns/associate', data, { headers })
+        for (let fbCampaignIndex = 0; fbCampaignIndex < fbCampaignsResponse.data.data.length; fbCampaignIndex++) {
+          let fbCampaign = fbCampaignsResponse.data.data[fbCampaignIndex]
+          this.campaigns[this.getObjectIndexById(this.campaigns, fbCampaign.id)].form = fbCampaign.form
+        }
+      }
+      */
+
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Form total cost updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['update_form_cost'] = false
+    },
+    editBudgetPopup(data) {
+      this.editingObject = data
+      this.showPopup['edit_budget'] = true
+    },
+    async editBudget() {
+      this.$vs.loading()
+
+      let budget = parseInt(this.editingObject.budget)
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        budget: budget,
+      }
+
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + id, params, { headers: headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update budget',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading()
+    },
   },
   async created() {
-    if (location.host == 'beta2.zarolead.com') {
-      this.api.accessToken = '843140c3c74c2a73a033a4b3338ffa30f1d6c75d'
-    }
-    await this.fetchAdvertisers()
     this.resetFilters()
   },
   mounted () {
