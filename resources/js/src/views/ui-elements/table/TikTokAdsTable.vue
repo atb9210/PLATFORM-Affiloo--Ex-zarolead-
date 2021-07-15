@@ -100,13 +100,13 @@
                 <span class="ml-2">Edit Budget</span>
               </a>
             </li>
-            <!--
             <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adgroup_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit bid</span>
               </a>
             </li>
+            <!--
             <li>
               <a href="#" @click="$refs.adgroup_context_menu.close();duplicateAdsetPopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
@@ -468,6 +468,35 @@
 
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="editBudget" color="primary" type="filled" :disabled="!isValidForm('edit_budget')">Update budget</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Edit bid popup -->
+        <vs-popup title="Edit bid" :active.sync="showPopup['edit_bid']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{editingObject.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Strategy</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select v-model="editingObject.bid_strategy" :disabled="true" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="editBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update bid</vs-button>
             </div>
         </vs-popup>
 
@@ -845,7 +874,7 @@ export default {
         'CAMPAIGN_STATUS_ADVERTISER_AUDIT'     : 'warning',
         'ADVERTISER_CONTRACT_PENDING'          : 'warning',
         'CAMPAIGN_STATUS_BUDGET_EXCEED'        : 'success',
-        'CAMPAIGN_STATUS_DISABLE'              : 'danger',
+        'CAMPAIGN_STATUS_DISABLE'              : 'warning',
         'CAMPAIGN_STATUS_ENABLE'               : 'success',
         'CAMPAIGN_STATUS_ALL'                  : 'danger',
         'CAMPAIGN_STATUS_NOT_DELETE'           : 'danger',
@@ -866,8 +895,8 @@ export default {
         'ADGROUP_STATUS_CREATE'                : 'success',
         'ADGROUP_STATUS_NOT_START'             : 'danger',
         'ADGROUP_STATUS_TIME_DONE'             : 'success',
-        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'danger',
-        'ADGROUP_STATUS_DISABLE'               : 'danger',
+        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'warning',
+        'ADGROUP_STATUS_DISABLE'               : 'warning',
         'ADGROUP_STATUS_DELIVERY_OK'           : 'success',
         'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT': 'warning',
         'ADGROUP_STATUS_ALL'                   : 'danger',
@@ -890,9 +919,9 @@ export default {
         'AD_STATUS_ADGROUP_AUDIT_DENY'   : 'danger',
         'AD_STATUS_NOT_START'            : 'danger',
         'AD_STATUS_DONE'                 : 'success',
-        'AD_STATUS_CAMPAIGN_DISABLE'     : 'danger',
-        'AD_STATUS_ADGROUP_DISABLE'      : 'danger',
-        'AD_STATUS_DISABLE'              : 'danger',
+        'AD_STATUS_CAMPAIGN_DISABLE'     : 'warning',
+        'AD_STATUS_ADGROUP_DISABLE'      : 'warning',
+        'AD_STATUS_DISABLE'              : 'warning',
         'AD_STATUS_DELIVERY_OK'          : 'success',
         'AD_STATUS_ALL'                  : 'danger',
         'AD_STATUS_NOT_DELETE'           : 'danger',
@@ -904,7 +933,7 @@ export default {
         'CAMPAIGN_STATUS_ADVERTISER_AUDIT'     : 'REVIEW',
         'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
         'CAMPAIGN_STATUS_BUDGET_EXCEED'        : 'ACTIVE',
-        'CAMPAIGN_STATUS_DISABLE'              : 'DISABLED',
+        'CAMPAIGN_STATUS_DISABLE'              : 'PAUSED',
         'CAMPAIGN_STATUS_ENABLE'               : 'ACTIVE',
         'CAMPAIGN_STATUS_ALL'                  : 'DISABLED',
         'CAMPAIGN_STATUS_NOT_DELETE'           : 'DISABLED',
@@ -923,8 +952,8 @@ export default {
         'ADGROUP_STATUS_CREATE'                : 'ACTIVE',
         'ADGROUP_STATUS_NOT_START'             : 'DISABLED',
         'ADGROUP_STATUS_TIME_DONE'             : 'ACTIVE',
-        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'DISABLED',
-        'ADGROUP_STATUS_DISABLE'               : 'DISABLED',
+        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'PAUSED',
+        'ADGROUP_STATUS_DISABLE'               : 'PAUSED',
         'ADGROUP_STATUS_DELIVERY_OK'           : 'ACTIVE',
         'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT': 'REVIEW',
         'ADGROUP_STATUS_ALL'                   : 'DISABLED',
@@ -945,16 +974,23 @@ export default {
         'AD_STATUS_ADGROUP_AUDIT_DENY'         : 'DISABLED',
         'AD_STATUS_NOT_START'                  : 'DISABLED',
         'AD_STATUS_DONE'                       : 'ACTIVE',
-        'AD_STATUS_CAMPAIGN_DISABLE'           : 'DISABLED',
-        'AD_STATUS_ADGROUP_DISABLE'            : 'DISABLED',
-        'AD_STATUS_DISABLE'                    : 'DISABLED',
+        'AD_STATUS_CAMPAIGN_DISABLE'           : 'PAUSED',
+        'AD_STATUS_ADGROUP_DISABLE'            : 'PAUSED',
+        'AD_STATUS_DISABLE'                    : 'PAUSED',
         'AD_STATUS_DELIVERY_OK'                : 'ACTIVE',
         'AD_STATUS_ALL'                        : 'DISABLED',
         'AD_STATUS_NOT_DELETE'                 : 'DISABLED',
       },
 
+      bidTypes: [
+        'BID_TYPE_CUSTOM',
+        'BID_TYPE_MAX_CONVERSION',
+        'BID_TYPE_NO_BID',
+      ],
+
       showPopup: {
         'edit_budget': false,
+        'edit_bid': false,
         'update_form_cost': false,
         'view_ad': false,
       },
@@ -1392,7 +1428,7 @@ export default {
 
       let objIndex = getObjectIndexById(this.objects, id)
       let obj = this.objects[obj]
-      if (obj.effective_status == 'DISABLED') {
+      if (obj.effective_status != 'ACTIVE') {
         newStatus = 'ENABLE'
       }
 
@@ -1497,6 +1533,11 @@ export default {
             this.editingObject.budget > 0) {
           return true
         }
+      } else if (type == 'edit_bid') {
+        if (this.editingObject.hasOwnProperty('bid') &&
+            this.editingObject.bid > 0) {
+          return true
+        }
       } else if (type == 'update_form_cost') {
         if (this.updateFormId != '' && this.updateFormId > 0 &&
             this.updateFormTotalCost > 0 && this.updateFormDate != '') {
@@ -1551,6 +1592,13 @@ export default {
       this.editingObject = data
       this.showPopup['edit_budget'] = true
     },
+    editBidPopup(data) {
+      this.editingObject = data
+      if (!this.editingObject.hasOwnProperty('bid'))
+        this.editingObject.bid = 0.0
+      this.editingObject.bid_strategy = 'BID_TYPE_CUSTOM'
+      this.showPopup['edit_bid'] = true
+    },
     async editBudget() {
       this.$vs.loading()
 
@@ -1569,6 +1617,34 @@ export default {
         this.$vs.notify({
           title: 'Error',
           text: 'Cannot update budget',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading()
+    },
+    async editBid() {
+      this.$vs.loading()
+
+      let bid = parseInt(this.editingObject.bid)
+      let bidStrategy = this.editingObject.bid_strategy
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        bid: bid,
+        bid_strategy: bidStrategy,
+      }
+
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + id, params, { headers: headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update bid',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'danger'

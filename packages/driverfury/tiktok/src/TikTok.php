@@ -379,6 +379,26 @@ class TikTok
         return false;
     }
 
+    public function updateAdgroupBid(
+        string $advertiserId,
+        string $adgroupId,
+        string $bidStrategy,
+        float  $bid): bool
+    {
+        $params = [
+            'advertiser_id' => $advertiserId,
+            'adgroup_id' => $adgroupId,
+            'bid_strategy' => $bidStrategy,
+            'bid' => $bid,
+        ];
+        $output = $this->postRequest('/adgroup/update/', $params, $params);
+        if(isset($output['code']) && $output['code'] == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public function getImageInfo(
         string $advertiserId,
         string $imageId): array

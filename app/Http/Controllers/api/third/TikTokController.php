@@ -149,7 +149,7 @@ class TikTokController extends Controller
         $success = true;
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        if($success && isset($params['status'])) {
+        if ($success && isset($params['status'])) {
             if(!$tt->updateCampaignStatus(
                 env('TIKTOK_ADVERTISER_ID'),
                 $id, $params['status'])) {
@@ -173,6 +173,8 @@ class TikTokController extends Controller
      * @urlParam id string required Adgroup id
      *
      * @bodyParam status string New adgroup status
+     * @bodyParam bid_strategy string New adgroup bid_strategy
+     * @bodyParam bid float New adgroup bid
      *
      * @response {
      *  "message": "Adgroup updated",
@@ -186,6 +188,8 @@ class TikTokController extends Controller
         $params = $request->validate([
             'status' => 'in:DELETE,DISABLE,ENABLE',
             'budget' => 'numeric|min:0',
+            'bid_strategy' => 'string|in:BID_TYPE_CUSTOM,BID_TYPE_MAX_CONVERSION,BID_TYPE_NO_BID',
+            'bid' => 'numeric|min:0',
         ]);
 
         $success = true;
@@ -203,6 +207,13 @@ class TikTokController extends Controller
             if(!$tt->updateAdgroupBudget(
                 env('TIKTOK_ADVERTISER_ID'),
                 $id, $params['budget'])) {
+                $success = false;
+            }
+        }
+        if ($success && isset($params['bid']) && isset($params['bid_strategy'])) {
+            if(!$tt->updateAdgroupBid(
+                env('TIKTOK_ADVERTISER_ID'), $id,
+                $params['bid_strategy'], floatval($params['status']))) {
                 $success = false;
             }
         }
