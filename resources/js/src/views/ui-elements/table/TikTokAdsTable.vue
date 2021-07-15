@@ -172,7 +172,7 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="result">Result</vs-th>
+                    <vs-th sort-key="conversion">Conversion</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
@@ -211,8 +211,8 @@
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].result">
-                            {{data[indextr].result}}
+                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
+                            {{data[indextr].conversion}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].cpa">
@@ -241,7 +241,7 @@
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.result}}
+                        {{total_stats.conversion}}
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
@@ -266,7 +266,7 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="result">Result</vs-th>
+                    <vs-th sort-key="conversion">Conversion</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
@@ -305,8 +305,8 @@
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].result">
-                            {{data[indextr].result}}
+                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
+                            {{data[indextr].conversion}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].cpa">
@@ -340,7 +340,7 @@
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.result}}
+                        {{total_stats.conversion}}
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
@@ -365,7 +365,7 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="result">Result</vs-th>
+                    <vs-th sort-key="conversion">Conversion</vs-th>
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
@@ -403,8 +403,8 @@
                             € {{data[indextr].spent.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].result">
-                            {{data[indextr].result}}
+                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
+                            {{data[indextr].conversion}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].cpa">
@@ -429,7 +429,7 @@
                         € {{total_stats.spent.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.result}}
+                        {{total_stats.conversion}}
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpa.toFixed(2)}}
@@ -730,7 +730,7 @@ export default {
 
       total_stats: {
         spent: 0,
-        result: 0,
+        conversion: 0,
         cpa: 0,
         impressions: 0,
         clicks: 0,
@@ -1031,7 +1031,7 @@ export default {
     },
     calculateStats() {
       let spent = 0
-      let result = 0
+      let conversion = 0
       let cpa = 0
       let impressions = 0
       let clicks = 0
@@ -1044,20 +1044,20 @@ export default {
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
         spent += obj.spent
-        result += obj.result
+        conversion += obj.conversion
         impressions += obj.impressions
         //clicks += obj.clicks
         budget += obj.budget
       }
-      cpa = (result > 0) ? (spent/result) : spent
-      cr = (clicks > 0) ? ((result/clicks)*100) : ((result > 0) ? 9999.99 : 0)
+      cpa = (conversion > 0) ? (spent/conversion) : spent
+      cr = (clicks > 0) ? ((conversion/clicks)*100) : ((conversion > 0) ? 9999.99 : 0)
       cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
       ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
       cpc = (clicks > 0) ? (spent/clicks) : spent
 
       this.total_stats = {
         spent: spent,
-        result: result,
+        conversion: conversion,
         cpa: cpa,
         impressions: impressions,
         clicks: clicks,
@@ -1111,7 +1111,7 @@ export default {
         objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
-        let result = 0
+        let conversion = 0
         let cpa = 0.0
         let cr = 0.0
         let cpm = 0.0
@@ -1122,8 +1122,8 @@ export default {
           if (reports.metrics.hasOwnProperty('spend')) {
             spent = parseFloat(reports.metrics.spend)
           }
-          if (reports.metrics.hasOwnProperty('result')) {
-            result = parseInt(reports.metrics.result)
+          if (reports.metrics.hasOwnProperty('conversion')) {
+            conversion = parseInt(reports.metrics.conversion)
           }
           if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
             cpa = parseFloat(reports.metrics.cost_per_conversion)
@@ -1140,7 +1140,7 @@ export default {
         }
 
         objectToPush.spent  = spent
-        objectToPush.result = result
+        objectToPush.conversion = conversion
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
@@ -1182,7 +1182,7 @@ export default {
         objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
-        let result = 0
+        let conversion = 0
         let cpa = 0.0
         let cr = 0.0
         let cpm = 0.0
@@ -1193,8 +1193,8 @@ export default {
           if (reports.metrics.hasOwnProperty('spend')) {
             spent = parseFloat(reports.metrics.spend)
           }
-          if (reports.metrics.hasOwnProperty('result')) {
-            result = parseInt(reports.metrics.result)
+          if (reports.metrics.hasOwnProperty('conversion')) {
+            conversion = parseInt(reports.metrics.conversion)
           }
           if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
             cpa = parseFloat(reports.metrics.cost_per_conversion)
@@ -1211,7 +1211,7 @@ export default {
         }
 
         objectToPush.spent  = spent
-        objectToPush.result = result
+        objectToPush.conversion = conversion
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
@@ -1253,7 +1253,7 @@ export default {
         objectToPush.effective_status = this.effectiveStatus[object.status]
 
         let spent = 0.0
-        let result = 0
+        let conversion = 0
         let cpa = 0.0
         let cr = 0.0
         let cpm = 0.0
@@ -1264,8 +1264,8 @@ export default {
           if (reports.metrics.hasOwnProperty('spend')) {
             spent = parseFloat(reports.metrics.spend)
           }
-          if (reports.metrics.hasOwnProperty('result')) {
-            result = parseInt(reports.metrics.result)
+          if (reports.metrics.hasOwnProperty('conversion')) {
+            conversion = parseInt(reports.metrics.conversion)
           }
           if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
             cpa = parseFloat(reports.metrics.cost_per_conversion)
@@ -1282,7 +1282,7 @@ export default {
         }
 
         objectToPush.spent  = spent
-        objectToPush.result = result
+        objectToPush.conversion = conversion
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
