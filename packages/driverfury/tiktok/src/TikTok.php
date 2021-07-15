@@ -70,7 +70,10 @@ class TikTok
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        // NOTE: I commented this because it will automatically make your request
+        // a POST request (or TikTok will consider it as a POST req instead of
+        // a GET req).
+        //curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch); 
@@ -190,6 +193,7 @@ class TikTok
             $reports = $this->getRequestAllPages(
                 '/reports/integrated/get/',
                 $reportsParams);
+
             foreach ($reports as $report) {
                 if (isset($report['dimensions']['campaign_id'])) {
                     $index = $this->getObjectIndexByField($objects, 'campaign_id', $report['dimensions']['campaign_id']);

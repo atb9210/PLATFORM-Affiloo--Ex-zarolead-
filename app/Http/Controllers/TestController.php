@@ -89,6 +89,7 @@ class TestController extends Controller
                 'end_date' => '2021-07-31',
             ]
         );
+        /*
         $adgroups = $tt->getAdgroups(
             env('TIKTOK_ADVERTISER_ID'),
             [
@@ -108,6 +109,8 @@ class TestController extends Controller
         var_dump($campaigns);
         var_dump($adgroups);
         var_dump($ads);
+        */
+        var_dump($campaigns);
     }
 
     public function post(Request $request)
