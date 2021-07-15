@@ -1089,10 +1089,10 @@ export default {
       }
 
       if (this.filters.date_from != '') {
-        params.filter_data_from = this.filters.date_from
+        params.filter_date_from = this.filters.date_from
       }
       if (this.filters.date_to != '') {
-        params.filter_data_to = this.filters.date_to
+        params.filter_date_to = this.filters.date_to
       }
 
       this.campaigns = []
@@ -1160,10 +1160,10 @@ export default {
       }
 
       if (this.filters.date_from != '') {
-        params.filter_data_from = this.filters.date_from
+        params.filter_date_from = this.filters.date_from
       }
       if (this.filters.date_to != '') {
-        params.filter_data_to = this.filters.date_to
+        params.filter_date_to = this.filters.date_to
       }
 
       this.adgroups = []
@@ -1231,10 +1231,10 @@ export default {
       }
 
       if (this.filters.date_from != '') {
-        params.filter_data_from = this.filters.date_from
+        params.filter_date_from = this.filters.date_from
       }
       if (this.filters.date_to != '') {
-        params.filter_data_to = this.filters.date_to
+        params.filter_date_to = this.filters.date_to
       }
 
       this.ads = []
