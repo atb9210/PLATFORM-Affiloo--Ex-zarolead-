@@ -1426,8 +1426,8 @@ export default {
 
       let newStatus = 'DISABLE'
 
-      let objIndex = getObjectIndexById(this.objects, id)
-      let obj = this.objects[obj]
+      let objIndex = this.getObjectIndexById(this.objects, id)
+      let obj = this.objects[objIndex]
       if (obj.effective_status != 'ACTIVE') {
         newStatus = 'ENABLE'
       }
