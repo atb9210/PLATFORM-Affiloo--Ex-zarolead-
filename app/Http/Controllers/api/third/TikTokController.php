@@ -213,7 +213,7 @@ class TikTokController extends Controller
         if ($success && isset($params['bid']) && isset($params['bid_strategy'])) {
             if(!$tt->updateAdgroupBid(
                 env('TIKTOK_ADVERTISER_ID'), $id,
-                $params['bid_strategy'], floatval($params['status']))) {
+                $params['bid_strategy'], floatval($params['bid']))) {
                 $success = false;
             }
         }

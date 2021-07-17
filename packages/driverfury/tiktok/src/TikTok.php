@@ -114,7 +114,6 @@ class TikTok
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch); 
-
         if ($response !== null) {
             $output = json_decode($response, true);
         }
@@ -367,8 +366,10 @@ class TikTok
         $params = [
             'advertiser_id' => $advertiserId,
             'budget' => [
-                'budget' => $budget,
-                'adgroup_id' => intval($adgroupId),
+                [
+                    'budget' => strval($budget),
+                    'adgroup_id' => intval($adgroupId),
+                ],
             ],
         ];
         $output = $this->postRequest('/adgroup/update/budget/', $params, $params);

@@ -1612,7 +1612,7 @@ export default {
       }
 
       try {
-        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + id, params, { headers: headers })
+        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
       } catch(error) {
         this.$vs.notify({
           title: 'Error',
@@ -1640,7 +1640,7 @@ export default {
       }
 
       try {
-        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + id, params, { headers: headers })
+        const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
       } catch(error) {
         this.$vs.notify({
           title: 'Error',
