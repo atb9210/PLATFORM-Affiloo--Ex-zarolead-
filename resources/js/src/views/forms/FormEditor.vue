@@ -473,6 +473,21 @@ export default {
           eventValue: '',
           eventCurrency: 'EUR',
         },
+        'tiktok': {
+          enabled: false,
+          pixel: '',
+          eventName: 'SubmitForm',
+        },
+        'google': {
+          enabled: false,
+          pixel: '',
+          eventName: 'Purchase',
+        },
+        'outbrain': {
+          enabled: false,
+          pixel: '',
+          eventName: 'Purchase',
+        },
         'zeustrack': {
           enabled: false,
           sub_id: '',
