@@ -17,9 +17,11 @@
                 <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
                 <vs-button @click="changeView('adgroups')" :color="(view == 'adgroups') ? 'success' : 'primary'">Adsets</vs-button>
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
+                <vs-button @click="changeView('rules')" :color="(view == 'rules') ? 'success' : 'primary'">Rules</vs-button>
             </span>
 
-            <vs-button :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
+            <vs-button v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
+            <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
             <!--
             <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
             <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdsets.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
@@ -137,6 +139,15 @@
             </li>
             <li>
               <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
+        <vue-context ref="rules_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.rules_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
               </a>
@@ -444,6 +455,47 @@
                 </template>
             </vs-table>
 
+            <!-- Rules table -->
+            <vs-table v-if="view == 'rules'" stripe multiple v-model="selectedRules" :max-items="maxItems" pagination search :data="rules" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="frequency">Frequency</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            {{data[indextr].id}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.rules_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    class="disabled-object">
+                                    <vs-avatar icon-pack="feather" icon="icon-user" />
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].status">
+                            {{data[indextr].status}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].frequency">
+                            {{data[indextr].frequency}}
+                        </vs-td>
+
+                    </vs-tr>
+
+                </template>
+            </vs-table>
+
         </div>
 
         <!-- Edit budget popup -->
@@ -712,6 +764,108 @@
             
         </vs-popup>
 
+        <!-- Create rule popup -->
+        <vs-popup title="Create rule" :active.sync="showPopup['create_rule']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Frequency</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                        <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Campaigns</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaigns" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span>Rules</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                <div class="vx-col sm:w-2/5 w-full">
+                    <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                        <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                        <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteRule(ruleIndex)"></vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span>Actions</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                <div class="vx-col sm:w-2/5 w-full">
+                    <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                        <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAction(actionIndex)"></vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createRule" color="primary" type="filled" :disabled="!isValidForm('create_rule')">Create rule</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -742,18 +896,29 @@ export default {
       selectedCampaigns: [],
       selectedAdsets: [],
       selectedAds: [],
+      selectedRules: [],
 
       deleted: [],
 
       maxItems: 20,
 
       campaignsLoaded: false,
-      adsetsLoaded: false,
+      adgroupsLoaded: false,
       adsLoaded: false,
+      rulesLoaded: false,
 
       campaigns: [],
       adgroups: [],
       ads: [],
+      rules: [],
+
+      rule: {
+        name: '',
+        campaign_ids: [],
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+      },
 
       advertisers: [],
 
@@ -993,6 +1158,7 @@ export default {
         'edit_bid': false,
         'update_form_cost': false,
         'view_ad': false,
+        'create_rule': false,
       },
 
       editingObject: '',
@@ -1007,6 +1173,42 @@ export default {
 
       ad: {},
       adImage: {},
+
+      ruleFrequencyOptions: [
+        { value: 'every_five_minutes',    label: 'Every 5 minutes' },
+        { value: 'every_ten_minutes',     label: 'Every 10 minutes' },
+        { value: 'every_fifteen_minutes', label: 'Every 15 minutes' },
+        { value: 'every_thirty_minutes',  label: 'Every 30 minutes' },
+        { value: 'hourly',                label: 'Every hour' },
+        { value: 'every_three_hours',     label: 'Every 3 hours' },
+        { value: 'daily',                 label: 'Daily' },
+      ],
+
+      ruleMetricOptions: [
+        { value: 'impressions',         label: 'impressions' },
+        { value: 'spend',               label: 'spent' },
+        { value: 'cost_per_conversion', label: 'cost_per_conversion' },
+        { value: 'conversion',          label: 'conversions' },
+        { value: 'conversion_rate',     label: 'CR' },
+        //{ value: 'clicks',      label: 'clicks' }, // TODO: We don't have clicks metric right now
+
+        // TODO: Special metrics
+        /*
+        { value: 'roi',                 label: 'roi' },
+        { value: 'profit',              label: 'profit' },
+        */
+      ],
+
+      ruleComparisonOptions: [
+        '<', '<=', '==', '>=', '>',
+      ],
+
+      ruleActionOptions: [
+        { value: 'inc_bid',      label: 'Increase bid' },
+        { value: 'dec_bid',      label: 'Decrease bid' },
+        { value: 'inc_budget',   label: 'Increase budget' },
+        { value: 'dec_budget',   label: 'Decrease budget' },
+      ],
     }
   },
   computed: {
@@ -1184,6 +1386,8 @@ export default {
         this.campaigns.push(objectToPush)
       }
 
+      this.campaignsLoaded = true
+
       this.$vs.loading.close()
     },
     async loadAdgroups() {
@@ -1254,6 +1458,8 @@ export default {
 
         this.adgroups.push(objectToPush)
       }
+
+      this.adgroupsLoaded = true
 
       this.$vs.loading.close()
     },
@@ -1326,6 +1532,23 @@ export default {
         this.ads.push(objectToPush)
       }
 
+      this.adsLoaded = true
+
+      this.$vs.loading.close()
+    },
+    async loadRules() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.rules = []
+      const response = await this.$http.get('/api/3rd/tiktok/rules', { headers: headers })
+      this.rules = response.data.data
+
+      this.rulesLoaded = true
+
       this.$vs.loading.close()
     },
     async applyFilters() {
@@ -1334,12 +1557,11 @@ export default {
       this.selectedAds = []
 
       this.campaignsLoaded = false
-      this.adsetsLoaded = false
+      this.adgroupsLoaded = false
       this.adsLoaded = false
+      this.rulesLoaded = false
 
-      await this.loadCampaigns()
-      await this.loadAdgroups()
-      await this.loadAds()
+      this.changeView(this.view)
 
       this.calculateStats()
     },
@@ -1406,15 +1628,15 @@ export default {
 
       this.view = view
 
-      /*
       if (view == 'campaigns') {
         if (!this.campaignsLoaded) await this.loadCampaigns()
       } else if (view == 'adgroups') {
-        if (!this.adsetsLoaded) await this.loadAdgroups()
+        if (!this.adgroupsLoaded) await this.loadAdgroups()
       } else if (view == 'ads') {
         if (!this.adsLoaded) await this.loadAds()
+      } else if (view == 'rules') {
+        if (!this.rulesLoaded) await this.loadRules()
       }
-      */
 
       this.calculateStats()
       this.$nextTick(() => {
@@ -1543,7 +1765,14 @@ export default {
             this.updateFormTotalCost > 0 && this.updateFormDate != '') {
           return true
         }
+      } else if (type == 'create_rule') {
+        if (this.rule.name != '' && this.rule.frequency != '' &&
+            this.rule.campaign_ids.length > 0 &&
+            this.rule.rules.length > 0) {
+          return true
+        }
       }
+      return false
     },
     async updateFormCost() {
       this.$vs.loading()
@@ -1652,6 +1881,77 @@ export default {
       }
 
       this.$vs.loading()
+    },
+    showCreateRuleForm() {
+      this.rule = {
+        name: '',
+        campaign_ids: [],
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+      }
+      this.addRule()
+      this.addAction()
+      this.showPopup['create_rule'] = true
+    },
+    addRule() {
+      this.rule.rules.push({
+        metric: 'impressions',
+        comparison: '<',
+        value: 10,
+      })
+    },
+    deleteRule(index) {
+      this.rule.rules.splice(index, 1)
+    },
+    addAction() {
+      this.rule.actions.push({
+        type: 'inc_bid',
+        value: 1,
+        max_value: 10,
+      })
+    },
+    deleteAction(index) {
+      this.rule.actions.splice(index, 1)
+    },
+    async createRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        name: this.rule.name,
+        campaign_ids: this.rule.campaign_ids,
+        rules: JSON.stringify(this.rule.rules),
+        actions: JSON.stringify(this.rule.actions),
+        frequency: this.rule.frequency,
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/tiktok/rules', data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.showPopup['create_rule'] = false
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule created successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
     },
   },
   async created() {

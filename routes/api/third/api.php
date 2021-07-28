@@ -75,3 +75,7 @@ Route::put('/tiktok/ads/{id}', 'api\third\TikTokController@updateAd')->middlewar
     ->name('tiktok.ads.update');
 Route::get('/tiktok/images', 'api\third\TikTokController@imageInfo')->middleware('auth:api')
     ->name('tiktok.images');
+Route::get('/tiktok/rules', 'api\third\TikTokController@rules')->middleware('auth:api')
+    ->name('tiktok.rules');
+Route::post('/tiktok/rules', 'api\third\TikTokController@createRule')->middleware('auth:api')
+    ->name('tiktok.rules.store');

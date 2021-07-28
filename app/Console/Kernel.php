@@ -24,8 +24,61 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_five_minutes')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyFiveMinutes();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_ten_minutes')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyTenMinutes();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_fifteen_minutes')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyFifteenMinutes();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_thirty_minutes')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyThirtyMinutes();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'hourly')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->hourly();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_three_hours')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyThreeHours();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'daily')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->daily();
     }
 
     /**

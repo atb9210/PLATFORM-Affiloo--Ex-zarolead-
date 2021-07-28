@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 
 use Driverfury\TikTok\TikTok;
 
+use App\third\TikTokRule;
+use App\Http\Resources\api\third\TikTokRuleResource;
+
 class TikTokController extends Controller
 {
     /**
@@ -304,6 +307,72 @@ class TikTokController extends Controller
 
         return response([
             'data' => $image,
+        ]);
+    }
+
+    /**
+     * Get rules
+     *
+     * @response {
+     *  "data": [rules]
+     * }
+     */
+    public function rules(Request $request)
+    {
+        // TODO: Authorization
+
+        $rules = TikTokRule::all();
+
+        return TikTokRuleResource::collection($rules);
+    }
+
+    /**
+     * Create rules
+     *
+     * @bodyParam name string required Rule's name
+     * @bodyParam campaign_ids string required Campaigns ids
+     * @bodyParam rules string required Rules
+     * @bodyParam actions string required Actions
+     * @bodyParam status string Status
+     * @bodyParam frequency string required Frequency
+     *
+     * @response {
+     *  "message": "Rule created",
+     *  "data": rule
+     * }
+     */
+    public function createRule(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string|required',
+            'campaign_ids' => 'array|required',
+            'rules' => 'json|required',
+            'actions' => 'json|required',
+            'status' => 'in:active,disabled',
+            'frequency' => 'required|in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+        ]);
+
+        $campaign_ids = $params['campaign_ids'];
+        $rules = $params['rules'];
+        $actions = $params['actions'];
+
+        // TODO: Check campaign_ids, rules and actions
+
+        $rule = TikTokRule::create([
+            'name' => $params['name'],
+            'value' => [
+                'campaign_ids' => $campaign_ids,
+                'rules' => $rules,
+                'actions' => $actions,
+            ],
+        ]);
+
+        return response([
+            'message' => 'Rule created',
+            'data' => $rule,
         ]);
     }
 }
