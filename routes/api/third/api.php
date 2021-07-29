@@ -83,3 +83,5 @@ Route::put('/tiktok/rules/{id}', 'api\third\TikTokController@updateRule')->middl
     ->name('tiktok.rules.update');
 Route::delete('/tiktok/rules/{id}', 'api\third\TikTokController@deleteRule')->middleware('auth:api')
     ->name('tiktok.rules.destroy');
+Route::post('/tiktok/rules/{id}/run', 'api\third\TikTokController@runRule')->middleware('auth:api')
+    ->name('tiktok.rules.run');

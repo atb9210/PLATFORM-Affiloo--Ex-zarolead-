@@ -452,4 +452,25 @@ class TikTokController extends Controller
             'message' => 'Rule deleted',
         ]);
     }
+
+    /**
+     * Run rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @response {
+     *  "message": "Rule executed",
+     * }
+     */
+    public function runRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = TikTokRule::findOrFail($id);
+        $rule->apply();
+
+        return response([
+            'message' => 'Rule executed',
+        ]);
+    }
 }

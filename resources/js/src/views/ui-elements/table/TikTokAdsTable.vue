@@ -147,6 +147,12 @@
 
         <vue-context ref="rules_context_menu" v-slot="{ data }">
             <li>
+              <a href="#" @click="$refs.rules_context_menu.close();runRule(data);" class="flex items-center text-sm">
+                <feather-icon icon="SettingsIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Run now</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.rules_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
                 <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Enable/Disable</span>
@@ -2194,6 +2200,37 @@ export default {
       this.$vs.notify({
         title: 'Success',
         text: 'Rule deleted successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading()
+    },
+    async runRule(rule) {
+      this.$vs.loading.close()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/tiktok/rules/' + rule.id + '/run', {}, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot run the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule executed',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
