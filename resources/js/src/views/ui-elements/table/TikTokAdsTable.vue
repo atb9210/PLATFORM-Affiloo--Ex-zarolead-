@@ -147,6 +147,24 @@
 
         <vue-context ref="rules_context_menu" v-slot="{ data }">
             <li>
+              <a href="#" @click="$refs.rules_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
+                <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Enable/Disable</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.rules_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.rules_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
+                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Delete</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.rules_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
@@ -866,6 +884,108 @@
             </div>
         </vs-popup>
 
+        <!-- Edit rule popup -->
+        <vs-popup title="Edit rule" :active.sync="showPopup['edit_rule']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Frequency</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                        <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Campaigns</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaigns" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span>Rules</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                <div class="vx-col sm:w-2/5 w-full">
+                    <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                        <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                        <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteRule(ruleIndex)"></vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full">
+                    <span>Actions</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                <div class="vx-col sm:w-2/5 w-full">
+                    <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                        <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                    </vs-select>
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
+                </div>
+                <div class="vx-col sm:w-1/5 w-full">
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAction(actionIndex)"></vs-button>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateRule" color="primary" type="filled" :disabled="!isValidForm('edit_rule')">Update rule</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -878,6 +998,13 @@ import { VueContext } from 'vue-context'
 // TODO: Move this function into a utilities package?
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function forceJson(o) {
+  if (typeof o == 'string') {
+    return JSON.parse(o)
+  }
+  return(o)
 }
 
 export default {
@@ -1159,6 +1286,7 @@ export default {
         'update_form_cost': false,
         'view_ad': false,
         'create_rule': false,
+        'edit_rule': false,
       },
 
       editingObject: '',
@@ -1765,7 +1893,7 @@ export default {
             this.updateFormTotalCost > 0 && this.updateFormDate != '') {
           return true
         }
-      } else if (type == 'create_rule') {
+      } else if (type == 'create_rule' || type == 'edit_rule') {
         if (this.rule.name != '' && this.rule.frequency != '' &&
             this.rule.campaign_ids.length > 0 &&
             this.rule.rules.length > 0) {
@@ -1894,6 +2022,18 @@ export default {
       this.addAction()
       this.showPopup['create_rule'] = true
     },
+    showEditRuleForm(rule) {
+      this.rule = {
+        id: rule.id,
+        name: rule.name,
+        campaign_ids: forceJson(rule.value.campaign_ids),
+        rules: forceJson(rule.value.rules),
+        actions: forceJson(rule.value.actions),
+        frequency: rule.frequency,
+      }
+
+      this.showPopup['edit_rule'] = true
+    },
     addRule() {
       this.rule.rules.push({
         metric: 'impressions',
@@ -1952,6 +2092,115 @@ export default {
       this.applyFilters()
 
       this.$vs.loading.close()
+    },
+    async updateRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        name: this.rule.name,
+        campaign_ids: this.rule.campaign_ids,
+        rules: JSON.stringify(this.rule.rules),
+        actions: JSON.stringify(this.rule.actions),
+        frequency: this.rule.frequency,
+      }
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/rules/' + this.rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.showPopup['edit_rule'] = false
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule update successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async switchStatusRule(rule) {
+      this.$vs.loading.close()
+
+      let newStatus = 'disabled'
+      if (rule.status == 'disabled') {
+        newStatus = 'active'
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        status: newStatus
+      }
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/rules/' + rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule updated successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading()
+    },
+    async deleteRule(rule) {
+      this.$vs.loading.close()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.delete('/api/3rd/tiktok/rules/' + rule.id, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule deleted successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading()
     },
   },
   async created() {

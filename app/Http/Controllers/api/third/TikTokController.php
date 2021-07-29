@@ -327,7 +327,7 @@ class TikTokController extends Controller
     }
 
     /**
-     * Create rules
+     * Create rule
      *
      * @bodyParam name string required Rule's name
      * @bodyParam campaign_ids string required Campaigns ids
@@ -373,6 +373,83 @@ class TikTokController extends Controller
         return response([
             'message' => 'Rule created',
             'data' => $rule,
+        ]);
+    }
+
+    /**
+     * Update rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @bodyParam name string Rule's name
+     * @bodyParam campaign_ids string Campaigns ids
+     * @bodyParam rules string Rules
+     * @bodyParam actions string Actions
+     * @bodyParam status string Status
+     * @bodyParam frequency string Frequency
+     *
+     * @response {
+     *  "message": "Rule updated",
+     *  "data": rule
+     * }
+     */
+    public function updateRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = TikTokRule::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string',
+            'campaign_ids' => 'array',
+            'rules' => 'json',
+            'actions' => 'json',
+            'status' => 'in:active,disabled',
+            'frequency' => 'in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+        ]);
+
+        $value = $rule->value;
+        if (isset($params['campaign_ids'])) {
+            $value['campaign_ids'] = $params['campaign_ids'];
+        }
+        if (isset($params['rules'])) {
+            $value['rules'] = $params['rules'];
+        }
+        if (isset($params['actions'])) {
+            $value['actions'] = $params['actions'];
+        }
+        $params['value'] = $value;
+
+        // TODO: Check campaign_ids, rules and actions
+
+        $rule->update($params);
+
+        return response([
+            'message' => 'Rule created',
+            'data' => $rule,
+        ]);
+    }
+
+    /**
+     * Delete rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @response {
+     *  "message": "Rule updated",
+     *  "data": rule
+     * }
+     */
+    public function deleteRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = TikTokRule::findOrFail($id);
+        $rule->delete();
+
+        return response([
+            'message' => 'Rule deleted',
         ]);
     }
 }
