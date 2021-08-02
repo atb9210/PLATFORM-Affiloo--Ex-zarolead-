@@ -3,6 +3,7 @@
 namespace App\third;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class TikTokRule extends Model
 {
@@ -18,9 +19,8 @@ class TikTokRule extends Model
 
     public function apply()
     {
-        // TODO: to delete
-        Storage::put($this->id . '_schedule.txt', 'Hello world\n');
-        //return;
+        // DEBUG
+        Log::info('Applying rule ' . $this->name . ' (' . $this->id . ')...');
 
         $reports = [
             'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
@@ -29,16 +29,29 @@ class TikTokRule extends Model
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
         $allCampaigns = $tt->getCampaigns(env('TIKTOK_ADVERTISER_ID'), $reports);
 
+        $campaign_ids = $this->value['campaign_ids'];
+        if (gettype($campaign_ids) == 'string') {
+            $campaign_ids = json_decode($campaign_ids, true);
+        }
+        $rules = $this->value['rules'];
+        if (gettype($rules) == 'string') {
+            $rules = json_decode($rules, true);
+        }
+        $actions = $this->value['actions'];
+        if (gettype($actions) == 'string') {
+            $actions = json_decode($actions, true);
+        }
+
         $campaigns = [];
         foreach ($allCampaigns as $campaign) {
-            if (in_array($campaign['campaign_id'], $this->value['campaign_ids'])) {
+            if (in_array($campaign['campaign_id'], $campaign_ids)) {
                 $campaigns[] = $campaign;
             }
         }
 
         foreach ($campaigns as $campaign) {
             $flag = true;
-            foreach ($this->value['rules'] as $rule) {
+            foreach ($rules as $rule) {
                 if (!isset($campaign['reports']['metrics'][$rule['metric']])) {
                     $flag = false;
                     break;
@@ -84,15 +97,16 @@ class TikTokRule extends Model
             $allAdgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'));
             $adgroups = [];
             foreach ($allAdgroups as $adgroup) {
-                if (in_array($adgroup['campaign_id'], $this->value['campaign_ids'])) {
+                if (in_array($adgroup['campaign_id'], $campaign_ids)) {
                     $adgroups[] = $adgroup;
                 }
             }
 
             foreach ($adgroups as $adgroup) {
-                foreach ($this->value['actions'] as $action) {
+                foreach ($actions as $action) {
                     if ($action['type'] == 'inc_bid') {
                         // Increate bid
+                        Log::info('Inc bid');
                         $bid = floatval($adgroup['bid'] + $action['value']);
                         $bid = min($bid, floatval($action['max_value']));
                         $tt->updateAdgroupBid(
@@ -101,6 +115,7 @@ class TikTokRule extends Model
                             floatval($bid));
                     } else if ($action['type'] == 'dec_bid') {
                         // Decrease bid
+                        Log::info('Dec bid');
                         $bid = floatval($adgroup['bid'] - $action['value']);
                         $bid = max($bid, floatval($action['max_value']));
                         $tt->updateAdgroupBid(
@@ -109,6 +124,7 @@ class TikTokRule extends Model
                             floatval($bid));
                     } else if ($action['type'] == 'inc_budget') {
                         // Increase budget
+                        Log::info('Inc budget');
                         $budget = floatval($adgroup['budget'] + $action['value']);
                         $budget = min($budget, floatval($action['max_value']));
                         $tt->updateAdgroupBudget(
@@ -117,6 +133,7 @@ class TikTokRule extends Model
                             floatval($budget));
                     } else if ($action['type'] == 'dec_budget') {
                         // Decrease budget
+                        Log::info('Dec budget');
                         $budget = floatval($adgroup['budget'] - $action['value']);
                         $budget = max($budget, floatval($action['max_value']));
                         $tt->updateAdgroupBudget(
