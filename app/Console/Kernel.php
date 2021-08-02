@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,6 +25,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // DEBUG
+        $schedule->call(function () {
+            Log::info('** DEBUG **: Every minute');
+        })->everyMinute();
+
         $schedule->call(function () {
             $rules = \App\third\TikTokRule::where('status', 'active')
                 ->where('frequency', 'every_five_minutes')->get();
