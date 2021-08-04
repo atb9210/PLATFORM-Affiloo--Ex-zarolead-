@@ -22,13 +22,6 @@ class TikTokRule extends Model
         // DEBUG
         Log::info('Applying rule ' . $this->name . ' (' . $this->id . ')...');
 
-        $reports = [
-            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        ];
-
-        $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        $allCampaigns = $tt->getCampaigns(env('TIKTOK_ADVERTISER_ID'), $reports);
-
         $campaign_ids = $this->value['campaign_ids'];
         if (gettype($campaign_ids) == 'string') {
             $campaign_ids = json_decode($campaign_ids, true);
@@ -41,6 +34,49 @@ class TikTokRule extends Model
         if (gettype($actions) == 'string') {
             $actions = json_decode($actions, true);
         }
+        $time = 'lifetime';
+        if (isset($this->value['time'])) {
+            $time = $this->value['time'];
+        }
+
+        $reports = [
+            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+        ];
+        if ($time == 'last_1_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-1, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_2_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-2, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_3_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-3, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_7_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-7, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_14_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-14, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_30_days') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        }
+
+        $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
+        $allCampaigns = $tt->getCampaigns(env('TIKTOK_ADVERTISER_ID'), $reports);
+
 
         $campaigns = [];
         foreach ($allCampaigns as $campaign) {

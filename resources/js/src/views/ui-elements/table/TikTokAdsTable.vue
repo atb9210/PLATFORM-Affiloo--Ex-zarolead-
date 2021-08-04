@@ -828,6 +828,17 @@
             <hr>
 
             <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Time</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                        <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
                 <div class="vx-col w-full">
                     <span>Rules</span>
                 </div>
@@ -928,6 +939,17 @@
             </div>
 
             <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Time</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                        <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
 
             <div class="vx-row mb-6">
                 <div class="vx-col w-full">
@@ -1051,6 +1073,7 @@ export default {
         rules: [],
         actions: [],
         frequency: 'hourly',
+        time: 'lifetime',
       },
 
       advertisers: [],
@@ -1316,6 +1339,16 @@ export default {
         { value: 'hourly',                label: 'Every hour' },
         { value: 'every_three_hours',     label: 'Every 3 hours' },
         { value: 'daily',                 label: 'Daily' },
+      ],
+
+      ruleTimeOptions: [
+        { value: 'last_1_days',  label: 'Last day' },
+        { value: 'last_2_days',  label: 'Last 2 days' },
+        { value: 'last_3_days',  label: 'Last 3 days' },
+        { value: 'last_7_days',  label: 'Last 7 days' },
+        { value: 'last_14_days', label: 'Last 14 days' },
+        { value: 'last_30_days', label: 'Last 30 days' },
+        { value: 'lifetime',     label: 'Lifetime' },
       ],
 
       ruleMetricOptions: [
@@ -1902,7 +1935,7 @@ export default {
       } else if (type == 'create_rule' || type == 'edit_rule') {
         if (this.rule.name != '' && this.rule.frequency != '' &&
             this.rule.campaign_ids.length > 0 &&
-            this.rule.rules.length > 0) {
+            this.rule.rules.length > 0 && this.rule.time != '') {
           return true
         }
       }
@@ -2023,12 +2056,18 @@ export default {
         rules: [],
         actions: [],
         frequency: 'hourly',
+        time: 'lifetime',
       }
       this.addRule()
       this.addAction()
       this.showPopup['create_rule'] = true
     },
     showEditRuleForm(rule) {
+      let ruleTime = 'lifetime'
+      if (rule.value.hasOwnProperty('time')) {
+        ruleTime = rule.value.time
+      }
+
       this.rule = {
         id: rule.id,
         name: rule.name,
@@ -2036,6 +2075,7 @@ export default {
         rules: forceJson(rule.value.rules),
         actions: forceJson(rule.value.actions),
         frequency: rule.frequency,
+        time: ruleTime,
       }
 
       this.showPopup['edit_rule'] = true
@@ -2072,6 +2112,7 @@ export default {
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),
         frequency: this.rule.frequency,
+        time: this.rule.time,
       }
       try {
         const response = await this.$http.post('/api/3rd/tiktok/rules', data, { headers })
@@ -2111,6 +2152,7 @@ export default {
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),
         frequency: this.rule.frequency,
+        time: this.rule.time,
       }
       try {
         const response = await this.$http.put('/api/3rd/tiktok/rules/' + this.rule.id, data, { headers })

@@ -335,6 +335,7 @@ class TikTokController extends Controller
      * @bodyParam actions string required Actions
      * @bodyParam status string Status
      * @bodyParam frequency string required Frequency
+     * @bodyParam time string Time
      *
      * @response {
      *  "message": "Rule created",
@@ -353,11 +354,16 @@ class TikTokController extends Controller
             'actions' => 'json|required',
             'status' => 'in:active,disabled',
             'frequency' => 'required|in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+            'time' => 'string',
         ]);
 
         $campaign_ids = $params['campaign_ids'];
         $rules = $params['rules'];
         $actions = $params['actions'];
+        $time = 'lifetime';
+        if (isset($params['time'])) {
+            $time = $params['time'];
+        }
 
         // TODO: Check campaign_ids, rules and actions
 
@@ -367,6 +373,7 @@ class TikTokController extends Controller
                 'campaign_ids' => $campaign_ids,
                 'rules' => $rules,
                 'actions' => $actions,
+                'time' => $time,
             ],
         ]);
 
@@ -387,6 +394,7 @@ class TikTokController extends Controller
      * @bodyParam actions string Actions
      * @bodyParam status string Status
      * @bodyParam frequency string Frequency
+     * @bodyParam time string Time
      *
      * @response {
      *  "message": "Rule updated",
@@ -407,6 +415,7 @@ class TikTokController extends Controller
             'actions' => 'json',
             'status' => 'in:active,disabled',
             'frequency' => 'in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+            'time' => 'string',
         ]);
 
         $value = $rule->value;
@@ -418,6 +427,9 @@ class TikTokController extends Controller
         }
         if (isset($params['actions'])) {
             $value['actions'] = $params['actions'];
+        }
+        if (isset($params['time'])) {
+            $value['time'] = $params['time'];
         }
         $params['value'] = $value;
 
