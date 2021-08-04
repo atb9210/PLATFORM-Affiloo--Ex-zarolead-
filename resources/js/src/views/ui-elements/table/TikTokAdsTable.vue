@@ -508,7 +508,14 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
-                            {{data[indextr].status}}
+                            <vs-switch
+                                :color="(data[indextr].status == 'active') ? 'success' : 'danger'"
+                                v-model="data[indextr].status == 'active'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatusRule(data[indextr])">
+                                <span slot="on" v-if="data[indextr].status == 'active'">Active</span>
+                                <span slot="off">Disabled</span>
+                            </vs-switch>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].frequency">
@@ -2182,6 +2189,8 @@ export default {
     },
     async switchStatusRule(rule) {
       this.$vs.loading.close()
+
+      this.selectedRules = []
 
       let newStatus = 'disabled'
       if (rule.status == 'disabled') {
