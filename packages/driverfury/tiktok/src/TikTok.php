@@ -331,6 +331,7 @@ class TikTok
             'advertiser_id' => $advertiserId,
             'adgroup_ids' => [intval($adgroupId)],
             'status' => $status,
+            'opt_status' => $status,
         ];
         $output = $this->postRequest('/adgroup/update/status/', $params, $params);
         if(isset($output['code']) && $output['code'] == 0)

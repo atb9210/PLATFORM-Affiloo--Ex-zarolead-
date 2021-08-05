@@ -42,7 +42,12 @@ class TikTokRule extends Model
         $reports = [
             'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
         ];
-        if ($time == 'last_1_days') {
+        if ($time == 'current_day') {
+            $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
+            $reports['start_date'] = $from;
+            $reports['end_date'] = $to;
+        } else if ($time == 'last_1_days') {
             $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d")-1, date("Y")));
             $to   = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
             $reports['start_date'] = $from;
@@ -75,24 +80,19 @@ class TikTokRule extends Model
         }
 
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        $allCampaigns = $tt->getCampaigns(env('TIKTOK_ADVERTISER_ID'), $reports);
-
-
-        $campaigns = [];
-        foreach ($allCampaigns as $campaign) {
-            if (in_array($campaign['campaign_id'], $campaign_ids)) {
-                $campaigns[] = $campaign;
+        $adgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'), $reports);
+        foreach ($adgroups as $adgroup) {
+            if (!in_array($adgroup['campaign_id'], $campaign_ids)) {
+                continue;
             }
-        }
 
-        foreach ($campaigns as $campaign) {
             $flag = true;
             foreach ($rules as $rule) {
-                if (!isset($campaign['reports']['metrics'][$rule['metric']])) {
+                if (!isset($adgroup['reports']['metrics'][$rule['metric']])) {
                     $flag = false;
                     break;
                 }
-                $value = $campaign['reports']['metrics'][$rule['metric']];
+                $value = $adgroup['reports']['metrics'][$rule['metric']];
                 $cmp = $rule['comparison'];
 
                 if ($cmp == '<') {
@@ -130,53 +130,55 @@ class TikTokRule extends Model
                 continue;
             }
 
-            $allAdgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'));
-            $adgroups = [];
-            foreach ($allAdgroups as $adgroup) {
-                if (in_array($adgroup['campaign_id'], $campaign_ids)) {
-                    $adgroups[] = $adgroup;
-                }
-            }
-
-            foreach ($adgroups as $adgroup) {
-                foreach ($actions as $action) {
-                    if ($action['type'] == 'inc_bid') {
-                        // Increate bid
-                        Log::info('Inc bid');
-                        $bid = floatval($adgroup['bid'] + $action['value']);
-                        $bid = min($bid, floatval($action['max_value']));
-                        $tt->updateAdgroupBid(
-                            env('TIKTOK_ADVERTISER_ID'),
-                            $adgroup['adgroup_id'],
-                            floatval($bid));
-                    } else if ($action['type'] == 'dec_bid') {
-                        // Decrease bid
-                        Log::info('Dec bid');
-                        $bid = floatval($adgroup['bid'] - $action['value']);
-                        $bid = max($bid, floatval($action['max_value']));
-                        $tt->updateAdgroupBid(
-                            env('TIKTOK_ADVERTISER_ID'),
-                            $adgroup['adgroup_id'],
-                            floatval($bid));
-                    } else if ($action['type'] == 'inc_budget') {
-                        // Increase budget
-                        Log::info('Inc budget');
-                        $budget = floatval($adgroup['budget'] + $action['value']);
-                        $budget = min($budget, floatval($action['max_value']));
-                        $tt->updateAdgroupBudget(
-                            env('TIKTOK_ADVERTISER_ID'),
-                            $adgroup['adgroup_id'],
-                            floatval($budget));
-                    } else if ($action['type'] == 'dec_budget') {
-                        // Decrease budget
-                        Log::info('Dec budget');
-                        $budget = floatval($adgroup['budget'] - $action['value']);
-                        $budget = max($budget, floatval($action['max_value']));
-                        $tt->updateAdgroupBudget(
-                            env('TIKTOK_ADVERTISER_ID'),
-                            $adgroup['adgroup_id'],
-                            floatval($budget));
-                    }
+            foreach ($actions as $action) {
+                if ($action['type'] == 'inc_bid') {
+                    // Increate bid
+                    Log::info('Inc bid');
+                    $bid = floatval($adgroup['bid'] + $action['value']);
+                    $bid = min($bid, floatval($action['max_value']));
+                    $tt->updateAdgroupBid(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        floatval($bid));
+                } else if ($action['type'] == 'dec_bid') {
+                    // Decrease bid
+                    Log::info('Dec bid');
+                    $bid = floatval($adgroup['bid'] - $action['value']);
+                    $bid = max($bid, floatval($action['max_value']));
+                    $tt->updateAdgroupBid(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        floatval($bid));
+                } else if ($action['type'] == 'inc_budget') {
+                    // Increase budget
+                    Log::info('Inc budget');
+                    $budget = floatval($adgroup['budget'] + $action['value']);
+                    $budget = min($budget, floatval($action['max_value']));
+                    $tt->updateAdgroupBudget(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        floatval($budget));
+                } else if ($action['type'] == 'dec_budget') {
+                    // Decrease budget
+                    Log::info('Dec budget');
+                    $budget = floatval($adgroup['budget'] - $action['value']);
+                    $budget = max($budget, floatval($action['max_value']));
+                    $tt->updateAdgroupBudget(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        floatval($budget));
+                } else if ($action['type'] == 'enable') {
+                    // Enable adgroup
+                    $tt->updateAdgroupStatus(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        'ENABLE');
+                } else if ($action['type'] == 'disable') {
+                    // Disable adgroup
+                    $tt->updateAdgroupStatus(
+                        env('TIKTOK_ADVERTISER_ID'),
+                        $adgroup['adgroup_id'],
+                        'DISABLE');
                 }
             }
         }

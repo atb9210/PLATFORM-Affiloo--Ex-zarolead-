@@ -1349,6 +1349,7 @@ export default {
       ],
 
       ruleTimeOptions: [
+        { value: 'current_day',        label: 'Current day' },
         { value: 'last_1_days',  label: 'Last day' },
         { value: 'last_2_days',  label: 'Last 2 days' },
         { value: 'last_3_days',  label: 'Last 3 days' },
@@ -1382,6 +1383,8 @@ export default {
         { value: 'dec_bid',      label: 'Decrease bid' },
         { value: 'inc_budget',   label: 'Increase budget' },
         { value: 'dec_budget',   label: 'Decrease budget' },
+        { value: 'enable',       label: 'Enable' },
+        { value: 'disable',      label: 'Disable' },
       ],
     }
   },
