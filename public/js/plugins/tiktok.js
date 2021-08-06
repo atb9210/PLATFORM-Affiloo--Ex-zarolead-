@@ -1,7 +1,18 @@
+// TODO: This is a clone of getUrlParameter, this types of functions should be in a utils.js file
+function TikTokPlugin_getUrlParams(param) {
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    return url.searchParams.get(param);
+}
+
 function TikTokPlugin(data) {
     Plugin.call(this, data);
 
     this.pixel = this.data.pixel;
+
+    if (TikTokPlugin_getUrlParams('pi') != '' && TikTokPlugin_getUrlParams('pi') != null) {
+        this.pixel = TikTokPlugin_getUrlParams('pi');
+    }
 
     // Fetch event info
     this.eventName = 'SubmitForm';

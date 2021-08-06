@@ -866,7 +866,7 @@
                     <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
                 </div>
                 <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteRule(ruleIndex)"></vs-button>
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
                 </div>
             </div>
 
@@ -895,7 +895,7 @@
                     <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
                 </div>
                 <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAction(actionIndex)"></vs-button>
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
                 </div>
             </div>
 
@@ -979,7 +979,7 @@
                     <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
                 </div>
                 <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteRule(ruleIndex)"></vs-button>
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
                 </div>
             </div>
 
@@ -1008,7 +1008,7 @@
                     <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
                 </div>
                 <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAction(actionIndex)"></vs-button>
+                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
                 </div>
             </div>
 
@@ -1379,8 +1379,11 @@ export default {
       ],
 
       ruleActionOptions: [
+        // TODO: This not showed for now bcs bid change does not work for now
+        /*
         { value: 'inc_bid',      label: 'Increase bid' },
         { value: 'dec_bid',      label: 'Decrease bid' },
+        */
         { value: 'inc_budget',   label: 'Increase budget' },
         { value: 'dec_budget',   label: 'Decrease budget' },
         { value: 'enable',       label: 'Enable' },
@@ -1445,6 +1448,10 @@ export default {
       return index
     },
     calculateStats() {
+      /*
+       * TODO: BUG:
+       * How to correctly calculate CR, CPM etc..?
+       */
       let spent = 0
       let conversion = 0
       let cpa = 0
@@ -1465,7 +1472,7 @@ export default {
         budget += obj.budget
       }
       cpa = (conversion > 0) ? (spent/conversion) : spent
-      cr = (clicks > 0) ? ((conversion/clicks)*100) : ((conversion > 0) ? 9999.99 : 0)
+      cr  = (clicks > 0) ? ((conversion/clicks)*100) : ((conversion > 0) ? 9999.99 : 0)
       cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
       ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
       cpc = (clicks > 0) ? (spent/clicks) : spent
@@ -2097,7 +2104,7 @@ export default {
         value: 10,
       })
     },
-    deleteRule(index) {
+    removeRule(index) {
       this.rule.rules.splice(index, 1)
     },
     addAction() {
@@ -2107,7 +2114,7 @@ export default {
         max_value: 10,
       })
     },
-    deleteAction(index) {
+    removeAction(index) {
       this.rule.actions.splice(index, 1)
     },
     async createRule() {

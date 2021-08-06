@@ -188,6 +188,69 @@
               </vx-input-group>
             </div>
 
+            <!-- TikTok pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">TikTok Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['tiktok'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-music" icon-no-border
+                  v-model="plugins['tiktok'].pixel"
+                  placeholder="TikTok pixel"
+                />
+                <vs-select v-model="plugins['tiktok'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div> 
+
+            <!-- Google pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Google Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['google'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-goole" icon-no-border
+                  v-model="plugins['google'].pixel"
+                  placeholder="Google pixel"
+                />
+                <vs-select v-model="plugins['google'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in googleEventNameOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
+
+            <!-- Outbrain pixel plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Outbrain Pixel</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['outbrain'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-brain" icon-no-border
+                  v-model="plugins['outbrain'].pixel"
+                  placeholder="Outbrain pixel"
+                />
+                <vs-select v-model="plugins['outbrain'].eventName" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in outbrainEventNameOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
+
             <!-- Zeus track plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Zeus Track</div>
