@@ -572,6 +572,9 @@ export default {
       },
       facebookEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
       facebookEventCurrencyOptions: ['EUR', 'USD'],
+      tiktokEventNameOptions: ['SubmitForm', 'ClickButton'],
+      googleEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
+      outbrainEventNameOptions: ['Purchase', 'Lead', 'Complete registration'],
 
       showPopup: {
         'create': false,
