@@ -56,6 +56,7 @@ class TikTokController extends Controller
      *
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
+     * @bodyParam filter_campaign integer Campaign (parent) id
      *
      * @response {
      *  "data": [adgroups],
@@ -69,6 +70,7 @@ class TikTokController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
+            'filter_campaign' => 'numeric|min:1',
         ]);
 
         $reports = [
@@ -81,9 +83,13 @@ class TikTokController extends Controller
         if (isset($params['filter_date_to'])) {
             $reports['end_date'] = $params['filter_date_to'];
         }
+        $parentId = '';
+        if (isset($params['filter_campaign'])) {
+            $parentId = strval($params['filter_campaign']);
+        }
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        $adgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'), $reports);
+        $adgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'), $parentId, $reports);
 
         return response([
             'data' => $adgroups,
@@ -95,6 +101,7 @@ class TikTokController extends Controller
      *
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
+     * @bodyParam filter_adgroup integer Adgroup (parent) id
      *
      * @response {
      *  "data": [ads],
@@ -108,6 +115,7 @@ class TikTokController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
+            'filter_adgroup' => 'numeric|min:1',
         ]);
 
         $reports = [
@@ -120,9 +128,13 @@ class TikTokController extends Controller
         if (isset($params['filter_date_to'])) {
             $reports['end_date'] = $params['filter_date_to'];
         }
+        $parentId = '';
+        if (isset($params['filter_adgroup'])) {
+            $parentId = strval($params['filter_adgroup']);
+        }
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        $ads = $tt->getAds(env('TIKTOK_ADVERTISER_ID'), $reports);
+        $ads = $tt->getAds(env('TIKTOK_ADVERTISER_ID'), $parentId, $reports);
 
         return response([
             'data' => $ads,

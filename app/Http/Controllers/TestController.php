@@ -81,36 +81,11 @@ class TestController extends Controller
         );
         */
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        $campaigns = $tt->getCampaigns(
+        $tt->updateAdgroupBid(
             env('TIKTOK_ADVERTISER_ID'),
-            [
-                'metrics' => ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-                'start_date' => '2021-07-01',
-                'end_date' => '2021-07-31',
-            ]
-        );
-        /*
-        $adgroups = $tt->getAdgroups(
-            env('TIKTOK_ADVERTISER_ID'),
-            [
-                'metrics' => ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-                'start_date' => '2021-07-01',
-                'end_date' => '2021-07-31',
-            ]
-        );
-        $ads = $tt->getAds(
-            env('TIKTOK_ADVERTISER_ID'),
-            [
-                'metrics' => ['spend', 'result', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-                'start_date' => '2021-07-01',
-                'end_date' => '2021-07-31',
-            ]
-        );
-        var_dump($campaigns);
-        var_dump($adgroups);
-        var_dump($ads);
-        */
-        var_dump($campaigns);
+            '1706609433669649',
+            'BID_TYPE_CUSTOM',
+            12.00);
     }
 
     public function post(Request $request)

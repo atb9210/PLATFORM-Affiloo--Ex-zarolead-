@@ -73,20 +73,12 @@
         </div>
 
         <vue-context ref="campaign_context_menu" v-slot="{ data }">
-            <!--
             <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();editBudgetPopup(data);" class="flex items-center text-sm">
-                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit Budget</span>
+              <a href="#" @click="$refs.campaign_context_menu.close();changeView('adgroups', data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Adgroups</span>
               </a>
             </li>
-            <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit bid</span>
-              </a>
-            </li>
-            -->
             <li>
               <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
@@ -96,6 +88,12 @@
         </vue-context>
 
         <vue-context ref="adgroup_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Ads</span>
+              </a>
+            </li>
             <li>
               <a href="#" @click="$refs.adgroup_context_menu.close();editBudgetPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
@@ -108,20 +106,6 @@
                 <span class="ml-2">Edit bid</span>
               </a>
             </li>
-            <!--
-            <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close();duplicateAdsetPopup(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Duplicate</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close();duplicateBidderAdsetPopup(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Bidder</span>
-              </a>
-            </li>
-            -->
             <li>
               <a href="#" @click="$refs.adgroup_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
@@ -211,6 +195,8 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                     <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
@@ -262,6 +248,14 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            € {{data[indextr].profit.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            € {{data[indextr].roi.toFixed(2)}}
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
                             € {{data[indextr].budget.toFixed(2)}}
                         </vs-td>
@@ -288,6 +282,12 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
+                        € {{total_stats.profit.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{total_stats.roi.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
@@ -305,7 +305,10 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                     <vs-th sort-key="budget">Budget</vs-th>
+                    <vs-th sort-key="conversion_bid">Bid</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -356,6 +359,14 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            € {{data[indextr].profit.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            € {{data[indextr].roi.toFixed(2)}}
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
                             <span v-if="data[indextr].cbo">
                                 CBO
@@ -363,6 +374,10 @@
                             <span v-else>
                                 € {{data[indextr].budget.toFixed(2)}}
                             </span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].conversion_bid">
+                            € {{data[indextr].conversion_bid.toFixed(2)}}
                         </vs-td>
 
                     </vs-tr>
@@ -387,8 +402,15 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
+                        € {{total_stats.profit.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{total_stats.roi.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
                     </vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -404,6 +426,8 @@
                     <vs-th sort-key="cpa">CPA</vs-th>
                     <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -454,6 +478,14 @@
                             € {{data[indextr].cpm.toFixed(2)}}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            € {{data[indextr].profit.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            € {{data[indextr].roi.toFixed(2)}}
+                        </vs-td>
+
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
@@ -474,6 +506,12 @@
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{total_stats.profit.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{total_stats.roi.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
@@ -574,7 +612,7 @@
                     <span>Bid</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid" />
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.conversion_bid" />
                 </div>
             </div>
 
@@ -1074,6 +1112,9 @@ export default {
       ads: [],
       rules: [],
 
+      currentCampaignId: null,
+      currentAdgroupId: null,
+
       rule: {
         name: '',
         campaign_ids: [],
@@ -1379,11 +1420,8 @@ export default {
       ],
 
       ruleActionOptions: [
-        // TODO: This not showed for now bcs bid change does not work for now
-        /*
         { value: 'inc_bid',      label: 'Increase bid' },
         { value: 'dec_bid',      label: 'Decrease bid' },
-        */
         { value: 'inc_budget',   label: 'Increase budget' },
         { value: 'dec_budget',   label: 'Decrease budget' },
         { value: 'enable',       label: 'Enable' },
@@ -1461,7 +1499,9 @@ export default {
       let cpm = 0
       let ctr = 0
       let cpc = 0
-      let budget = 0
+      let budget = 0.0
+      let profit = 0.0
+      let roi = 0.0
 
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
@@ -1473,7 +1513,8 @@ export default {
       }
       cpa = (conversion > 0) ? (spent/conversion) : spent
       cr  = (clicks > 0) ? ((conversion/clicks)*100) : ((conversion > 0) ? 9999.99 : 0)
-      cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
+      // TODO
+      //cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
       ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
       cpc = (clicks > 0) ? (spent/clicks) : spent
 
@@ -1488,6 +1529,8 @@ export default {
         ctr: ctr,
         cpc: cpc,
         budget: budget,
+        profit: profit,
+        roi: roi,
       }
     },
     onPageChanged(val) {
@@ -1538,6 +1581,8 @@ export default {
         let cr = 0.0
         let cpm = 0.0
         let impressions = 0
+        let profit = 0.0
+        let roi = 0.0
 
         if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
           let reports = object.reports
@@ -1566,6 +1611,8 @@ export default {
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
+        objectToPush.profit = profit
+        objectToPush.roi    = roi
 
         this.campaigns.push(objectToPush)
       }
@@ -1590,6 +1637,10 @@ export default {
         params.filter_date_to = this.filters.date_to
       }
 
+      if (this.currentCampaignId !== null) {
+        params.filter_campaign = this.currentCampaignId
+      }
+
       this.adgroups = []
       const response = await this.$http.get('/api/3rd/tiktok/adgroups', { headers: headers, params: params })
 
@@ -1611,6 +1662,8 @@ export default {
         let cr = 0.0
         let cpm = 0.0
         let impressions = 0
+        let profit = 0.0
+        let roi = 0.0
 
         if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
           let reports = object.reports
@@ -1639,6 +1692,8 @@ export default {
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
+        objectToPush.profit = profit
+        objectToPush.roi    = roi
 
         this.adgroups.push(objectToPush)
       }
@@ -1663,6 +1718,10 @@ export default {
         params.filter_date_to = this.filters.date_to
       }
 
+      if (this.currentAdgroupId !== null) {
+        params.filter_adgroup = this.currentAdgroupId
+      }
+
       this.ads = []
       const response = await this.$http.get('/api/3rd/tiktok/ads', { headers: headers, params: params })
 
@@ -1673,7 +1732,7 @@ export default {
           continue
         }
 
-        let objectToPush      = object
+        let objectToPush    = object
         objectToPush.id     = object.ad_id
         objectToPush.name   = object.ad_name
         objectToPush.effective_status = this.effectiveStatus[object.status]
@@ -1684,6 +1743,8 @@ export default {
         let cr = 0.0
         let cpm = 0.0
         let impressions = 0
+        let profit = 0.0
+        let roi = 0.0
 
         if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
           let reports = object.reports
@@ -1712,6 +1773,8 @@ export default {
         objectToPush.cpa    = cpa
         objectToPush.cr     = cr
         objectToPush.cpm    = cpm
+        objectToPush.profit = profit
+        objectToPush.roi    = roi
 
         this.ads.push(objectToPush)
       }
@@ -1745,7 +1808,7 @@ export default {
       this.adsLoaded = false
       this.rulesLoaded = false
 
-      this.changeView(this.view)
+      this.changeView(this.view, this.currentCampaignId)
 
       this.calculateStats()
     },
@@ -1805,7 +1868,7 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    async changeView(view) {
+    async changeView(view, parentId = null) {
       // TODO: to fix
       //this.onPageChanged(1)
       //this.gridApi.paginationGoToPage(0)
@@ -1813,11 +1876,19 @@ export default {
       this.view = view
 
       if (view == 'campaigns') {
-        if (!this.campaignsLoaded) await this.loadCampaigns()
+        if (!this.campaignsLoaded) {
+          await this.loadCampaigns()
+        }
       } else if (view == 'adgroups') {
-        if (!this.adgroupsLoaded) await this.loadAdgroups()
+        if (!this.adgroupsLoaded || this.currentCampaignId != parentId) {
+          this.currentCampaignId = parentId
+          await this.loadAdgroups()
+        }
       } else if (view == 'ads') {
-        if (!this.adsLoaded) await this.loadAds()
+        if (!this.adsLoaded || this.currentAdgroupId != parentId) {
+          this.currentAdgroupId = parentId
+          await this.loadAds()
+        }
       } else if (view == 'rules') {
         if (!this.rulesLoaded) await this.loadRules()
       }
@@ -1940,8 +2011,8 @@ export default {
           return true
         }
       } else if (type == 'edit_bid') {
-        if (this.editingObject.hasOwnProperty('bid') &&
-            this.editingObject.bid > 0) {
+        if (this.editingObject.hasOwnProperty('conversion_bid') &&
+            this.editingObject.conversion_bid > 0) {
           return true
         }
       } else if (type == 'update_form_cost') {
@@ -2007,8 +2078,8 @@ export default {
     },
     editBidPopup(data) {
       this.editingObject = data
-      if (!this.editingObject.hasOwnProperty('bid'))
-        this.editingObject.bid = 0.0
+      if (!this.editingObject.hasOwnProperty('conversion_bid'))
+        this.editingObject.conversion_bid = 0.0
       this.editingObject.bid_strategy = 'BID_TYPE_CUSTOM'
       this.showPopup['edit_bid'] = true
     },
@@ -2026,6 +2097,14 @@ export default {
 
       try {
         const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        this.showPopup['edit_budget'] = false
       } catch(error) {
         this.$vs.notify({
           title: 'Error',
@@ -2035,13 +2114,12 @@ export default {
           color: 'danger'
         })
       }
-
-      this.$vs.loading()
+      this.$vs.loading.close()
     },
     async editBid() {
       this.$vs.loading()
 
-      let bid = parseInt(this.editingObject.bid)
+      let bid = parseInt(this.editingObject.conversion_bid)
       let bidStrategy = this.editingObject.bid_strategy
 
       let headers = {
@@ -2054,6 +2132,14 @@ export default {
 
       try {
         const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        this.showPopup['edit_bid'] = false
       } catch(error) {
         this.$vs.notify({
           title: 'Error',
@@ -2064,7 +2150,7 @@ export default {
         })
       }
 
-      this.$vs.loading()
+      this.$vs.loading.close()
     },
     showCreateRuleForm() {
       this.rule = {

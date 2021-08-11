@@ -210,11 +210,19 @@ class TikTok
 
     public function getAdgroups(
         string $advertiserId,
+        string $parentId = '',
         array $reports = []): array
     {
         $params = [
             'advertiser_id' => $advertiserId,
         ];
+        if ($parentId !== '') {
+            $params['filtering'] = [
+                'campaign_ids' => [
+                    $parentId,
+                ],
+            ];
+        }
         $objects = $this->getRequestAllPages('/adgroup/get/', $params);
 
         if (count($reports) > 0 &&
@@ -258,11 +266,19 @@ class TikTok
 
     public function getAds(
         string $advertiserId,
+        string $parentId = '',
         array $reports = []): array
     {
         $params = [
             'advertiser_id' => $advertiserId,
         ];
+        if ($parentId !== '') {
+            $params['filtering'] = [
+                'adgroup_ids' => [
+                    $parentId,
+                ],
+            ];
+        }
         $objects = $this->getRequestAllPages('/ad/get/', $params);
 
         if (count($reports) > 0 &&
@@ -391,7 +407,7 @@ class TikTok
             'advertiser_id' => $advertiserId,
             'adgroup_id' => $adgroupId,
             'bid_strategy' => $bidStrategy,
-            'bid' => $bid,
+            'conversion_bid' => strval($bid),
         ];
         $output = $this->postRequest('/adgroup/update/', $params, $params);
         if(isset($output['code']) && $output['code'] == 0)
