@@ -72,6 +72,14 @@ class Kernel extends ConsoleKernel
 
         $schedule->call(function () {
             $rules = \App\third\TikTokRule::where('status', 'active')
+                ->where('frequency', 'every_two_hours')->get();
+            foreach($rules as $rule) {
+                $rule->apply();
+            }
+        })->everyTwoHours();
+
+        $schedule->call(function () {
+            $rules = \App\third\TikTokRule::where('status', 'active')
                 ->where('frequency', 'every_three_hours')->get();
             foreach($rules as $rule) {
                 $rule->apply();

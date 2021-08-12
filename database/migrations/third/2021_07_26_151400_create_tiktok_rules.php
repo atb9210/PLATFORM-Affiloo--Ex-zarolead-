@@ -24,6 +24,7 @@ class CreateTiktokRules extends Migration
                 'every_fifteen_minutes',
                 'every_thirty_minutes',
                 'hourly',
+                'every_two_hours',
                 'every_three_hours',
                 'daily',
             ]);

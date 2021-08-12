@@ -81,11 +81,16 @@ class TestController extends Controller
         );
         */
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
+        /*
         $tt->updateAdgroupBid(
             env('TIKTOK_ADVERTISER_ID'),
             '1706609433669649',
             'BID_TYPE_CUSTOM',
             12.00);
+        */
+        $adv = $tt->getAssets('6900919380188594178', 'ADVERTISER');
+        var_dump($adv);
+        exit();
     }
 
     public function post(Request $request)

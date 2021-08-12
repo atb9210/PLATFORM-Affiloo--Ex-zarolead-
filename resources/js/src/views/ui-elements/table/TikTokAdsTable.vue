@@ -11,20 +11,40 @@
 <template>
     <vx-card title="TikTok Ads" code-toggler>
 
+        <div class="vx-row mb-2" v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'">
+            <div class="vx-col w-1/3">
+            </div>
+            <div class="vx-col w-1/3 text-center">
+                <vs-select
+                    autocomplete
+                    @input="onAdvertiserSwitch"
+                    label="Switch Advertiser"
+                    v-model="advertiserSwitch"
+                    >
+                    <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" />
+                </vs-select>
+            </div>
+            <div class="vx-col w-1/3">
+            </div>
+        </div>
+
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             <span class="btn-group flex items-center mr-2">
+                <vs-button @click="changeView('advertisers')" :color="(view == 'advertisers') ? 'success' : 'primary'">Advertisers</vs-button>
                 <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
-                <vs-button @click="changeView('adgroups')" :color="(view == 'adgroups') ? 'success' : 'primary'">Adsets</vs-button>
+                <vs-button @click="changeView('adgroups')" :color="(view == 'adgroups') ? 'success' : 'primary'">Adgroups</vs-button>
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
                 <vs-button @click="changeView('rules')" :color="(view == 'rules') ? 'success' : 'primary'">Rules</vs-button>
             </span>
 
+            <vs-button v-if="view == 'advertisers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateAdvertiserForm"></vs-button>
             <vs-button v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
             <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
+            <vs-button v-if="view == 'rules'" :disabled="selectedRules.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-menu" @click="showBulkEditRuleForm"></vs-button>
             <!--
             <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
-            <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdsets.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
+            <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdgroups.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
             <vs-button v-if="view == 'ads'" :disabled="!((view == 'ads') && (selectedAds.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('ads')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="fetchAdvancedStats()"></vs-button>
             -->
@@ -71,6 +91,33 @@
                 </div>
             </div>
         </div>
+
+        <vue-context ref="advertiser_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.advertiser_context_menu.close();changeView('campaigns', data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Campaigns</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.advertiser_context_menu.close();showEditAdvertiserForm(data);" class="flex items-center text-sm">
+                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.advertiser_context_menu.close();deleteAdvertiser(data);" class="flex items-center text-sm">
+                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Delete</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.advertiser_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
 
         <vue-context ref="campaign_context_menu" v-slot="{ data }">
             <li>
@@ -129,33 +176,45 @@
             </li>
         </vue-context>
 
-        <vue-context ref="rules_context_menu" v-slot="{ data }">
+        <vue-context ref="rule_context_menu" v-slot="{ data }">
             <li>
-              <a href="#" @click="$refs.rules_context_menu.close();runRule(data);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.rule_context_menu.close();showCampaignList(data);" class="flex items-center text-sm">
+                <feather-icon icon="MenuIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Campaigns list</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.rule_context_menu.close();runRule(data);" class="flex items-center text-sm">
                 <feather-icon icon="SettingsIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Run now</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.rules_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.rule_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
                 <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Enable/Disable</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.rules_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.rule_context_menu.close();cloneRule(data);" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Clone</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.rule_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
                 <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.rules_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.rule_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.rules_context_menu.close()" class="flex items-center text-sm">
+              <a href="#" @click="$refs.rule_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
               </a>
@@ -183,6 +242,38 @@
                     </vs-dropdown-item>
                 </vs-dropdown-menu>
             </vs-dropdown>
+
+            <!-- Advertisers table -->
+            <vs-table v-if="view == 'advertisers'" stripe multiple v-model="selectedAdvertisers" :max-items="maxItems" pagination search :data="advertisers" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="id">Id</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.advertiser_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    class="disabled-object"
+                                    :color="campaignStatusColor[data[indextr].status]">
+                                    <vs-avatar icon-pack="feather" icon="icon-user" />
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].id">
+                            {{data[indextr].id}}
+                        </vs-td>
+
+                    </vs-tr>
+
+                </template>
+            </vs-table>
 
             <!-- Campaigns table -->
             <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
@@ -295,7 +386,7 @@
             </vs-table>
 
             <!-- Adgroups table -->
-            <vs-table v-if="view == 'adgroups'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adgroups" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table v-if="view == 'adgroups'" stripe multiple v-model="selectedAdgroups" :max-items="maxItems" pagination search :data="adgroups" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
@@ -523,6 +614,7 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th>Campaigns</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="frequency">Frequency</vs-th>
                 </template>
@@ -535,7 +627,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.rules_context_menu.open($event, data[indextr])">
+                            <div @contextmenu.prevent="$refs.rule_context_menu.open($event, data[indextr])">
                                 <vs-chip
                                     transparent
                                     class="disabled-object">
@@ -543,6 +635,10 @@
                                     {{data[indextr].name}}
                                 </vs-chip>
                             </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].value.campaign_ids.length">
+                            {{data[indextr].value.campaign_ids.length}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
@@ -832,6 +928,64 @@
             </div>
             
         </vs-popup>
+ 
+        <!-- Create advertiser popup -->
+        <vs-popup title="Create advertiser" :active.sync="showPopup['create_advertiser']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{advertiser.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>ID</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.id" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createAdvertiser" color="primary" type="filled" :disabled="!isValidForm('create_advertiser')">Create advertiser</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Edit advertiser popup -->
+        <vs-popup title="Edit advertiser" :active.sync="showPopup['edit_advertiser']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{advertiser.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>ID</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.id" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateAdvertiser" color="primary" type="filled" :disabled="!isValidForm('edit_advertiser')">Update advertiser</vs-button>
+            </div>
+        </vs-popup>
 
         <!-- Create rule popup -->
         <vs-popup title="Create rule" :active.sync="showPopup['create_rule']">
@@ -861,11 +1015,22 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Advertiser</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Campaigns</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaigns" class="w-full" />
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
                     </vs-select>
                 </div>
             </div>
@@ -974,11 +1139,22 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Advertiser</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Campaigns</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaigns" class="w-full" />
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
                     </vs-select>
                 </div>
             </div>
@@ -1059,6 +1235,53 @@
             </div>
         </vs-popup>
 
+        <!-- Bulk edit rule popup -->
+        <vs-popup title="Bulk edit rule" :active.sync="showPopup['bulk_edit_rule']">
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Advertiser</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Campaigns</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                    </vs-select>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="bulkUpdateRules" color="primary" type="filled" :disabled="!isValidForm('bulk_edit_rule')">Bulk update</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Campaign ids list view popup -->
+        <vs-popup title="Campaign ids list" :active.sync="showPopup['campaign_ids']">
+            <div class="vx-row mb-6 flex items-center">
+                <h2>Campaign ids list</h2>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-col v-for="(item, index) in campaignsList" :key="index">
+                    <vs-checkbox v-model="campaignsListUpdated" :vs-value="item.id">{{ item.name }}</vs-checkbox>
+                </vs-col>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateCampaignsList" color="primary" type="filled">Update campaigns list</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -1080,6 +1303,13 @@ function forceJson(o) {
   return(o)
 }
 
+function intersect(a, b) {
+  let setA = new Set(a)
+  let setB = new Set(b)
+  let intersection = new Set([...setA].filter(x => setB.has(x)))
+  return Array.from(intersection)
+}
+
 export default {
   name: 'TikTokAdsTable',
   components: {
@@ -1091,10 +1321,11 @@ export default {
   },
   data () {
     return {
-      view: 'campaigns',
+      view: 'advertisers',
 
+      selectedAdvertisers: [],
       selectedCampaigns: [],
-      selectedAdsets: [],
+      selectedAdgroups: [],
       selectedAds: [],
       selectedRules: [],
 
@@ -1102,29 +1333,34 @@ export default {
 
       maxItems: 20,
 
+      advertisersLoaded: false,
       campaignsLoaded: false,
       adgroupsLoaded: false,
       adsLoaded: false,
       rulesLoaded: false,
 
+      advertisers: [],
       campaigns: [],
       adgroups: [],
       ads: [],
       rules: [],
 
+      advertiserSwitch: null,
+      currentAdvertiserId: null,
       currentCampaignId: null,
       currentAdgroupId: null,
 
       rule: {
         name: '',
+        advertiser_id: '',
         campaign_ids: [],
         rules: [],
         actions: [],
         frequency: 'hourly',
         time: 'lifetime',
       },
-
-      advertisers: [],
+      campaignsOptions: [],
+      currAdvId: null,
 
       total_stats: {
         spent: 0,
@@ -1358,15 +1594,24 @@ export default {
       ],
 
       showPopup: {
+        'create_advertiser': false,
+        'edit_advertiser': false,
         'edit_budget': false,
         'edit_bid': false,
         'update_form_cost': false,
         'view_ad': false,
         'create_rule': false,
         'edit_rule': false,
+        'bulk_edit_rule': false,
+        'campaign_ids': false,
       },
 
       editingObject: '',
+      editingAdvertiser: null,
+      advertiser: {
+        id: '',
+        name: '',
+      },
 
       updateFormId: '',
       updateFormTotalCost: 0,
@@ -1427,6 +1672,9 @@ export default {
         { value: 'enable',       label: 'Enable' },
         { value: 'disable',      label: 'Disable' },
       ],
+
+      campaignsList: [],
+      campaignsListUpdated: [],
     }
   },
   computed: {
@@ -1544,6 +1792,23 @@ export default {
       }
       this.filterDatesShortcut('this_month')
     },
+    async loadAdvertisers() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+      }
+
+      this.advertisers = []
+      const response = await this.$http.get('/api/3rd/tiktok/advertisers', { headers: headers, params: params })
+      this.advertisers = response.data.data
+
+      this.advertisersLoaded = true
+
+      this.$vs.loading.close()
+    },
     async loadCampaigns() {
       this.$vs.loading()
 
@@ -1558,6 +1823,10 @@ export default {
       }
       if (this.filters.date_to != '') {
         params.filter_date_to = this.filters.date_to
+      }
+
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
       }
 
       this.campaigns = []
@@ -1640,6 +1909,9 @@ export default {
       if (this.currentCampaignId !== null) {
         params.filter_campaign = this.currentCampaignId
       }
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
+      }
 
       this.adgroups = []
       const response = await this.$http.get('/api/3rd/tiktok/adgroups', { headers: headers, params: params })
@@ -1721,6 +1993,9 @@ export default {
       if (this.currentAdgroupId !== null) {
         params.filter_adgroup = this.currentAdgroupId
       }
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
+      }
 
       this.ads = []
       const response = await this.$http.get('/api/3rd/tiktok/ads', { headers: headers, params: params })
@@ -1799,16 +2074,19 @@ export default {
       this.$vs.loading.close()
     },
     async applyFilters() {
+      this.selectedAdvertisers = []
       this.selectedCampaigns = []
-      this.selectedAdsets = []
+      this.selectedAdgroups = []
       this.selectedAds = []
+      this.selectedRules = []
 
+      this.advertisersLoaded = false
       this.campaignsLoaded = false
       this.adgroupsLoaded = false
       this.adsLoaded = false
       this.rulesLoaded = false
 
-      this.changeView(this.view, this.currentCampaignId)
+      this.changeView(this.view, this.currentAdvertiserId)
 
       this.calculateStats()
     },
@@ -1873,10 +2151,26 @@ export default {
       //this.onPageChanged(1)
       //this.gridApi.paginationGoToPage(0)
 
+      if ((view == 'adgroups' || view == 'ads') &&
+        (this.currentAdvertiserId == null)) {
+        return
+      }
+      if ((view == 'campaigns') && (parentId == null && this.currentAdvertiserId == null)) {
+        return
+      }
+
       this.view = view
 
-      if (view == 'campaigns') {
-        if (!this.campaignsLoaded) {
+      if (view == 'advertisers') {
+        if (!this.advertisersLoaded) {
+          await this.loadAdvertisers()
+        }
+      } else if (view == 'campaigns') {
+        if (!this.campaignsLoaded || this.currentAdvertiserId != parentId) {
+          if (parentId != null) {
+            this.currentAdvertiserId = parentId
+            this.advertiserSwitch = this.currentAdvertiserId
+          }
           await this.loadCampaigns()
         }
       } else if (view == 'adgroups') {
@@ -1894,9 +2188,6 @@ export default {
       }
 
       this.calculateStats()
-      this.$nextTick(() => {
-        this.showTrend = false
-      })
     },
     async switchStatus(type, id) {
       this.$vs.loading()
@@ -1914,6 +2205,9 @@ export default {
       }
       let params = {
         status: newStatus,
+      }
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
       }
 
       try {
@@ -1948,6 +2242,9 @@ export default {
         }
         let params = {
           image_id: id,
+        }
+        if (this.currentAdvertiserId !== null) {
+          params.advertiser_id = this.currentAdvertiserId
         }
         const response = await this.$http.get('/api/3rd/tiktok/images', { headers: headers, params: params })
         this.adImage = response.data.data
@@ -2005,7 +2302,11 @@ export default {
       }
     },
     isValidForm(type) {
-      if (type == 'edit_budget') {
+      if (type == 'create_advertiser' || type == 'edit_advertiser') {
+        if (this.advertiser.id != '' && this.advertiser.name != '') {
+          return true
+        }
+      } else if (type == 'edit_budget') {
         if (this.editingObject.hasOwnProperty('budget') &&
             this.editingObject.budget > 0) {
           return true
@@ -2022,8 +2323,14 @@ export default {
         }
       } else if (type == 'create_rule' || type == 'edit_rule') {
         if (this.rule.name != '' && this.rule.frequency != '' &&
+            this.rule.advertiser_id != '' &&
             this.rule.campaign_ids.length > 0 &&
             this.rule.rules.length > 0 && this.rule.time != '') {
+          return true
+        }
+      } else if (type == 'bulk_edit_rule') {
+        if (this.rule.advertiser_id != '' &&
+            this.rule.campaign_ids.length > 0) {
           return true
         }
       }
@@ -2094,6 +2401,9 @@ export default {
       let params = {
         budget: budget,
       }
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
+      }
 
       try {
         const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
@@ -2129,6 +2439,9 @@ export default {
         bid: bid,
         bid_strategy: bidStrategy,
       }
+      if (this.currentAdvertiserId !== null) {
+        params.advertiser_id = this.currentAdvertiserId
+      }
 
       try {
         const response = await this.$http.put('/api/3rd/tiktok/adgroups/' + this.editingObject.id, params, { headers: headers })
@@ -2155,6 +2468,7 @@ export default {
     showCreateRuleForm() {
       this.rule = {
         name: '',
+        advertiser_id: '',
         campaign_ids: [],
         rules: [],
         actions: [],
@@ -2166,6 +2480,10 @@ export default {
       this.showPopup['create_rule'] = true
     },
     showEditRuleForm(rule) {
+      if (this.advertisers.length == 0) {
+        return
+      }
+
       let ruleTime = 'lifetime'
       if (rule.value.hasOwnProperty('time')) {
         ruleTime = rule.value.time
@@ -2174,14 +2492,17 @@ export default {
       this.rule = {
         id: rule.id,
         name: rule.name,
+        advertiser_id: rule.value.advertiser_id,
         campaign_ids: forceJson(rule.value.campaign_ids),
         rules: forceJson(rule.value.rules),
         actions: forceJson(rule.value.actions),
         frequency: rule.frequency,
         time: ruleTime,
       }
+      this.currAdvId = rule.value.advertiser_id
 
       this.showPopup['edit_rule'] = true
+      this.refreshCampaignsOptions()
     },
     addRule() {
       this.rule.rules.push({
@@ -2203,6 +2524,43 @@ export default {
     removeAction(index) {
       this.rule.actions.splice(index, 1)
     },
+    async refreshCampaignsOptions() {
+      this.$vs.loading()
+
+      if (this.rule.advertiser_id != this.currAdvId) {
+        this.rule.campaign_ids = []
+      }
+
+      this.campaignsOptions = []
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        reports: 0,
+        advertiser_id: this.rule.advertiser_id,
+      }
+
+      this.campaignsOptions = []
+      const response = await this.$http.get('/api/3rd/tiktok/campaigns', { headers: headers, params: params })
+
+      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
+        let object = response.data.data[objectIndex]
+
+        if (this.filters.status != '' && object.status != this.filters.status) {
+          continue
+        }
+
+        let objectToPush  = object
+        objectToPush.id   = object.campaign_id
+        objectToPush.name = object.campaign_name
+
+        this.campaignsOptions.push(objectToPush)
+      }
+
+      this.currAdvId = this.rule.advertiser_id
+
+      this.$vs.loading.close()
+    },
     async createRule() {
       this.$vs.loading()
 
@@ -2211,6 +2569,7 @@ export default {
       }
       let data = {
         name: this.rule.name,
+        advertiser_id: this.rule.advertiser_id,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),
@@ -2243,6 +2602,46 @@ export default {
 
       this.$vs.loading.close()
     },
+    async cloneRule(rule) {
+      let value = rule.value
+      if (typeof(value) == 'string') {
+        value = JSON.parse(value)
+      }
+
+      let name = rule.name + ' - Copy'
+      let advertiserId = value.advertiser_id
+      let campaignIds = value.campaign_ids
+      if (typeof(campaignIds) == 'string') {
+        campaignIds = JSON.parse(campaignIds)
+      }
+      let rules = value.rules
+      if (typeof(rules) == 'string') {
+        rules = JSON.parse(rules)
+      }
+      let actions = value.actions
+      if (typeof(actions) == 'string') {
+        actions = JSON.parse(actions)
+      }
+      let frequency = rule.frequency
+      let time = ''
+      if (value.hasOwnProperty('time')) {
+        time = value.time
+      }
+
+      this.rule = {
+        name: name,
+        advertiser_id: advertiserId,
+        campaign_ids: campaignIds,
+        rules: rules,
+        actions: actions,
+        frequency: this.rule.frequency,
+      }
+      if (time !== '') {
+        this.rule.time = time
+      }
+
+      await this.createRule()
+    },
     async updateRule() {
       this.$vs.loading()
 
@@ -2251,6 +2650,7 @@ export default {
       }
       let data = {
         name: this.rule.name,
+        advertiser_id: this.rule.advertiser_id,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),
@@ -2356,7 +2756,7 @@ export default {
       this.$vs.loading()
     },
     async runRule(rule) {
-      this.$vs.loading.close()
+      this.$vs.loading()
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
@@ -2384,7 +2784,255 @@ export default {
       })
       this.applyFilters()
 
+      this.$vs.loading.close()
+    },
+    showCreateAdvertiserForm() {
+      this.advertiser = {
+        id: '',
+        name: '',
+      }
+      this.showPopup['create_advertiser'] = true
+    },
+    showEditAdvertiserForm(adv) {
+      this.advertiser = {
+        id: adv.id,
+        name: adv.name,
+      }
+      this.editingAdvertiser = adv
+      this.showPopup['edit_advertiser'] = true
+    },
+    async createAdvertiser() {
       this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        id: this.advertiser.id,
+        name: this.advertiser.name,
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/tiktok/advertisers', data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Advertiser created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['create_advertiser'] = false
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async updateAdvertiser() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        id: this.advertiser.id,
+        name: this.advertiser.name,
+      }
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/advertisers/' + this.editingAdvertiser.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Advertiser updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['edit_advertiser'] = false
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async deleteAdvertiser(adv) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.delete('/api/3rd/tiktok/advertisers/' + adv.id, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Advertiser deleted successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    showBulkEditRuleForm() {
+      if (this.selectedRules.length <= 0) {
+        return
+      }
+
+      let advId = this.selectedRules[0].value.advertiser_id
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        if (this.selectedRules[0].value.advertiser_id != advId) {
+          return
+        }
+      }
+
+      let bulkCampaignIds = this.selectedRules[0].value.campaign_ids
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        bulkCampaignIds = intersect(this.selectedRules[i].value.campaign_ids, bulkCampaignIds)
+      }
+
+      this.rule = {
+        name: '',
+        advertiser_id: advId,
+        campaign_ids: bulkCampaignIds,
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+        time: 'lifetime',
+      }
+      this.currAdvId = advId
+
+      this.showPopup['bulk_edit_rule'] = true
+      this.refreshCampaignsOptions()
+    },
+    async bulkUpdateRules() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        advertiser_id: this.rule.advertiser_id,
+        campaign_ids: this.rule.campaign_ids,
+      }
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        let rule = this.selectedRules[i]
+        try {
+          const response = await this.$http.put('/api/3rd/tiktok/rules/' + rule.id, data, { headers })
+        } catch(error) {
+          this.$vs.notify({
+            title: 'Error',
+            text: 'Cannot update all the selected rules',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+          this.$vs.loading.close()
+          return
+        }
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rules updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['bulk_edit_rule'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async showCampaignList(rule) {
+      this.currAdvId = null
+      this.rule.id = rule.id
+      this.rule.advertiser_id = rule.value.advertiser_id
+      await this.refreshCampaignsOptions()
+
+      this.campaignsList = []
+      this.campaignsListUpdated = []
+      let campaignIds = rule.value.campaign_ids
+      for (let i = 0; i < this.campaignsOptions.length; i++) {
+        if (campaignIds.includes(this.campaignsOptions[i].id)) {
+          this.campaignsList.push(this.campaignsOptions[i])
+          this.campaignsListUpdated.push(this.campaignsOptions[i].id)
+        }
+      }
+
+      this.showPopup['campaign_ids'] = true
+    },
+    async updateCampaignsList() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        advertiser_id: this.rule.advertiser_id,
+        campaign_ids: this.campaignsListUpdated,
+      }
+
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/rules/' + this.rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['campaign_ids'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    onAdvertiserSwitch() {
+      this.changeView('campaigns', this.advertiserSwitch)
     },
   },
   async created() {

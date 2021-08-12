@@ -10,11 +10,123 @@ use Driverfury\TikTok\TikTok;
 use App\third\TikTokRule;
 use App\Http\Resources\api\third\TikTokRuleResource;
 
+use App\third\TikTokAdvertiser;
+use App\Http\Resources\api\third\TikTokAdvertiserResource;
+
 class TikTokController extends Controller
 {
     /**
+     * Get advertisers list
+     *
+     * @response {
+     *  "data": [advertisers],
+     * }
+     */
+    public function advertisers(Request $request)
+    {
+        // TODO: Authorization
+
+        $advertisers = TikTokAdvertiser::all();
+        return response([
+            'data' => $advertisers,
+        ]);
+    }
+
+    /**
+     * Create advertiser
+     *
+     * @bodyParam id string required Advertiser's id
+     * @bodyParam name string required Advertiser's name
+     *
+     * @response {
+     *  "message": "Advertiser has been successfully created",
+     *  "data": advertiser,
+     * }
+     */
+    public function storeAdvertiser(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'id' => 'required|string|unique:third_tiktok_advertisers,id',
+            'name' => 'required|string|min:1',
+        ]);
+
+        $advertiser = TikTokAdvertiser::create($params);
+        return response([
+            'message' => 'Advertiser has been successfully created',
+            'data' => $advertiser,
+        ]);
+    }
+
+    /**
+     * Update advertiser
+     *
+     * @urlParam id string required Advertiser's id
+     *
+     * @bodyParam id string Advertiser's new id
+     * @bodyParam name string Advertiser's new name
+     *
+     * @response {
+     *  "data": advertiser,
+     * }
+     */
+    public function updateAdvertiser($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $advertiser = TikTokAdvertiser::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'id' => 'string',
+            'name' => 'string|min:1',
+        ]);
+
+        if (isset($params['id']) && $id != $params['id']) {
+            if (TikTokAdvertiser::where('id', $params['id'])->get()->count() > 0) {
+                return response([
+                    'message' => 'Advertiser\'s id already used',
+                    'errors'  => [
+                        'id' => [ 'Advertiser\'s id already used' ],
+                    ],
+                ], 400);
+            }
+        }
+
+        $advertiser->update($params);
+
+        return response([
+            'data' => $advertiser,
+        ]);
+    }
+
+    /**
+     * Delete advertiser
+     *
+     * @urlParam id string required Advertiser's id
+     *
+     * @response {
+     *  "message": "Advertiser deleted",
+     * }
+     */
+    public function destroyAdvertiser($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $advertiser = TikTokAdvertiser::findOrFail($id);
+        $advertiser->delete();
+        return response([
+            'message' => 'Advertiser deleted',
+        ]);
+    }
+
+    /**
      * Get campaigns list
      *
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam reports bool Reports (default: true)
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
      *
@@ -28,13 +140,18 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
+            'reports' => 'nullable|boolean',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
 
-        $reports = [
-            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        ];
+        $reports = [];
+        if (!isset($params['reports']) || boolval($params['reports']) === true) {
+            $reports = [
+                'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+            ];
+        }
 
         if (isset($params['filter_date_from'])) {
             $reports['start_date'] = $params['filter_date_from'];
@@ -44,7 +161,7 @@ class TikTokController extends Controller
         }
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        $campaigns = $tt->getCampaigns(env('TIKTOK_ADVERTISER_ID'), $reports);
+        $campaigns = $tt->getCampaigns($params['advertiser_id'], $reports);
 
         return response([
             'data' => $campaigns,
@@ -54,6 +171,7 @@ class TikTokController extends Controller
     /**
      * Get adgroups list
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
      * @bodyParam filter_campaign integer Campaign (parent) id
@@ -68,6 +186,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_campaign' => 'numeric|min:1',
@@ -89,7 +208,7 @@ class TikTokController extends Controller
         }
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        $adgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'), $parentId, $reports);
+        $adgroups = $tt->getAdgroups($params['advertiser_id'], $parentId, $reports);
 
         return response([
             'data' => $adgroups,
@@ -99,6 +218,7 @@ class TikTokController extends Controller
     /**
      * Get ads list
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
      * @bodyParam filter_adgroup integer Adgroup (parent) id
@@ -113,6 +233,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_adgroup' => 'numeric|min:1',
@@ -134,7 +255,7 @@ class TikTokController extends Controller
         }
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
-        $ads = $tt->getAds(env('TIKTOK_ADVERTISER_ID'), $parentId, $reports);
+        $ads = $tt->getAds($params['advertiser_id'], $parentId, $reports);
 
         return response([
             'data' => $ads,
@@ -146,6 +267,7 @@ class TikTokController extends Controller
      *
      * @urlParam id string required Campaign id
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam status string New campaign status
      *
      * @response {
@@ -158,6 +280,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'status' => 'in:DELETE,DISABLE,ENABLE',
         ]);
 
@@ -166,7 +289,7 @@ class TikTokController extends Controller
         $tt = new TikTok(env('TIKTOK_API_KEY'));
         if ($success && isset($params['status'])) {
             if(!$tt->updateCampaignStatus(
-                env('TIKTOK_ADVERTISER_ID'),
+                $params['advertiser_id'],
                 $id, $params['status'])) {
                 $success = false;
             }
@@ -187,6 +310,7 @@ class TikTokController extends Controller
      *
      * @urlParam id string required Adgroup id
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam status string New adgroup status
      * @bodyParam bid_strategy string New adgroup bid_strategy
      * @bodyParam bid float New adgroup bid
@@ -201,6 +325,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'status' => 'in:DELETE,DISABLE,ENABLE',
             'budget' => 'numeric|min:0',
             'bid_strategy' => 'string|in:BID_TYPE_CUSTOM,BID_TYPE_MAX_CONVERSION,BID_TYPE_NO_BID',
@@ -212,7 +337,7 @@ class TikTokController extends Controller
         $tt = new TikTok(env('TIKTOK_API_KEY'));
         if ($success && isset($params['status'])) {
             if(!$tt->updateAdgroupStatus(
-                env('TIKTOK_ADVERTISER_ID'),
+                $params['advertiser_id'],
                 $id, $params['status'])) {
                 $success = false;
             }
@@ -220,14 +345,14 @@ class TikTokController extends Controller
         if ($success && isset($params['budget'])) {
             $params['budget'] = floatval($params['budget']);
             if(!$tt->updateAdgroupBudget(
-                env('TIKTOK_ADVERTISER_ID'),
+                $params['advertiser_id'],
                 $id, $params['budget'])) {
                 $success = false;
             }
         }
         if ($success && isset($params['bid']) && isset($params['bid_strategy'])) {
             if(!$tt->updateAdgroupBid(
-                env('TIKTOK_ADVERTISER_ID'), $id,
+                $params['advertiser_id'], $id,
                 $params['bid_strategy'], floatval($params['bid']))) {
                 $success = false;
             }
@@ -248,6 +373,7 @@ class TikTokController extends Controller
      *
      * @urlParam id string required Ad id
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam status string New ad status
      *
      * @response {
@@ -260,6 +386,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'status' => 'in:DELETE,DISABLE,ENABLE',
         ]);
 
@@ -268,7 +395,7 @@ class TikTokController extends Controller
         $tt = new TikTok(env('TIKTOK_API_KEY'));
         if($success && isset($params['status'])) {
             if(!$tt->updateAdStatus(
-                env('TIKTOK_ADVERTISER_ID'),
+                $params['advertiser_id'],
                 $id, $params['status'])) {
                 $success = false;
             }
@@ -287,6 +414,7 @@ class TikTokController extends Controller
     /**
      * Get image info
      *
+     * @bodyParam advertiser_id string required Advertiser's id
      * @bodyParam image_id string required Image id
      *
      * @response {
@@ -299,12 +427,13 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'advertiser_id' => 'required',
             'image_id' => 'required|string|min:1',
         ]);
 
         $tt = new TikTok(env('TIKTOK_API_KEY'));
         $image = $tt->getImageInfo(
-            env('TIKTOK_ADVERTISER_ID'),
+            $params['advertiser_id'],
             $params['image_id']);
 
         if (empty($image)) {
@@ -342,7 +471,8 @@ class TikTokController extends Controller
      * Create rule
      *
      * @bodyParam name string required Rule's name
-     * @bodyParam campaign_ids string required Campaigns ids
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam campaign_ids array required Campaigns ids
      * @bodyParam rules string required Rules
      * @bodyParam actions string required Actions
      * @bodyParam status string Status
@@ -361,14 +491,16 @@ class TikTokController extends Controller
         // Param validation
         $params = $request->validate([
             'name' => 'string|required',
+            'advertiser_id' => 'string|required|exists:third_tiktok_advertisers,id',
             'campaign_ids' => 'array|required',
             'rules' => 'json|required',
             'actions' => 'json|required',
             'status' => 'in:active,disabled',
-            'frequency' => 'required|in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+            'frequency' => 'required|in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_two_hours,every_three_hours,daily',
             'time' => 'string',
         ]);
 
+        $advertiser_id = $params['advertiser_id'];
         $campaign_ids = $params['campaign_ids'];
         $rules = $params['rules'];
         $actions = $params['actions'];
@@ -382,6 +514,7 @@ class TikTokController extends Controller
         $rule = TikTokRule::create([
             'name' => $params['name'],
             'value' => [
+                'advertiser_id' => $advertiser_id,
                 'campaign_ids' => $campaign_ids,
                 'rules' => $rules,
                 'actions' => $actions,
@@ -401,6 +534,7 @@ class TikTokController extends Controller
      * @urlParam id int required Rule's id
      *
      * @bodyParam name string Rule's name
+     * @bodyParam advertiser_id string Advertiser's id
      * @bodyParam campaign_ids string Campaigns ids
      * @bodyParam rules string Rules
      * @bodyParam actions string Actions
@@ -422,15 +556,19 @@ class TikTokController extends Controller
         // Param validation
         $params = $request->validate([
             'name' => 'string',
+            'advertiser_id' => 'string|exists:third_tiktok_advertisers,id',
             'campaign_ids' => 'array',
             'rules' => 'json',
             'actions' => 'json',
             'status' => 'in:active,disabled',
-            'frequency' => 'in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_three_hours,daily',
+            'frequency' => 'in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_two_hours,every_three_hours,daily',
             'time' => 'string',
         ]);
 
         $value = $rule->value;
+        if (isset($params['advertiser_id'])) {
+            $value['advertiser_id'] = $params['advertiser_id'];
+        }
         if (isset($params['campaign_ids'])) {
             $value['campaign_ids'] = $params['campaign_ids'];
         }

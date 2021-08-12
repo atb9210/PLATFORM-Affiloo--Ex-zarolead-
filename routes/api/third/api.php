@@ -61,6 +61,14 @@ Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceCon
     ->name('marketplace.campaigns.product-json');
 
 /* TikTok routes */
+Route::get('/tiktok/advertisers', 'api\third\TikTokController@advertisers')->middleware('auth:api')
+    ->name('tiktok.advertisers');
+Route::post('/tiktok/advertisers', 'api\third\TikTokController@storeAdvertiser')->middleware('auth:api')
+    ->name('tiktok.advertisers.store');
+Route::put('/tiktok/advertisers/{id}', 'api\third\TikTokController@updateAdvertiser')->middleware('auth:api')
+    ->name('tiktok.advertisers.update');
+Route::delete('/tiktok/advertisers/{id}', 'api\third\TikTokController@destroyAdvertiser')->middleware('auth:api')
+    ->name('tiktok.advertisers.destroy');
 Route::get('/tiktok/campaigns', 'api\third\TikTokController@campaigns')->middleware('auth:api')
     ->name('tiktok.campaigns');
 Route::get('/tiktok/adgroups', 'api\third\TikTokController@adgroups')->middleware('auth:api')

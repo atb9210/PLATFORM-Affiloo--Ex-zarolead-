@@ -22,6 +22,7 @@ class TikTokRule extends Model
         // DEBUG
         Log::info('Applying rule ' . $this->name . ' (' . $this->id . ')...');
 
+        $advertiser_id = $this->value['advertiser_id'];
         $campaign_ids = $this->value['campaign_ids'];
         if (gettype($campaign_ids) == 'string') {
             $campaign_ids = json_decode($campaign_ids, true);
@@ -80,7 +81,7 @@ class TikTokRule extends Model
         }
 
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        $adgroups = $tt->getAdgroups(env('TIKTOK_ADVERTISER_ID'), $reports);
+        $adgroups = $tt->getAdgroups($advertiser_id, $reports);
         foreach ($adgroups as $adgroup) {
             if (!in_array($adgroup['campaign_id'], $campaign_ids)) {
                 continue;
@@ -137,7 +138,7 @@ class TikTokRule extends Model
                     $bid = floatval($adgroup['bid'] + $action['value']);
                     $bid = min($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         floatval($bid));
                 } else if ($action['type'] == 'dec_bid') {
@@ -146,7 +147,7 @@ class TikTokRule extends Model
                     $bid = floatval($adgroup['bid'] - $action['value']);
                     $bid = max($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         floatval($bid));
                 } else if ($action['type'] == 'inc_budget') {
@@ -155,7 +156,7 @@ class TikTokRule extends Model
                     $budget = floatval($adgroup['budget'] + $action['value']);
                     $budget = min($budget, floatval($action['max_value']));
                     $tt->updateAdgroupBudget(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         floatval($budget));
                 } else if ($action['type'] == 'dec_budget') {
@@ -164,19 +165,19 @@ class TikTokRule extends Model
                     $budget = floatval($adgroup['budget'] - $action['value']);
                     $budget = max($budget, floatval($action['max_value']));
                     $tt->updateAdgroupBudget(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         floatval($budget));
                 } else if ($action['type'] == 'enable') {
                     // Enable adgroup
                     $tt->updateAdgroupStatus(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         'ENABLE');
                 } else if ($action['type'] == 'disable') {
                     // Disable adgroup
                     $tt->updateAdgroupStatus(
-                        env('TIKTOK_ADVERTISER_ID'),
+                        $advertiser_id,
                         $adgroup['adgroup_id'],
                         'DISABLE');
                 }
