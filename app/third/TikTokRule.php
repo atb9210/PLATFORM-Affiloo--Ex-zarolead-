@@ -81,7 +81,7 @@ class TikTokRule extends Model
         }
 
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        $adgroups = $tt->getAdgroups($advertiser_id, $reports);
+        $adgroups = $tt->getAdgroups($advertiser_id, '', $reports);
         foreach ($adgroups as $adgroup) {
             if (!in_array($adgroup['campaign_id'], $campaign_ids)) {
                 continue;
