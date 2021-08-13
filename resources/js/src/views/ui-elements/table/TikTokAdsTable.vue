@@ -613,7 +613,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
-                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="name" ref="sort_by_name">Name</vs-th>
                     <vs-th>Campaigns</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="frequency">Frequency</vs-th>
@@ -2068,6 +2068,17 @@ export default {
       this.rules = []
       const response = await this.$http.get('/api/3rd/tiktok/rules', { headers: headers })
       this.rules = response.data.data
+
+      // Sort rules by name (by defaul)
+      this.rules.sort(function (a, b) {
+        if (a.name < b.name) {
+          return -1
+        } else if (a.name > b.name) {
+          return 1
+        } else {
+          return 0
+        }
+      })
 
       this.rulesLoaded = true
 
