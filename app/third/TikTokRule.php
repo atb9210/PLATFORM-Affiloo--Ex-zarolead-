@@ -140,6 +140,7 @@ class TikTokRule extends Model
                     $tt->updateAdgroupBid(
                         $advertiser_id,
                         $adgroup['adgroup_id'],
+                        'BID_TYPE_CUSTOM',
                         floatval($bid));
                 } else if ($action['type'] == 'dec_bid') {
                     // Decrease bid
@@ -149,6 +150,7 @@ class TikTokRule extends Model
                     $tt->updateAdgroupBid(
                         $advertiser_id,
                         $adgroup['adgroup_id'],
+                        'BID_TYPE_CUSTOM',
                         floatval($bid));
                 } else if ($action['type'] == 'inc_budget') {
                     // Increase budget

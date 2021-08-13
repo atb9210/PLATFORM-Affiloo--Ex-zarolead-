@@ -2324,13 +2324,13 @@ export default {
       } else if (type == 'create_rule' || type == 'edit_rule') {
         if (this.rule.name != '' && this.rule.frequency != '' &&
             this.rule.advertiser_id != '' &&
-            this.rule.campaign_ids.length > 0 &&
+            this.rule.campaign_ids.length >= 0 &&
             this.rule.rules.length > 0 && this.rule.time != '') {
           return true
         }
       } else if (type == 'bulk_edit_rule') {
         if (this.rule.advertiser_id != '' &&
-            this.rule.campaign_ids.length > 0) {
+            this.rule.campaign_ids.length >= 0) {
           return true
         }
       }
