@@ -135,7 +135,7 @@ class TikTokRule extends Model
                 if ($action['type'] == 'inc_bid') {
                     // Increate bid
                     Log::info('Inc bid');
-                    $bid = floatval($adgroup['bid'] + $action['value']);
+                    $bid = floatval($adgroup['conversion_bid'] + $action['value']);
                     $bid = min($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
                         $advertiser_id,
@@ -145,7 +145,7 @@ class TikTokRule extends Model
                 } else if ($action['type'] == 'dec_bid') {
                     // Decrease bid
                     Log::info('Dec bid');
-                    $bid = floatval($adgroup['bid'] - $action['value']);
+                    $bid = floatval($adgroup['conversion_bid'] - $action['value']);
                     $bid = max($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
                         $advertiser_id,
