@@ -199,3 +199,6 @@ Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
 
 /* Storage routes */
 Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');
+
+/* Postback URL */
+Route::get('postback', 'api\v1\PostbackController@index')->name('postback');

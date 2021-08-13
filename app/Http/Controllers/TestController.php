@@ -73,23 +73,12 @@ class TestController extends Controller
 
     public function test()
     {
-        /*
-        $accessToken = \Driverfury\TikTok\TikTok::generateAccessToken(
-            env('TIKTOK_APP_ID'),
-            env('TIKTOK_APP_SECRET'),
-            '42261bcbdedeeb3dd33075736ecf211ee1ff5963'
-        );
-        */
-        $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
-        /*
-        $tt->updateAdgroupBid(
-            env('TIKTOK_ADVERTISER_ID'),
-            '1706609433669649',
-            'BID_TYPE_CUSTOM',
-            12.00);
-        */
-        $adv = $tt->getAssets('6900919380188594178', 'ADVERTISER');
-        var_dump($adv);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, env('APP_URL').'/api/v1/postback?sub_id=332&status=1');
+        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        //var_dump($response);
         exit();
     }
 
