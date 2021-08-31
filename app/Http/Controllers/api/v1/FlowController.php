@@ -117,6 +117,8 @@ class FlowController extends Controller
         } else if ($type == 'hotload') {
             $domain = Domain::findOrFail($params['domain_id']);
 
+            $newUrl = $domain->domain . '/' . $path;
+
             // Import landings if URL is external
             $landings = $params['rules']['landings'];
             $counter = 0;
@@ -129,7 +131,7 @@ class FlowController extends Controller
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zaroCloner->executeAsync($url, $fullPath),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
                         'path' => $path,
                     ];
                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
@@ -146,7 +148,7 @@ class FlowController extends Controller
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zaroCloner->executeAsync($url, $fullPath),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
                         'path' => $path,
                     ];
                     $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
@@ -294,11 +296,11 @@ class FlowController extends Controller
                                 $path = Str::slug($url, '-');
                                 $domain = $flow->domain;
                                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-
+                                $newUrl = $domain->domain . '/' . $path;
                                 if ($flow->urlIsExternal($url)) {
                                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                                     $jobsArray[] =  [
-                                        'id' => $zaroCloner->executeAsync($url, $fullPath),
+                                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
                                         'path' => $path,
                                     ];
                                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
@@ -348,10 +350,11 @@ class FlowController extends Controller
                     $path = Str::slug($url, '-');
                     $domain = $flow->domain;
                     $fullPath = 'apps/' . $domain->path . '/public/' . $path;
+                    $newUrl = $domain->domain . '/' . $path;
                     if ($flow->urlIsExternal($url)) {
                         $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                         $jobsArray[] =  [
-                            'id' => $zaroCloner->executeAsync($url, $fullPath),
+                            'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
                             'path' => $path,
                         ];
                         $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);

@@ -12,9 +12,9 @@ class ZaroCloner
 {
     use DispatchesJobs;
 
-    public function executeAsync(string $url, string $path)
+    public function executeAsync(string $url, string $path, string $new_url = '')
     {
-        $job = new ZaroClonerJob($url, $path);
+        $job = new ZaroClonerJob($url, $path, $new_url);
         $job->onQueue('zarocloner');
         $this->dispatch($job);
         $jobStatus = JobStatus::find($job->getJobStatusId());

@@ -17,17 +17,19 @@ class ZaroClonerJob implements ShouldQueue
 
     private $webpage_url;
     private $path;
+    private $new_url;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(string $webpage_url, string $path)
+    public function __construct(string $webpage_url, string $path, string $new_url = '')
     {
         $this->prepareStatus();
         $this->webpage_url = $webpage_url;
         $this->path = $path;
+        $this->new_url = $new_url;
     }
 
     /**
@@ -41,7 +43,8 @@ class ZaroClonerJob implements ShouldQueue
             ->execute(
                 'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
                 $this->webpage_url . ' ' .
-                $this->path
+                $this->path . ' ' .
+                $this->new_url
             );
     }
 }
