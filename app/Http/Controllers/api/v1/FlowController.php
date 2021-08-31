@@ -117,8 +117,6 @@ class FlowController extends Controller
         } else if ($type == 'hotload') {
             $domain = Domain::findOrFail($params['domain_id']);
 
-            $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . $domain->domain . '/' . $path;
-
             // Import landings if URL is external
             $landings = $params['rules']['landings'];
             $counter = 0;
@@ -127,7 +125,7 @@ class FlowController extends Controller
                 $url = $l->url;
                 $path = Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-
+                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . $domain->domain . '/' . $path;
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
@@ -145,6 +143,7 @@ class FlowController extends Controller
                 $url = $params['rules']['safe_page_url'];
                 $path = Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
+                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . $domain->domain . '/' . $path;
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
