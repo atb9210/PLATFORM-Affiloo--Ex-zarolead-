@@ -125,7 +125,7 @@ class FlowController extends Controller
                 $url = $l->url;
                 $path = Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $path;
+                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $params['path_name'];
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
@@ -143,7 +143,7 @@ class FlowController extends Controller
                 $url = $params['rules']['safe_page_url'];
                 $path = Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $path;
+                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $params['path_name'];
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
@@ -295,7 +295,7 @@ class FlowController extends Controller
                                 $path = Str::slug($url, '-');
                                 $domain = $flow->domain;
                                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $path;
+                                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $params['path_name'];
                                 if ($flow->urlIsExternal($url)) {
                                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                                     $jobsArray[] =  [
@@ -349,7 +349,7 @@ class FlowController extends Controller
                     $path = Str::slug($url, '-');
                     $domain = $flow->domain;
                     $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                    $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $path;
+                    $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . $params['path_name'];
                     if ($flow->urlIsExternal($url)) {
                         $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                         $jobsArray[] =  [
