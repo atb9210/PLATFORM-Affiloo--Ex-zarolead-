@@ -391,7 +391,7 @@ export default {
           weights: [
             1,
           ],
-          domain: {},
+          domain: '',
           safe_page_url: '',
           fraud_filter_protection: false,
           fraud_filter_campaign_id: '',
@@ -410,7 +410,7 @@ export default {
           weights: [
             1,
           ],
-          domain: {},
+          domain: '',
           safe_page_url: '',
           fraud_filter_protection: false,
           fraud_filter_campaign_id: '',
@@ -593,7 +593,7 @@ export default {
         weights: [
           1,
         ],
-        domain: {},
+        domain: this.domains[0],
         safe_page_url: '',
         fraud_filter_protection: false,
         fraud_filter_campaign_id: '',
@@ -601,10 +601,15 @@ export default {
       }
     },
     isValidForm(type) {
+      let correctRules = true
+
       let obj = this.newObject[type]
 
+      correctRules = (correctRules && obj.name != '' && obj.domain != '' && obj.type != '' &&
+                      obj.path_name != '')
+
       let landings = obj.landings
-      let correctRules = (landings.length > 0)
+      correctRules = (landings.length > 0)
 
       let weights = obj.weights
       for (let i = 0; i < landings.length; i++) {
