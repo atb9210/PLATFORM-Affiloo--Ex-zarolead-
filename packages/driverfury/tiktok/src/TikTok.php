@@ -438,7 +438,7 @@ class TikTok
         string $pixel,
         string $event,
         string $ttclid = '',
-        string $properties = [])
+        array $properties = [])
     {
         $params = [
             'pixel_code' => $pixel,
