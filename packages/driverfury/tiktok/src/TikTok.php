@@ -331,7 +331,7 @@ class TikTok
             'opt_status' => $status,
         ];
         $output = $this->postRequest('/campaign/update/status/', $params, $params);
-        if(isset($output['code']) && $output['code'] == 0)
+        if (isset($output['code']) && $output['code'] == 0)
         {
             return true;
         }
@@ -350,7 +350,7 @@ class TikTok
             'opt_status' => $status,
         ];
         $output = $this->postRequest('/adgroup/update/status/', $params, $params);
-        if(isset($output['code']) && $output['code'] == 0)
+        if (isset($output['code']) && $output['code'] == 0)
         {
             return true;
         }
@@ -368,7 +368,7 @@ class TikTok
             'opt_status' => $status,
         ];
         $output = $this->postRequest('/ad/update/status/', $params, $params);
-        if(isset($output['code']) && $output['code'] == 0)
+        if (isset($output['code']) && $output['code'] == 0)
         {
             return true;
         }
@@ -390,7 +390,7 @@ class TikTok
             ],
         ];
         $output = $this->postRequest('/adgroup/update/budget/', $params, $params);
-        if(isset($output['code']) && $output['code'] == 0)
+        if (isset($output['code']) && $output['code'] == 0)
         {
             return true;
         }
@@ -410,7 +410,7 @@ class TikTok
             'conversion_bid' => strval($bid),
         ];
         $output = $this->postRequest('/adgroup/update/', $params, $params);
-        if(isset($output['code']) && $output['code'] == 0)
+        if (isset($output['code']) && $output['code'] == 0)
         {
             return true;
         }
@@ -432,5 +432,31 @@ class TikTok
         }
 
         return $output;
+    }
+
+    public function triggerEvent(
+        string $pixel,
+        string $event,
+        string $ttclid = '',
+        string $properties = [])
+    {
+        $params = [
+            'pixel_code' => $pixel,
+            'event' => $event,
+            'properties' => $properties,
+        ];
+        if ($ttclid != '') {
+            $params['context'] = [
+                'ad' => [
+                    'callback' => $ttclid,
+                ],
+            ];
+        }
+        $output = $this->postRequest('/pixel/track/', $params, $params);
+        if (isset($output['code']) && $output['code'] == 0)
+        {
+            return true;
+        }
+        return false;
     }
 }

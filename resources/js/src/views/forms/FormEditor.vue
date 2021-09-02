@@ -203,6 +203,12 @@
                   v-model="plugins['tiktok'].pixel"
                   placeholder="TikTok pixel"
                 />
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-music" icon-no-border
+                  v-model="plugins['tiktok'].token"
+                  placeholder="TikTok pixel token API"
+                />
                 <vs-select v-model="plugins['tiktok'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
                 </vs-select>
@@ -539,6 +545,7 @@ export default {
         'tiktok': {
           enabled: false,
           pixel: '',
+          token: '',
           eventName: 'SubmitForm',
         },
         'google': {

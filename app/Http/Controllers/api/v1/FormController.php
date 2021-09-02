@@ -788,6 +788,7 @@ class FormController extends Controller
         $params = $request->validate([
             'landing_id' => 'required|integer|exists:landings,id',
             'query_params' => 'json',
+            'ttclid' => 'string',
         ]);
 
         $form = Form::findOrFail($id);

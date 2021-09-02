@@ -452,6 +452,69 @@ class TikTokController extends Controller
     }
 
     /**
+     * Trigger event
+     *
+     * TODO: this shoulde be a param
+     * @bodyParam token string required Token
+     *
+     * @bodyParam pixel string required Pixel id
+     * @bodyParam event string required Event type
+     * @bodyParam ttclid string Click id
+     * @bodyParam properties json Properties
+     *
+     * @response {
+     *  "message": "Event has been triggered",
+     * }
+     */
+    public function triggerEvent(Request $request)
+    {
+        $events = [
+            'ViewContent',
+            'ClickButton',
+            'Search',
+            'AddToWishlist',
+            'AddToCart',
+            'InitiateCheckout',
+            'AddPaymentInfo',
+            'CompletePayment',
+            'PlaceOrder',
+            'Contact',
+            'Download',
+            'SubmitForm',
+            'CompleteRegistration',
+            'Subscribe',
+        ];
+        $eventsList = implode(',', $events);
+
+        // Param validation
+        $params = $request->validate([
+            'pixel' => 'required|string|min:1',
+            'event' => 'required|string|min:1|in:' . $eventsList,
+            'ttclid' => 'string',
+            'properties' => 'json',
+        ]);
+
+        $pixel = $params['pixel'];
+        $event = $params['event'];
+        $ttclid = '';
+        if (isset($params['ttclid'])) {
+            $ttclid = $params['ttclid'];
+        }
+        $properties = [];
+        if (isset($params['properties'])) {
+            $properties = json_decode($params['properties'], true);
+        }
+
+        $token = 'f619008e54f81d6f04103a2c87e71437468bf557';
+        $tt = new \Driverfury\TikTok\TikTok($token);
+        $tt->triggerEvent($pixel, $event, $ttclid, $properties);
+
+        return response([
+            'message' => 'Event has been triggered',
+        ]);
+    }
+
+    /**
      * Get rules
      *
      * @response {

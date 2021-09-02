@@ -73,12 +73,34 @@ class TestController extends Controller
 
     public function test()
     {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, env('APP_URL').'/api/v1/postback?sub_id=332&status=1');
-        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        $response = curl_exec($ch);
-        //var_dump($response);
+        $events = [
+            'ViewContent',
+            'ClickButton',
+            'Search',
+            'AddToWishlist',
+            'AddToCart',
+            'InitiateCheckout',
+            'AddPaymentInfo',
+            'CompletePayment',
+            'PlaceOrder',
+            'Contact',
+            'Download',
+            'SubmitForm',
+            'CompleteRegistration',
+            'Subscribe',
+        ];
+        $eventsList = implode(',', $events);
+        var_dump($eventsList);
+        exit();
+
+        $token = 'f619008e54f81d6f04103a2c87e71437468bf557';
+        $pixel = 'C4OAL8PPGM656MIKA5LG';
+        $event = 'SubmitForm';
+
+        $token = env('TIKTOK_API_KEY');
+        $tt = new \Driverfury\TikTok\TikTok($token);
+        var_dump($tt->triggerEvent($pixel, $event));
+
         exit();
     }
 

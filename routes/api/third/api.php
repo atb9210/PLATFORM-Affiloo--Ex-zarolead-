@@ -93,3 +93,5 @@ Route::delete('/tiktok/rules/{id}', 'api\third\TikTokController@deleteRule')->mi
     ->name('tiktok.rules.destroy');
 Route::post('/tiktok/rules/{id}/run', 'api\third\TikTokController@runRule')->middleware('auth:api')
     ->name('tiktok.rules.run');
+Route::post('/tiktok/events/trigger', 'api\third\TikTokController@triggerEvent')
+    ->name('tiktok.events.trigger');

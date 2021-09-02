@@ -86,6 +86,7 @@ function Form(id, debug = false, alpha = false, beta = false) {
 
     this.FORM_ID = 0;
     this.API_URL = '';
+    this.API_URL_3RD = '';
 
     this.order = {};
 
@@ -142,6 +143,7 @@ function Form(id, debug = false, alpha = false, beta = false) {
 Form.prototype.initialize = function() {
     // Variables initialization
     var api_url = 'https://';
+    var api_url_3rd = '';
     if (this.BETA) {
         api_url += 'beta2.';
     } else if(this.ALPHA) {
@@ -154,8 +156,10 @@ Form.prototype.initialize = function() {
     } else {
         api_url += 'zarolead.com/';
     }
+    api_url_3rd = api_url + 'api/3rd/';
     api_url += 'api/v1/';
     this.API_URL = api_url;
+    this.API_URL_3RD = api_url_3rd;
 
     var landing_id = getUrlParam('landing'); 
     if (landing_id !== null) {
