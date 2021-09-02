@@ -107,6 +107,7 @@ TikTokPlugin.prototype.ttTriggerEvent = function(eventName, params = {}) {
         data.properties.value = params.value;
       }
       data.properties.contents = params;
+      data.properties = JSON.stringify(data.properties);
     }
     $.ajax({
         url: form.API_URL_3RD + 'tiktok/events/trigger',

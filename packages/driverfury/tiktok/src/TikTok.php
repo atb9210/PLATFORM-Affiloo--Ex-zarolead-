@@ -443,7 +443,6 @@ class TikTok
         $params = [
             'pixel_code' => $pixel,
             'event' => $event,
-            'properties' => $properties,
         ];
         if ($ttclid != '') {
             $params['context'] = [
@@ -451,6 +450,9 @@ class TikTok
                     'callback' => $ttclid,
                 ],
             ];
+        }
+        if (!empty($properties)) {
+            $params['properties'] = $properties;
         }
         $output = $this->postRequest('/pixel/track/', $params, $params);
         if (isset($output['code']) && $output['code'] == 0)

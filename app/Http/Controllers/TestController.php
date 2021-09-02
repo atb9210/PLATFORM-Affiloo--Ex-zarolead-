@@ -73,33 +73,15 @@ class TestController extends Controller
 
     public function test()
     {
-        $events = [
-            'ViewContent',
-            'ClickButton',
-            'Search',
-            'AddToWishlist',
-            'AddToCart',
-            'InitiateCheckout',
-            'AddPaymentInfo',
-            'CompletePayment',
-            'PlaceOrder',
-            'Contact',
-            'Download',
-            'SubmitForm',
-            'CompleteRegistration',
-            'Subscribe',
-        ];
-        $eventsList = implode(',', $events);
-        var_dump($eventsList);
-        exit();
-
-        $token = 'f619008e54f81d6f04103a2c87e71437468bf557';
+        $token = 'a8025511e3803b6a5ec974608098a2ebcf057188';
         $pixel = 'C4OAL8PPGM656MIKA5LG';
-        $event = 'SubmitForm';
+        $event = 'ViewContent';
 
         $token = env('TIKTOK_API_KEY');
         $tt = new \Driverfury\TikTok\TikTok($token);
-        var_dump($tt->triggerEvent($pixel, $event));
+        var_dump($tt->triggerEvent($pixel, $event, '', [
+            'currency' => 'EUR',
+        ]));
 
         exit();
     }
