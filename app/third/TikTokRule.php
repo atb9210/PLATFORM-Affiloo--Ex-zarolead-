@@ -27,6 +27,10 @@ class TikTokRule extends Model
         if (gettype($campaign_ids) == 'string') {
             $campaign_ids = json_decode($campaign_ids, true);
         }
+        $all_campaigns = false;
+        if (isset($this->value['all_campaigns'])) {
+            $all_campaigns = $this->value['all_campaigns'];
+        }
         $rules = $this->value['rules'];
         if (gettype($rules) == 'string') {
             $rules = json_decode($rules, true);
@@ -83,7 +87,7 @@ class TikTokRule extends Model
         $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
         $adgroups = $tt->getAdgroups($advertiser_id, '', $reports);
         foreach ($adgroups as $adgroup) {
-            if (!in_array($adgroup['campaign_id'], $campaign_ids)) {
+            if (!$all_campaigns && !in_array($adgroup['campaign_id'], $campaign_ids)) {
                 continue;
             }
 
@@ -93,6 +97,23 @@ class TikTokRule extends Model
                     $flag = false;
                     break;
                 }
+
+                if ($rule['metric'] == 'lifetime_spend') {
+                    if (!isset($adgroup['reports']['metrics']['lifetime_spend'])) {
+                        $lifetime_report = $tt->getObjectReport(
+                            'adgroup',
+                            strval($adgroup['adgroup_id']),
+                            $advertiser_id,
+                            ['spend']
+                        );
+                        if (isset($lifetime_report['metrics']['spend'])) {
+                            $adgroup['reports']['metrics']['lifetime_spend'] = floatval($lifetime_report['metrics']['spend']);
+                        } else {
+                            $adgroup['reports']['metrics']['lifetime_spend'] = 0.0;
+                        }
+                    }
+                }
+
                 $value = $adgroup['reports']['metrics'][$rule['metric']];
                 $cmp = $rule['comparison'];
 

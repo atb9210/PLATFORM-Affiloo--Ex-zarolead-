@@ -249,6 +249,7 @@
                 <template slot="thead">
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="id">Id</vs-th>
+                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -270,6 +271,9 @@
                             {{data[indextr].id}}
                         </vs-td>
 
+                        <vs-td class="column-no-padding">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="changeView('campaigns', data[indextr].id);"></vs-button>
+                        </vs-td>
                     </vs-tr>
 
                 </template>
@@ -638,7 +642,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].value.campaign_ids.length">
-                            {{data[indextr].value.campaign_ids.length}}
+                            {{(data[indextr].value.all_campaigns == true) ? 'All' : data[indextr].value.campaign_ids.length}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
@@ -1028,8 +1032,9 @@
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Campaigns</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                <div class="vx-col sm:w-2/3 w-full flex">
+                    <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                    <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
                     </vs-select>
                 </div>
@@ -1152,8 +1157,9 @@
                 <div class="vx-col sm:w-1/3 w-full">
                     <span>Campaigns</span>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                <div class="vx-col sm:w-2/3 w-full flex">
+                    <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                    <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
                     </vs-select>
                 </div>
@@ -1354,6 +1360,7 @@ export default {
         name: '',
         advertiser_id: '',
         campaign_ids: [],
+        all_campaigns: false,
         rules: [],
         actions: [],
         frequency: 'hourly',
@@ -1646,10 +1653,11 @@ export default {
       ],
 
       ruleMetricOptions: [
-        { value: 'impressions',         label: 'impressions' },
-        { value: 'spend',               label: 'spent' },
-        { value: 'cost_per_conversion', label: 'cost_per_conversion' },
-        { value: 'conversion',          label: 'conversions' },
+        { value: 'impressions',         label: 'Impressions' },
+        { value: 'lifetime_spend',      label: 'Lifetime spent' },
+        { value: 'spend',               label: 'Ppent' },
+        { value: 'cost_per_conversion', label: 'Cost per conversion' },
+        { value: 'conversion',          label: 'Conversions' },
         { value: 'conversion_rate',     label: 'CR' },
         //{ value: 'clicks',      label: 'clicks' }, // TODO: We don't have clicks metric right now
 
@@ -2480,6 +2488,7 @@ export default {
       this.rule = {
         name: '',
         advertiser_id: '',
+        all_campaigns: false,
         campaign_ids: [],
         rules: [],
         actions: [],
@@ -2504,6 +2513,7 @@ export default {
         id: rule.id,
         name: rule.name,
         advertiser_id: rule.value.advertiser_id,
+        all_campaigns: (rule.value.hasOwnProperty('all_campaigns') ? rule.value.all_campaigns : false),
         campaign_ids: forceJson(rule.value.campaign_ids),
         rules: forceJson(rule.value.rules),
         actions: forceJson(rule.value.actions),
@@ -2581,6 +2591,7 @@ export default {
       let data = {
         name: this.rule.name,
         advertiser_id: this.rule.advertiser_id,
+        all_campaigns: this.rule.all_campaigns,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),
@@ -2642,6 +2653,7 @@ export default {
       this.rule = {
         name: name,
         advertiser_id: advertiserId,
+        all_campaigns: this.rule.all_campaigns,
         campaign_ids: campaignIds,
         rules: rules,
         actions: actions,
@@ -2662,6 +2674,7 @@ export default {
       let data = {
         name: this.rule.name,
         advertiser_id: this.rule.advertiser_id,
+        all_campaigns: this.rule.all_campaigns,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
         actions: JSON.stringify(this.rule.actions),

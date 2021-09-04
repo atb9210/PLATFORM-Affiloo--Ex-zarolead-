@@ -73,15 +73,14 @@ class TestController extends Controller
 
     public function test()
     {
-        $token = 'a8025511e3803b6a5ec974608098a2ebcf057188';
-        $pixel = 'C4OAL8PPGM656MIKA5LG';
-        $event = 'ViewContent';
-
         $token = env('TIKTOK_API_KEY');
         $tt = new \Driverfury\TikTok\TikTok($token);
-        var_dump($tt->triggerEvent($pixel, $event, '', [
-            'currency' => 'EUR',
-        ]));
+        echo '<pre>'.var_export($tt->getObjectReport(
+            'adgroup',
+            '1705162610266113',
+            '6937588729175392257',
+            ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+        ), true).'</pre>';
 
         exit();
     }

@@ -159,6 +159,104 @@ class TikTok
         return -1;
     }
 
+    public function getReport(
+        string $type, /* campaign, adgroup or ad */
+        string $advertiserId,
+        array  $metrics,
+        string $startDate = '',
+        string $endDate = ''): array
+    {
+        $report = [];
+        if (count($metrics) > 0) {
+            $dataLevel = 'AUCTION_CAMPAIGN';
+            $dimensions = ['campaign_id'];
+            if ($type == 'adgroup') {
+                $dataLevel = 'AUCTION_ADGROUP';
+                $dimensions = ['adgroup_id'];
+            } else if ($type == 'ad') {
+                $dataLevel = 'AUCTION_AD';
+                $dimensions = ['ad_id'];
+            }
+            $reportParams = [
+                'advertiser_id' => $advertiserId,
+                'report_type' => 'BASIC',
+                'data_level' => $dataLevel,
+                'dimensions' => json_encode($dimensions),
+                'metrics' => $metrics,
+                'lifetime' => true,
+            ];
+            if ($startDate != '') {
+                $reportParams['start_date'] = $startDate;
+                $reportParams['lifetime'] = false;
+            }
+            if ($endDate != '') {
+                $reportParams['end_date'] = $endDate;
+                $reportParams['lifetime'] = false;
+            }
+
+            $report = $this->getRequestAllPages(
+                '/reports/integrated/get/',
+                $reportParams);
+        }
+        return($report);
+    }
+
+    public function getObjectReport(
+        string $type, /* campaign, adgroup or ad */
+        string $objectId,
+        string $advertiserId,
+        array  $metrics,
+        string $startDate = '',
+        string $endDate = ''): array
+    {
+        $report = [];
+        if (count($metrics) > 0) {
+            $dataLevel = 'AUCTION_CAMPAIGN';
+            $dimensions = ['campaign_id'];
+            $filter = 'campaign_ids';
+            if ($type == 'adgroup') {
+                $dataLevel = 'AUCTION_ADGROUP';
+                $dimensions = ['adgroup_id'];
+                $filter = 'adgroup_ids';
+            } else if ($type == 'ad') {
+                $dataLevel = 'AUCTION_AD';
+                $dimensions = ['ad_id'];
+                $filter = 'ad_ids';
+            }
+            $reportParams = [
+                'advertiser_id' => $advertiserId,
+                'report_type' => 'BASIC',
+                'data_level' => $dataLevel,
+                'dimensions' => json_encode($dimensions),
+                'metrics' => $metrics,
+                'lifetime' => true,
+                'filters' => [
+                    [
+                        'field_name' => $filter,
+                        'filter_type' => 'IN',
+                        'filter_value' => json_encode([$objectId]),
+                    ],
+                ],
+            ];
+            if ($startDate != '') {
+                $reportParams['start_date'] = $startDate;
+                $reportParams['lifetime'] = false;
+            }
+            if ($endDate != '') {
+                $reportParams['end_date'] = $endDate;
+                $reportParams['lifetime'] = false;
+            }
+
+            $report = $this->getRequestAllPages(
+                '/reports/integrated/get/',
+                $reportParams);
+            if (count($report) > 0) {
+                $report = $report[0];
+            }
+        }
+        return($report);
+    }
+
     public function getCampaigns(
         string $advertiserId,
         array $reports = []): array
@@ -172,6 +270,23 @@ class TikTok
             isset($reports['metrics']) &&
             count($reports['metrics']) > 0) {
             $metrics = $reports['metrics'];
+            $startDate = '';
+            $endDate = '';
+            if (isset($reports['start_date'])) {
+                $startDate = $reports['start_date'];
+            }
+            if (isset($reports['end_date'])) {
+                $endDate = $reports['end_date'];
+            }
+            $reports = $this->getReport(
+                'campaign',
+                $advertiserId,
+                $metrics,
+                $startDate,
+                $endDate);
+
+            /*
+            // TODO: to delete (old code)
             $reportsParams = [
                 'advertiser_id' => $advertiserId,
                 'report_type' => 'BASIC',
@@ -192,6 +307,7 @@ class TikTok
             $reports = $this->getRequestAllPages(
                 '/reports/integrated/get/',
                 $reportsParams);
+            */
 
             foreach ($reports as $report) {
                 if (isset($report['dimensions']['campaign_id'])) {
@@ -229,6 +345,23 @@ class TikTok
             isset($reports['metrics']) &&
             count($reports['metrics']) > 0) {
             $metrics = $reports['metrics'];
+            $startDate = '';
+            $endDate = '';
+            if (isset($reports['start_date'])) {
+                $startDate = $reports['start_date'];
+            }
+            if (isset($reports['end_date'])) {
+                $endDate = $reports['end_date'];
+            }
+            $reports = $this->getReport(
+                'campaign',
+                $advertiserId,
+                $metrics,
+                $startDate,
+                $endDate);
+
+            /*
+            // TODO: to delete (old code)
             $reportsParams = [
                 'advertiser_id' => $advertiserId,
                 'report_type' => 'BASIC',
@@ -249,6 +382,8 @@ class TikTok
             $reports = $this->getRequestAllPages(
                 '/reports/integrated/get/',
                 $reportsParams);
+            */
+
             foreach ($reports as $report) {
                 if (isset($report['dimensions']['adgroup_id'])) {
                     $index = $this->getObjectIndexByField($objects, 'adgroup_id', $report['dimensions']['adgroup_id']);
@@ -285,6 +420,23 @@ class TikTok
             isset($reports['metrics']) &&
             count($reports['metrics']) > 0) {
             $metrics = $reports['metrics'];
+            $startDate = '';
+            $endDate = '';
+            if (isset($reports['start_date'])) {
+                $startDate = $reports['start_date'];
+            }
+            if (isset($reports['end_date'])) {
+                $endDate = $reports['end_date'];
+            }
+            $reports = $this->getReport(
+                'campaign',
+                $advertiserId,
+                $metrics,
+                $startDate,
+                $endDate);
+
+            /*
+            // TODO: to delete (old code)
             $reportsParams = [
                 'advertiser_id' => $advertiserId,
                 'report_type' => 'BASIC',
@@ -305,6 +457,8 @@ class TikTok
             $reports = $this->getRequestAllPages(
                 '/reports/integrated/get/',
                 $reportsParams);
+            */
+
             foreach ($reports as $report) {
                 if (isset($report['dimensions']['ad_id'])) {
                     $index = $this->getObjectIndexByField($objects, 'ad_id', $report['dimensions']['ad_id']);

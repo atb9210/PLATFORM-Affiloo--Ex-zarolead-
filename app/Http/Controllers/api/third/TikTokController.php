@@ -534,6 +534,7 @@ class TikTokController extends Controller
      *
      * @bodyParam name string required Rule's name
      * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam all_campaigns bool Apply the rule to every campaign
      * @bodyParam campaign_ids array required Campaigns ids
      * @bodyParam rules string required Rules
      * @bodyParam actions string required Actions
@@ -554,6 +555,7 @@ class TikTokController extends Controller
         $params = $request->validate([
             'name' => 'string|required',
             'advertiser_id' => 'string|required|exists:third_tiktok_advertisers,id',
+            'all_campaigns' => 'boolean',
             'campaign_ids' => 'array|required',
             'rules' => 'json|required',
             'actions' => 'json|required',
@@ -563,6 +565,10 @@ class TikTokController extends Controller
         ]);
 
         $advertiser_id = $params['advertiser_id'];
+        $all_campaigns = false;
+        if (isset($params['all_campaigns'])) {
+            $all_campaigns = ($params['all_campaigns'] == true);
+        }
         $campaign_ids = $params['campaign_ids'];
         $rules = $params['rules'];
         $actions = $params['actions'];
@@ -577,6 +583,7 @@ class TikTokController extends Controller
             'name' => $params['name'],
             'value' => [
                 'advertiser_id' => $advertiser_id,
+                'all_campaigns' => $all_campaigns,
                 'campaign_ids' => $campaign_ids,
                 'rules' => $rules,
                 'actions' => $actions,
@@ -597,6 +604,7 @@ class TikTokController extends Controller
      *
      * @bodyParam name string Rule's name
      * @bodyParam advertiser_id string Advertiser's id
+     * @bodyParam all_campaigns bool Apply the rule to every campaign
      * @bodyParam campaign_ids string Campaigns ids
      * @bodyParam rules string Rules
      * @bodyParam actions string Actions
@@ -619,6 +627,7 @@ class TikTokController extends Controller
         $params = $request->validate([
             'name' => 'string',
             'advertiser_id' => 'string|exists:third_tiktok_advertisers,id',
+            'all_campaigns' => 'boolean',
             'campaign_ids' => 'array',
             'rules' => 'json',
             'actions' => 'json',
@@ -630,6 +639,9 @@ class TikTokController extends Controller
         $value = $rule->value;
         if (isset($params['advertiser_id'])) {
             $value['advertiser_id'] = $params['advertiser_id'];
+        }
+        if (isset($params['all_campaigns'])) {
+            $value['all_campaigns'] = $params['all_campaigns'];
         }
         if (isset($params['campaign_ids'])) {
             $value['campaign_ids'] = $params['campaign_ids'];
