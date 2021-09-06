@@ -1661,11 +1661,9 @@ export default {
         { value: 'conversion_rate',     label: 'CR' },
         //{ value: 'clicks',      label: 'clicks' }, // TODO: We don't have clicks metric right now
 
-        // TODO: Special metrics
-        /*
-        { value: 'roi',                 label: 'roi' },
-        { value: 'profit',              label: 'profit' },
-        */
+        // Special metrics
+        { value: 'profit',              label: 'Profit' },
+        { value: 'roi',                 label: 'ROI' },
       ],
 
       ruleComparisonOptions: [

@@ -45,7 +45,15 @@ class TikTokRule extends Model
         }
 
         $reports = [
-            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+            'metrics' => [
+                'total_form_value',
+                'spend',
+                'conversion',
+                'cost_per_conversion',
+                'conversion_rate',
+                'cpm',
+                'impressions'
+            ],
         ];
         if ($time == 'current_day') {
             $from = date("Y-m-d", mktime(0, 0, 0, date("m"), date("d"), date("Y")));
@@ -98,6 +106,7 @@ class TikTokRule extends Model
                     break;
                 }
 
+                // Custom metrics
                 if ($rule['metric'] == 'lifetime_spend') {
                     if (!isset($adgroup['reports']['metrics']['lifetime_spend'])) {
                         $lifetime_report = $tt->getObjectReport(
@@ -112,6 +121,21 @@ class TikTokRule extends Model
                             $adgroup['reports']['metrics']['lifetime_spend'] = 0.0;
                         }
                     }
+                } else if ($rule['metric'] == 'profit' || $rule['metric'] == 'roi') {
+                    $profit = 0.0;
+                    if (isset($adgroup['reports']['metrics']['profit'])) {
+                        $profit = floatval($adgroup['reports']['metrics']['profit']);
+                    } else {
+                        $profit = floatval($adgroup['reports']['metrics']['total_form_value']) - 
+                            floatval($adgroup['reports']['metrics']['spend']);
+                    }
+                    $adgroup['reports']['metrics']['profit'] = $profit;
+
+                    $roi = 0.0;
+                    if (floatval($adgroup['reports']['metrics']['spend']) > 0.0) {
+                        $roi = ($profit / floatval($adgroup['reports']['metrics']['spend']))*100.0;
+                    }
+                    $adgroup['reports']['metrics']['roi'] = $roi;
                 }
 
                 $value = $adgroup['reports']['metrics'][$rule['metric']];

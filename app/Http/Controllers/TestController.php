@@ -76,10 +76,14 @@ class TestController extends Controller
         $token = env('TIKTOK_API_KEY');
         $tt = new \Driverfury\TikTok\TikTok($token);
         echo '<pre>'.var_export($tt->getObjectReport(
+            /*
             'adgroup',
             '1705162610266113',
+             */
+            'campaign',
+            '1705364108939266',
             '6937588729175392257',
-            ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+            ['total_form_value','spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
         ), true).'</pre>';
 
         exit();
