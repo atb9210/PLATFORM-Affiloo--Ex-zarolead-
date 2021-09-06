@@ -42,6 +42,7 @@
             <vs-button v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
             <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
             <vs-button v-if="view == 'rules'" :disabled="selectedRules.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-menu" @click="showBulkEditRuleForm"></vs-button>
+            <vs-button v-if="['campaigns','adgroups','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
             <!--
             <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
             <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdgroups.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
@@ -348,7 +349,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            € {{data[indextr].roi.toFixed(2)}}
+                            {{data[indextr].roi.toFixed(2)}}%
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
@@ -380,7 +381,7 @@
                         € {{total_stats.profit.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.roi.toFixed(2)}}
+                        {{total_stats.roi.toFixed(2)}}%
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
@@ -459,7 +460,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            € {{data[indextr].roi.toFixed(2)}}
+                            {{data[indextr].roi.toFixed(2)}}%
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
@@ -500,7 +501,7 @@
                         € {{total_stats.profit.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.roi.toFixed(2)}}
+                        {{total_stats.roi.toFixed(2)}}%
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
@@ -578,7 +579,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            € {{data[indextr].roi.toFixed(2)}}
+                            {{data[indextr].roi.toFixed(2)}}%
                         </vs-td>
 
                     </vs-tr>
@@ -603,7 +604,7 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.profit.toFixed(2)}}
+                        {{total_stats.profit.toFixed(2)}}%
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.roi.toFixed(2)}}
@@ -1642,7 +1643,7 @@ export default {
       ],
 
       ruleTimeOptions: [
-        { value: 'current_day',        label: 'Current day' },
+        { value: 'current_day',  label: 'Current day' },
         { value: 'last_1_days',  label: 'Last day' },
         { value: 'last_2_days',  label: 'Last 2 days' },
         { value: 'last_3_days',  label: 'Last 3 days' },
@@ -1655,7 +1656,7 @@ export default {
       ruleMetricOptions: [
         { value: 'impressions',         label: 'Impressions' },
         { value: 'lifetime_spend',      label: 'Lifetime spent' },
-        { value: 'spend',               label: 'Ppent' },
+        { value: 'spend',               label: 'Spent' },
         { value: 'cost_per_conversion', label: 'Cost per conversion' },
         { value: 'conversion',          label: 'Conversions' },
         { value: 'conversion_rate',     label: 'CR' },
@@ -1712,6 +1713,17 @@ export default {
         return this.adgroups
       } else if (this.view == 'ads') {
         return this.ads
+      } else {
+        return []
+      }
+    },
+    selectedObjects() {
+      if (this.view == 'campaigns') {
+        return this.selectedCampaigns
+      } else if (this.view == 'adgroups') {
+        return this.selectedAdgroups
+      } else if (this.view == 'ads') {
+        return this.selectedAds
       } else {
         return []
       }
@@ -1879,6 +1891,10 @@ export default {
           if (reports.metrics.hasOwnProperty('impressions')) {
             impressions = parseFloat(reports.metrics.impressions)
           }
+          if (reports.metrics.hasOwnProperty('total_form_value')) {
+            profit = parseFloat(reports.metrics.total_form_value) - spent
+            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
+          }
         }
 
         objectToPush.spent  = spent
@@ -1963,6 +1979,10 @@ export default {
           if (reports.metrics.hasOwnProperty('impressions')) {
             impressions = parseFloat(reports.metrics.impressions)
           }
+          if (reports.metrics.hasOwnProperty('total_form_value')) {
+            profit = parseFloat(reports.metrics.total_form_value) - spent
+            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
+          }
         }
 
         objectToPush.spent  = spent
@@ -2046,6 +2066,10 @@ export default {
           }
           if (reports.metrics.hasOwnProperty('impressions')) {
             impressions = parseFloat(reports.metrics.impressions)
+          }
+          if (reports.metrics.hasOwnProperty('total_form_value')) {
+            profit = parseFloat(reports.metrics.total_form_value) - spent
+            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
           }
         }
 
@@ -3055,6 +3079,21 @@ export default {
     },
     onAdvertiserSwitch() {
       this.changeView('campaigns', this.advertiserSwitch)
+    },
+    async copyIds() {
+      let stringToCopy = ''
+      let objs = this.selectedObjects
+      for (let i = 0; i < objs.length; i++) {
+        stringToCopy += objs[i].id + '\n'
+      }
+      await navigator.clipboard.writeText(stringToCopy)
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Ids copied to the clipboard',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   async created() {

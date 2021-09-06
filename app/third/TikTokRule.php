@@ -217,12 +217,14 @@ class TikTokRule extends Model
                         floatval($budget));
                 } else if ($action['type'] == 'enable') {
                     // Enable adgroup
+                    Log::info('Enable');
                     $tt->updateAdgroupStatus(
                         $advertiser_id,
                         $adgroup['adgroup_id'],
                         'ENABLE');
                 } else if ($action['type'] == 'disable') {
                     // Disable adgroup
+                    Log::info('Disable');
                     $tt->updateAdgroupStatus(
                         $advertiser_id,
                         $adgroup['adgroup_id'],

@@ -149,7 +149,15 @@ class TikTokController extends Controller
         $reports = [];
         if (!isset($params['reports']) || boolval($params['reports']) === true) {
             $reports = [
-                'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+                'metrics' => [
+                    'total_form_value',
+                    'spend',
+                    'conversion',
+                    'cost_per_conversion',
+                    'conversion_rate',
+                    'cpm',
+                    'impressions'
+                ],
             ];
         }
 
@@ -193,7 +201,15 @@ class TikTokController extends Controller
         ]);
 
         $reports = [
-            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+            'metrics' => [
+                'total_form_value',
+                'spend',
+                'conversion',
+                'cost_per_conversion',
+                'conversion_rate',
+                'cpm',
+                'impressions'
+            ],
         ];
 
         if (isset($params['filter_date_from'])) {
@@ -240,7 +256,15 @@ class TikTokController extends Controller
         ]);
 
         $reports = [
-            'metrics' => ['spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
+            'metrics' => [
+                'total_form_value',
+                'spend',
+                'conversion',
+                'cost_per_conversion',
+                'conversion_rate',
+                'cpm',
+                'impressions'
+            ],
         ];
 
         if (isset($params['filter_date_from'])) {

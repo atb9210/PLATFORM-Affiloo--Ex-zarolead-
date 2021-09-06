@@ -354,7 +354,7 @@ class TikTok
                 $endDate = $reports['end_date'];
             }
             $reports = $this->getReport(
-                'campaign',
+                'adgroup',
                 $advertiserId,
                 $metrics,
                 $startDate,
@@ -429,7 +429,7 @@ class TikTok
                 $endDate = $reports['end_date'];
             }
             $reports = $this->getReport(
-                'campaign',
+                'ad',
                 $advertiserId,
                 $metrics,
                 $startDate,
