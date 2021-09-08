@@ -123,7 +123,7 @@ class FlowController extends Controller
             foreach ($landings as $landing) {
                 $l = Landing::findOrFail($landing['id']);
                 $url = $l->url;
-                $path = Str::slug($url, '-');
+                $path = 'f' . strval($flow->id) . chr(65 + $counter) . '-' . Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
                 $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $params['path_name']);
                 if ($flow->urlIsExternal($url)) {
@@ -141,7 +141,7 @@ class FlowController extends Controller
             if (isset($params['rules']['safe_page_url']) &&
                 $params['rules']['safe_page_url'] != '') {
                 $url = $params['rules']['safe_page_url'];
-                $path = Str::slug($url, '-');
+                $path = 'f' . strval($flow->id) . 'safe-' . Str::slug($url, '-');
                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
                 $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $params['path_name']);
                 if ($flow->urlIsExternal($url)) {
@@ -292,10 +292,10 @@ class FlowController extends Controller
                             if ($landing['id'] == $landingId) {
                                 $l = Landing::findOrFail($landingId);
                                 $url = $l->url;
-                                $path = Str::slug($url, '-');
+                                $path = 'f' . strval($flow->id) . chr(65 + $counter) . '-' . Str::slug($url, '-');
                                 $domain = $flow->domain;
                                 $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $params['path_name']);
+                                $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $flow->path_name);
                                 if ($flow->urlIsExternal($url)) {
                                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                                     $jobsArray[] =  [
@@ -346,10 +346,10 @@ class FlowController extends Controller
                 if ($newSafePage != '') {
                     // Create the new safe page
                     $url = $newSafePage;
-                    $path = Str::slug($url, '-');
+                    $path = 'f' . strval($flow->id) . 'safe-' . Str::slug($url, '-');
                     $domain = $flow->domain;
                     $fullPath = 'apps/' . $domain->path . '/public/' . $path;
-                    $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $params['path_name']);
+                    $newUrl = (($domain->getSSL() == 'No SSL') ? 'http' : 'https') . '://' . $domain->domain . '/' . str_replace('index.php', '', $flow->path_name);
                     if ($flow->urlIsExternal($url)) {
                         $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                         $jobsArray[] =  [

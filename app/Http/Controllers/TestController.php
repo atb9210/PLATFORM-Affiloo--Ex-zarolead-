@@ -73,6 +73,9 @@ class TestController extends Controller
 
     public function test()
     {
+        echo chr(65);
+        exit();
+
         $token = env('TIKTOK_API_KEY');
         $tt = new \Driverfury\TikTok\TikTok($token);
         echo '<pre>'.var_export($tt->getObjectReport(
