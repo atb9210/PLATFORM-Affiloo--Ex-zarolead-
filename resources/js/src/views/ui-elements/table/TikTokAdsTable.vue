@@ -345,11 +345,15 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
-                            € {{data[indextr].profit.toFixed(2)}}
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            {{data[indextr].roi.toFixed(2)}}%
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
@@ -378,10 +382,14 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.profit.toFixed(2)}}
+                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
+                            € {{total_stats.profit.toFixed(2)}}
+                        </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.roi.toFixed(2)}}%
+                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
+                            {{total_stats.roi.toFixed(2)}}%
+                        </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
@@ -456,11 +464,15 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
-                            € {{data[indextr].profit.toFixed(2)}}
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            {{data[indextr].roi.toFixed(2)}}%
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
@@ -498,10 +510,14 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.profit.toFixed(2)}}
+                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
+                            € {{total_stats.profit.toFixed(2)}}
+                        </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.roi.toFixed(2)}}%
+                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
+                            {{total_stats.roi.toFixed(2)}}%
+                        </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.budget.toFixed(2)}}
@@ -575,11 +591,15 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
-                            € {{data[indextr].profit.toFixed(2)}}
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].roi">
-                            {{data[indextr].roi.toFixed(2)}}%
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
                         </vs-td>
 
                     </vs-tr>
@@ -604,10 +624,14 @@
                         € {{total_stats.cpm.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        {{total_stats.profit.toFixed(2)}}%
+                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
+                            € {{total_stats.profit.toFixed(2)}}
+                        </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.roi.toFixed(2)}}
+                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
+                            {{total_stats.roi.toFixed(2)}}%
+                        </vs-chip>
                     </vs-td>
                     <!-- END TOTAL STATS-->
                 </template>

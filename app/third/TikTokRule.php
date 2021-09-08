@@ -101,11 +101,6 @@ class TikTokRule extends Model
 
             $flag = true;
             foreach ($rules as $rule) {
-                if (!isset($adgroup['reports']['metrics'][$rule['metric']])) {
-                    $flag = false;
-                    break;
-                }
-
                 // Custom metrics
                 if ($rule['metric'] == 'lifetime_spend') {
                     if (!isset($adgroup['reports']['metrics']['lifetime_spend'])) {
@@ -136,6 +131,11 @@ class TikTokRule extends Model
                         $roi = ($profit / floatval($adgroup['reports']['metrics']['spend']))*100.0;
                     }
                     $adgroup['reports']['metrics']['roi'] = $roi;
+                }
+
+                if (!isset($adgroup['reports']['metrics'][$rule['metric']])) {
+                    $flag = false;
+                    break;
                 }
 
                 $value = $adgroup['reports']['metrics'][$rule['metric']];

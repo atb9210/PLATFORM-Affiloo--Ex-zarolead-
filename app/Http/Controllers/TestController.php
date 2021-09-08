@@ -73,21 +73,25 @@ class TestController extends Controller
 
     public function test()
     {
-        echo chr(65);
-        exit();
+        $reports = [
+            'metrics' => [
+                'total_form_value',
+                'spend',
+                'conversion',
+                'cost_per_conversion',
+                'conversion_rate',
+                'cpm',
+                'impressions'
+            ],
+            'start_date' => '2021-09-01',
+            'end_date'   => '2021-09-30',
+        ];
+        $parentId = '1709746633115650';
+        $advertiserId = '6937588729175392257';
 
-        $token = env('TIKTOK_API_KEY');
-        $tt = new \Driverfury\TikTok\TikTok($token);
-        echo '<pre>'.var_export($tt->getObjectReport(
-            /*
-            'adgroup',
-            '1705162610266113',
-             */
-            'campaign',
-            '1705364108939266',
-            '6937588729175392257',
-            ['total_form_value','spend', 'conversion', 'cost_per_conversion', 'conversion_rate', 'cpm', 'impressions'],
-        ), true).'</pre>';
+        $tt = new \Driverfury\TikTok\TikTok(env('TIKTOK_API_KEY'));
+        $adgroups = $tt->getAdgroups($advertiserId, $parentId, $reports);
+        var_dump($adgroups);
 
         exit();
     }

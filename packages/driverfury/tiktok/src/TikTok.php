@@ -127,7 +127,7 @@ class TikTok
 
         $totalPages = 2;
         $currentPage = 1;
-        while($currentPage < $totalPages) {
+        while($currentPage <= $totalPages) {
             $params['page_size'] = 1000;
             $params['page'] = $currentPage;
             $response = $this->getRequest($path, $params);
@@ -140,6 +140,7 @@ class TikTok
             foreach ($response['data']['list'] as $element) {
                 $output[] = $element;
             }
+            $currentPage += 1;
         }
 
         return $output;
