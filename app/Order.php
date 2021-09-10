@@ -226,7 +226,7 @@ class Order extends Model
 
         // Change order status
         $order_status_id = OrderStatus::WAITING;
-        if (empty($network->getApi('default_status'))) {
+        if (!empty($network->getApi('default_status'))) {
             $order_status = $network->getApi('default_status');
             if ($order_status != '') {
                 $os = OrderStatus::where('description', $order_status);
