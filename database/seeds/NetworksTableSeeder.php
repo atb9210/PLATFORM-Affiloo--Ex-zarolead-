@@ -686,5 +686,242 @@ class NetworksTableSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/limitless' : 'https://app.limitl3ssnetwork.com/api/affiliate/leads/create');
+        \App\Network::create([
+            'name' => 'Limitless',
+            'api' => [
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'urlParams' => [
+                        ],
+                        'bodyParams' => [
+                            'apikey' => '{form.apikey}',
+                            'sub_id' => '{form.sub_id}',
+                            'country' => '{form.country}',
+                            'affiliate_id' => '{form.affiliate_id}',
+                            'offer_id' => '{form.offer_id}',
+                            'lid' => '{form.lid}',
+                            'quantity' => '{form.quantity}',
+                            'amount' => '{form.amount}',
+                            'firstname' => '{input.name}',
+                            'lastname' => '{input.surname}',
+                            'phone' => '{input.phone}',
+                            'address' => '{input.address}',
+                            'city' => '{input.address}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                            ],
+                            'bodyParams' => [
+                                'apikey' => 'required|string|min:1',
+                                'sub_id' => 'required|string|min:1',
+                                'country' => 'required|string|min:1',
+                                'affiliate_id' => 'required|string|min:1',
+                                'offer_id' => 'required|string|min:1',
+                                'lid' => 'required|string|min:1',
+                                'quantity' => 'required|string|min:1',
+                                'amount' => 'required|string|min:1',
+                                'firstname' => 'required|min:3',
+                                'lastname' => 'required|min:3',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                                'address' => 'required|min:4',
+                                'city' => 'required|min:1',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'status' => 'required|string|in:ok',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'phone',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città e indirizzo di consegna'
+                            ],
+                        ],
+                    ],
+                    'params' => [
+                        'apikey' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'sub_id' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'country' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'affiliate_id' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'offer_id' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'lid' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'quantity' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'amount' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                            'address' => 'required|string|min:4',
+                        ],
+                        'params' => [
+                            'apikey' => 'required|string|min:1',
+                            'sub_id' => 'required|string|min:1',
+                            'country' => 'required|string|min:1',
+                            'affiliate_id' => 'required|string|min:1',
+                            'offer_id' => 'required|string|min:1',
+                            'lid' => 'required|string|min:1',
+                            'quantity' => 'required|string|min:1',
+                            'amount' => 'required|string|min:1',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/profitparadise' : 'https://new-tech.co/forms/api/');
+        \App\Network::create([
+            'name' => 'ProfitParadise',
+            'api' => [
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'urlParams' => [
+                        ],
+                        'bodyParams' => [
+                            'uid' => '{form.uid}',
+                            'offer' => '{form.offer}',
+                            'lp' => '{form.lp}',
+                            'name' => '{input.name}',
+                            'tel' => '{input.phone}',
+                            'street-address' => '{input.address}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                            ],
+                            'bodyParams' => [
+                                'uid' => 'required|string|min:1',
+                                'offer' => 'required|string|min:1',
+                                'lp' => 'required|string|min:1',
+                                'name' => 'required|min:3',
+                                'tel' => 'required|string|min:10|regex:' . $phone_regex,
+                                'street-address' => 'required|min:4',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'code' => 'required|numeric|min:200|max:200',
+                                    'message' => 'required|string|in:OK',
+                                ],
+                            ],
+                            'double' => [
+                                'validation' => [
+                                    'code' => 'required|numeric|min:200|max:200',
+                                    'message' => 'required|string|in:DOUBLE',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'phone',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Città e indirizzo di consegna'
+                            ],
+                        ],
+                    ],
+                    'params' => [
+                        'uid' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'offer' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'lp' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                            'address' => 'required|string|min:4',
+                        ],
+                        'params' => [
+                            'uid' => 'required|string|min:1',
+                            'offer' => 'required|string|min:1',
+                            'lp' => 'required|string|min:1',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
     }
 }

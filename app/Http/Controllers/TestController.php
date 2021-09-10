@@ -73,6 +73,56 @@ class TestController extends Controller
 
     public function test()
     {
+        $bodyParams = [
+            'uid' => 'a2a84d6c-53f0-4a43-ad58-abf6b9367af0',
+            'offer' => '514',
+            'lp' => '1598',
+            'name' => 'Test test',
+            'tel' => '12345678901',
+            'street-address' => 'Via dei test 2',
+            'ip' => '',
+            'ua' => '',
+        ];
+        $url = 'https://new-tech.co/forms/api/';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $server_output = curl_exec($ch);
+        curl_close($ch);
+        var_dump($server_output);
+        exit();
+
+        $bodyParams = [
+            'firstname' => 'Test',
+            'lastname' => 'Test',
+            'phone' => '0810000000',
+            'email' => 'me@test.com',
+            'address' => 'Via dei Test, 1',
+            'city' => 'Roma',
+            'zipcode' => '00000',
+            'country' => 'ES',
+            'affiliate_id' => '24',
+            'offer_id' => '531',
+            'lid' => '1038',
+            'quantity' => '1',
+            'amount' => '129',
+            'apikey' => 'aeGWVLPi8PdExguIt6pHtjr2PCGT2d9VsFxVk1Ac',
+            'sub_id' => 'abcde123',
+            'notes' => 'This is a note'
+        ];
+        $url = 'https://app.limitl3ssnetwork.com/api/affiliate/leads/create';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $server_output = curl_exec($ch);
+        curl_close($ch);
+        var_dump($server_output);
+        exit();
+
         $reports = [
             'metrics' => [
                 'total_form_value',
