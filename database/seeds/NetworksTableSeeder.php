@@ -19,6 +19,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Worldfilia',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -158,6 +159,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Amsped',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -286,6 +288,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Affiliation Park',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -402,6 +405,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'ZaroLead',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -567,6 +571,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Finapsy',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -691,6 +696,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Limitless',
             'api' => [
+                'default_status' => 'waiting',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -700,7 +706,7 @@ class NetworksTableSeeder extends Seeder
                         ],
                         'bodyParams' => [
                             'apikey' => '{form.apikey}',
-                            'sub_id' => '{form.sub_id}',
+                            'sub_id' => '{order.id}',
                             'country' => '{form.country}',
                             'affiliate_id' => '{form.affiliate_id}',
                             'offer_id' => '{form.offer_id}',
@@ -718,7 +724,7 @@ class NetworksTableSeeder extends Seeder
                             ],
                             'bodyParams' => [
                                 'apikey' => 'required|string|min:1',
-                                'sub_id' => 'required|string|min:1',
+                                'sub_id' => 'required',
                                 'country' => 'required|string|min:1',
                                 'affiliate_id' => 'required|string|min:1',
                                 'offer_id' => 'required|string|min:1',
@@ -771,10 +777,6 @@ class NetworksTableSeeder extends Seeder
                             'type' => 'text',
                             'required' => '',
                         ],
-                        'sub_id' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
                         'country' => [
                             'type' => 'text',
                             'required' => '',
@@ -808,7 +810,6 @@ class NetworksTableSeeder extends Seeder
                         ],
                         'params' => [
                             'apikey' => 'required|string|min:1',
-                            'sub_id' => 'required|string|min:1',
                             'country' => 'required|string|min:1',
                             'affiliate_id' => 'required|string|min:1',
                             'offer_id' => 'required|string|min:1',
@@ -825,6 +826,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'ProfitParadise',
             'api' => [
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,

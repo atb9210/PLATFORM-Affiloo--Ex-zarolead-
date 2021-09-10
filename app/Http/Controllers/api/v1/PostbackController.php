@@ -5,11 +5,19 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Order;
+use App\OrderStatus;
+use App\Form;
+use App\Landing;
+
+/*
+// TODO: to delete (old code)
 use App\Form as Form;
 use App\FormStats as FormStats;
 use App\User as User;
 use App\UserReport as UserReport;
 use App\AdvertiserReport as AdvertiserReport;
+*/
 
 class PostbackController extends Controller
 {
@@ -27,10 +35,53 @@ class PostbackController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'sub_id' => 'required|numeric|exists:forms,id',
+            // TODO: to delete (old code)
+            //'sub_id' => 'required|numeric|exists:forms,id',
+            'sub_id' => 'required|numeric|exists:orders,id',
             'status' => 'required|numeric',
         ]);
 
+        $order = Order::findOrFail($params['sub_id']);
+        $statuses = [
+            0 => OrderStatus::WAITING,
+            1 => OrderStatus::CONFIRMED,
+            2 => OrderStatus::REFUSED,
+            3 => OrderStatus::REFUSED,
+        ];
+
+        if (isset($statuses[$params['status']])) {
+            $newStatus = $statuses[$params['status']];
+            $order->order_status_id = $newStatus;
+            $order->save();
+
+            if ($newStatus == OrderStatus::CONFIRMED) {
+                $info = $order->info;
+                if (isset($info['form_id']) && isset($info['landing_id'])) {
+                    $commission = $order->commission;
+                    $sub_commission = 0.0;
+                    if (isset($info['sub_commission'])) {
+                        $sub_commission = floatval($info['sub_commission']);
+                    }
+                    $form = Form::findOrFail($info['form_id']);
+                    $query_params = [];
+                    if (isset($params['query_params'])) {
+                        $query_params = $params['query_params'];
+                        if (is_string($query_params)) {
+                            $query_params = json_decode($query_params, true);
+                        }
+                    }
+                    $landing = Landing::findOrFail($info['landing_id']);
+
+                    $order->updateStats(
+                        $commission, $sub_commission,
+                        $form, $query_params,
+                        $landing);
+                }
+            }
+        }
+
+        /*
+        // TODO: to delete (old code)
         $form = Form::findOrFail($params['sub_id']);
         if ($params['status'] == 1) {
             $commission = 0.0;
@@ -107,6 +158,7 @@ class PostbackController extends Controller
             $advReport->profit = $advReport->commission - $advReport->cost;
             $advReport->save();
         }
+        */
 
         return response([
             'message' => 'Postback received',

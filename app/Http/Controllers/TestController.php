@@ -73,6 +73,27 @@ class TestController extends Controller
 
     public function test()
     {
+        $arr = [
+            1 => 'ciao',
+            33 => 'asd',
+        ];
+        var_dump(isset($arr[0]));
+        var_dump(isset($arr[1]));
+        exit();
+
+        $order = \App\Order::findOrFail(1);
+        $form = \App\Form::findOrFail(1);
+        $landing = \App\Landing::findOrFail(1);
+        $commission = 10.0;
+        $sub_commission = 4.0;
+        $order->commission = $commission;
+        $order->save();
+        $order->updateStats(
+            $commission, $sub_commission,
+            $form, [],
+            $landing);
+        exit();
+
         $bodyParams = [
             'uid' => 'a2a84d6c-53f0-4a43-ad58-abf6b9367af0',
             'offer' => '514',

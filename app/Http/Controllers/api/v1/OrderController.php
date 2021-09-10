@@ -231,6 +231,8 @@ class OrderController extends Controller
             'commission' => $commission,
             'sub_commission' => $sub_commission,
             'delivery' => $deliveryName,
+            'form_id' => $form->id,
+            'landing_id' => $landing->id,
         ];
 
         $network_data['price'] = $price;
@@ -248,6 +250,19 @@ class OrderController extends Controller
         $network = $order->network;
         $api_call = $order->sendToNetwork($network_data, $network_params, $network);
 
+        if ($order->order_status_id == OrderStatus::CONFIRMED) {
+            $query_params = [];
+            if (isset($params['query_params'])) {
+                $query_params = json_decode($params['query_params'], true);
+            }
+            $order->updateStats(
+                $commission, $sub_commission,
+                $form, $query_params,
+                $landing);
+        }
+
+        /*
+        // TODO: to delete (old code)
         if( $order->order_status_id != OrderStatus::NOT_SENT &&
             $order->order_status_id != OrderStatus::DOUBLE &&
             $order->order_status_id != OrderStatus::REFUSED) {
@@ -347,6 +362,7 @@ class OrderController extends Controller
             $advReport->profit = $advReport->commission - $advReport->cost;
             $advReport->save();
         }
+        */
 
         return response([
             "message" => "Order created",

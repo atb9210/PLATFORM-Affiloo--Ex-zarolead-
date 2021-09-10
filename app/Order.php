@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
+use App\OrderStatus;
 use App\Network;
+
+use App\User;
+use App\FormStats;
+use App\LandingStats;
+use App\UserReport;
+use App\AdvertiserReport;
 
 class Order extends Model
 {
@@ -218,14 +225,27 @@ class Order extends Model
         }
 
         // Change order status
+        $order_status_id = OrderStatus::WAITING;
+        if (empty($network->getApi('default_status'))) {
+            $order_status = $network->getApi('default_status');
+            if ($order_status != '') {
+                $os = OrderStatus::where('description', $order_status);
+                if ($os->count() > 0) {
+                    $order_status_id = $os->first()->id;
+                }
+            }
+        }
+        $redirectArray = $network->getApi('store.redirect');
         $this->order_status_id = OrderStatus::NOT_SENT;
         if ($status == 'success') {
-            $this->order_status_id = OrderStatus::WAITING;
+            $this->order_status_id = $order_status_id;
         } elseif ($status == 'double') {
             $this->order_status_id = OrderStatus::DOUBLE;
         } elseif ($status == 'error') {
             $this->order_status_id = OrderStatus::NOT_SENT;
             Log::channel('orders')->info('Order ' . $this->id . ' has not been stored by the network ' . $network->name, $context);
+        } else {
+            $this->order_status_id = OrderStatus::WAITING;
         }
         $this->save();
 
@@ -444,5 +464,108 @@ EOD;
             'server_input' => $network_data,
             'server_output' => $server_output,
         ];
+    }
+
+    public function updateStats(
+        $commission, $sub_commission,
+        $form, $query_params,
+        $landing)
+    {
+        $timestamp = strtotime($this->created_at);
+        $day = date('Y-m-d', $timestamp);
+
+        $order = $this;
+
+        // Increase form leads and commission
+        $formStats = FormStats::getObject($form->id, $day);
+        $formStats->leads += 1;
+        $formStats->total_commission += $order->commission;
+        $formStatsInfo = $formStats->info;
+        if (!isset($formStatsInfo['total_sub_commission'])) {
+            $formStatsInfo['total_sub_commission'] = 0.0;
+        }
+        $formStatsInfo['total_sub_commission'] += $sub_commission;
+        $formStats->info = $formStatsInfo;
+        if (!empty($query_params)) {
+            $custom_params_stats = $formStats->custom_params_stats;
+            if ($custom_params_stats === null) {
+                $custom_params_stats = [];
+            }
+            foreach ($query_params as $k => $v) {
+                if (!isset($custom_params_stats[$k])) {
+                    $custom_params_stats[$k] = [];
+                }
+                if (!isset($custom_params_stats[$k][$v])) {
+                    $custom_params_stats[$k][$v] = [
+                        'visits' => 0,
+                        'leads' => 0,
+                        'total_commission' => 0.0,
+                    ];
+                }
+                $custom_params_stats[$k][$v]['leads'] += 1;
+                $custom_params_stats[$k][$v]['total_commission'] += $order->commission;
+            }
+            $formStats->custom_params_stats = $custom_params_stats;
+        }
+        $formStats->save();
+
+        // Landing stats
+        $stats = LandingStats::getObject($landing->id, $day);
+        $stats->leads += 1;
+        $stats->total_commission += $order->commission;
+        $statsInfo = $stats->info;
+        if (!isset($statsInfo['total_sub_commission'])) {
+            $statsInfo['total_sub_commission'] = 0.0;
+        }
+        $statsInfo['total_sub_commission'] += $sub_commission;
+        $stats->info = $statsInfo;
+        $stats->save();
+
+        // Total
+        $form->leads += 1;
+        $form->total_commission += $order->commission;
+        $formInfo = $form->info;
+        if (!isset($formInfo['total_sub_commission'])) {
+            $formInfo['total_sub_commission'] = 0.0;
+        }
+        $formInfo['total_sub_commission'] += $sub_commission;
+        $form->info = $formInfo;
+        $form->save();
+
+        // Update user's report stats
+        $report = UserReport::getObject($form->user->id, $day);
+        $report->leads += 1;
+        $report->commission += $order->commission;
+        $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+        $report->save();
+
+        // Update admin's user report
+        $adminRoleId = 2;
+        $users = User::query();
+        $users = $users->join('role_user', 'role_user.user_id', '=', 'id')
+            ->whereIn('role_user.role_id', [$adminRoleId]);
+        $users = $users->get();
+        foreach ($users as $user) {
+            // Skip if it is already updated
+            if ($user->id == $form->user->id) {
+                continue;
+            }
+            $report = UserReport::getObject($user->id, $day);
+            $report->leads += 1;
+            $report->commission += $order->commission;
+            $report->profit = $report->commission - ($report->cost + $report->extra_cost);
+            $report->save();
+        }
+
+        // Update advertiser's report stats
+        $timestamp = strtotime($day);
+        $month = intval(date('m', $timestamp));
+        $year = intval(date('Y', $timestamp));
+        $advertiser = User::findOrFail($form->product->advertiser_id);
+        $advReport = AdvertiserReport::getObject($advertiser, $month, $year);
+        $advReport->leads += 1;
+        $advReport->commission += $order->commission;
+        $advReport->profit = $advReport->commission - $advReport->cost;
+        $advReport->save();
     }
 }
