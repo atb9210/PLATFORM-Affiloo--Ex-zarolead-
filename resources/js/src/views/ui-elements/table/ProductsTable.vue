@@ -68,6 +68,11 @@
                 <vs-th sort-key="advertiser_name">Advertiser</vs-th>
                 <vs-th sort-key="tag.name">Tag</vs-th>
                 <vs-th sort-key="country">Country</vs-th>
+                <vs-th sort-key="sku" v-if="isAdmin">SKU</vs-th>
+                <vs-th sort-key="cost" v-if="isAdmin">Cost</vs-th>
+                <vs-th sort-key="price" v-if="isAdmin">Price</vs-th>
+                <vs-th sort-key="stock_quantity" v-if="isAdmin">Stock Q.ty</vs-th>
+                <vs-th sort-key="url" v-if="isAdmin">Creativity</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -95,6 +100,26 @@
 
                     <vs-td class="column-no-padding" :data="data[indextr].country">
                         {{data[indextr].country}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].sku">
+                        {{data[indextr].sku}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].cost">
+                        € {{data[indextr].cost}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].price">
+                        € {{data[indextr].price}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].stock_quantity">
+                        {{data[indextr].stock_quantity}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="data[indextr].url">
+                        <a :href="data[indextr].url">Creativity</a>
                     </vs-td>
 
                 </vs-tr>
@@ -555,6 +580,9 @@ export default {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
               this.$store.getters.userHasRole('advertiser') || this.$store.getters.userHasRole('mediabuyer'))
     },
+    isAdmin() {
+      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
   },
   methods: {
     getObjectIndexById(id) {
@@ -580,6 +608,40 @@ export default {
       this.objects = response.data.data
       for (let i = 0; i < this.objects.length; i++) {
         this.objects[i].advertiser_name = this.objects[i].advertiser.name
+
+        let sku = ''
+        let cost = 0.0
+        let price = 0.0
+        let stock_quantity = 0
+        let url = ''
+
+        if (this.objects[i].info != null) {
+          if (this.objects[i].info.hasOwnProperty('sku')) {
+            sku = this.objects[i].info.sku
+          }
+          if (this.objects[i].info.hasOwnProperty('cost')) {
+            cost = parseFloat(this.objects[i].info.cost)
+          }
+          if (this.objects[i].info.hasOwnProperty('stock_quantity')) {
+            stock_quantity = parseInt(this.objects[i].info.stock_quantity)
+          }
+          if (this.objects[i].info.hasOwnProperty('url')) {
+            url = this.objects[i].info.url
+          }
+        }
+
+        if (this.objects[i].quantity != null) {
+          if (this.objects[i].quantity.hasOwnProperty('options') &&
+              this.objects[i].quantity.options.hasOwnProperty('1')) {
+            price = parseFloat(this.objects[i].quantity.options['1'].price)
+          }
+        }
+
+        this.objects[i].sku = sku
+        this.objects[i].cost = cost
+        this.objects[i].price = price
+        this.objects[i].stock_quantity = stock_quantity
+        this.objects[i].url = url
       }
       this.$vs.loading.close()
     },
