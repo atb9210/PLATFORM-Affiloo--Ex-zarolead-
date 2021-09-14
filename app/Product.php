@@ -50,4 +50,10 @@ class Product extends Model
     {
         return $this->hasMany('App\Ad');
     }
+
+    public function getStoragePath() : string
+    {
+        $pathname = 'public/products';
+        return $pathname;
+    }
 }

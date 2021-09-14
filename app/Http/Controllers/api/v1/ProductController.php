@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 use App\Product as Product;
 use App\Http\Resources\api\v1\ProductResource;
@@ -65,6 +66,8 @@ class ProductController extends Controller
      * @bodyParam advertiser_id int required Product's advertiser id
      * @bodyParam country string Country
      * @bodyParam quantity json required Product's quantity JSON
+     * @bodyParam info json required Product's info JSON
+     * @bodyParam image file Product's image
      *
      * @response 201 {
      *  "message": "Product created",
@@ -83,6 +86,7 @@ class ProductController extends Controller
             'country' => 'string|min:1',
             'quantity' => 'required|json',
             'info' => 'json',
+            'image' => 'mimes:jpeg,jpg,png,bmp,gif',
         ]);
         $params['user_id'] = Auth::user()->id;
 
@@ -107,6 +111,20 @@ class ProductController extends Controller
 
         $product = Product::create($params);
 
+        // Upload product image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $i = pathinfo($image->getClientOriginalName());
+            $ext = $i['extension'];
+            $file_name = $product->id . '.' . $ext;
+            $path = Storage::putFileAs($product->getStoragePath(), $image, $file_name);
+            $public_url = str_replace('public/', '', $path);
+            $info = $product->info;
+            $info['image'] = $public_url;
+            $product->info = $info;
+            $product->save();
+        }
+
         return response([
             "message" => "Product created",
             "data" => new ProductResource($product),
@@ -125,6 +143,8 @@ class ProductController extends Controller
      * @bodyParam advertiser_id int Product's new user ID
      * @bodyParam country string Product's new country
      * @bodyParam quantity json Product's quantity JSON
+     * @bodyParam info json required Product's info JSON
+     * @bodyParam image file Product's image
      *
      * @response {
      *  "data": product,
@@ -149,6 +169,7 @@ class ProductController extends Controller
             'country' => 'string|min:1|max:255',
             'quantity' => 'json',
             'info' => 'json',
+            'image' => 'mimes:jpeg,jpg,png,bmp,gif',
         ]);
         if (isset($params['quantity'])) {
             $params['quantity'] = json_decode($params['quantity'], TRUE);
@@ -172,6 +193,23 @@ class ProductController extends Controller
         }
 
         $product->update($params);
+
+        // Upload product image
+        if ($request->hasFile('image')) {
+            $info = $product->info;
+            if (isset($info['image']) && $info['image'] != '') {
+                Storage::delete('storage/' . $info['image']);
+            }
+            $image = $request->file('image');
+            $i = pathinfo($image->getClientOriginalName());
+            $ext = $i['extension'];
+            $file_name = $product->id . '.' . $ext;
+            $path = Storage::putFileAs($product->getStoragePath(), $image, $file_name);
+            $public_url = str_replace('public/', '', $path);
+            $info['image'] = $public_url;
+            $product->info = $info;
+            $product->save();
+        }
 
         return new ProductResource($product);
     }

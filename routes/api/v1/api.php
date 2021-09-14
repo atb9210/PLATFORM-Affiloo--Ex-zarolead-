@@ -48,8 +48,10 @@ Route::get('orders-log', 'api\v1\OrderController@getLog')->middleware('auth:api'
 
 /* Products routes */
 Route::apiResource('products', 'api\v1\ProductController')->except([
-    'create', 'edit',
+    'create', 'edit', 'update',
 ])->middleware('auth:api');
+Route::post('products/{id}', 'api\v1\ProductController@update')->middleware('auth:api')
+    ->name('products.update');
 
 /* Tags routes */
 Route::apiResource('tags', 'api\v1\TagController')->except([

@@ -14,7 +14,12 @@ class ProductResource extends JsonResource
      */
     public function toArray($request)
     {
-        //return parent::toArray($request);
+        $image = null;
+        $info = $this->info;
+        if (isset($info['image']) && $info['image'] != '') {
+            $image = asset('storage/' . $info['image']);
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -29,6 +34,7 @@ class ProductResource extends JsonResource
             'country' => $this->country,
             'quantity' => json_decode(json_encode($this->quantity), false),
             'info' => json_decode(json_encode($this->info), false),
+            'image' => $image,
         ];
     }
 }

@@ -149,8 +149,22 @@
 
             <h2 class="vx-col w-full">Optional fields</h2>
 
-            <div class="vx-col w-full">
+            <!--<div class="vx-col w-full">
                 <vs-input class="w-full" label="URL image" icon-pack="feather" icon="icon-image" icon-no-border v-model="newObject['create'].info['image']" />
+            </div>-->
+
+            <div class="vx-col w-full flex items-center">
+                <img :src="createProductImagePreview" />
+            </div>
+
+            <div class="vx-col w-full flex items-center">
+                <div>
+                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker()">Upload image</vs-button>
+                </div>
+                <div>
+                    <span class="ml-auto mr-auto">{{ (fileToUpload != null) ? fileToUpload.name : 'No file selected' }}</span>
+                </div>
+                <input type="file" ref="fileUpload" class="hidden" accept="image/*" @change="onFilesUploadChange">
             </div>
 
             <div class="vx-col w-full">
@@ -238,8 +252,22 @@
 
             <h2 class="vx-col w-full">Optional fields</h2>
 
-            <div class="vx-col w-full">
+            <!--<div class="vx-col w-full">
                 <vs-input class="w-full" label="URL image" icon-pack="feather" icon="icon-image" icon-no-border v-model="newObject['edit'].info['image']" />
+            </div>-->
+
+            <div class="vx-col w-full flex items-center">
+                <img :src="editProductImagePreview" />
+            </div>
+
+            <div class="vx-col w-full flex items-center">
+                <div>
+                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker()">Upload image</vs-button>
+                </div>
+                <div>
+                    <span class="ml-auto mr-auto">{{ (fileToUpload != null) ? fileToUpload.name : 'No file selected' }}</span>
+                </div>
+                <input type="file" ref="fileUpload" class="hidden" accept="image/*" @change="onFilesUploadChange">
             </div>
 
             <div class="vx-col w-full">
@@ -498,6 +526,11 @@ export default {
 
       tags: [],
       advertisers: [],
+
+      fileToUpload: null,
+
+      createProductImagePreview: '',
+      editProductImagePreview: '',
     }
   },
   computed: {
@@ -658,20 +691,19 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      let data = {
-        name: this.newObject['create'].name,
-        tag_id: this.newObject['create'].tag,
-        advertiser_id: this.newObject['create'].advertiser,
-        country: this.newObject['create'].country,
-        quantity: {
-          options: {},
-          default: '',
-        },
-        info: JSON.stringify(this.newObject['create'].info),
-      }
+      let data = new FormData()
+      data.append('name', this.newObject['create'].name)
+      data.append('tag_id', this.newObject['create'].tag)
+      data.append('advertiser_id', this.newObject['create'].advertiser)
+      data.append('country', this.newObject['create'].country)
+      data.append('info', JSON.stringify(this.newObject['create'].info))
 
+      let quantity = {
+        options: {},
+        default: '',
+      }
       this.quantityOptions.forEach((opt) => {
-        data.quantity['options'][opt.quantity] = {
+        quantity['options'][opt.quantity] = {
           title: opt.title,
           price: opt.price,
           commission: opt.commission,
@@ -680,8 +712,13 @@ export default {
           discount: opt.discount,
         }
       })
-      data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
-      data.quantity = JSON.stringify(data.quantity)
+      quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
+      quantity = JSON.stringify(quantity)
+      data.append('quantity', quantity)
+
+      if (this.fileToUpload != null) {
+        data.append('image', this.fileToUpload)
+      }
 
       // Create product
       this.$http.post('/api/v1/products', data, { headers: headers })
@@ -740,6 +777,7 @@ export default {
         advertiser: obj.advertiser.id,
         country: obj.country,
         info: info,
+        image: obj.image,
       }
 
       // Fetch quantity options
@@ -763,6 +801,12 @@ export default {
         index++
       }
 
+      this.fileToUpload = null
+
+      if (obj.hasOwnProperty('image') && obj.image != null) {
+        this.editProductImagePreview = obj.image
+      }
+
       this.editingObject = obj.id
       this.mode = 'edit'
     },
@@ -776,20 +820,20 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      let data = {
-        name: this.newObject['edit'].name,
-        tag_id: this.newObject['edit'].tag,
-        advertiser_id: this.newObject['edit'].advertiser,
-        country: this.newObject['edit'].country,
-        quantity: {
-          options: {},
-          default: '',
-        },
-        info: JSON.stringify(this.newObject['create'].info),
-      }
 
+      let data = new FormData()
+      data.append('name', this.newObject['edit'].name)
+      data.append('tag_id', this.newObject['edit'].tag)
+      data.append('advertiser_id', this.newObject['edit'].advertiser)
+      data.append('country', this.newObject['edit'].country)
+      data.append('info', JSON.stringify(this.newObject['edit'].info))
+
+      let quantity = {
+        options: {},
+        default: '',
+      }
       this.quantityOptions.forEach((opt) => {
-        data.quantity['options'][opt.quantity] = {
+        quantity['options'][opt.quantity] = {
           title: opt.title,
           price: opt.price,
           commission: opt.commission,
@@ -798,14 +842,16 @@ export default {
           discount: opt.discount,
         }
       })
-      data.quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
-      data.quantity = JSON.stringify(data.quantity)
+      quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
+      quantity = JSON.stringify(quantity)
+      data.append('quantity', quantity)
 
-      // TODO: to delete
-      console.log("updateObject() data:", data)
+      if (this.fileToUpload != null) {
+        data.append('image', this.fileToUpload)
+      }
 
       // Update product
-      this.$http.put('/api/v1/products/' + id, data, { headers })
+      this.$http.post('/api/v1/products/' + id, data, { headers })
         .then((response) => {
           this.$vs.loading.close()
           this.$vs.notify({
@@ -876,6 +922,7 @@ export default {
             'discount': 0,
           },
       ]
+      this.fileToUpload = null
       this.quantityDefaultIndex = 0
       this.mode = 'create'
     },
@@ -928,6 +975,18 @@ export default {
       })
       this.showPopup['create_qty'] = false
       this.clearForm('create_qty')
+    },
+    showFilePicker() {
+      this.$refs.fileUpload.click()
+    },
+    onFilesUploadChange(event) {
+      this.fileToUpload = event.target.files[0]
+
+      if (this.mode == 'create') {
+        this.createProductImagePreview = URL.createObjectURL(this.fileToUpload)
+      } else if (this.mode == 'edit') {
+        this.editProductImagePreview = URL.createObjectURL(this.fileToUpload)
+      }
     },
   },
   created() {
