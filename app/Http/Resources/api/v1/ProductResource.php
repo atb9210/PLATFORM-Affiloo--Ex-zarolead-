@@ -28,6 +28,7 @@ class ProductResource extends JsonResource
             ],
             'country' => $this->country,
             'quantity' => json_decode(json_encode($this->quantity), false),
+            'info' => json_decode(json_encode($this->info), false),
         ];
     }
 }

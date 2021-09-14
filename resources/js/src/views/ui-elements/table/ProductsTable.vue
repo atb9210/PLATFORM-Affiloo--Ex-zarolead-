@@ -145,6 +145,46 @@
                 <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create_qty')">Add option</vs-button> 
             </div>
 
+            <hr class="w-full mt-2 mb-2">
+
+            <h2 class="vx-col w-full">Optional fields</h2>
+
+            <div class="vx-col w-full">
+                <vs-input class="w-full" label="URL image" icon-pack="feather" icon="icon-image" icon-no-border v-model="newObject['create'].info['image']" />
+            </div>
+
+            <div class="vx-col w-full">
+                <vs-input class="w-full" label="Descrizione" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['description']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="SKU" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['create'].info['sku']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0.0" step="0.01" class="w-full" label="Cost" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['create'].info['cost']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0" step="1" class="w-full" label="Stock quantity" icon-pack="feather" icon="icon-box" icon-no-border v-model="newObject['create'].info['stock_quantity']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Size (WxWxH)" icon-pack="feather" icon="icon-package" icon-no-border v-model="newObject['create'].info['size']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0.0" step="0.01" class="w-full" label="VAT %" icon-pack="feather" icon="icon-alert-octagon" icon-no-border v-model="newObject['create'].info['vat']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['url']" />
+            </div>
+
+            <div class="vx-col w-full">
+                <span class="text-danger">{{ errors.first('create.info') }}</span>
+            </div>
+
             <div class="vx-col w-full flex items-center">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="createObject" color="primary" type="filled" :disabled="!isValidForm('create')">Create</vs-button>
             </div>
@@ -192,6 +232,46 @@
             </vs-list>
             <div class="vx-col w-full mt-2">
                 <vs-button class="mt-3" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create_qty')">Add option</vs-button> 
+            </div>
+
+            <hr class="w-full mt-2 mb-2">
+
+            <h2 class="vx-col w-full">Optional fields</h2>
+
+            <div class="vx-col w-full">
+                <vs-input class="w-full" label="URL image" icon-pack="feather" icon="icon-image" icon-no-border v-model="newObject['edit'].info['image']" />
+            </div>
+
+            <div class="vx-col w-full">
+                <vs-input class="w-full" label="Descrizione" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['description']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="SKU" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newObject['edit'].info['sku']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0.0" step="0.01" class="w-full" label="Cost" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['edit'].info['cost']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0" step="1" class="w-full" label="Stock quantity" icon-pack="feather" icon="icon-box" icon-no-border v-model="newObject['edit'].info['stock_quantity']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Size (WxWxH)" icon-pack="feather" icon="icon-package" icon-no-border v-model="newObject['edit'].info['size']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input type="number" min="0.0" step="0.01" class="w-full" label="VAT %" icon-pack="feather" icon="icon-alert-octagon" icon-no-border v-model="newObject['edit'].info['vat']" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['url']" />
+            </div>
+
+            <div class="vx-col w-full">
+                <span class="text-danger">{{ errors.first('edit.info') }}</span>
             </div>
 
             <div class="vx-col w-full flex items-center">
@@ -359,12 +439,32 @@ export default {
           tag: '',
           advertiser: '',
           country: '',
+          info: {
+            'image': '',
+            'description': '',
+            'sku': '',
+            'cost': 0.0,
+            'stock_quantity': 0,
+            'size': '',
+            'vat': 22.0,
+            'url': '',
+          },
         },
         'edit': {
           name: '',
           tag: '',
           advertiser: '',
           country: '',
+          info: {
+            'image': '',
+            'description': '',
+            'sku': '',
+            'cost': 0.0,
+            'stock_quantity': 0,
+            'size': '',
+            'vat': 22.0,
+            'url': '',
+          },
         },
         'create_qty': {
           quantity: '',
@@ -525,6 +625,16 @@ export default {
           tag: '',
           advertiser: '',
           country: '',
+          info: {
+            'image': '',
+            'description': '',
+            'sku': '',
+            'cost': 0.0,
+            'stock_quantity': 0,
+            'size': '',
+            'vat': 22.0,
+            'url': '',
+          },
         }
       }
     },
@@ -557,6 +667,7 @@ export default {
           options: {},
           default: '',
         },
+        info: JSON.stringify(this.newObject['create'].info),
       }
 
       this.quantityOptions.forEach((opt) => {
@@ -604,11 +715,31 @@ export default {
     editForm(id) {
       let objIndex = this.getObjectIndexById(id)
       let obj = this.objects[objIndex]
+
+      let info = {
+        'image': '',
+        'description': '',
+        'sku': '',
+        'cost': 0.0,
+        'stock_quantity': 0,
+        'size': '',
+        'vat': 22.0,
+        'url': '',
+      }
+      if (obj.info != null) {
+        for (const [key, value] of Object.entries(info)) {
+          if (obj.info.hasOwnProperty(key)) {
+            info[key] = obj.info[key]
+          }
+        }
+      }
+
       this.newObject['edit'] = {
         name: obj.name,
         tag: obj.tag.id,
         advertiser: obj.advertiser.id,
         country: obj.country,
+        info: info,
       }
 
       // Fetch quantity options
@@ -654,6 +785,7 @@ export default {
           options: {},
           default: '',
         },
+        info: JSON.stringify(this.newObject['create'].info),
       }
 
       this.quantityOptions.forEach((opt) => {

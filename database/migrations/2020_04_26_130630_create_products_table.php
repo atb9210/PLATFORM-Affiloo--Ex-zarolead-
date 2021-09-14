@@ -21,6 +21,7 @@ class CreateProductsTable extends Migration
             $table->bigInteger('advertiser_id')->unsigned();
             $table->string('country')->nullable();
             $table->json('quantity');
+            $table->json('info');
             $table->timestamps();
             $table->boolean('archived')->default(0);
 

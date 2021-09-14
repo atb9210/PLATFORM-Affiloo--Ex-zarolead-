@@ -82,10 +82,16 @@ class ProductController extends Controller
             'advertiser_id' => 'required|integer|exists:users,id',
             'country' => 'string|min:1',
             'quantity' => 'required|json',
+            'info' => 'json',
         ]);
         $params['user_id'] = Auth::user()->id;
 
         $params['quantity'] = json_decode($params['quantity'], TRUE);
+        $info = [];
+        if (isset($params['info'])) {
+            $info = json_decode($params['info'], TRUE);
+        }
+        $params['info'] = $info;
 
         // Validate quantity JSON
         $validator = Validator::make($params['quantity'], [
@@ -142,9 +148,13 @@ class ProductController extends Controller
             'advertiser_id' => 'integer|min:1|exists:users,id',
             'country' => 'string|min:1|max:255',
             'quantity' => 'json',
+            'info' => 'json',
         ]);
         if (isset($params['quantity'])) {
             $params['quantity'] = json_decode($params['quantity'], TRUE);
+        }
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], TRUE);
         }
 
         // Validate quantity JSON
