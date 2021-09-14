@@ -82,6 +82,12 @@ return [
             'path' => storage_path('logs/orders.log'),
             'level' => 'debug',
         ],
+
+        'postback' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/postback.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

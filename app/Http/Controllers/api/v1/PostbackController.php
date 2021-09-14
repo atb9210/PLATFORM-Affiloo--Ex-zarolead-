@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 use App\Order;
 use App\OrderStatus;
@@ -33,6 +34,9 @@ class PostbackController extends Controller
      */
     public function index(Request $request)
     {
+        // DEBUG
+        Log::channel('postback')->info('Postback request received');
+
         // Param validation
         $params = $request->validate([
             // TODO: to delete (old code)
@@ -40,6 +44,9 @@ class PostbackController extends Controller
             'sub_id' => 'required|numeric|exists:orders,id',
             'status' => 'required|numeric',
         ]);
+
+        // DEBUG
+        Log::channel('postback')->info('Params: ' . json_encode($params));
 
         $order = Order::findOrFail($params['sub_id']);
         $statuses = [
