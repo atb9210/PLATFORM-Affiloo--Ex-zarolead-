@@ -28,6 +28,11 @@ function FacebookPlugin(data) {
         this.eventCurrency = this.data.eventCurrency;
     }
 
+    // Fetch click id
+    this.fbc = '';
+    var cookiesMatch = document.cookie.match(new RegExp('(^| )_fbc=([^;]+)'));
+    if (cookiesMatch) this.fbc = cookiesMatch[2];
+
     // NOTE: This is a custom code
     $(".addtocart-button").each(function() {
         this.onAddToCart();
@@ -35,8 +40,13 @@ function FacebookPlugin(data) {
 }
 
 FacebookPlugin.prototype.onVisit = function() {
+    // TODO: to delete (old code)
+    /*
     fbq('init', this.pixel);
     fbq('track', 'ViewContent');
+    */
+
+    this.fbTriggerEvent('ViewContent');
 
     console.log("FacebookPlugin onVisit");
 }
@@ -75,7 +85,7 @@ FacebookPlugin.prototype.afterSubmit = function(response) {
             eventCurrency = this.eventCurrency;
         }
 
-        this.fbTriggerEvent(eventName, eventValue, eventCurrency);
+        this.fbTriggerEvent(eventName, { value: eventValue, currency: eventCurrency });
     }
 }
 
@@ -83,14 +93,42 @@ FacebookPlugin.prototype.onRedirect = function() {
 }
 
 FacebookPlugin.prototype.onAddToCart = function() {
+    // TODO: to delete (old code)
+    /*
     // Grab those link clickers!!
     fbq('track', 'AddToCart');
+    */
+
+    this.fbTriggerEvent('Lead');
 }
 
-FacebookPlugin.prototype.fbTriggerEvent = function(eventName, value, currency) {
-    fbq('track', eventName, { value: value, currency: currency });
+FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
+    // TODO: to delete (old code)
+    /*
+    fbq('track', eventName, customData);
+    */
+
+    var data = {
+        pixel: this.pixel,
+        event: eventName,
+        fbc: this.fbc,
+        custom_data: JSON.stringify(customData),
+    };
+    $.ajax({
+        url: form.API_URL_3RD + 'facebook/events',
+        method: 'POST',
+        data: data,
+        success: function(data) {
+            console.log('[i] FACEBOOK EVENT ' + data.event + ' TRIGGERED');
+        }.bind(this),
+        error: function(data) {
+            console.log('[!] FACEBOOK EVENT ' + data.event + ' NOT TRIGGERED');
+        }.bind(this)
+    });
 }
 
+// TODO: to delete (old code)
+/*
 // Facebook stuff
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -100,3 +138,4 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
+*/

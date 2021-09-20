@@ -9,6 +9,7 @@
         "cloudflare/sdk": "^1.1",
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/cloudflare": "dev-master",
+        "driverfury/facebook": "dev-master",
         "driverfury/fraudfilter": "dev-master",
         "driverfury/tiktok": "dev-master",
         "driverfury/worldfilia": "dev-master",
@@ -95,6 +96,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/tiktok"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/facebook"
         }
     ]
 }

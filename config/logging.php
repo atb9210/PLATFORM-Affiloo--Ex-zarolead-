@@ -83,9 +83,17 @@ return [
             'level' => 'debug',
         ],
 
+        // DEBUG
         'postback' => [
             'driver' => 'single',
             'path' => storage_path('logs/postback.log'),
+            'level' => 'debug',
+        ],
+
+        // DEBUG
+        'facebook' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/facebook.log'),
             'level' => 'debug',
         ],
     ],

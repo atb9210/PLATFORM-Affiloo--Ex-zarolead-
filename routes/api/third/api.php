@@ -60,6 +60,10 @@ Route::get('/marketplace/campaigns/{id}/landings', 'api\third\MarketplaceControl
 Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceController@productJson')->middleware('auth:api')
     ->name('marketplace.campaigns.product-json');
 
+/* Facebook routes */
+Route::post('/facebook/events', 'api\third\FacebookController@sendEvent')
+    ->name('facebook.events.trigger');
+
 /* TikTok routes */
 Route::get('/tiktok/advertisers', 'api\third\TikTokController@advertisers')->middleware('auth:api')
     ->name('tiktok.advertisers');
