@@ -40,9 +40,10 @@ function FacebookPlugin(data) {
 }
 
 FacebookPlugin.prototype.onVisit = function() {
+    fbq('init', this.pixel);
+
     // TODO: to delete (old code)
     /*
-    fbq('init', this.pixel);
     fbq('track', 'ViewContent');
     */
 
@@ -127,8 +128,6 @@ FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
     });
 }
 
-// TODO: to delete (old code)
-/*
 // Facebook stuff
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -138,4 +137,3 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-*/
