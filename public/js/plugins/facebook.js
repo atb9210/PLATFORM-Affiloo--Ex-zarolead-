@@ -5,10 +5,25 @@ function FacebookPlugin_getUrlParams(param) {
     return url.searchParams.get(param);
 }
 
+function FacebookPlugin_getCookie(key) {
+    var cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+    if (cookiesMatch) return cookiesMatch[2];
+    else return null;
+}
+
+function FacebookPlugin_getParentHostnameAndScheme() {
+    var url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href;
+    url = new URL(url);
+    return url.protocol + '//' + url.hostname;
+}
+
 function FacebookPlugin(data) {
     Plugin.call(this, data);
 
     this.pixel = this.data.pixel;
+    //this.pixel = FacebookPlugin_getCookie('_fbp');
 
     if (FacebookPlugin_getUrlParams('pi') != '' && FacebookPlugin_getUrlParams('pi') != null) {
         this.pixel = FacebookPlugin_getUrlParams('pi');
@@ -29,9 +44,10 @@ function FacebookPlugin(data) {
     }
 
     // Fetch click id
-    this.fbc = '';
-    var cookiesMatch = document.cookie.match(new RegExp('(^| )_fbc=([^;]+)'));
-    if (cookiesMatch) this.fbc = cookiesMatch[2];
+    this.fbc = FacebookPlugin_getCookie('_fbc');
+    if (FacebookPlugin_getUrlParams('fbclid') != '' && FacebookPlugin_getUrlParams('fbclid') != null) {
+        this.fbc = FacebookPlugin_getUrlParams('fbclid');
+    }
 
     // NOTE: This is a custom code
     $(".addtocart-button").each(function() {
@@ -40,10 +56,9 @@ function FacebookPlugin(data) {
 }
 
 FacebookPlugin.prototype.onVisit = function() {
-    fbq('init', this.pixel);
-
     // TODO: to delete (old code)
     /*
+    fbq('init', this.pixel);
     fbq('track', 'ViewContent');
     */
 
@@ -99,8 +114,6 @@ FacebookPlugin.prototype.onAddToCart = function() {
     // Grab those link clickers!!
     fbq('track', 'AddToCart');
     */
-
-    this.fbTriggerEvent('Lead');
 }
 
 FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
@@ -120,14 +133,16 @@ FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
         method: 'POST',
         data: data,
         success: function(data) {
-            console.log('[i] FACEBOOK EVENT ' + data.event + ' TRIGGERED');
+            console.log('[i] FACEBOOK EVENT ' + eventName + ' TRIGGERED');
         }.bind(this),
         error: function(data) {
-            console.log('[!] FACEBOOK EVENT ' + data.event + ' NOT TRIGGERED');
+            console.log('[!] FACEBOOK EVENT ' + eventName + ' NOT TRIGGERED');
         }.bind(this)
     });
 }
 
+// TODO: to delete (old code)
+/*
 // Facebook stuff
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -137,3 +152,4 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
+*/

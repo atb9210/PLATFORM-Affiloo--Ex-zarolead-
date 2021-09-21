@@ -4,6 +4,8 @@ namespace App\Http\Controllers\api\third;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+// DEBUG
+use Illuminate\Support\Facades\Log;
 
 use Driverfury\Facebook\Facebook;
 
@@ -14,7 +16,8 @@ class FacebookController extends Controller
      *
      * @bodyParam pixel string required Pixel id
      * @bodyParam event string required Event name
-     * @bodyParam fbc string Facebook click id
+     * @bodyParam fbc string required Facebook click id
+     * @bodyParam event_source_url string Event source URL
      * @bodyParam custom_data json Custom data
      *
      * @response {
@@ -49,6 +52,7 @@ class FacebookController extends Controller
             'pixel' => 'required|string|min:1',
             'event' => 'required|string|min:1|in:' . $eventsList,
             'fbc' => 'required|string',
+            'event_source_url' => 'string',
             'custom_data' => 'json',
         ]);
 
@@ -56,13 +60,17 @@ class FacebookController extends Controller
         $pixel = $params['pixel'];
         $event = $params['event'];
         $clickId = $params['fbc'];
+        $eventSourceUrl = $_SERVER['HTTP_REFERER'];
+        if (isset($params['event_source_url'])) {
+            $eventSourceUrl = $params['event_source_url'];
+        }
         $customData = [];
         if (isset($params['custom_data'])) {
             $customData = json_decode($params['custom_data'], true);
         }
 
         $fb = new \Driverfury\Facebook\Facebook($token);
-        $fb->sendEvent($pixel, $event, $clickId, $customData);
+        $fb->sendEvent($pixel, $event, $clickId, $eventSourceUrl, $customData);
 
         // TODO: Log when event is not sent
         Log::channel('postback')->info('Postback request received');

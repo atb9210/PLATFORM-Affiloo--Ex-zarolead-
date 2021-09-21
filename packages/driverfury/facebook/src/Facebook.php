@@ -102,6 +102,7 @@ class Facebook
         string $pixel,
         string $event,
         string $clickId,
+        string $eventSourceUrl,
         array $customData = []): bool
     {
         $params = [
@@ -111,8 +112,7 @@ class Facebook
                 'user_data' => [
                     'fbc' => $clickId,
                 ],
-                // TODO: DEBUG: Check if it works
-                'event_source_url' => $_SERVER['HTTP_REFERER'],
+                'event_source_url' => $eventSourceUrl,
                 'action_source' => 'website',
                 'custom_data' => $customData,
             ],
