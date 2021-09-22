@@ -107,14 +107,16 @@ class Facebook
     {
         $params = [
             'data' => [
-                'event_name' => $event,
-                'event_time' => strtotime('now'),
-                'user_data' => [
-                    'fbc' => $clickId,
+                [
+                    'event_name' => $event,
+                    'event_time' => strtotime('now'),
+                    'user_data' => [
+                        'fbc' => $clickId,
+                    ],
+                    'event_source_url' => $eventSourceUrl,
+                    'action_source' => 'website',
+                    'custom_data' => $customData,
                 ],
-                'event_source_url' => $eventSourceUrl,
-                'action_source' => 'website',
-                'custom_data' => $customData,
             ],
         ];
 
@@ -140,14 +142,16 @@ class Facebook
         $params = [
             'test_event_code' => $testCode,
             'data' => [
-                'event_name' => $event,
-                'event_time' => strtotime('now'),
-                'user_data' => [
-                    'fbc' => $clickId,
+                [
+                    'event_name' => $event,
+                    'event_time' => strtotime('now'),
+                    'user_data' => [
+                        'fbc' => $clickId,
+                    ],
+                    'event_source_url' => $eventSourceUrl,
+                    'action_source' => 'website',
+                    'custom_data' => $customData,
                 ],
-                'event_source_url' => $eventSourceUrl,
-                'action_source' => 'website',
-                'custom_data' => $customData,
             ],
         ];
 
