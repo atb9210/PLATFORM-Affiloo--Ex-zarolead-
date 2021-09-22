@@ -194,26 +194,26 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['facebook_converions_api'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model="plugins['facebook_conversions_api'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_converions_api'].pixel"
+                  v-model="plugins['facebook_conversions_api'].pixel"
                   placeholder="Facebook pixel"
                 />
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_converions_api'].access_token"
+                  v-model="plugins['facebook_conversions_api'].access_token"
                   placeholder="Access token"
                 />
                 <!-- TODO: This is only for testing -->
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_converions_api'].test_code"
+                  v-model="plugins['facebook_conversions_api'].test_code"
                   placeholder="Test code (e.g. TEST2331)"
                 />
                 <vs-input
@@ -222,10 +222,10 @@
                   min="0"
                   class="w-full"
                   icon-pack="feather" icon="icon-dollar-sign" icon-no-border
-                  v-model="plugins['facebook_converions_api'].eventValue"
+                  v-model="plugins['facebook_conversions_api'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value (optional)"
                 />
-                <vs-select v-model="plugins['facebook_converions_api'].eventCurrency" class="w-full select-large">
+                <vs-select v-model="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -585,7 +585,7 @@ export default {
           eventValue: '',
           eventCurrency: 'EUR',
         },
-        'facebook_converions_api': {
+        'facebook_conversions_api': {
           enabled: false,
           pixel: '',
           access_token: '',
