@@ -18,7 +18,6 @@ class FacebookController extends Controller
      * @bodyParam test_code string required Test code // TODO DEBUG
      * @bodyParam pixel string required Pixel id
      * @bodyParam event string required Event name
-     * @bodyParam fbc string required Facebook click id
      * @bodyParam event_source_url string Event source URL
      * @bodyParam custom_data json Custom data
      *
@@ -55,7 +54,6 @@ class FacebookController extends Controller
             'test_code' => 'required|string|min:1', // TODO DEBUG
             'pixel' => 'required|string|min:1',
             'event' => 'required|string|min:1|in:' . $eventsList,
-            'fbc' => 'required|string',
             'event_source_url' => 'string',
             'custom_data' => 'json',
         ]);
@@ -69,7 +67,10 @@ class FacebookController extends Controller
 
         $pixel = $params['pixel'];
         $event = $params['event'];
-        $clickId = $params['fbc'];
+        $userData = [
+            'client_ip_address' => request()->ip(),
+            'client_user_agent' => request()->server('HTTP_USER_AGENT'),
+        ];
         $eventSourceUrl = $_SERVER['HTTP_REFERER'];
         if (isset($params['event_source_url'])) {
             $eventSourceUrl = $params['event_source_url'];
@@ -82,7 +83,7 @@ class FacebookController extends Controller
         $fb = new \Driverfury\Facebook\Facebook($token);
 
         // TODO DEBUG
-        $fb->sendEventTest($pixel, $testCode, $event, $clickId, $eventSourceUrl, $customData);
+        $fb->sendEventTest($pixel, $testCode, $event, $userData, $eventSourceUrl, $customData);
 
         return response([
             'message' => 'Event has been sent',

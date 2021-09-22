@@ -73,6 +73,9 @@ class TestController extends Controller
 
     public function test()
     {
+        dd(request()->server('HTTP_USER_AGENT'));
+        exit();
+
         $url = 'https://beta2.zarolead.com/test';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);

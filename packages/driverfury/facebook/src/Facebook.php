@@ -101,7 +101,7 @@ class Facebook
     public function sendEvent(
         string $pixel,
         string $event,
-        string $clickId,
+        array $userData,
         string $eventSourceUrl,
         array $customData = []): bool
     {
@@ -110,9 +110,7 @@ class Facebook
                 [
                     'event_name' => $event,
                     'event_time' => strtotime('now'),
-                    'user_data' => [
-                        'fbc' => $clickId,
-                    ],
+                    'user_data' => $userData,
                     'event_source_url' => $eventSourceUrl,
                     'action_source' => 'website',
                     'custom_data' => $customData,
@@ -135,7 +133,7 @@ class Facebook
         string $pixel,
         string $testCode,
         string $event,
-        string $clickId,
+        array $userData,
         string $eventSourceUrl,
         array $customData = []): bool
     {
@@ -145,9 +143,7 @@ class Facebook
                 [
                     'event_name' => $event,
                     'event_time' => strtotime('now'),
-                    'user_data' => [
-                        'fbc' => $clickId,
-                    ],
+                    'user_data' => $userData,
                     'event_source_url' => $eventSourceUrl,
                     'action_source' => 'website',
                     'custom_data' => $customData,

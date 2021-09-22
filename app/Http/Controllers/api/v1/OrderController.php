@@ -223,6 +223,12 @@ class OrderController extends Controller
         }
         */
 
+        // Fetch IP and user agent
+        $ip = $request->ip();
+        $userAgent = $request->server('HTTP_USER_AGENT');
+        $parsedUrl = parse_url($landing->url);
+        $sourceUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+
         $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
@@ -233,6 +239,9 @@ class OrderController extends Controller
             'delivery' => $deliveryName,
             'form_id' => $form->id,
             'landing_id' => $landing->id,
+            'ip' => $ip,
+            'user_agent' => $userAgent,
+            'source_url' => $sourceUrl,
         ];
 
         $network_data['price'] = $price;
@@ -241,7 +250,9 @@ class OrderController extends Controller
         $network_data['quantity'] = $params['quantity'];
         $network_data['cross_sell'] = $params['cross_sell'];
         $network_data['delivery'] = $deliveryName;
-        $network_data['ip'] = $request->ip();
+        $network_data['ip'] = $ip;
+        $network_data['user_agent'] = $userAgent;
+        $network_data['source_url'] = $sourceUrl;
 
         // Create order
         $order = Order::create($params);
@@ -259,6 +270,59 @@ class OrderController extends Controller
                 $commission, $sub_commission,
                 $form, $query_params,
                 $landing);
+
+            // TODO: HERE
+            // Facebook conversions API
+            if (isset($form->plugins['facebook_conversions_api']) &&
+                isset($form->plugins['facebook_conversions_api']['enabled']) &&
+                $form->plugins['facebook_conversions_api']['enabled']) {
+
+                $fbConvApi = $form->plugins['facebook_conversions_api'];
+                $token = $fbConvApi['access_token'];
+                $pixel = $fbConvApi['pixel'];
+                $event = 'Purchase'; // TODO
+                $testCode = $params['test_code']; // TODO DEBUG
+                $userData = [
+                    'client_ip_address' => $ip,
+                    'client_user_agent' => $userAgent,
+                ];
+                $eventSourceUrl = $sourceUrl;
+                if (isset($fbConvApi['event_source_url'])) {
+                    $eventSourceUrl = $fbConvApi['event_source_url'];
+                }
+                $customData = [
+                    'value' => $fbConvApi['eventValue'],
+                    'currency' => $fbConvApi['eventCurrency'],
+                ];
+                $fb = new \Driverfury\Facebook\Facebook($token);
+                // TODO DEBUG
+                $fb->sendEventTest($pixel, $testCode, $event, $userData, $eventSourceUrl, $customData);
+            }
+        } else if ($order->order_status_id == OrderStatus::WAITING) {
+            // TODO: HERE
+            // Facebook conversions API
+            if (isset($form->plugins['facebook_conversions_api']) &&
+                isset($form->plugins['facebook_conversions_api']['enabled']) &&
+                $form->plugins['facebook_conversions_api']['enabled']) {
+
+                $fbConvApi = $form->plugins['facebook_conversions_api'];
+                $token = $fbConvApi['access_token'];
+                $pixel = $fbConvApi['pixel'];
+                $event = 'Lead'; // TODO
+                $testCode = $params['test_code']; // TODO DEBUG
+                $userData = [
+                    'client_ip_address' => $ip,
+                    'client_user_agent' => $userAgent,
+                ];
+                $eventSourceUrl = $sourceUrl;
+                if (isset($fbConvApi['event_source_url'])) {
+                    $eventSourceUrl = $fbConvApi['event_source_url'];
+                }
+                $customData = [];
+                $fb = new \Driverfury\Facebook\Facebook($token);
+                // TODO DEBUG
+                $fb->sendEventTest($pixel, $testCode, $event, $userData, $eventSourceUrl, $customData);
+            }
         }
 
         /*
