@@ -121,8 +121,8 @@ FacebookConversionsAPIPlugin.prototype.fbTriggerEvent = function(eventName, cust
     console.log('[i] TRIGGERING FACEBOOK EVENT: ' + eventName);
 
     var data = {
-        access_token: accessToken,
-        test_code: testCode,
+        access_token: this.accessToken,
+        test_code: this.testCode,
         pixel: this.pixel,
         event: eventName,
         fbc: this.fbc,
