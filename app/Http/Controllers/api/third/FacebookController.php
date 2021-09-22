@@ -14,6 +14,8 @@ class FacebookController extends Controller
     /**
      * Send event
      *
+     * @bodyParam access_token string required Access token // TODO DEBUG
+     * @bodyParam test_code string required Test code // TODO DEBUG
      * @bodyParam pixel string required Pixel id
      * @bodyParam event string required Event name
      * @bodyParam fbc string required Facebook click id
@@ -49,6 +51,8 @@ class FacebookController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'access_token' => 'required|string|min:1', // TODO DEBUG
+            'test_code' => 'required|string|min:1', // TODO DEBUG
             'pixel' => 'required|string|min:1',
             'event' => 'required|string|min:1|in:' . $eventsList,
             'fbc' => 'required|string',
@@ -56,7 +60,13 @@ class FacebookController extends Controller
             'custom_data' => 'json',
         ]);
 
-        $token = env('FACEBOOK_API_KEY');
+        // TODO DEBUG: What about token?
+        //$token = env('FACEBOOK_API_KEY');
+        $token = $params['access_token'];
+
+        // TODO DEBUG
+        $testCode = $params['test_code'];
+
         $pixel = $params['pixel'];
         $event = $params['event'];
         $clickId = $params['fbc'];
@@ -70,10 +80,9 @@ class FacebookController extends Controller
         }
 
         $fb = new \Driverfury\Facebook\Facebook($token);
-        $fb->sendEvent($pixel, $event, $clickId, $eventSourceUrl, $customData);
 
-        // TODO: Log when event is not sent
-        Log::channel('postback')->info('Postback request received');
+        // TODO DEBUG
+        $fb->sendEventTest($pixel, $testCode, $event, $clickId, $eventSourceUrl, $customData);
 
         return response([
             'message' => 'Event has been sent',

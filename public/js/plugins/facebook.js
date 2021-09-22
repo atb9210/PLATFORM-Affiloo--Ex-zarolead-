@@ -23,7 +23,6 @@ function FacebookPlugin(data) {
     Plugin.call(this, data);
 
     this.pixel = this.data.pixel;
-    //this.pixel = FacebookPlugin_getCookie('_fbp');
 
     fbq('init', this.pixel);
 
@@ -45,11 +44,14 @@ function FacebookPlugin(data) {
         this.eventCurrency = this.data.eventCurrency;
     }
 
+    // TODO: Conversions API
+    /*
     // Fetch click id
     this.fbc = FacebookPlugin_getCookie('_fbc');
     if (FacebookPlugin_getUrlParams('fbclid') != '' && FacebookPlugin_getUrlParams('fbclid') != null) {
         this.fbc = FacebookPlugin_getUrlParams('fbclid');
     }
+    */
 
     // NOTE: This is a custom code
     $(".addtocart-button").each(function() {
@@ -58,12 +60,6 @@ function FacebookPlugin(data) {
 }
 
 FacebookPlugin.prototype.onVisit = function() {
-    // TODO: to delete (old code)
-    /*
-    fbq('init', this.pixel);
-    fbq('track', 'ViewContent');
-    */
-
     this.fbTriggerEvent('ViewContent');
 
     console.log("FacebookPlugin onVisit");
@@ -111,19 +107,16 @@ FacebookPlugin.prototype.onRedirect = function() {
 }
 
 FacebookPlugin.prototype.onAddToCart = function() {
-    // TODO: to delete (old code)
-    /*
-    // Grab those link clickers!!
-    fbq('track', 'AddToCart');
-    */
+    this.fbTriggerEvent('AddToCart');
 }
 
 FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
-    // TODO: to delete (old code)
-    /*
     fbq('track', eventName, customData);
-    */
 
+    console.log('[i] TRIGGERING FACEBOOK EVENT: ' + eventName);
+
+    // TODO: Conversion API
+    /*
     var data = {
         pixel: this.pixel,
         event: eventName,
@@ -141,6 +134,7 @@ FacebookPlugin.prototype.fbTriggerEvent = function(eventName, customData = {}) {
             console.log('[!] FACEBOOK EVENT ' + eventName + ' NOT TRIGGERED');
         }.bind(this)
     });
+    */
 }
 
 // Facebook stuff

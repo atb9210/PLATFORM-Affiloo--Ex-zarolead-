@@ -188,6 +188,49 @@
               </vx-input-group>
             </div>
 
+            <!-- Facebook conversion API plugin -->
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Facebook Conversions API</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="plugins['facebook_converions_api'].enabled"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  v-model="plugins['facebook_converions_api'].pixel"
+                  placeholder="Facebook pixel"
+                />
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  v-model="plugins['facebook_converions_api'].access_token"
+                  placeholder="Access token"
+                />
+                <!-- TODO: This is only for testing -->
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-facebook" icon-no-border
+                  v-model="plugins['facebook_converions_api'].test_code"
+                  placeholder="Test code (e.g. TEST2331)"
+                />
+                <vs-input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="w-full"
+                  icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                  v-model="plugins['facebook_converions_api'].eventValue"
+                  name="fb_event_value" placeholder="Conversion event value (optional)"
+                />
+                <vs-select v-model="plugins['facebook_converions_api'].eventCurrency" class="w-full select-large">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
+                </vs-select>
+              </vx-input-group>
+            </div>
+
             <!-- TikTok pixel plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">TikTok Pixel</div>
@@ -539,6 +582,14 @@ export default {
           enabled: false,
           pixel: '',
           eventName: 'Purchase',
+          eventValue: '',
+          eventCurrency: 'EUR',
+        },
+        'facebook_converions_api': {
+          enabled: false,
+          pixel: '',
+          access_token: '',
+          test_code: '',
           eventValue: '',
           eventCurrency: 'EUR',
         },
