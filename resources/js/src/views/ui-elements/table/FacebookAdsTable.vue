@@ -1924,30 +1924,14 @@ export default {
         let profit = 0.0
         let roi = 0.0
 
-        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
-          let reports = object.reports
-          if (reports.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(reports.metrics.spend)
-          }
-          if (reports.metrics.hasOwnProperty('conversion')) {
-            conversion = parseInt(reports.metrics.conversion)
-          }
-          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(reports.metrics.cost_per_conversion)
-          }
-          if (reports.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(reports.metrics.conversion_rate)
-          }
-          if (reports.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(reports.metrics.cpm)
-          }
-          if (reports.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(reports.metrics.impressions)
-          }
-          if (reports.metrics.hasOwnProperty('total_form_value')) {
-            profit = parseFloat(reports.metrics.total_form_value) - spent
-            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
-          }
+        if (object.hasOwnProperty('spent')) {
+          spent = parseInt(object.spent)/100
+        }
+        if (object.hasOwnProperty('result')) {
+          conversion = parseInt(object.result)
+        }
+        if (object.hasOwnProperty('impressions')) {
+          impressions = parseFloat(object.impressions)
         }
 
         objectToPush.spent  = spent
@@ -2010,30 +1994,14 @@ export default {
         let profit = 0.0
         let roi = 0.0
 
-        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
-          let reports = object.reports
-          if (reports.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(reports.metrics.spend)
-          }
-          if (reports.metrics.hasOwnProperty('conversion')) {
-            conversion = parseInt(reports.metrics.conversion)
-          }
-          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(reports.metrics.cost_per_conversion)
-          }
-          if (reports.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(reports.metrics.conversion_rate)
-          }
-          if (reports.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(reports.metrics.cpm)
-          }
-          if (reports.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(reports.metrics.impressions)
-          }
-          if (reports.metrics.hasOwnProperty('total_form_value')) {
-            profit = parseFloat(reports.metrics.total_form_value) - spent
-            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
-          }
+        if (object.hasOwnProperty('spent')) {
+          spent = parseInt(object.spent)/100
+        }
+        if (object.hasOwnProperty('result')) {
+          conversion = parseInt(object.result)
+        }
+        if (object.hasOwnProperty('impressions')) {
+          impressions = parseFloat(object.impressions)
         }
 
         objectToPush.spent  = spent
@@ -2096,30 +2064,14 @@ export default {
         let profit = 0.0
         let roi = 0.0
 
-        if (object.hasOwnProperty('reports') && object.reports.hasOwnProperty('metrics')) {
-          let reports = object.reports
-          if (reports.metrics.hasOwnProperty('spend')) {
-            spent = parseFloat(reports.metrics.spend)
-          }
-          if (reports.metrics.hasOwnProperty('conversion')) {
-            conversion = parseInt(reports.metrics.conversion)
-          }
-          if (reports.metrics.hasOwnProperty('cost_per_conversion')) {
-            cpa = parseFloat(reports.metrics.cost_per_conversion)
-          }
-          if (reports.metrics.hasOwnProperty('conversion_rate')) {
-            cr = parseFloat(reports.metrics.conversion_rate)
-          }
-          if (reports.metrics.hasOwnProperty('cpm')) {
-            cpm = parseFloat(reports.metrics.cpm)
-          }
-          if (reports.metrics.hasOwnProperty('impressions')) {
-            impressions = parseFloat(reports.metrics.impressions)
-          }
-          if (reports.metrics.hasOwnProperty('total_form_value')) {
-            profit = parseFloat(reports.metrics.total_form_value) - spent
-            roi = (spent > 0) ? ((profit/spent)*100.0) : 9999.99
-          }
+        if (object.hasOwnProperty('spent')) {
+          spent = parseInt(object.spent)/100
+        }
+        if (object.hasOwnProperty('result')) {
+          conversion = parseInt(object.result)
+        }
+        if (object.hasOwnProperty('impressions')) {
+          impressions = parseFloat(object.impressions)
         }
 
         objectToPush.spent  = spent
@@ -2941,7 +2893,8 @@ export default {
       }
       let data = {
         id: this.advertiser.id,
-        name: advertiser.name,
+        name: this.advertiser.name,
+        access_token: this.advertiser.access_token,
       }
       try {
         const response = await this.$http.put('/api/3rd/facebook/advertisers/' + this.editingAdvertiser.id, data, { headers })

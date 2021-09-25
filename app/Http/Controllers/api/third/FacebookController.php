@@ -137,20 +137,19 @@ class FacebookController extends Controller
             'filter_date_to' => 'date|date_format:Y-m-d',
         ]);
 
-        $reports = [];
-        if (!isset($params['reports']) || boolval($params['reports']) === true) {
-            $reports = [
-                'metrics' => [
-                    'total_form_value',
-                    'spend',
-                    'conversion',
-                    'cost_per_conversion',
-                    'conversion_rate',
-                    'cpm',
-                    'impressions'
-                ],
-            ];
-        }
+        $reports = [
+            'metrics' => [
+                'bid',
+                'budget',
+                'result',
+                'spent',
+                'impressions',
+                'clicks',
+                'cpm',
+                'ctr',
+                'value',
+            ],
+        ];
 
         if (isset($params['filter_date_from'])) {
             $reports['start_date'] = $params['filter_date_from'];
@@ -194,13 +193,14 @@ class FacebookController extends Controller
 
         $reports = [
             'metrics' => [
-                'total_form_value',
-                'spend',
-                'conversion',
-                'cost_per_conversion',
-                'conversion_rate',
+                'bid',
+                'budget',
+                'result',
+                'spent',
+                'impressions',
+                'clicks',
                 'cpm',
-                'impressions'
+                'ctr',
             ],
         ];
 
@@ -250,13 +250,14 @@ class FacebookController extends Controller
 
         $reports = [
             'metrics' => [
-                'total_form_value',
-                'spend',
-                'conversion',
-                'cost_per_conversion',
-                'conversion_rate',
+                'bid',
+                'budget',
+                'result',
+                'spent',
+                'impressions',
+                'clicks',
                 'cpm',
-                'impressions'
+                'ctr',
             ],
         ];
 

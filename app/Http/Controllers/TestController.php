@@ -75,12 +75,43 @@ class TestController extends Controller
     {
         $advertiser = \App\third\FacebookAdvertiser::first();
         $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
+        dd($fb->getCampaigns($advertiser->id, [
+            'metrics' => [
+                'daily_budget',
+                'result',
+                'spent',
+                'impressions',
+                'clicks',
+            ],
+        ]));
+        dd($advertiser);
+        exit();
 
-        $data = [];
-        $data['campaigns'] = $fb->getCampaigns($advertiser->id);
-        $data['adsets'] = $fb->getAdsets($data['campaigns'][0]['id']);
-        $data['ads'] = $fb->getAdsets($data['adsets'][0]['id']);
-        dd($data);
+        $accessToken = 'EAAOqYL354rUBANdBem5nAir5Ed8zK5IzoFiJ7mBwIcyoFe80aPl79wYVoB93JL0t4np8GQNsrS5YRhFHc6cV5ibXotoGxXZAClzq85Knv06aJHzaIt9XOOnH8o4bZAErmbxHRSWKHLoJtTNhKn2sP0V8aRSg3oZA6dYM1HctPcw8n35pVdsSEZAsLxikHX4ZD';
+        $adAccountId = 'act_2742408822725474';
+        $appSecret = '766d936bd8980c34b4947960e479a9be';
+        $appId = '1031757410984629';
+
+        $fb = \FacebookAds\Api::init($appId, $appSecret, $accessToken);
+        $fields = [
+            'reach',
+            'frequency',
+            'impressions',
+            'spend',
+        ];
+        $params = array(
+            'time_range' => array('since' => '2021-08-27','until' => '2021-09-26'),
+            //'filtering' => array(array('field' => 'delivery_info','operator' => 'IN','value' => array('active','scheduled','pending_review','recently_rejected','rejected','inactive','archived','permanently_deleted','not_delivering','not_published','rejected','completed','recently_completed'))),
+            'level' => 'campaign',
+            'breakdowns' => array(),
+        );
+        echo json_encode((new \FacebookAds\Object\AdAccount($adAccountId))->getInsights(
+            $fields,
+            $params
+        )->getResponse()->getContent(), JSON_PRETTY_PRINT);
+
+
+        exit();
     }
 
     public function post(Request $request)

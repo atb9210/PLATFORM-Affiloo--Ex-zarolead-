@@ -132,7 +132,6 @@ class Facebook
             'fields' => [
                 'id',
                 'name',
-                'daily_budget',
             ],
             'date_preset' => 'maximum',
         ];
@@ -147,7 +146,7 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                // TODO
+                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
             }
         }
 
@@ -177,7 +176,7 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                // TODO
+                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
             }
         }
 
@@ -207,7 +206,7 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                // TODO
+                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
             }
         }
 
