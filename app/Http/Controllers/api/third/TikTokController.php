@@ -27,9 +27,7 @@ class TikTokController extends Controller
         // TODO: Authorization
 
         $advertisers = TikTokAdvertiser::all();
-        return response([
-            'data' => $advertisers,
-        ]);
+        return TikTokAdvertiserResource::collection($advertisers);
     }
 
     /**
@@ -56,7 +54,7 @@ class TikTokController extends Controller
         $advertiser = TikTokAdvertiser::create($params);
         return response([
             'message' => 'Advertiser has been successfully created',
-            'data' => $advertiser,
+            'data' => new TikTokAdvertiserResource($advertiser),
         ]);
     }
 
@@ -80,10 +78,12 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'id' => 'string',
+            'id' => 'string|unique:third_tiktok_advertisers,id,' . $advertiser->id,
             'name' => 'string|min:1',
         ]);
 
+        // TODO: With the 3rd params in unique this code shoulde be useless (TEST it)
+        /*
         if (isset($params['id']) && $id != $params['id']) {
             if (TikTokAdvertiser::where('id', $params['id'])->get()->count() > 0) {
                 return response([
@@ -94,11 +94,12 @@ class TikTokController extends Controller
                 ], 400);
             }
         }
+        */
 
         $advertiser->update($params);
 
         return response([
-            'data' => $advertiser,
+            'data' => new TikTokAdvertiserResource($advertiser),
         ]);
     }
 
@@ -140,7 +141,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'advertiser_id' => 'required',
+            'advertiser_id' => 'required|exists:third_tiktok_advertisers,id',
             'reports' => 'nullable|boolean',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
@@ -194,7 +195,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'advertiser_id' => 'required',
+            'advertiser_id' => 'required|exists:third_tiktok_advertisers,id',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_campaign' => 'numeric|min:1',
@@ -249,7 +250,7 @@ class TikTokController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'advertiser_id' => 'required',
+            'advertiser_id' => 'required|exists:third_tiktok_advertisers,id',
             'filter_date_from' => 'date|date_format:Y-m-d',
             'filter_date_to' => 'date|date_format:Y-m-d',
             'filter_adgroup' => 'numeric|min:1',

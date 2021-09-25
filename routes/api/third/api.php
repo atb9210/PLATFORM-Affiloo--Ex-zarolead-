@@ -61,6 +61,26 @@ Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceCon
     ->name('marketplace.campaigns.product-json');
 
 /* Facebook routes */
+Route::get('/facebook/advertisers', 'api\third\FacebookController@advertisers')->middleware('auth:api')
+    ->name('facebook.advertisers');
+Route::post('/facebook/advertisers', 'api\third\FacebookController@storeAdvertiser')->middleware('auth:api')
+    ->name('facebook.advertisers.store');
+Route::put('/facebook/advertisers/{id}', 'api\third\FacebookController@updateAdvertiser')->middleware('auth:api')
+    ->name('facebook.advertisers.update');
+Route::delete('/facebook/advertisers/{id}', 'api\third\FacebookController@destroyAdvertiser')->middleware('auth:api')
+    ->name('facebook.advertisers.destroy');
+Route::get('/facebook/campaigns', 'api\third\FacebookController@campaigns')->middleware('auth:api')
+    ->name('facebook.campaigns');
+Route::get('/facebook/adsets', 'api\third\FacebookController@adsets')->middleware('auth:api')
+    ->name('facebook.adsets');
+Route::get('/facebook/ads', 'api\third\FacebookController@ads')->middleware('auth:api')
+    ->name('facebook.ads');
+Route::put('/facebook/campaigns/{id}', 'api\third\FacebookController@updateCampaign')->middleware('auth:api')
+    ->name('facebook.campaigns.update');
+Route::put('/facebook/adsets/{id}', 'api\third\FacebookController@updateAdset')->middleware('auth:api')
+    ->name('facebook.adsets.update');
+Route::put('/facebook/ads/{id}', 'api\third\FacebookController@updateAd')->middleware('auth:api')
+    ->name('facebook.ads.update');
 Route::post('/facebook/events', 'api\third\FacebookController@sendEvent')
     ->name('facebook.events.trigger');
 

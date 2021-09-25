@@ -98,6 +98,123 @@ class Facebook
         return $output;
     }
 
+    protected function getRequestAllPages(string $path, array $params): array
+    {
+        $output = [];
+
+        $next = [];
+        $endLoop = false;
+        do {
+            $response = $this->getRequest($path, $params);
+            if ($response !== null && isset($response['data'])) {
+                foreach ($response['data'] as $item) {
+                    $output[] = $item;
+                }
+            }
+
+            if (isset($response['paging']['next'])) {
+                $tmp = parse_url($response['paging']['next']);
+                parse_str($tmp['query'], $next);
+                $params = array_merge($params, $next);
+            } else {
+                $endLoop = true;
+            }
+        } while (!$endLoop);
+
+        return $output;
+    }
+
+    public function getCampaigns(
+        string $advertiserId,
+        array $reports = []): array
+    {
+        $params = [
+            'fields' => [
+                'id',
+                'name',
+                'daily_budget',
+            ],
+            'date_preset' => 'maximum',
+        ];
+
+        if (count($reports) > 0) {
+            if (isset($reports['start_date'])) {
+                $params['time_range']['since'] = $reports['start_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['end_date'])) {
+                $params['time_range']['until'] = $reports['end_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['metrics'])) {
+                // TODO
+            }
+        }
+
+        $data = $this->getRequestAllPages('/act_' . $advertiserId . '/campaigns', $params);
+        return($data);
+    }
+
+    public function getAdsets(
+        string $parentId,
+        array $reports = []): array
+    {
+        $params = [
+            'fields' => [
+                'id',
+                'name',
+            ],
+            'date_preset' => 'maximum',
+        ];
+
+        if (count($reports) > 0) {
+            if (isset($reports['start_date'])) {
+                $params['time_range']['since'] = $reports['start_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['end_date'])) {
+                $params['time_range']['until'] = $reports['end_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['metrics'])) {
+                // TODO
+            }
+        }
+
+        $data = $this->getRequestAllPages('/' . $parentId . '/adsets', $params);
+        return($data);
+    }
+
+    public function getAds(
+        string $parentId,
+        array $reports = []): array
+    {
+        $params = [
+            'fields' => [
+                'id',
+                'name',
+            ],
+            'date_preset' => 'maximum',
+        ];
+
+        if (count($reports) > 0) {
+            if (isset($reports['start_date'])) {
+                $params['time_range']['since'] = $reports['start_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['end_date'])) {
+                $params['time_range']['until'] = $reports['end_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['metrics'])) {
+                // TODO
+            }
+        }
+
+        $data = $this->getRequestAllPages('/' . $parentId . '/ads', $params);
+        return($data);
+    }
+
     public function sendEvent(
         string $pixel,
         string $event,

@@ -1768,6 +1768,21 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/facebook-ads',
+          props: true,
+          name: 'facebook-ads',
+          component: () => import('./views/FacebookAds.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Facebook Ads', active: true }
+            ],
+            pageTitle: 'Facebook Ads',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

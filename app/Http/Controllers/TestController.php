@@ -73,47 +73,14 @@ class TestController extends Controller
 
     public function test()
     {
-        dd(request()->server('HTTP_USER_AGENT'));
-        exit();
+        $advertiser = \App\third\FacebookAdvertiser::first();
+        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
 
-        $url = 'https://beta2.zarolead.com/test';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $server_output = curl_exec($ch);
-        curl_close($ch);
-        var_dump($server_output);
-        exit();
-
-        $referer = request()->headers->get('referer');
-        //var_dump($referer);
-        $referer = $_SERVER['HTTP_REFERER'] ?? null;
-        var_dump($referer);
-        exit();
-
-        $fb = new \Driverfury\Facebook\Facebook('EAADlSL63zVYBAORenBHYtrkkZAWFoPZB0naULnZBRIjrXYyFjU90vZCe3VG6LgwLqMpcJqAWfxBlznJnGw8EhqXT3MNdoqWXZBb8HNOrOQlSgfu2uTa7QfZC5yiVvBA7mSZBJ6mhGAe9tqOPEopri4yJ7tNLZCQevywqoHv2lpEWRG0CvlnMf4T99AKo0YObVOEZD');
-        $fb->sendEvent('186795830166267', 'Purchase');
-        exit();
-
-        $bodyParams = [
-            'sub_id' => 'Test',
-            'status' => 'Test',
-        ];
-        //$url = 'https://beta2.zarolead.com/api/v1/postback';
-        $url = 'https://zarolead.localhost/api/v1/postback';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url .  '?' . http_build_query($bodyParams));
-        /*
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($bodyParams));
-        */
-        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $server_output = curl_exec($ch);
-        curl_close($ch);
-        echo '---';
-        var_dump($server_output);
-        echo '---';
-        exit();
+        $data = [];
+        $data['campaigns'] = $fb->getCampaigns($advertiser->id);
+        $data['adsets'] = $fb->getAdsets($data['campaigns'][0]['id']);
+        $data['ads'] = $fb->getAdsets($data['adsets'][0]['id']);
+        dd($data);
     }
 
     public function post(Request $request)

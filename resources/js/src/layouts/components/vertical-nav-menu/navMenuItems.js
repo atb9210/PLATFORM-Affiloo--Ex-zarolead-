@@ -224,6 +224,15 @@ export default [
       },
 
       {
+        url: '/dashboard/facebook-ads',
+        name: 'Facebook Ads',
+        slug: 'facebok-ads',
+        icon: 'FacebookIcon',
+        i18n: 'Facebook Ads',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+      },
+
+      {
         url: '/dashboard/marketplace',
         name: 'Marketplace',
         slug: 'marketplace',

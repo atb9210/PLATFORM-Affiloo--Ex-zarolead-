@@ -27,6 +27,7 @@ class ProductsTableSeeder extends Seeder
                     ],
                 ],
             ],
+            'info' => [],
         ]);
         \App\Product::create([
             'name' => 'Foltina Plus Barba',
@@ -44,6 +45,7 @@ class ProductsTableSeeder extends Seeder
                     ],
                 ],
             ],
+            'info' => [],
         ]);
         \App\Product::create([
             'name' => 'Tauro Plus',
@@ -61,6 +63,7 @@ class ProductsTableSeeder extends Seeder
                     ],
                 ],
             ],
+            'info' => [],
         ]);
     }
 }
