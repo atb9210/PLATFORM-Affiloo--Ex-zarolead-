@@ -35,15 +35,14 @@ class PostbackController extends Controller
     public function index(Request $request)
     {
         // DEBUG
-        Log::channel('postback')->info('Postback request received');
+        Log::channel('postback')->info('Postback request received: ' . json_encode($request->all()));
 
         // Param validation
         $params = $request->validate([
-            // TODO: to delete (old code)
-            //'sub_id' => 'required|numeric|exists:forms,id',
             'sub_id' => 'required|numeric|exists:orders,id',
             'status' => 'required|numeric',
         ]);
+        $params['status'] = intval($params['status']);
 
         // DEBUG
         Log::channel('postback')->info('Params: ' . json_encode($params));
