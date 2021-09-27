@@ -34,6 +34,7 @@ class FacebookController extends Controller
 
     public function login(Request $request)
     {
+        session_start();
         $fb = $this->fbClient();
         $helper = $fb->getRedirectLoginHelper();
         $permissions = ['email'];
@@ -43,6 +44,7 @@ class FacebookController extends Controller
 
     public function callback(Request $request)
     {
+        session_start();
         $fb = $this->fbClient();
         $helper = $fb->getRedirectLoginHelper();
         $accessToken = $helper->getAccessToken();
