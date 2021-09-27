@@ -61,6 +61,10 @@ Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceCon
     ->name('marketplace.campaigns.product-json');
 
 /* Facebook routes */
+Route::get('/facebook/me', 'api\third\FacebookController@advertisers')
+    ->middleware(['auth:api', 'facebook.auth'])
+    ->name('facebook.me');
+
 Route::get('/facebook/advertisers', 'api\third\FacebookController@advertisers')->middleware('auth:api')
     ->name('facebook.advertisers');
 Route::post('/facebook/advertisers', 'api\third\FacebookController@storeAdvertiser')->middleware('auth:api')

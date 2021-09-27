@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\third;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 // DEBUG
 use Illuminate\Support\Facades\Log;
 
@@ -13,8 +14,63 @@ use App\Http\Resources\api\third\FacebookRuleResource;
 use App\third\FacebookAdvertiser;
 use App\Http\Resources\api\third\FacebookAdvertiserResource;
 
+use App\third\FacebookLogin;
+
 class FacebookController extends Controller
 {
+    // TODO: Put this inside .env
+    private $fbAppId = '1031757410984629';
+    private $fbAppSecret = '766d936bd8980c34b4947960e479a9be';
+    private $fbApiVersion = 'v12.0';
+
+    private function fbClient()
+    {
+        return new \Facebook\Facebook([
+            'app_id' => $this->fbAppId,
+            'app_secret' => $this->fbAppSecret,
+            'default_graph_version' => $this->fbApiVersion,
+        ]);
+    }
+
+    public function login(Request $request)
+    {
+        $fb = $this->fbClient();
+        $helper = $fb->getRedirectLoginHelper();
+        $permissions = ['email'];
+        $loginUrl = $helper->getLoginUrl(env('APP_URL') . '/facebook/callback', $permissions);
+        return redirect($loginUrl);
+    }
+
+    public function callback(Request $request)
+    {
+        $fb = $this->fbClient();
+        $helper = $fb->getRedirectLoginHelper();
+        $accessToken = $helper->accessToken();
+        $oAuth2Client = $fb->getOAuth2Client();
+        if (!$accessToken->isLongLived()) {
+            $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
+        }
+        $params = [
+            'user_id' => Auth::user()->id,
+            'access_token' => $accessToken->getValue(),
+            'expires_at' => $accessToken->getExpiresAt(),
+        ];
+        $fbLogin = FacebookLogin::getCurrent();
+        if ($fbLogin === null) {
+            FacebookLogin::create($params);
+        } else {
+            FacebookLogin::update($params);
+        }
+        return redirect('/');
+    }
+
+    public function me(Request $request)
+    {
+        $fb = $this->fbClient();
+        echo 'ho';
+        exit();
+    }
+
     /**
      * Get advertisers list
      *

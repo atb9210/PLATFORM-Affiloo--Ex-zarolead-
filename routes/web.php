@@ -215,7 +215,10 @@ Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invo
 Route::get('/forms/{id}/get', 'FormController@getForm')->name('forms.get');
 Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.get');
 
+/* Facebook routes */
+Route::get('/facebook/login', 'api\third\FacebookController@login')
+    ->name('facebook.login');
+
 Route::get('/{any}', function() {
     return view('application');
 })->where('any', '.*');
-
