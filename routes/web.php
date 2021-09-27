@@ -218,6 +218,8 @@ Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.
 /* Facebook routes */
 Route::get('/facebook/login', 'api\third\FacebookController@login')
     ->name('facebook.login');
+Route::get('/facebook/callback', 'api\third\FacebookController@callback')
+    ->name('facebook.callback');
 
 Route::get('/{any}', function() {
     return view('application');
