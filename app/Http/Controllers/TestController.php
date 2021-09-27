@@ -73,18 +73,17 @@ class TestController extends Controller
 
     public function test()
     {
-        $advertiser = \App\third\FacebookAdvertiser::first();
-        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
-        dd($fb->getCampaigns($advertiser->id, [
-            'metrics' => [
-                'daily_budget',
-                'result',
-                'spent',
-                'impressions',
-                'clicks',
-            ],
-        ]));
-        dd($advertiser);
+        $appSecret = '766d936bd8980c34b4947960e479a9be';
+        $appId = '1031757410984629';
+        $fb = new \Facebook\Facebook([
+            'app_id' => $appId,
+            'app_secret' => $appSecret,
+        ]);
+        $helper = $fb->getRedirectLoginHelper();
+        $permissions = ['email'];
+        $loginUrl = $helper->getLoginUrl('http://zarolead.localhost/test2', $permissions);
+        echo '<a href=' . $loginUrl . '>' . $loginUrl . '</a>';
+        //$response = $fb->get('/me');
         exit();
 
         $accessToken = 'EAAOqYL354rUBANdBem5nAir5Ed8zK5IzoFiJ7mBwIcyoFe80aPl79wYVoB93JL0t4np8GQNsrS5YRhFHc6cV5ibXotoGxXZAClzq85Knv06aJHzaIt9XOOnH8o4bZAErmbxHRSWKHLoJtTNhKn2sP0V8aRSg3oZA6dYM1HctPcw8n35pVdsSEZAsLxikHX4ZD';
@@ -112,6 +111,11 @@ class TestController extends Controller
 
 
         exit();
+    }
+
+    public function test2(Request $request)
+    {
+        dd($request->all());
     }
 
     public function post(Request $request)

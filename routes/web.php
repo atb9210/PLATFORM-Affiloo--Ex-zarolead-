@@ -24,6 +24,7 @@ Route::get('/form_test', function () {
 })->name('form_test');
 
 Route::get('/test', 'TestController@test')->name('test');
+Route::get('/test2', 'TestController@test2')->name('test2');
 Route::get('/test_view', function () { return view('test'); });
 Route::post('/test', 'TestController@post')->name('test');
 Route::get('/psw-maker', 'TestController@hash')->name('psw-maker');
