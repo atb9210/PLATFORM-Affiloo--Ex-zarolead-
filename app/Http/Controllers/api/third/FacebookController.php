@@ -45,7 +45,7 @@ class FacebookController extends Controller
     {
         $fb = $this->fbClient();
         $helper = $fb->getRedirectLoginHelper();
-        $accessToken = $helper->accessToken();
+        $accessToken = $helper->getAccessToken();
         $oAuth2Client = $fb->getOAuth2Client();
         if (!$accessToken->isLongLived()) {
             $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
