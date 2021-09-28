@@ -19,6 +19,7 @@ class FacebookAuthenticate
      */
     public function handle($request, Closure $next)
     {
+        /*
         // TODO: Check if token is valid
         $fbLogin = FacebookLogin::getCurrent();
         $accessToken = $request->session()->get('facebook_access_token');
@@ -30,6 +31,16 @@ class FacebookAuthenticate
                 'message' => 'You must be logged in your facebook account',
             ], 401);
         }
+         */
+
+        session_start();
+        if ($request->session()->get('facebook_access_token') === null ||
+            $request->session()->get('facebook_access_token') === '') {
+            return response([
+                'message' => 'You must be logged in your facebook account',
+            ], 401);
+        }
+
         return $next($request);
     }
 }

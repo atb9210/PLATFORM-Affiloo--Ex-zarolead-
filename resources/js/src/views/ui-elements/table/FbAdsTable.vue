@@ -801,7 +801,7 @@
 
                 <div v-if="!viewAdSaving">
                     <div class="vx-row mb-6 flex items-center">
-                        <vs-button class="mr-auto ml-auto">{{viewingObject.name}}</vs-button>
+                        <vs-button class="mr-auto ml-auto">{{ viewingObject.name}}</vs-button>
                     </div>
 
                     <div class="vx-row mb-6">

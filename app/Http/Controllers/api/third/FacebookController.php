@@ -4,7 +4,6 @@ namespace App\Http\Controllers\api\third;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 // DEBUG
 use Illuminate\Support\Facades\Log;
 
@@ -38,7 +37,8 @@ class FacebookController extends Controller
         $fb = $this->fbClient();
         $helper = $fb->getRedirectLoginHelper();
         $permissions = ['email'];
-        $loginUrl = $helper->getLoginUrl(env('APP_URL') . '/facebook/callback', $permissions);
+        $callbackUrl = env('APP_URL') . '/facebook/callback';
+        $loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
         return redirect($loginUrl);
     }
 
@@ -52,25 +52,29 @@ class FacebookController extends Controller
         if (!$accessToken->isLongLived()) {
             $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
         }
+        $request->session()->put('facebook_access_token', $accessToken);
+        /*
+        $user_id = 1;// $request->get('user'); // TODO:
         $params = [
-            'user_id' => Auth::user()->id,
+            'user_id' => $user_id,
             'access_token' => $accessToken->getValue(),
             'expires_at' => $accessToken->getExpiresAt(),
         ];
-        $fbLogin = FacebookLogin::getCurrent();
+        $fbLogin = FacebookLogin::getByUserId($user_id);
         if ($fbLogin === null) {
             FacebookLogin::create($params);
         } else {
             FacebookLogin::update($params);
         }
+        */
         return redirect('/');
     }
 
     public function me(Request $request)
     {
-        $fb = $this->fbClient();
-        echo 'ho';
-        exit();
+        session_start();
+        echo 'HI';
+        dd($request->session()->get('facebook_access_token'));
     }
 
     /**

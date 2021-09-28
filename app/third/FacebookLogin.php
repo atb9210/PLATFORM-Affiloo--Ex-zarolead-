@@ -23,11 +23,8 @@ class FacebookLogin extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
-    public static function getCurrent()
+    public static function getByUserId($user_id)
     {
-        if (Auth::user() === null) {
-            return null;
-        }
-        return FacebookLogin::where('user_id', Auth::user()->id)->first();
+        return FacebookLogin::where('user_id', $user_id)->first();
     }
 }
