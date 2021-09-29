@@ -18,6 +18,7 @@
         <div v-else>
 
             <p class="flex items-center mb-4">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
                 <span class="btn-group flex items-center mr-2">
                     <vs-button @click="changeView('ad_accounts')" :color="(view == 'ad_accounts') ? 'success' : 'primary'">Ad accounts</vs-button>
                     <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
@@ -25,6 +26,48 @@
                     <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
                 </span>
             </p>
+
+            <div v-if="showFilters" class="mb-12">
+                <div class="vx-row mb-2">
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-2">
+                    <div class="vx-col w-1/2">
+                        <label>From</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                    </div>
+                    <div class="vx-col w-1/2">
+                        <label>To</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                    </div>
+                </div>
+                <div class="vx-row mb-2">
+                    <div class="vx-col md:w-1/3 w-full">
+                        <label>Status</label>
+                        <vs-select autocomplete v-model="filters.status" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+                <div class="vx-row mt-6">
+                    <div class="vx-col w-full">
+                        <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                        <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                    </div>
+                </div>
+            </div>
 
             <vue-context ref="ad_account_context_menu" v-slot="{ data }">
                 <li>
@@ -183,7 +226,7 @@
 
                         <vs-td class="column-no-padding" :data="item.status">
                             <vs-switch
-                                :color="statusColor[item.status]"
+                                :color="statusColors[item.status]"
                                 v-model="item.status == 'ACTIVE'"
                                 vs-icon-off="pause" vs-icon-on="done"
                                 @input="switchStatus('campaign', item)">
@@ -243,6 +286,7 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
@@ -263,6 +307,17 @@
                                     {{item.name}}
                                 </vs-chip>
                             </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.status">
+                            <vs-switch
+                                :color="statusColors[item.status]"
+                                v-model="item.status == 'ACTIVE'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatus('campaign', item)">
+                                <span slot="on" v-if="item.status == 'ACTIVE'">Active</span>
+                                <span slot="off">Paused</span>
+                            </vs-switch>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.spent">
@@ -498,6 +553,13 @@ export default {
       },
 
       maxItems: 20,
+      showFilters: false,
+      filters: {
+        date_from: '',
+        date_to: '',
+        status: '',
+      },
+      dateFormat: 'yyyy-MM-dd',
 
       adAccounts: [],
       selectedAdAccounts: [],
@@ -511,7 +573,10 @@ export default {
       ads: [],
       selectedAds: [],
 
-      statusColor: {
+      parentId: null,
+
+      statusOptions: ['ACTIVE', 'PAUSED', 'REVIEW'],
+      statusColors: {
         'ACTIVE': 'success',
         'PAUSED': 'warning',
         'DELETED': 'danger',
@@ -525,6 +590,7 @@ export default {
       },
 
       showPopup: {
+        'edit_bid': false,
         'view_ad': false,
       },
 
@@ -594,6 +660,7 @@ export default {
       this.currentPage = val
     },
     async changeView(view, parentId = null) {
+      this.parentId = parentId
       if (view == 'ad_accounts') {
         this.view = view
         this.$vs.loading()
@@ -671,6 +738,73 @@ export default {
       }
       return false
     },
+    applyFilters() {
+      this.changeView(this.view, parentId)
+    },
+    resetFilters() {
+      this.filters = {
+        date_from: '',
+        date_to: '',
+        status: '',
+      }
+      this.filterDatesShortcut('this_month')
+    },
+    filterDatesShortcut(period) {
+      let invalidPeriod = false
+
+      switch (period) {
+        case 'today': {
+          let today = new Date()
+          this.filters.date_from = this.formatDate(today)
+          this.filters.date_to = this.formatDate(today)
+        } break
+        case 'yesterday': {
+          let dateObj = new Date()
+          dateObj.setDate(dateObj.getDate() - 1)
+          this.filters.date_from = this.formatDate(dateObj)
+          this.filters.date_to = this.formatDate(dateObj)
+        } break
+        case 'this_month': {
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
+        case 'last_month': {
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
+        default: {
+          invalidPeriod = true
+        } break
+      }
+
+      if(!invalidPeriod) {
+        this.applyFilters()
+      }
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      let yyyy = dateObj.getFullYear()
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd
+      return formattedDate
+    },
+    formatDateTime(dateObj) {
+      let formattedDate = this.formatDate(dateObj)
+
+      let hh = String(dateObj.getHours()).padStart(2, '0')
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      let ss = String(dateObj.getSeconds()).padStart(2, '0')
+
+      let formattedTime = hh + ':' + ii + ':' + ss
+      return formattedDate + ' ' + formattedTime
+    },
 
     login() {
       this.FB.login((response) => {
@@ -712,12 +846,24 @@ export default {
     async fetchCampaigns(adAccountId, insights = true) {
       let campaigns = []
 
-      // TODO: time range => filters
+      // TEST DEBUG TODO: Only for debug purposes
       let timeRange = {
         since: '2020-09-28',
         until: '2021-09-28',
       }
+
+      // TODO: to uncomment
       // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
       let params = {
         access_token: this.accessToken,
         fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
@@ -779,11 +925,24 @@ export default {
     async fetchAdsets(campaignId, insights = true) {
       let adsets = []
 
-      // TODO: time range => filters
+      // TEST DEBUG TODO: Only for debug purposes
       let timeRange = {
         since: '2020-09-28',
         until: '2021-09-28',
       }
+
+      // TODO: to uncomment
+      // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
       let params = {
         access_token: this.accessToken,
         fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
@@ -851,11 +1010,24 @@ export default {
     async fetchAds(adsetId, insights = true) {
       let ads = []
 
-      // TODO: time range => filters
+      // TEST DEBUG TODO: Only for debug purposes
       let timeRange = {
         since: '2020-09-28',
         until: '2021-09-28',
       }
+
+      // TODO: to uncomment
+      // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
       let params = {
         access_token: this.accessToken,
         fields: 'id,name,creative',
@@ -1036,23 +1208,49 @@ export default {
       this.editingObject = obj
       this.showPopup['edit_bid'] = true
     },
-    updateBid() {
+    async updateBid() {
       this.$vs.loading()
 
       try {
         let bidAmount = parseInt(this.editingObject.bid_amount * 100)
         let bidStrategy = this.editingObject.bid_strategy
 
-        // TODO: HERE
+        let params = {
+          access_token: this.accessToken,
+          bid_strategy: bidStrategy,
+        }
+        if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+          params.bid_amount = bidAmount
+        }
 
         if (this.editingObject.object_type == 'campaign') {
+          let adsets = await this.fetchAdsets(this.editingObject.id, false)
           if (this.editingObject.cbo) {
-            // TODO: Implement
+            params = {
+              access_token: this.accessToken,
+              bid_strategy: bidStrategy,
+            }
+            await this.$http.post(this.fbApiUrl + '/' + this.editingObject.id, params)
+
+            params = {
+              access_token: this.accessToken,
+              bid_amount: bidAmount,
+            }
+            for (let i = 0; i < adsets.length; i++) {
+              let adset = adsets[i]
+              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            }
           } else {
-            // TODO: Implement
+            for (let i = 0; i < adsets.length; i++) {
+              let adset = adsets[i]
+              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            }
           }
         } else {
-          // TODO: Implement
+          for (let i = 0; i < adsets.length; i++) {
+            let adset = adsets[i]
+            await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+          }
         }
 
         this.$vs.notify({
