@@ -136,6 +136,9 @@ class OrderController extends Controller
             'landing_id' => 'required|integer|exists:landings,id',
 
             'query_params' => 'json',
+
+            // TODO DEBUG: only for testing purposes
+            'test_code' => 'nullable|string',
         ]);
 
         // Validate cross_sell JSON

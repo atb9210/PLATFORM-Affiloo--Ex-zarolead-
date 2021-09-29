@@ -223,7 +223,7 @@
                   class="w-full"
                   icon-pack="feather" icon="icon-dollar-sign" icon-no-border
                   v-model="plugins['facebook_conversions_api'].eventValue"
-                  name="fb_event_value" placeholder="Conversion event value (optional)"
+                  name="fb_event_value" placeholder="Conversion event value"
                 />
                 <vs-select v-model="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
