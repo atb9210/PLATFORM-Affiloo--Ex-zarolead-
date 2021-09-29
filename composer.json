@@ -14,7 +14,6 @@
         "driverfury/tiktok": "dev-master",
         "driverfury/worldfilia": "dev-master",
         "driverfury/zarocloner": "dev-master",
-        "facebook/graph-sdk": "^5.7",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.0",
         "imtigger/laravel-job-status": "^1.2",

@@ -23,6 +23,10 @@ Vue.component(VxBreadcrumb.name, VxBreadcrumb)
 Vue.component(FeatherIcon.name, FeatherIcon)
 Vue.component(VxInputGroup.name, VxInputGroup)
 
+// NOTE: Custom (created by driverfury)
+import EditableValue  from './components/EditableValue.vue'
+Vue.component(EditableValue.name, EditableValue)
+
 
 // v-select component
 import vSelect from 'vue-select'

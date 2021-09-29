@@ -25,6 +25,7 @@
                     <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
                 </span>
             </p>
+
             <vue-context ref="ad_account_context_menu" v-slot="{ data }">
                 <li>
                   <a href="#" @click="$refs.ad_account_context_menu.close();changeView('campaigns', data.id);" class="flex items-center text-sm">
@@ -48,6 +49,12 @@
                   </a>
                 </li>
                 <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit bid</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
                     <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Close</span>
@@ -60,6 +67,12 @@
                   <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
                     <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show Ads</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit bid</span>
                   </a>
                 </li>
                 <li>
@@ -108,208 +121,282 @@
 
             <!-- Ad accounts table -->
             <vs-table v-if="view == 'ad_accounts'" stripe multiple v-model="selectedAdAccounts" :max-items="maxItems" pagination search :data="adAccounts" :currentPage="currentPage" @change-page="onPageChanged">
-               <template slot="thead">
-                   <vs-th sort-key="id">ID</vs-th>
-                   <vs-th sort-key="name">Name</vs-th>
-               </template>
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                </template>
 
-               <template slot-scope="{data}">
-                   <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                       <vs-td class="column-no-padding" :data="item.id">
-                         {{ item.id }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.name">
-                           <div @contextmenu.prevent="$refs.ad_account_context_menu.open($event, item)">
-                               <vs-chip transparent>
-                                   <vs-avatar icon-pack="feather" icon="icon-user" />
-                                   {{item.name}}
-                               </vs-chip>
-                           </div>
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.ad_account_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-user" />
+                                    {{item.name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
 
-                   </vs-tr>
+                    </vs-tr>
 
-                   <!-- TOTAL STATS -->
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding">{{ data.length }}</vs-td>
-                   <!-- END TOTAL STATS-->
-               </template>
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
             </vs-table>
 
             <!-- Campaigns table -->
             <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
-               <template slot="thead">
-                   <vs-th sort-key="id">ID</vs-th>
-                   <vs-th sort-key="name">Name</vs-th>
-                   <vs-th sort-key="status">Status</vs-th>
-                   <vs-th sort-key="objective">Objective</vs-th>
-                   <vs-th sort-key="spent">Spent</vs-th>
-                   <vs-th sort-key="impressions">Impressions</vs-th>
-                   <vs-th sort-key="cpm">CPM</vs-th>
-               </template>
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="objective">Objective</vs-th>
+                    <vs-th sort-key="spent">Spent</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
+                    <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="budget">Budget</vs-th>
+                </template>
 
-               <template slot-scope="{data}">
-                   <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                       <vs-td class="column-no-padding" :data="item.id">
-                         {{ item.id }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.name">
-                           <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, item)">
-                               <vs-chip transparent>
-                                   <vs-avatar icon-pack="feather" icon="icon-box" />
-                                   {{item.name}}
-                               </vs-chip>
-                           </div>
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.status">
-                         <vs-switch
-                              :color="statusColor[item.status]"
-                              v-model="item.status == 'ACTIVE'"
-                              vs-icon-off="pause" vs-icon-on="done"
-                              @input="switchStatus('campaign', item)">
-                              <span slot="on" v-if="item.status == 'ACTIVE'">Active</span>
-                              <span slot="off">Paused</span>
-                          </vs-switch>
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.status">
+                            <vs-switch
+                                :color="statusColor[item.status]"
+                                v-model="item.status == 'ACTIVE'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatus('campaign', item)">
+                                <span slot="on" v-if="item.status == 'ACTIVE'">Active</span>
+                                <span slot="off">Paused</span>
+                            </vs-switch>
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.objective">
-                         {{ item.objective }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.objective">
+                            {{ item.objective }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.spent">
-                         € {{ item.spent.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.spent">
+                            € {{ item.spent.toFixed(2) }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.impressions">
-                         {{ item.impressions }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                            {{ item.impressions }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.cpm">
-                         € {{ item.cpm.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                            € {{ item.cpm.toFixed(2) }}
+                        </vs-td>
 
-                   </vs-tr>
+                        <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
+                            <editable-value
+                                v-model="data[indextr].new_daily_budget"
+                                @onEdit="data[indextr].new_daily_budget = data[indextr].daily_budget"
+                                @onUpdate="updateBudget('campaign', data[indextr])">
+                                <span v-if="item.cbo">
+                                    € {{ item.daily_budget.toFixed(2) }}
+                                </span>
+                                <span v-else>
+                                    ABO
+                                </span>
+                            </editable-value>
+                        </vs-td>
 
-                   <!-- TOTAL STATS -->
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding">{{ data.length }}</vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
-                   <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
-                   <!-- END TOTAL STATS-->
-               </template>
+                    </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
             </vs-table>
 
             <!-- Adsets table -->
             <vs-table v-if="view == 'adsets'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
-               <template slot="thead">
-                   <vs-th sort-key="id">ID</vs-th>
-                   <vs-th sort-key="name">Name</vs-th>
-                   <vs-th sort-key="spent">Spent</vs-th>
-                   <vs-th sort-key="impressions">Impressions</vs-th>
-                   <vs-th sort-key="cpm">CPM</vs-th>
-               </template>
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="spent">Spent</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
+                    <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="budget">Budget</vs-th>
+                </template>
 
-               <template slot-scope="{data}">
-                   <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                       <vs-td class="column-no-padding" :data="item.id">
-                         {{ item.id }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.name">
-                           <div @contextmenu.prevent="$refs.adset_context_menu.open($event, item)">
-                               <vs-chip transparent>
-                                   <vs-avatar icon-pack="feather" icon="icon-box" />
-                                   {{item.name}}
-                               </vs-chip>
-                           </div>
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.adset_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.spent">
-                         € {{ item.spent.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.spent">
+                          € {{ item.spent.toFixed(2) }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.impressions">
-                         {{ item.impressions }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                          {{ item.impressions }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.cpm">
-                         € {{ item.cpm.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                          € {{ item.cpm.toFixed(2) }}
+                        </vs-td>
 
-                   </vs-tr>
+                        <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
+                            <editable-value
+                                v-model="data[indextr].new_daily_budget"
+                                @onEdit="data[indextr].new_daily_budget = data[indextr].daily_budget"
+                                @onUpdate="updateBudget('adset', data[indextr])">
+                                <span v-if="item.cbo">
+                                    CBO
+                                </span>
+                                <span v-else>
+                                    € {{ item.daily_budget.toFixed(2) }}
+                                </span>
+                            </editable-value>
+                        </vs-td>
 
-                   <!-- TOTAL STATS -->
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding">{{ data.length }}</vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
-                   <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
-                   <!-- END TOTAL STATS-->
-               </template>
+                    </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
             </vs-table>
 
             <!-- Ads table -->
             <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
-               <template slot="thead">
-                   <vs-th sort-key="id">ID</vs-th>
-                   <vs-th sort-key="name">Name</vs-th>
-                   <vs-th sort-key="spent">Spent</vs-th>
-                   <vs-th sort-key="impressions">Impressions</vs-th>
-                   <vs-th sort-key="cpm">CPM</vs-th>
-               </template>
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="spent">Spent</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
+                    <vs-th sort-key="cpm">CPM</vs-th>
+                </template>
 
-               <template slot-scope="{data}">
-                   <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                <template slot-scope="{data}">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                       <vs-td class="column-no-padding" :data="item.id">
-                         {{ item.id }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.name">
-                           <div @contextmenu.prevent="$refs.ad_context_menu.open($event, item)">
-                               <vs-chip transparent>
-                                   <vs-avatar icon-pack="feather" icon="icon-box" />
-                                   {{item.name}}
-                               </vs-chip>
-                           </div>
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.ad_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.spent">
-                         € {{ item.spent.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.spent">
+                          € {{ item.spent.toFixed(2) }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.impressions">
-                         {{ item.impressions }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                          {{ item.impressions }}
+                        </vs-td>
 
-                       <vs-td class="column-no-padding" :data="item.cpm">
-                         € {{ item.cpm.toFixed(2) }}
-                       </vs-td>
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                          € {{ item.cpm.toFixed(2) }}
+                        </vs-td>
 
-                   </vs-tr>
+                    </vs-tr>
 
-                   <!-- TOTAL STATS -->
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding"></vs-td>
-                   <vs-td class="column-no-padding">{{ data.length }}</vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
-                   <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
-                   <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
-                   <!-- END TOTAL STATS-->
-               </template>
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <!-- END TOTAL STATS-->
+                </template>
             </vs-table>
+
+            <!-- Edit bid popup -->
+            <vs-popup title="Edit budget" :active.sync="showPopup['edit_bid']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6" v-if="(editingObject.object_type == 'adset' && editingObject.hasOwnProperty('cbo') && editingObject.cbo)">
+                    <div class="vx-col w-full mt-2">
+                        <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
+                    </div>
+                </div>
+                <div class="vx-row mb-6" v-else>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Type</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select v-model="editingObject.bid_strategy" class="w-full">
+                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in bidOptions" />
+                        </vs-select>
+                    </div>
+                </div>
+                
+                <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid_amount" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full mt-2" v-if="(editingObject.object_type == 'campaign' && editingObject.hasOwnProperty('cbo') && !editingObject.cbo)">
+                        <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+                </div>
+            </vs-popup>
 
             <!-- View ad popup -->
             <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
@@ -444,6 +531,14 @@ export default {
       campaign: {},
       adset: {},
       ad: {},
+
+      editingObject: {},
+
+      bidOptions: [
+        { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
     }
   },
   computed: {
@@ -501,23 +596,35 @@ export default {
     async changeView(view, parentId = null) {
       if (view == 'ad_accounts') {
         this.view = view
-        await this.loadAdAccounts()
+        this.$vs.loading()
+        this.selectedAdAccounts = []
+        this.adAccounts = await this.fetchAdAccounts()
+        this.$vs.loading.close()
       } else if (view == 'campaigns') {
         this.view = view
         if (parentId !== null) {
-          await this.loadCampaigns(parentId)
+          this.$vs.loading()
+          this.selectedCampaigns = []
+          this.campaigns = await this.fetchCampaigns(parentId)
+          this.$vs.loading.close()
         }
         this.calculateStats()
       } else if (view == 'adsets') {
         this.view = view
         if (parentId !== null) {
-          await this.loadAdsets(parentId)
+          this.$vs.loading()
+          this.selectedAdsets = []
+          this.adsets = await this.fetchAdsets(parentId)
+          this.$vs.loading.close()
         }
         this.calculateStats()
       } else if (view == 'ads') {
         this.view = view
         if (parentId !== null) {
-          await this.loadAds(parentId)
+          this.$vs.loading()
+          this.selectedAds = []
+          this.ads = await this.fetchAds(parentId)
+          this.$vs.loading.close()
         }
         this.calculateStats()
       }
@@ -529,6 +636,40 @@ export default {
         }
       }
       return -1
+    },
+    openNewTab(url) {
+      if (url != '') {
+        window.open(url)
+      }
+    },
+    calculateStats() {
+      let spent = 0.0
+      let impressions = 0
+      let cpm = 0.0
+
+      for (let i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+
+        spent += obj.spent
+        impressions += obj.impressions
+      }
+      cpm = (impressions > 0) ? (spent*1000/impressions) : (spent*1000)
+
+      this.totalStats = {
+        spent: spent,
+        impressions: impressions,
+        cpm: cpm,
+      }
+    },
+    isValidForm(type) {
+      if (type == 'edit_bid') {
+        if (this.editingObject.hasOwnProperty('bid_strategy') &&
+            this.editingObject.bid_strategy != '') {
+          return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
+                  (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingObject.bid_amount > 0)
+        }
+      }
+      return false
     },
 
     login() {
@@ -548,11 +689,8 @@ export default {
         }
       })
     },
-    async loadAdAccounts() {
-      this.$vs.loading()
-
-      this.adAccounts = []
-      this.selectedAdAccounts = []
+    async fetchAdAccounts(insights = true) {
+      let adAccounts = []
 
       let params = {
         access_token: this.accessToken,
@@ -560,16 +698,19 @@ export default {
       }
       const response = await this.$http.get(this.fbApiUrl + '/me', { params: params })
       if (response !== null && !response.hasOwnProperty('error')) {
-          this.adAccounts = response.data.adaccounts.data
+          adAccounts = response.data.adaccounts.data
       }
 
-      this.$vs.loading.close()
-    },
-    async loadCampaigns(adAccountId) {
-      this.$vs.loading()
+      for (let i = 0; i < adAccounts.length; i++) {
+        let obj = adAccounts[i]
+        obj.object_type = 'ad_account'
+        adAccounts[i] = obj
+      }
 
-      this.campaigns = []
-      this.selectedCampaigns = []
+      return adAccounts
+    },
+    async fetchCampaigns(adAccountId, insights = true) {
+      let campaigns = []
 
       // TODO: time range => filters
       let timeRange = {
@@ -579,17 +720,40 @@ export default {
       // TODO: What about date_preset??
       let params = {
         access_token: this.accessToken,
-        fields: 'id,name,status,effective_status,objective,insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}',
+        fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
         time_range: timeRange,
         //date_preset: 'maximum', // TODO: What about this
       }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
+      }
       const response = await this.$http.get(this.fbApiUrl + '/' + adAccountId + '/campaigns', { params: params })
       if (response !== null && !response.hasOwnProperty('error')) {
-          this.campaigns = response.data.data
+          campaigns = response.data.data
       }
 
-      for (let i = 0; i < this.campaigns.length; i++) {
-        let obj = this.campaigns[i]
+      for (let i = 0; i < campaigns.length; i++) {
+        let obj = campaigns[i]
+        obj.object_type = 'campaign'
+
+        obj.cbo = (obj.hasOwnProperty('daily_budget') && obj.hasOwnProperty('bid_strategy'))
+
+        let daily_budget = 0.0
+        let bid_amount = 0.0
+        let bid_strategy = ''
+        if (obj.hasOwnProperty('daily_budget')) {
+          daily_budget = parseInt(obj.daily_budget)/100
+        }
+        if (obj.hasOwnProperty('bid_amount')) {
+          bid_amount = parseInt(obj.bid_amount)/100
+        }
+        if (obj.hasOwnProperty('bid_strategy')) {
+          bid_strategy = obj.bid_strategy
+        }
+        obj.daily_budget = daily_budget
+        obj.bid_amount = bid_amount
+        obj.bid_strategy = bid_strategy
+        obj.new_daily_budget = daily_budget
 
         let spent = 0.0
         let impressions = 0
@@ -607,16 +771,13 @@ export default {
         obj.impressions = impressions
         obj.cpm = cpm
 
-        this.campaigns[i] = obj
+        campaigns[i] = obj
       }
 
-      this.$vs.loading.close()
+      return campaigns
     },
-    async loadAdsets(campaignId) {
-      this.$vs.loading()
-
-      this.adsets = []
-      this.selectedAdsets = []
+    async fetchAdsets(campaignId, insights = true) {
+      let adsets = []
 
       // TODO: time range => filters
       let timeRange = {
@@ -625,17 +786,46 @@ export default {
       }
       let params = {
         access_token: this.accessToken,
-        fields: 'id,name,insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}',
+        fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
         time_range: timeRange,
         //date_preset: 'maximum',
+      }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
       }
       const response = await this.$http.get(this.fbApiUrl + '/' + campaignId + '/adsets', { params: params })
       if (response !== null && !response.hasOwnProperty('error')) {
-          this.adsets = response.data.data
+          adsets = response.data.data
       }
 
-      for (let i = 0; i < this.adsets.length; i++) {
-        let obj = this.adsets[i]
+      for (let i = 0; i < adsets.length; i++) {
+        let obj = adsets[i]
+        obj.object_type = 'adset'
+
+        obj.cbo = !(obj.hasOwnProperty('daily_budget'))
+
+        let daily_budget = 0.0
+        let bid_amount = 0.0
+        let bid_strategy = ''
+        if (obj.hasOwnProperty('daily_budget')) {
+          daily_budget = parseInt(obj.daily_budget)/100
+        }
+        if (obj.hasOwnProperty('bid_amount')) {
+          bid_amount = parseInt(obj.bid_amount)/100
+        }
+        if (obj.hasOwnProperty('bid_strategy')) {
+          bid_strategy = obj.bid_strategy
+        }
+        obj.daily_budget = daily_budget
+        obj.bid_amount = bid_amount
+        obj.bid_strategy = bid_strategy
+        obj.new_daily_budget = daily_budget
+
+        // TODO: to delete
+        /*
+        console.log('obj', obj)
+        console.log('daily_budget', daily_budget)
+        */
 
         let spent = 0.0
         let impressions = 0
@@ -653,16 +843,13 @@ export default {
         obj.impressions = impressions
         obj.cpm = cpm
 
-        this.adsets[i] = obj
+        adsets[i] = obj
       }
 
-      this.$vs.loading.close()
+      return adsets
     },
-    async loadAds(adsetId) {
-      this.$vs.loading()
-
-      this.ads = []
-      this.selectedAds = []
+    async fetchAds(adsetId, insights = true) {
+      let ads = []
 
       // TODO: time range => filters
       let timeRange = {
@@ -671,17 +858,21 @@ export default {
       }
       let params = {
         access_token: this.accessToken,
-        fields: 'id,name,creative,insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}',
+        fields: 'id,name,creative',
         time_range: timeRange,
         //date_preset: 'maximum',
       }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
+      }
       const response = await this.$http.get(this.fbApiUrl + '/' + adsetId + '/ads', { params: params })
       if (response !== null && !response.hasOwnProperty('error')) {
-          this.ads = response.data.data
+          ads = response.data.data
       }
 
-      for (let i = 0; i < this.ads.length; i++) {
-        let obj = this.ads[i]
+      for (let i = 0; i < ads.length; i++) {
+        let obj = ads[i]
+        obj.object_type = 'adset'
 
         let spent = 0.0
         let impressions = 0
@@ -699,10 +890,10 @@ export default {
         obj.impressions = impressions
         obj.cpm = cpm
 
-        this.ads[i] = obj
+        ads[i] = obj
       }
 
-      this.$vs.loading.close()
+      return ads
     },
     async switchStatus(objectType, obj) {
       let oldStatus = obj.status
@@ -755,31 +946,6 @@ export default {
       }
       this.$vs.loading.close()
     },
-
-    openNewTab(url) {
-      if (url != '') {
-        window.open(url)
-      }
-    },
-    calculateStats() {
-      let spent = 0.0
-      let impressions = 0
-      let cpm = 0.0
-
-      for (let i = 0; i < this.objects.length; i++) {
-        let obj = this.objects[i]
-
-        spent += obj.spent
-        impressions += obj.impressions
-      }
-      cpm = (impressions > 0) ? (spent*1000/impressions) : (spent*1000)
-
-      this.totalStats = {
-        spent: spent,
-        impressions: impressions,
-        cpm: cpm,
-      }
-    },
     async viewAd(ad) {
       if (!ad.hasOwnProperty('creative') ||
           !ad.creative.hasOwnProperty('id')) {
@@ -820,6 +986,91 @@ export default {
       this.ad.post_url = ''
 
       this.showPopup['view_ad'] = true
+
+      this.$vs.loading.close()
+    },
+    async updateBudget(type, obj) {
+      this.$vs.loading()
+
+      try {
+        let newDailyBudget = parseInt(parseFloat(obj.new_daily_budget.replace(',', '.'))*100)
+
+        let params = {
+          access_token: this.accessToken,
+          daily_budget: newDailyBudget,
+        }
+        if (type == 'campaign') {
+          if (obj.cbo) {
+            await this.$http.post(this.fbApiUrl + '/' + obj.id, params)
+          } else {
+            let adsets = await this.fetchAdsets(obj.id, false)
+            for (let i = 0; i < adsets.length; i++) {
+              let adset = adsets[i]
+              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            }
+          }
+        } else if (type == 'adset') {
+          await this.$http.post(this.fbApiUrl + '/' + obj.id, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Daily budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Daily budget cannot be modified',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    editBidPopup(obj) {
+      this.editingObject = obj
+      this.showPopup['edit_bid'] = true
+    },
+    updateBid() {
+      this.$vs.loading()
+
+      try {
+        let bidAmount = parseInt(this.editingObject.bid_amount * 100)
+        let bidStrategy = this.editingObject.bid_strategy
+
+        // TODO: HERE
+
+        if (this.editingObject.object_type == 'campaign') {
+          if (this.editingObject.cbo) {
+            // TODO: Implement
+          } else {
+            // TODO: Implement
+          }
+        } else {
+          // TODO: Implement
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Bid amount updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Bid amount cannot be modified',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
 
       this.$vs.loading.close()
     },
