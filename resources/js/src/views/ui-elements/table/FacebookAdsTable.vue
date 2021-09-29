@@ -119,6 +119,18 @@
                   </a>
                 </li>
                 <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();duplicateAdsetPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Duplicate</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();duplicateAdsetBidderPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Duplicate (bidder)</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
                     <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Close</span>
@@ -519,7 +531,92 @@
                     </div>
                 </div>
 
-            </vs-popup>   
+            </vs-popup>
+
+            <!-- Duplicate adset popup -->
+            <vs-popup title="Duplicate adset" :active.sync="showPopup['duplicate_adset']">
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Number of new adsets</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="1" step="1" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="editingObject.adsetNumber" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Budget (daily) of each adset</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.adsetBudget" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateAdsetNormal(editingObject)" color="primary" type="filled" :disabled="!isValidForm('duplicate_adset')">Duplicate</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Duplicate (bidder) adset popup -->
+            <vs-popup title="Bidder" :active.sync="showPopup['duplicate_adset_bidder']">
+                <div class="vx-row mb-6" v-if="editingObject.cbo">
+                    <div class="vx-col w-full">
+                        <span>* Warning: This adset is from a CBO campaign</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Budget</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Accelerated</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-for="(item, index) in editingObject.adsets" :key="index">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.budget" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select v-model="item.bid" class="w-full">
+                            <vs-select-item :key="optionIndex" :value="option.value" :text="option.label" v-for="(option, optionIndex) in duplicateBidderBidOptions" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.bid_amount" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-checkbox v-model="item.accelerated">Acc.</vs-checkbox>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="removeBidderAdset(index)" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="addBidderAdset" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateAdsetBidder(editingObject)" color="primary" type="filled" :disabled="!isValidForm('duplicate_adset_bidder')">Duplicate (bidder)</vs-button>
+                </div>
+            </vs-popup>
 
         </div>
 
@@ -528,6 +625,11 @@
 
 <script>
 import { VueContext } from 'vue-context'
+
+// TODO: Move this function into a utilities package?
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export default {
   name: 'FacebookAdsTable',
@@ -592,6 +694,8 @@ export default {
       showPopup: {
         'edit_bid': false,
         'view_ad': false,
+        'duplicate_adset': false,
+        'duplicate_adset_bidder': false,
       },
 
       campaign: {},
@@ -603,6 +707,10 @@ export default {
       bidOptions: [
         { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
         { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+      duplicateBidderBidOptions: [
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
         { value:'COST_CAP',                 label: 'Cost cap' },
       ],
     }
@@ -735,11 +843,23 @@ export default {
           return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
                   (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingObject.bid_amount > 0)
         }
+      } else if (type == 'duplicate_adset') {
+        if (this.editingObject.adsetNumber > 0 && this.editingObject.adsetBudget > 0) {
+          return true
+        }
+      } else if (type == 'duplicate_adset_bidder') {
+        if (this.editingObject.hasOwnProperty('adsets') && this.editingObject.adsets.length > 0) {
+          for (let i = 0; i < this.editingObject.adsets.length; i++) {
+            let obj = this.editingObject.adsets[i]
+            if (obj.budget == 0 || obj.bid == '') return false
+          }
+          return true
+        }
       }
       return false
     },
     applyFilters() {
-      this.changeView(this.view, parentId)
+      this.changeView(this.view, this.parentId)
     },
     resetFilters() {
       this.filters = {
@@ -920,6 +1040,10 @@ export default {
         campaigns[i] = obj
       }
 
+      if (this.filters.status !== '') {
+        campaigns = campaigns.filter(campaign => (campaign.status == this.filters.status))
+      }
+
       return campaigns
     },
     async fetchAdsets(campaignId, insights = true) {
@@ -1005,6 +1129,10 @@ export default {
         adsets[i] = obj
       }
 
+      if (this.filters.status !== '') {
+        adsets = adsets.filter(adset => (adset.status == this.filters.status))
+      }
+
       return adsets
     },
     async fetchAds(adsetId, insights = true) {
@@ -1063,6 +1191,10 @@ export default {
         obj.cpm = cpm
 
         ads[i] = obj
+      }
+
+      if (this.filters.status !== '') {
+        ads = ads.filter(ads => (ads.status == this.filters.status))
       }
 
       return ads
@@ -1264,6 +1396,179 @@ export default {
         this.$vs.notify({
           title: 'Error',
           text: 'Bid amount cannot be modified',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    duplicateAdsetPopup(obj) {
+      this.editingObject = {
+        id: obj.id,
+        adsetNumber: 1,
+        adsetBudget: 1,
+      }
+      this.showPopup['duplicate_adset'] = true
+    },
+    async duplicateAdset(id, n) {
+      let adsets = []
+
+      // Make a batch request to create N adsets (copying from id)
+      let batch = []
+      for (let i = 0; i < n; i++) {
+        batch.push({
+          method: 'POST',
+          relative_url: '/' + this.fbApiVersion + '/' + id + '/copies',
+          name: 'duplicate_adset_' + i,
+          body: 'deep_copy=true',
+        })
+      }
+
+      let params = {
+        access_token: this.accessToken,
+        asyncbatch: batch,
+      }
+      const responseAsyncBatch = await this.$http.post(this.fbApiUrl, params)
+
+      params = {
+        access_token: this.accessToken,
+        fields: 'id,name,status,result',
+      }
+      let sessions = responseAsyncBatch.data.async_sessions
+      for (let sessionIndex = 0; sessionIndex < sessions.length; sessionIndex++) {
+        let session = sessions[sessionIndex]
+        let notCompleted = true
+        while (notCompleted) {
+          await sleep(1000)
+          const response = await this.$http.get(this.fbApiUrl + '/' + session.id, { params: params })
+
+          if (response.data.status !== 'COMPLETED' && response.data.status !== 'FAILED') {
+            notCompleted = true
+            continue
+          }
+
+          notCompleted = false
+          if (response.data.status === 'COMPLETED') {
+            let result = JSON.parse(response.data.result)
+            if (result.hasOwnProperty('copied_adset_id')) {
+              adsets.push(result.copied_adset_id)
+            }
+          }
+        }
+      }
+
+      // DEBUG TODO: to delete
+      console.log('adsets', adsets)
+
+      return adsets
+    },
+    async duplicateAdsetNormal(obj) {
+      this.$vs.loading()
+
+      try {
+        // Duplicate N times
+        let adsets = await this.duplicateAdset(obj.id, obj.adsetNumber)
+
+        // TODO: Check if adsets.length == obj.adsetNumber
+
+        // Edit adset name and daily budget
+        let params = {
+          access_token: this.accessToken,
+          name: 'Duplicate - €' + parseFloat(obj.adsetBudget).toFixed(2),
+          daily_budget: parseInt(obj.adsetBudget)*100,
+        }
+        for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+          let adsetId = adsets[adsetIndex]
+          await this.$http.post(this.fbApiUrl + '/' + adsetId, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Adset duplicated ' + obj.adsetNumber + ' times.',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while duplicating adset',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    duplicateAdsetBidderPopup(obj) {
+      this.editingObject = {
+        adsets: [{
+          budget: 0.0,
+          bid: 'COST_CAP',
+          bid_amount: 0.0,
+          accelerated: false,
+        }],
+      }
+      this.showPopup['duplicate_adset_bidder'] = true
+    },
+    removeBidderAdset(index) {
+      this.editingObject.adsets.splice(index, 1)
+    },
+    addBidderAdset() {
+      this.editingObject.adsets.push({
+        budget: 0.0,
+        bid: 'COST_CAP',
+        bid_amount: 0.0,
+        accelerated: false,
+      })
+    },
+    async duplicateAdsetBidder(obj) {
+      this.$vs.loading()
+
+      try {
+        // Duplicate N times
+        let adsets = await this.duplicateAdset(obj.id, obj.adsets.length)
+
+        // TODO: Check if adsets.length == obj.adsets.length
+
+        // Edit adset name, daily budget, bid strategy and bid amount
+        for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+          let adsetId = adsets[adsetIndex]
+          let adset = obj.adsets[adsetIndex]
+
+          let bidType = 'Unknown'
+          if (adset.bid == 'LOWEST_COST_WITH_BID_CAP') {
+            bidType = 'BID_CAP'
+          } else if (adset.bid == 'COST_CAP') {
+            bidType = 'COST_CAP'
+          }
+          let params = {
+            access_token: this.accessToken,
+            name: 'BIDDER - ' + bidType + ' - €' + parseFloat(adset.bid_amount).toFixed(2),
+            daily_budget: parseInt(adset.budget*100),
+            bid_strategy: adset.bid,
+            bid_amount: parseInt(adset.bid_amount*100),
+          }
+          if (adset.accelerated) {
+            params.name += ' - Acc.'
+          }
+          await this.$http.post(this.fbApiUrl + '/' + adsetId, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Adset duplicated ' + obj.adsetNumber + ' times (bidder).',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while duplicating adset (bidder)',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'danger'
