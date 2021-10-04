@@ -79,6 +79,12 @@
                   </a>
                 </li>
                 <li>
+                  <a href="#" @click="$refs.ad_account_context_menu.close();adRulesPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Rules</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.ad_account_context_menu.close()" class="flex items-center text-sm">
                     <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Close</span>
@@ -181,6 +187,7 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th>Has ad rules</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -199,12 +206,17 @@
                             </div>
                         </vs-td>
 
+                        <vs-td class="column-no-padding">
+                            <vs-avatar size="24px" icon-pack="feather" :icon="item.has_ad_rules ? 'icon-check' : 'icon-x'" :color="item.has_ad_rules ? 'success' : 'danger'" />
+                        </vs-td>
+
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -939,6 +951,110 @@
 
             </vs-popup>
 
+            <!-- Ad rules popup -->
+            <vs-popup title="Ad rules" :active.sync="showPopup['ad_rules']">
+                <div class="w-full pr-2 pl-2">
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Ad rule template</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adRuleTemplate" class="w-full select-large" @change="changeAdRule">
+                                <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adRulesOptions" class="w-full" />
+                            </vs-select>
+                            <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdRule"></vs-button>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Name</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="adRule['name']" />
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>What</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adRule['entity_type']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleEntityTypeOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Action</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adRule['execution_type']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleExecutionTypeOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Time preset</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adRule['time_preset']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleTimePresetOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>When</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adRule['schedule_type']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleScheduleTypeOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6" v-for="(filterItem, filterIndex) in adRule['filters']">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="adRule['filters'][filterIndex]['field']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleFieldOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="adRule['filters'][filterIndex]['operator']" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleOperatorOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/6 w-full">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" v-model="adRule['filters'][filterIndex]['value']" />
+                        </div>
+                        <div class="vx-col sm:w-1/6 w-full">
+                            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAdRuleFilter(filterIndex)"></vs-button>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-2/3 w-full">
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAdRuleFilter"></vs-button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Save Template</vs-button>
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="createAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Create Ad Rule</vs-button>
+                </div>
+            </vs-popup>
+
         </div>
 
     </vx-card>
@@ -1039,6 +1155,7 @@ export default {
         'duplicate_adset': false,
         'duplicate_adset_bidder': false,
         'ad_launcher': false,
+        'ad_rules': false,
       },
 
       adAccount: {},
@@ -1075,8 +1192,6 @@ export default {
       selectedPreview: [],
       videoThumbnail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX///8EAgQAAAD29vby8vJubm7MzMzv7+/b29u7u7v7+/tTU1MzNTM3NzfOzs739/epqqmcnJzU1NTk5OR/f39lZmVISUiOjo6JiYkxMTEWFRZgYWDn5+coKSi4ubh3d3dBQUGfn59aWVpRUFEgHyAPDg/DxMOTlJOoqaiDg4MrKisjIyM9PD0LCwt5enlFRUUd5XBlAAAIIklEQVR4nO2da1savRaG42KAYdzAAAoKyEERtKL9//9uz1BAxAGyTsnwXnk+tB9au3KXkMM6xZigoKCgoKCgoKCgoKCgoKCgoKCgoNIo6sW1dHX3Va1Wn/v97Nfp3aDTiOOx74FJKF4ORrMFFOu1+TJNa5HvMZLVbqxmO5abIu3+cFFNe74Hi1bUepidYfsN+llN674Hba/6pDq0g/uJ2V/FvodupeU9lu4Astkp+ycZvxPxDj7JRuKb4qSSyS0Hb085HJRzG2nPH/l4W0aodn3j/FJ7cCPEt2V8KRdjpSMwPY8Zb0u0sqavwnxbyGpJDgLLpgbfBhEefMNlqt8r8W0Zl74B54p8/xifvU7VXl8ZcMP45g8w1efbID57umBFt04AN4wNH4C1T0d8G8R394DaS8wxY9/1pWPkFjD/GJ0e48b/c8y3QUzdAXYX7gFzxIErwKXrGbpHrLoBbHgCzBlvXQC++QPMEfU3f8e7xC/EWeW/DZghNnUdVRPfgPnerwnocZE5QBzpAbbKAJghqm0avXIAZohKzo3Iy0mmUEoHuNvSAGanm5YC4Ht5ADPEV/nLVFomwAzxURqwNKvMTuK3/mbJAG+kPal3ZQPMED8lv4q+boRnJXmVqgxLCCi6K1bxgG5cxVLztEYBdDGvpc7gySOBMH5wgCjlC+8QhgqR6T07iNp8SFyH65SBQu5rmEiHvgvsdAQICcvMltAkd9qIEotNjzRG2PqLutoBRoHbMO3OBHuPWKo7VQG4GRtEx8U3oYk0A/2ZpXsmIfHaC4dezdpaNZmB9yFSfU8/CE3S0UTkfRPviSODI8/0WG9zBODk+dEW0pvfhNn1RCVvamPri0H4JUdoEq1zHAD9YJOQx1RAaEz8osMIczLhG3lAhYRamyP8IRPSnTMnCE1lqoJYIwJ26aM5RZjtPwqbI3nDYPiATxNqhCDhhhYZbn/oEJq6+OYIExIhwXnxbfJ8LHoplfS+M0dzZ3B8pBcITXsligjQphC+KhJmxyXRzZHksOlyBnCZ0JjGUI6RdIdaaROaipyTA4BAyIrFWBFm8+SvFCMhZBqxbFsSbjZHEUaC023JMmxNaKKqCCK8oAkfHBEKbY6wQB9r+s4ITSKxOaLdNXVeQA1FaMyYn/aPrsqIeRaRhNnm+IfJCFOkxYljQtNmOjnQCX3M7Bk8YTZtZhxGwJocuSdk1jECrgIsYZYb0AhNxHByIA/fvBMNmdCYFnlzRHrc6szFm0yYh5yJwSBcSibvzMYipFalItNruHl6HMLs/5eyOcITygYlO0GO0CQDPCLyijjwS0iqv8URTn0TZl+UBZIRULcLatxQkNBE78gWN6g44qwEhMZ0UZsjzpHBraCUIdyUkVmPBBefKQuhqds7Oa6U0Jia7eZ4tYS559ZqNFdMaOInm+FcM+HAKoRyvYRdy/4310pov5jiCJ/LQohon4JzYzDdNFKEqPRU3KnN+91iI1z0DXe3YAUPhQgbOM8b8n44906ITvWHIerfZ7q8+YT4YA3MUAaYYQsuYe2D4MXABS68+UtzjUlBU1ihjFSYddscwjmtLAxbyfbiizCm9ijEdlliuqKohPTABeAcUWyHKZFwQs/Dgj/IXOiWB8KYE+tGZ0Uxq9MphEjn4bFFdK8MXnk6nnDJzHLDF6/zfMJYwjG3OAqQIWDDjT4hCfm5X7DGAmbnNid5bblaTwJdwAmFM6yCcwQhwud7ziAhhZZUHYsnTEW6GZCqZVkXKFvCHiuH5sBeEw9oKqz8HSvCCm8LPLRHqunm+NusCBvYGOgZe6RCUnpdlxXhWLDJK3xQAGmtBqwJB5JlbNTOpoxpeonQOmRmZ41a7cxYTc8T0twUZ6xRWylW6P2szxJiQtd21shd2+kX/TOEtqEkhDF6cwy6T/EkYaTQDIRTkb+mjuYUIToNyMoYo9N3Q5ZwrFLMTTqx7WUVQC+yWkDYJqTjWdlitVKinmsKCNn1BqdM8TooUn3fvwj1Hmvhdm0jhtmOCfVaSMMjsxlWQtv1fxK2tF4TuuF/hFSP1CFhXaWPws4QvWPEXqRv4gGhbqMoiR6fpLT9PSGv1OeyHXxhZYEol6gtYUW5tyC/09dGFM/pP8KGgCP0vJk7CUBSwWxOKFA2ecnKUCr1Cr/YQKTa32tnRewZKHwPEJgrndF+GHmWAqR0xHLSvVSwVTKlSau6ZJ8qYzRU0hKrTVuBuKVe4kJnJlwUM8FGWkJ7/aES6nVfRUDsDHVWvKCwsHReCyzBO0E7ab3dxU0cFhMsSI2vLERuhSkr0a3+SNzCSxEpLKPfSkrwmg6Q+0DayftbJeqvPFe49bNsQIWN8Kcir4gOAI3Xl610XrL6LW5RFAPQ1Yu56k8enAD8cPfMugMfTAHg2uWzzu6fRwL2EwFI9RxvjCDyGglKbd1HHY4BP3UPMsVy9zAwwF/9Z4CLRC7gQQM6n6F7uXnUaa14l7goevMxe0BnL6qf0Eo3AAozd7v8Kak+PzLUeTQWq6VOnDebHAM/S2iBUsHW3N98Vc4DMuKay0abMr6RzxW0SMmb3LKa8U3LxpcrafRF1tX8+1eq+XmoeApMyOzHmxPpqJKokrRPh8x+cPFQxul5pF6HBJn9yNPUxw2CpHF6DwjKzd99XLW0ohFKanX+Alzk/Pc3hl8Tlx4KQXUn0/4H7HXElet1PerUrpRup6jXTR+mo/UBaf6pPd1W7zrL+MrhDpW0o6hej+JWq579FlVKvSMEBQUFBQUFBQUFBQUFBQUFBQUF/db/Afm8kjbo5XSmAAAAAElFTkSuQmCC',
 
-      adCounter: 0,
-
       campaignStatusOptions: [ 'ACTIVE', 'PAUSED' ],
       campaignObjectiveOptions: [
         { value: 'LINK_CLICKS', label: 'Link clicks' },
@@ -1110,7 +1225,57 @@ export default {
         { label: 'Desktop', value: 'desktop' },
       ],
 
-      adCounter: 0,
+      adRuleTemplate: 0,
+      adRuleEntityTypeOptions: [
+        'CAMPAIGN',
+        'ADSET',
+        'AD',
+      ],
+      adRuleExecutionTypeOptions: [
+        'PAUSE',
+        'UNPAUSE',
+      ],
+      adRuleScheduleTypeOptions: [
+        'DAILY',
+        'SEMI_HOURLY',
+      ],
+      adRuleTimePresetOptions: [
+        'TODAY',
+        'YESTERDAY',
+        'LIFETIME',
+      ],
+      adRuleFieldOptions: [
+        'lifetime_impressions',
+        'spent',
+        'result',
+        'cost_per_link_click',
+        'frequency',
+        'website_purchase_roas',
+        'cpm',
+        'link_ctr',
+        'cost_per',
+      ],
+      adRuleOperatorOptions: [
+        'GREATER_THAN',
+        'LESS_THAN',
+      ],
+
+      adRule: {
+        'name': '',
+        'entity_type': 'AD',
+        'time_preset': 'TODAY',
+        'execution_type': 'PAUSE',
+        'schedule_type': 'DAILY',
+        'filters': [
+          {
+            'field': 'lifetime_impressions',
+            'operator': 'GREATER_THAN',
+            'value': '0',
+          }
+        ],
+      },
+      adRules: [],
+      adRulesOptions: [],
     }
   },
   computed: {
@@ -1253,6 +1418,8 @@ export default {
           }
           return true
         }
+      } else if (type == 'ad_rule') {
+        return true
       }
       return false
     },
@@ -1367,6 +1534,21 @@ export default {
       for (let i = 0; i < adAccounts.length; i++) {
         let obj = adAccounts[i]
         obj.object_type = 'ad_account'
+
+        let hasAdRules = false
+        try {
+          let adRulesParams = {
+            access_token: this.accessToken,
+          }
+          const adRulesResponse = await this.$http.get(this.fbApiUrl + '/' + obj.id + '/adrules_library', { params: params })
+          if (adRulesResponse.data.data.length > 0) {
+            hasAdRules = true
+          }
+        } catch (error) {
+          hasAdRules = false
+        }
+        obj.has_ad_rules = hasAdRules
+
         adAccounts[i] = obj
       }
 
@@ -2086,8 +2268,6 @@ export default {
     async launchAd() {
       this.$vs.loading()
 
-      this.adCounter = 0
-
       let adAccount = this.adAccount
 
       let currentAdUrl = this.ad.url
@@ -2344,6 +2524,251 @@ export default {
           return
         }
       }
+    },
+    getAdObject() {
+      return {
+        campaign_name: this.ad.campaignName,
+        campaign_status: this.ad.campaignStatus,
+        campaign_objective: this.ad.campaignObjective,
+        pixel_id: this.ad.pixelId,
+        conversion_event: this.ad.conversionEvent,
+        campaign_budget_strategy: this.ad.campaignBudgetStrategy,
+        campaign_budget: this.ad.campaignBudget,
+        campaign_bid_strategy: this.ad.campaignBidStrategy,
+        campaign_bid: this.ad.campaignBid,
+        split_adset: this.ad.splitAdset,
+
+        targeting_gender: this.ad.targetingGender,
+        targeting_age_min: this.ad.targetingAgeMin,
+        targeting_age_max: this.ad.targetingAgeMax,
+        targeting_country: this.ad.targetingCountry,
+        targeting_device: this.ad.targetingDevice,
+        targeting_wifi: this.ad.targetingWifi,
+        targeting_platform_facebook: this.ad.targetingPlatformFacebook,
+        targeting_platform_instagram: this.ad.targetingPlatformInstagram,
+        targeting_platform_audience: this.ad.targetingPlatformAudience,
+        targeting_platform_messenger: this.ad.targetingPlatformMessenger,
+
+        title: this.ad.title,
+        text: this.ad.text,
+        url: this.ad.url,
+        conversion_domain: this.ad.conversionDomain,
+      }
+    },
+    loadAdTemplate(adTemplate) {
+      this.ad.campaignName = adTemplate.value.campaign_name
+      this.ad.campaignStatus = adTemplate.value.campaign_status
+      this.ad.campaignObjective = adTemplate.value.campaign_objective
+      this.ad.pixelId = adTemplate.value.pixel_id
+      this.ad.conversionEvent = adTemplate.value.conversion_event
+      this.ad.campaignBudgetStrategy = adTemplate.value.campaign_budget_strategy
+      this.ad.campaignBudget = adTemplate.value.campaign_budget
+      this.ad.campaignBidStrategy = adTemplate.value.campaign_bid_strategy
+      this.ad.campaignBid = adTemplate.value.campaign_bid
+      this.ad.splitAdset = adTemplate.value.split_adset
+
+      this.ad.targetingGender = adTemplate.value.targeting_gender
+      this.ad.targetingAgeMin = adTemplate.value.targeting_age_min
+      this.ad.targetingAgeMax = adTemplate.value.targeting_age_max
+      this.ad.targetingCountry = adTemplate.value.targeting_country
+      this.ad.targetingDevice = adTemplate.value.targeting_device
+      this.ad.targetingWifi = adTemplate.value.targeting_wifi
+      this.ad.targetingPlatformFacebook = adTemplate.value.targeting_platform_facebook
+      this.ad.targetingPlatformInstagram = adTemplate.value.targeting_platform_instagram
+      this.ad.targetingPlatformAudience = adTemplate.value.targeting_platform_audience
+      this.ad.targetingPlatformMessenger = adTemplate.value.targeting_platform_messenger
+
+      this.ad.title = adTemplate.value.title
+      this.ad.text = adTemplate.value.text
+      this.ad.url = adTemplate.value.url
+      this.ad.conversionDomain = adTemplate.value.conversion_domain
+
+      this.newAdTemplateName = adTemplate.name
+    },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+    },
+    async saveAdTemplate() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let value = this.getAdObject()
+
+      let data = {
+        name: this.newAdTemplateName,
+        value: JSON.stringify(value),
+      }
+
+      let alreadyExists = false
+      let adTemplateId = ''
+      for (let i = 0; i < this.adTemplates.length; i++) {
+        if (this.adTemplates[i].name == this.newAdTemplateName) {
+          alreadyExists = true
+          adTemplateId = this.adTemplates[i].id
+        }
+      }
+
+      try {
+        if (!alreadyExists) {
+          const response = await this.$http.post('/api/3rd/fb-ad-templates', data, { headers })
+        } else {
+          const response = await this.$http.put('/api/3rd/fb-ad-templates/' + adTemplateId, data, { headers })
+        }
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad template saved',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        await this.fetchAdTemplates()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Unknown error while saving ad template',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async deleteAdTemplate() {
+      this.$vs.loading()
+
+      let id = this.adTemplate.id
+
+      if (id <= 0) return
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      await this.$http.delete('/api/3rd/fb-ad-templates/' + id, { headers })
+
+      this.$vs.loading.close()
+
+      await this.fetchAdTemplates()
+    },
+    adRulesPopup() {
+      this.adRule = {
+        'name': '',
+        'entity_type': 'AD',
+        'time_preset': 'TODAY',
+        'execution_type': 'PAUSE',
+        'schedule_type': 'DAILY',
+        'filters': [
+          {
+            'field': 'lifetime_impressions',
+            'operator': 'GREATER_THAN',
+            'value': '0',
+          }
+        ],
+      }
+    },
+    async saveAdRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        name: this.adRule['name'],
+        value: JSON.stringify(this.adRule),
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/fb-ad-rules', params, { headers })
+        this.adRules.push(response.data.data)
+        this.adRulesOptions.push(response.data.data)
+        this.adRuleTemplate = response.data.data.id
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad rule template saved',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Unknown error while saving ad rule template',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    changeAdRule() {
+      let index = -1
+      for (let i = 0; i < this.adRulesOptions.length; i++) {
+        if (this.adRulesOptions[i].id == this.adRuleTemplate) {
+          index = i
+          break
+        }
+      }
+      if (index > -1) {
+        this.adRule = this.adRulesOptions[index].value
+      }
+    },
+    async deleteAdRule() {
+      let id = this.adRuleTemplate
+      if (id <= 0) return
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.$vs.loading()
+      await this.$http.delete('/api/3rd/fb-ad-rules/' + id, { headers })
+
+      // Retrieve fb ad rules
+      const fbAdRulesResponse = await this.$http.get('/api/3rd/fb-ad-rules', { headers })
+      this.adRules = []
+      this.adRulesOptions = []
+      this.adRulesOptions.push({
+        id: 0,
+        name: 'New',
+        value: {
+          'name': '',
+          'entity_type': 'AD',
+          'time_preset': 'TODAY',
+          'execution_type': 'PAUSE',
+          'schedule_type': 'DAILY',
+          'filters': [
+            {
+              'field': 'lifetime_impressions',
+              'operator': 'GREATER_THAN',
+              'value': '0',
+            }
+          ],
+        },
+      })
+      fbAdRulesResponse.data.data.forEach((r) => {
+        this.adRulesOptions.push(r)
+        this.adRules.push(r)
+      })
+      this.adRuleTemplate = 0
+
+      this.$vs.loading.close()
+    },
+    showAdAccountPopup(adAccount) {
+      this.adAccount = adAccount
+      this.showForm('ad_account')
     },
   },
   async created() {
