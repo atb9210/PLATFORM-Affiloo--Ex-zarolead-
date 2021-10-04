@@ -11,11 +11,12 @@
 <template>
     <vx-card title="Facebook Ads" code-toggler>
 
-        <div v-if="!loggedIn" class="h-48 flex flex-wrap content-center items-center text-center">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="login"> Login with Facebook</vs-button>
+        <div class="h-48 flex flex-col justify-center items-center">
+            <vs-button v-if="!loggedIn" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="login">Login with Facebook</vs-button>
+            <vs-button v-else class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="logout">Logout from Facebook</vs-button>
         </div>
 
-        <div v-else>
+        <div v-if="loggedIn">
 
             <p class="flex items-center mb-4">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
@@ -25,6 +26,7 @@
                     <vs-button @click="changeView('adsets')" :color="(view == 'adsets') ? 'success' : 'primary'">Adsets</vs-button>
                     <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
                 </span>
+                <vs-button v-if="view == 'ads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="adLauncherPopup"></vs-button>
             </p>
 
             <div v-if="showFilters" class="mb-12">
@@ -71,7 +73,7 @@
 
             <vue-context ref="ad_account_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.ad_account_context_menu.close();changeView('campaigns', data.id);" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.ad_account_context_menu.close();adAccount = data;changeView('campaigns', data.id);" class="flex items-center text-sm">
                     <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show Campaigns</span>
                   </a>
@@ -618,6 +620,325 @@
                 </div>
             </vs-popup>
 
+            <!-- Ad launcher popup -->
+            <vs-popup title="Ad Launcher" :active.sync="showPopup['ad_launcher']">
+
+                <div v-if="ad.view == 'normal'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Choose ad template</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adTemplate" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in adTemplates" class="w-full" />
+                            </vs-select>
+                            <p class="flex items-center w-full">
+                              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="loadAdTemplate(adTemplate)"></vs-button>
+                              <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate)"></vs-button>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>New ad template name</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newAdTemplateName" />
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Page</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.pageId" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in fbAccountPages" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Campaign name</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="ad.campaignName" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Status</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignStatus" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in campaignStatusOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Objective</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignObjective" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in campaignObjectiveOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6" v-if="ad.campaignObjective == 'CONVERSIONS'">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Pixel ID</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="ad.pixelId" disabled />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6" v-if="ad.campaignObjective == 'CONVERSIONS'">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Conversion event</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.conversionEvent" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in conversionEventOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Budget</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignBudgetStrategy" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in campaignBudgetStrategyOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.campaignBudget" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Bid</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignBidStrategy" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in campaignBidStrategyOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input v-if="ad.campaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP'" type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.campaignBid" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Split Adset</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.splitAdset" class="w-full select-large">
+                                <vs-select-item value="true" text="Yes" class="w-full" />
+                                <vs-select-item value="false" text="No" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Gender</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingGender" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in targetingGenderOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Age</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="1" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.targetingAgeMin" />
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="1" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.targetingAgeMax" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Country</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingCountry" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in targetingCountryOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Device</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingDevice" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in targetingDeviceOptions" class="w-full" />
+                            </vs-select>
+                            <vs-checkbox v-model="ad.targetingWifi">Only when connected to Wi-Fi</vs-checkbox>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Platforms</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <div class="vx-row w-full">
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformFacebook">Facebook</vs-checkbox>
+                                </div>
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformInstagram">Instagram</vs-checkbox>
+                                </div>
+                            </div>
+                            <div class="vx-row w-full">
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformAudience">Audience</vs-checkbox>
+                                </div>
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformMessenger">Messenger</vs-checkbox>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- TODO: Creative info -->
+
+                    <hr>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Title</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="ad.title" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Text</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-textarea v-model="ad.text"></vs-textarea>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>URL</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="ad.url" />
+                            <span>Final URL: {{ad.url}}?pi={pixel_id}</span>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Conversion domain</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="ad.conversionDomain" />
+                            <span>Pixel name: {{(this.selectedAdAccounts.length > 0 && this.selectedAdAccounts[0].hasOwnProperty('pixel_name')) ? this.selectedAdAccounts[0].pixel_name : ''}}</span>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Image/Video</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="ad.view = 'upload'">Choose medias</vs-button>
+                            <div>
+                                <!--<span class="ml-auto mr-auto">{{ (ad.filesToUpload.length == 0) ? 'No file selected' : ((ad.filesToUpload.length == 1) ? ad.filesToUpload[0].name : ad.filesToUpload.length + ' files') }}</span>-->
+                                <span class="ml-auto mr-auto">{{ (selectedProductMedias.length == 0) ? 'No media selected' : selectedProductMedias.length + ' media(s) selected' }}</span>
+                            </div>
+                        </div>
+                        <!--
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker">Upload</vs-button>
+                            <div>
+                                <span class="ml-auto mr-auto">{{ (ad.filesToUpload.length == 0) ? 'No file selected' : ((ad.filesToUpload.length == 1) ? ad.filesToUpload[0].name : ad.filesToUpload.length + ' files') }}</span>
+                            </div>
+                            <input type="file" ref="adFileUpload" class="hidden" :accept="'image/*,video/*'" multiple @change="onFilesUploadChange">
+                        </div>
+                        -->
+                    </div>
+
+                    <div class="vx-row mb-6" v-if="selectedProductMediasHaveVideo()">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Video(s) preview</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="ad.view = 'upload_preview'">Choose preview</vs-button>
+                            <div>
+                                <span class="ml-auto mr-auto">{{ (selectedPreview.length == 0) ? 'No media selected' : selectedPreview.length + ' preview selected' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate" color="primary" type="filled">Save Ad Template</vs-button>
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="launchAd" color="primary" type="filled" :disabled="!isValidForm('ad_launcher')">Launch Ad(s)</vs-button>
+                    </div>
+                </div>
+
+                <div v-if="ad.view == 'upload'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedProductMedias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="ad.view = 'normal'"></vs-button>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="productMediasFilterProductId" class="w-full select-large" @change="changeProductMediaFilterProductId">
+                                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full flex items-center">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full" :class="productMediaIsSelected(index) ? 'selected-product-media' : ''" v-for="(item, index) in productMediasFiltered" @click="selectProductMedia(index)" @dblclick="openProductMedia(index)">
+                            <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+                            <center>{{item.type}} ({{item.pathname}})</center>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="ad.view == 'upload_preview'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedPreview.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="ad.view = 'normal'"></vs-button>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="productMediasFilterProductId" class="w-full select-large" @change="changeProductMediaFilterProductId" disabled="disabled">
+                                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full" :class="(selectedPreview.length == 1 && selectedPreview[0] == index) ? 'selected-product-media' : ''" v-for="(item, index) in productMediasFiltered" @click="selectPreview(index)" @dblclick="openProductMedia(index)" v-if="item.type == 'image'">
+                            <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+                            <center>{{item.type}} ({{item.pathname}})</center>
+                        </div>
+                    </div>
+                </div>
+
+            </vs-popup>
+
         </div>
 
     </vx-card>
@@ -629,6 +950,27 @@ import { VueContext } from 'vue-context'
 // TODO: Move this function into a utilities package?
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function convertImgToBase64(url) {
+  const data = await fetch(url)
+  const blob = await data.blob()
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(blob)
+    reader.onloadend = () => {
+      const base64data = reader.result
+      resolve(base64data)
+    }
+  })
+}
+
+async function convertImgToBase64Raw(url) {
+  let dataBase64 = await convertImgToBase64(url)
+  let toSearch = 'base64,'
+  let result = dataBase64
+  result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+  return result
 }
 
 export default {
@@ -696,8 +1038,10 @@ export default {
         'view_ad': false,
         'duplicate_adset': false,
         'duplicate_adset_bidder': false,
+        'ad_launcher': false,
       },
 
+      adAccount: {},
       campaign: {},
       adset: {},
       ad: {},
@@ -713,6 +1057,60 @@ export default {
         { value:'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
         { value:'COST_CAP',                 label: 'Cost cap' },
       ],
+
+      adTemplate: {
+        'name': 'new',
+        'value': {},
+      },
+      adTemplates: [],
+      newAdTemplateName: '',
+
+      fbAccountPages: [],
+
+      productMedias: [],
+      productMediasFiltered: [],
+      productMediasFilterProductId: '',
+
+      selectedProductMedias: [],
+      selectedPreview: [],
+      videoThumbnail: 'data:image/png;base64,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',
+
+      adCounter: 0,
+
+      campaignStatusOptions: [ 'ACTIVE', 'PAUSED' ],
+      campaignObjectiveOptions: [
+        { value: 'LINK_CLICKS', label: 'Link clicks' },
+        { value: 'CONVERSIONS', label: 'Conversions' },
+        { value: 'LEAD_GENERATION', label: 'Lead generation' },
+        { value: 'PAGE_LIKES', label: 'Page likes' },
+        { value: 'POST_ENGAGEMENT', label: 'Post engagement' },
+        { value: 'REACH', label: 'Reach' },
+      ],
+      conversionEventOptions: [
+        { value: 'SUBSCRIBE', label: 'Subscribe' },
+        { value: 'ADD_TO_CART', label: 'Add to cart' },
+        { value: 'PURCHASE', label: 'Purchase' },
+        { value: 'LEAD', label: 'Lead' },
+        { value: 'COMPLETE_REGISTRATION', label: 'Complete registration' },
+      ],
+      campaignBudgetStrategyOptions: [ 'CBO', 'Adset' ],
+      campaignBidStrategyOptions: [
+        { value: 'LOWEST_COST_WITHOUT_CAP', label: 'Lowest cost' },
+        { value: 'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
+        { value: 'COST_CAP', label: 'Cost cap' },
+      ],
+      targetingGenderOptions: [ 'All', 'Male', 'Female' ],
+      targetingCountryOptions: [
+        { value: 'IT', label: 'Italy'},
+        { value: 'US', label: 'United States'},
+      ],
+      targetingDeviceOptions: [
+        { label: 'All', value: '' },
+        { label: 'Mobile', value: 'mobile' },
+        { label: 'Desktop', value: 'desktop' },
+      ],
+
+      adCounter: 0,
     }
   },
   computed: {
@@ -926,10 +1324,16 @@ export default {
       return formattedDate + ' ' + formattedTime
     },
 
+    async checkToken(fbAccessToken) {
+      // TODO
+      // Maybe do a GET request to /me to check if token is valid
+      return false
+    },
     login() {
       this.FB.login((response) => {
         if (response.authResponse) {
           this.accessToken = response.authResponse.accessToken
+          localStorage.setItem('fb_access_token', this.accessToken)
           this.loggedIn = true
           this.changeView('ad_accounts')
 
@@ -937,11 +1341,16 @@ export default {
           console.log("Logged in")
         } else {
           this.loggedIn = false
+          localStorage.removeItem('fb_access_token')
 
           // DEBUG TODO: to delete
           console.log("Not logged in")
         }
       })
+    },
+    logout() {
+      localStorage.removeItem('fb_access_token')
+      this.loggedIn = false
     },
     async fetchAdAccounts(insights = true) {
       let adAccounts = []
@@ -1577,6 +1986,383 @@ export default {
 
       this.$vs.loading.close()
     },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+    },
+    async fetchProductMedias() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      const productMediasResponse = await this.$http.get('/api/v1/product-medias', { headers })
+      this.productMedias = productMediasResponse.data.data
+      this.productMediasFiltered = []
+      for (let i = 0; i < this.productMedias.length; i++) {
+        if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
+          this.productMediasFiltered.push(this.productMedias[i])
+        }
+      }
+    },
+    async adLauncherPopup(ad) {
+      this.ad = {
+        view: 'normal',
+        pageId: '',
+
+        campaignName: '',
+        campaignStatus: 'ACTIVE',
+        campaignObjective: 'LINK_CLICKS',
+        pixelId: 'AUTOMATIC',
+        
+        conversionEvent: 'PURCHASE',
+
+        campaignBudgetStrategy: 'Adset',
+        campaignBudget: 0,
+        campaignBidStrategy: 'LOWEST_COST_WITHOUT_CAP',
+        campaignBid: 1,
+        splitAdset: "false",
+
+        targetingGender: 'All',
+        targetingAgeMin: 25,
+        targetingAgeMax: 0,
+
+        targetingCountry: 'IT',
+        targetingDevice: '',
+        targetingWifi: true,
+        targetingPlatformFacebook: true,
+        targetingPlatformInstagram: true,
+        targetingPlatformAudience: true,
+        targetingPlatformMessenger: true,
+
+        title: '',
+        text: '',
+        url: '',
+        conversionDomain: '',
+
+        filesToUpload: [],
+
+      }
+
+      await this.fetchAdTemplates()
+
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve product medias
+      await this.fetchProductMedias()
+
+      // Retrieve facebook pages of this account
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,is_published',
+        is_promotable: true,
+      }
+      this.fbAccountPages = []
+      const fbPagesResponse = await this.$http.get(this.fbApiUrl + '/me/accounts', { params: params })
+      fbPagesResponse.data.data.forEach((page) => {
+        if (page.hasOwnProperty('is_published') && page.is_published) {
+          this.fbAccountPages.push({
+            id: page.id,
+            name: page.name,
+          })
+        }
+      })
+
+      this.$vs.loading.close()
+      this.showPopup['ad_launcher'] = true
+    },
+    async launchAd() {
+      this.$vs.loading()
+
+      this.adCounter = 0
+
+      let adAccount = this.adAccount
+
+      let currentAdUrl = this.ad.url
+      if (currentAdUrl.includes('?')) {
+        currentAdUrl = currentAdUrl + '&'
+      } else {
+        currentAdUrl = currentAdUrl + '?'
+      }
+      currentAdUrl = currentAdUrl + 'pi=' + adAccount.pixel
+
+      // Create campaign
+      let campaign = null
+      let campaignParams = {
+        access_token: this.accessToken,
+        name: this.ad.campaignName,
+        objective: this.ad.campaignObjective,
+        status: this.ad.campaignStatus,
+        special_ad_categories: [],
+      }
+      if (this.ad.campaignBudgetStrategy == 'CBO') {
+        campaignParams.bid_strategy = this.ad.campaignBidStrategy
+        campaignParams.daily_budget = parseInt(parseFloat(this.ad.campaignBudget)*100)
+      }
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,username',
+      }
+      const pagesResponse = await this.$http.get(this.fbApiUrl + '/' + this.ad.pageId + '/page_backed_instagram_accounts', { params: params })
+      if (pagesResponse.hasOwnProperty('data') && pagesResponse.data.data.length == 0) {
+        this.$vs.loading.close()
+        console.log('Page backed instagram account (PBIA) error')
+        return
+      }
+      let pbiaId = pagesResponse.data.data[0].id
+
+      const campaignResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/campaigns', campaignParams)
+      if (campaignResponse.hasOwnProperty('data') && campaignResponse.data.hasOwnProperty('id')) {
+        campaign = campaignResponse.data
+      } else {
+        this.$vs.loading.close()
+        console.log('Error: cannot create campaign')
+        return
+      }
+
+      // Create adset
+      let adsets = []
+      let adsetParams = {
+        access_token: this.accessToken,
+        name: 'Adset',
+        optimization_goal: this.ad.campaignObjective,
+        billing_event: 'IMPRESSIONS', // TODO: What about this?
+        campaign_id: campaign.id,
+        targeting: {},
+        status: this.ad.campaignStatus,
+      }
+      if (this.ad.campaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+        adsetParams.bid_amount = parseInt(parseFloat(this.ad.campaignBid)*100)
+      }
+      if (this.ad.campaignBudgetStrategy != 'CBO') {
+        adsetParams.bid_strategy = this.ad.campaignBidStrategy
+        adsetParams.daily_budget = parseInt(parseFloat(this.ad.campaignBudget)*100)
+      }
+      if (this.ad.targetingAgeMin > 0) {
+        adsetParams.targeting.age_min = this.ad.targetingAgeMin
+      }
+      if (this.ad.targetingAgeMax > 0) {
+        adsetParams.targeting.age_max = this.ad.targetingAgeMax
+      }
+      adsetParams.targeting.geo_locations = { countries: [] }
+      adsetParams.targeting.geo_locations.countries.push(this.ad.targetingCountry)
+      if (this.ad.targetingGender == 'Male') {
+        adsetParams.targeting.genders = [1]
+      } else if (this.ad.targetingGender == 'Female') {
+        adsetParams.targeting.genders = [2]
+      }
+
+      if (this.ad.targetingDevice != '') {
+        adsetParams.targeting.device_platforms = []
+        adsetParams.targeting.device_platforms.push(this.ad.targetingDevice)
+      }
+      if (this.ad.targetingWifi) {
+        adsetParams.targeting.wireless_carrier = []
+        adsetParams.targeting.wireless_carrier.push('Wifi')
+      }
+
+      if (this.ad.targetingPlatformFacebook ||
+        this.ad.targetingPlatformInstagram ||
+        this.ad.targetingPlatformAudience ||
+        this.ad.targetingPlatformMessenger) {
+        adsetParams.targeting.publisher_platforms = []
+        if (this.ad.targetingPlatformFacebook) {
+          adsetParams.targeting.publisher_platforms.push('facebook')
+        }
+        if (this.ad.targetingPlatformInstagram) {
+          adsetParams.targeting.publisher_platforms.push('instagram')
+        }
+        if (this.ad.targetingPlatformMessenger) {
+          adsetParams.targeting.publisher_platforms.push('messenger')
+        }
+        if (this.ad.targetingPlatformAudience) {
+          adsetParams.targeting.publisher_platforms.push('audience_network')
+        }
+      }
+
+      let trackingSpecs = ''
+      if (this.ad.campaignObjective == 'CONVERSIONS') {
+        adsetParams.promoted_object = {
+          custom_event_type: this.ad.conversionEvent,
+          pixel_id: adAccount.pixel,
+        }
+        adsetParams.optimization_goal = 'OFFSITE_CONVERSIONS'
+        trackingSpecs = [
+          { 'action.type': 'offsite_conversion', 'fb_pixel': adAccount.pixel },
+        ]
+        adsetParams.tracking_specs = trackingSpecs
+      }
+
+      let adsetIds = []
+
+      let adsetsToCreate = 1
+      if (this.ad.splitAdset == "true") {
+        adsetsToCreate = this.selectedProductMedias.length
+      }
+      for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
+        const adsetResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adsets', adsetParams)
+
+        if (adsetResponse.hasOwnProperty('data') && adsetResponse.data.hasOwnProperty('id')) {
+          adsets.push(adsetResponse.data)
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create adset')
+          return
+        }
+      }
+
+      let previewHash = ''
+      if (this.selectedPreview.length > 0) {
+        // Create ad preview (upload media on facebook)
+        let productMediaPreview = this.productMediasFiltered[this.selectedPreview[0]] // TODO: For now there's only one preview
+        let previewBytes = await convertImgToBase64Raw(productMediaPreview.url)
+        let adPreviewParams = {
+          access_token: this.accessToken,
+          name: 'testimg.png',
+          bytes: previewBytes,
+        }
+        const adPreviewResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adimages', adPreviewParams)
+        if (adPreviewResponse.hasOwnProperty('data') && adPreviewResponse.data.hasOwnProperty('images')) {
+          for (const [key, value] of Object.entries(adPreviewResponse.data.images)) {
+            previewHash = value.hash
+          }
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create ad preview image')
+          return
+        }
+      }
+
+      let adsetIndex = 0
+      for (let productMediaIndex = 0; productMediaIndex < this.selectedProductMedias.length; productMediaIndex++) {
+        let pmIndex = this.selectedProductMedias[productMediaIndex]
+        let productMedia = this.productMediasFiltered[pmIndex]
+
+        let adsetId = adset[adsetIndex].id
+        adsetIndex++
+
+        // Create ad images and ad videos
+        let conversionDomain = this.ad.conversionDomain
+        let pageId = this.ad.pageId // TODO: Better
+        let adParams = {
+          access_token: this.accessToken,
+          adset_id: adsetId,
+          name: 'ad',
+          status: this.ad.campaignStatus,
+          conversion_domain: conversionDomain,
+        }
+
+        if (productMedia.type == 'image') {
+          let bytes = await convertImgToBase64Raw(productMedia.url)
+          let adImageParams = {
+            access_token: this.accessToken,
+            name: 'testimg.png',
+            bytes: result,
+          }
+          const adImageResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adimages', adImageParams)
+          let imageHash = ''
+          if (adImageResponse.hasOwnProperty('data') && adImageResponse.data.hasOwnProperty('images')) {
+            for (const [key, value] of Object.entries(adImageResponse.data.images)) {
+              imageHash = value.hash
+            }
+          } else {
+            this.$vs.loading.close()
+            console.log('Error: cannot create ad image')
+            return
+          }
+          adParams.creative = {
+            name: 'ad creative',
+            object_story_spec: {
+              link_data: {
+                call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                link: currentAdUrl,
+                name: this.ad.title,
+                message: this.ad.text,
+                image_hash: imageHash,
+              },
+              page_id: pageId,
+              instagram_actor_id: pbiaId,
+            },
+            instagram_actor_id: pbiaId,
+          }
+          if (trackingSpecs != '') {
+            data.tracking_specs = trackingSpecs
+          }
+        } else if (productMedia.type == 'video') {
+          let videoData = {
+            access_token: this.accessToken,
+            file_url: productMedia.url,
+          }
+          const videoResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/advideos', videoData)
+          let videoId = null
+          if (videoResponse.hasOwnProperty('data') && videoResponse.data.hasOwnProperty('id')) {
+            let videoId = response.data.id
+          } else {
+            this.$vs.loading.close()
+            console.log('Error: cannot create ad video')
+            return
+          }
+          adParams.creative = {
+            name: 'ad creative',
+            object_story_spec: {
+              video_data: {
+                call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                link: currentAdUrl,
+                title: this.ad.title,
+                message: this.ad.text,
+                video_id: videoId,
+              },
+              page_id: pageId,
+              instagram_actor_id: pbiaId,
+            },
+            instagram_actor_id: pbiaId,
+          }
+          if (previewHash !== '') {
+            adParams.creative.object_story_spec.video_data.image_hash = previewHash
+          }
+        }
+        // Create ad
+        const adResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/ads', adParams)
+        if (adResponse.hasOwnProperty('data') && adResponse.data.hasOwnProperty('id')) {
+          // Ad created
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create ad')
+          return
+        }
+      }
+    },
+  },
+  async created() {
+    // Check if user is already logged in
+    let fbAccessToken = localStorage.getItem('fb_access_token')
+    if (fbAccessToken !== null) {
+      // Check if current access token is valid
+      let isValid = await this.checkToken(fbAccessToken)
+      if (isValid) {
+        this.accessToken = fbAccessToken
+        this.loggedIn = true
+      } else {
+        localStorage.removeItem('fb_access_token')
+        this.loggedIn = false
+      }
+    } else {
+      localStorage.removeItem('fb_access_token')
+      this.loggedIn = false
+    }
   },
   mounted() {
     let _this = this
