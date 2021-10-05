@@ -1511,10 +1511,6 @@ export default {
     async autoLogin() {
       // Check if user is already logged in
       let fbAccessToken = localStorage.getItem('fb_access_token')
-
-      // TODO: to delete
-      console.log('fbAccessToken', fbAccessToken)
-
       if (fbAccessToken !== null) {
         // Check if current access token is valid
         let isValid = await this.checkToken(fbAccessToken)
@@ -1981,34 +1977,29 @@ export default {
           params.bid_amount = bidAmount
         }
 
+        let adsets = []
         if (this.editingObject.object_type == 'campaign') {
-          let adsets = await this.fetchAdsets(this.editingObject.id, false)
+          adsets = await this.fetchAdsets(this.editingObject.id, false)
           if (this.editingObject.cbo) {
-            params = {
-              access_token: this.accessToken,
-              bid_strategy: bidStrategy,
+            if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+              params.adset_bid_amounts = {}
+              for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+                let adset = adsets[adsetIndex]
+                params.adset_bid_amounts[adset.id] = bidAmount
+              }
             }
             await this.$http.post(this.fbApiUrl + '/' + this.editingObject.id, params)
-
-            params = {
-              access_token: this.accessToken,
-              bid_amount: bidAmount,
-            }
-            for (let i = 0; i < adsets.length; i++) {
-              let adset = adsets[i]
-              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
-            }
           } else {
             for (let i = 0; i < adsets.length; i++) {
               let adset = adsets[i]
               await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
             }
           }
+        } else if (this.editingObject.object_type == 'adset') {
+          let adset = this.editingObject
+          await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
         } else {
-          for (let i = 0; i < adsets.length; i++) {
-            let adset = adsets[i]
-            await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
-          }
+          throw 'Invalid object type'
         }
 
         this.$vs.notify({
@@ -2019,6 +2010,7 @@ export default {
           color: 'success'
         })
       } catch(error) {
+        console.error(error)
         this.$vs.notify({
           title: 'Error',
           text: 'Bid amount cannot be modified',
@@ -2028,6 +2020,7 @@ export default {
         })
       }
 
+      this.showPopup['edit_bid'] = false
       this.$vs.loading.close()
     },
     duplicateAdsetPopup(obj) {
