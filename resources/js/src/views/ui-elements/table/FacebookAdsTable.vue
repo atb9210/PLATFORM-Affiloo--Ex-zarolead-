@@ -1492,9 +1492,44 @@ export default {
     },
 
     async checkToken(fbAccessToken) {
-      // TODO
-      // Maybe do a GET request to /me to check if token is valid
+      try {
+        let params = {
+          access_token: fbAccessToken,
+          fields: 'id,name',
+        }
+        const response = await this.$http.get(this.fbApiUrl + '/me', { params: params })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('id')) {
+          return true
+        } else {
+          return false
+        }
+      } catch (error) {
+        return false
+      }
       return false
+    },
+    async autoLogin() {
+      // Check if user is already logged in
+      let fbAccessToken = localStorage.getItem('fb_access_token')
+
+      // TODO: to delete
+      console.log('fbAccessToken', fbAccessToken)
+
+      if (fbAccessToken !== null) {
+        // Check if current access token is valid
+        let isValid = await this.checkToken(fbAccessToken)
+        if (isValid) {
+          this.accessToken = fbAccessToken
+          this.loggedIn = true
+          this.changeView('ad_accounts')
+        } else {
+          localStorage.removeItem('fb_access_token')
+          this.loggedIn = false
+        }
+      } else {
+        localStorage.removeItem('fb_access_token')
+        this.loggedIn = false
+      }
     },
     login() {
       this.FB.login((response) => {
@@ -2770,26 +2805,31 @@ export default {
       this.adAccount = adAccount
       this.showForm('ad_account')
     },
-  },
-  async created() {
-    // Check if user is already logged in
-    let fbAccessToken = localStorage.getItem('fb_access_token')
-    if (fbAccessToken !== null) {
-      // Check if current access token is valid
-      let isValid = await this.checkToken(fbAccessToken)
-      if (isValid) {
-        this.accessToken = fbAccessToken
-        this.loggedIn = true
-      } else {
-        localStorage.removeItem('fb_access_token')
-        this.loggedIn = false
+    selectedProductMediasHaveVideo() {
+      for (let i = 0; i < this.selectedProductMedias.length; i++) {
+        if (this.productMediasFiltered[this.selectedProductMedias[i]].type == 'video') {
+          return true
+        }
       }
-    } else {
-      localStorage.removeItem('fb_access_token')
-      this.loggedIn = false
-    }
+      return false
+    },
+    addAdRuleFilter() {
+      this.adRule['filters'].push({
+        'field': '',
+        'operator': '',
+        'value': '0',
+      })
+    },
+    removeAdRuleFilter(index) {
+      this.adRule['filters'].splice(index, 1)
+    },
+    createAdRule() {
+      // TODO
+    },
   },
-  mounted() {
+  async mounted() {
+    await this.autoLogin()
+
     let _this = this
     this.$nextTick(() => {
       window.fbAsyncInit = function () {
