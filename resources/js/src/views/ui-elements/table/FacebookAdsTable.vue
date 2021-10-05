@@ -231,6 +231,8 @@
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                     <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
@@ -277,6 +279,18 @@
                             € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                             <editable-value
                                 v-model="data[indextr].new_daily_budget"
@@ -302,6 +316,16 @@
                     <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
                     <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
+                        </vs-chip>
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
+                        </vs-chip>
+                    </vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
@@ -316,6 +340,8 @@
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                     <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
@@ -358,6 +384,18 @@
                           € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
                             <editable-value
                                 v-model="data[indextr].new_daily_budget"
@@ -381,6 +419,16 @@
                     <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
                     <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
+                        </vs-chip>
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
+                        </vs-chip>
+                    </vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
@@ -393,6 +441,8 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="impressions">Impressions</vs-th>
+                    <vs-th sort-key="profit">Profit</vs-th>
+                    <vs-th sort-key="roi">ROI</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                 </template>
 
@@ -424,6 +474,18 @@
                           € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].profit">
+                            <vs-chip transparent :color="(data[indextr].profit > 0) ? 'success' : ((data[indextr].profit < 0) ? 'danger' : 'dark')">
+                                € {{data[indextr].profit.toFixed(2)}}
+                            </vs-chip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].roi">
+                            <vs-chip transparent :color="(data[indextr].roi > 0) ? 'success' : ((data[indextr].roi < 0) ? 'danger' : 'dark')">
+                                {{data[indextr].roi.toFixed(2)}}%
+                            </vs-chip>
+                        </vs-td>
+
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
@@ -433,6 +495,16 @@
                     <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
                     <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
+                        </vs-chip>
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
+                        </vs-chip>
+                    </vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
@@ -1147,6 +1219,9 @@ export default {
         spent: 0.0,
         impressions: 0,
         cpm: 0.0,
+        value: 0.0,
+        profit: 0.0,
+        roi: 0.0,
       },
 
       showPopup: {
@@ -1384,19 +1459,28 @@ export default {
       let spent = 0.0
       let impressions = 0
       let cpm = 0.0
+      let value = 0.0
+      let profit = 0.0
+      let roi = 0.0
 
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
 
         spent += obj.spent
         impressions += obj.impressions
+        value += obj.value
       }
       cpm = (impressions > 0) ? (spent*1000/impressions) : (spent*1000)
+      profit = value - spent
+      roi = ((spent > 0) ? ((profit/spent)*100.0) : (profit > 0 ? 9999.99 : 0.0))
 
       this.totalStats = {
         spent: spent,
         impressions: impressions,
         cpm: cpm,
+        value: value,
+        profit: profit,
+        roi: roi,
       }
     },
     isValidForm(type) {
@@ -1646,6 +1730,7 @@ export default {
         let spent = 0.0
         let impressions = 0
         let cpm = 0.0
+        let value = 0.0
 
         if (obj.hasOwnProperty('insights')) {
           let stats = obj.insights.data[0]
@@ -1655,9 +1740,16 @@ export default {
           cpm = parseFloat(stats.cpm)
         }
 
+        // TODO: get value
+        value = 0.0
+
         obj.spent = spent
         obj.impressions = impressions
         obj.cpm = cpm
+        obj.value = value
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
 
         campaigns[i] = obj
       }
@@ -1735,6 +1827,7 @@ export default {
         let spent = 0.0
         let impressions = 0
         let cpm = 0.0
+        let value = 0.0
 
         if (obj.hasOwnProperty('insights')) {
           let stats = obj.insights.data[0]
@@ -1744,9 +1837,15 @@ export default {
           cpm = parseFloat(stats.cpm)
         }
 
+        // TODO: get value
+        value = 0.0
+
         obj.spent = spent
         obj.impressions = impressions
         obj.cpm = cpm
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
 
         adsets[i] = obj
       }
@@ -1799,6 +1898,7 @@ export default {
         let spent = 0.0
         let impressions = 0
         let cpm = 0.0
+        let value = 0.0
 
         if (obj.hasOwnProperty('insights')) {
           let stats = obj.insights.data[0]
@@ -1808,9 +1908,15 @@ export default {
           cpm = parseFloat(stats.cpm)
         }
 
+        // TODO: get value
+        value = 0.0
+
         obj.spent = spent
         obj.impressions = impressions
         obj.cpm = cpm
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
 
         ads[i] = obj
       }
