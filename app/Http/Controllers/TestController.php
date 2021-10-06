@@ -73,43 +73,28 @@ class TestController extends Controller
 
     public function test()
     {
-        $appSecret = '766d936bd8980c34b4947960e479a9be';
-        $appId = '1031757410984629';
-        $fb = new \Facebook\Facebook([
-            'app_id' => $appId,
-            'app_secret' => $appSecret,
-        ]);
-        $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['email'];
-        $loginUrl = $helper->getLoginUrl('http://zarolead.localhost/test2', $permissions);
-        echo '<a href=' . $loginUrl . '>' . $loginUrl . '</a>';
-        //$response = $fb->get('/me');
-        exit();
-
-        $accessToken = 'EAAOqYL354rUBANdBem5nAir5Ed8zK5IzoFiJ7mBwIcyoFe80aPl79wYVoB93JL0t4np8GQNsrS5YRhFHc6cV5ibXotoGxXZAClzq85Knv06aJHzaIt9XOOnH8o4bZAErmbxHRSWKHLoJtTNhKn2sP0V8aRSg3oZA6dYM1HctPcw8n35pVdsSEZAsLxikHX4ZD';
-        $adAccountId = 'act_2742408822725474';
-        $appSecret = '766d936bd8980c34b4947960e479a9be';
-        $appId = '1031757410984629';
-
-        $fb = \FacebookAds\Api::init($appId, $appSecret, $accessToken);
-        $fields = [
-            'reach',
-            'frequency',
-            'impressions',
-            'spend',
+        $accessToken = 'EAAOqYL354rUBAIpCXnPDauO3HlEaJd98fSqOJ5LGeHFjCAWdS2FcXJYWz0NRfJmnZBfhZCbOAaCJneT8I3mXEFZCZAxjZAhVXvqLVMbJJFMNl8tmRzzZCpVKAvdArwNPKQ3lp3QY6ZAMadQBcb1q2dFH4Waq90UShRaEhD2hNrh4ZA06n69GJ8dq3rpx4kB0D4hXMC4alQnK5z4zC7bgEPxASqRzxTLpiegZD';
+        $fb = new \Driverfury\Facebook\Facebook($accessToken);
+        $adAccountId = 'act_532604394293960';
+        $reports = [
+            'start_date' => '2020-05-01',
+            'end_date' => '2021-10-06',
+            'metrics' => [
+                'spend',
+                'impressions',
+                'cpm',
+                'actions',
+                'action_values',
+                'conversions',
+                'conversion_values',
+                'cost_per_conversion',
+            ],
         ];
-        $params = array(
-            'time_range' => array('since' => '2021-08-27','until' => '2021-09-26'),
-            //'filtering' => array(array('field' => 'delivery_info','operator' => 'IN','value' => array('active','scheduled','pending_review','recently_rejected','rejected','inactive','archived','permanently_deleted','not_delivering','not_published','rejected','completed','recently_completed'))),
-            'level' => 'campaign',
-            'breakdowns' => array(),
-        );
-        echo json_encode((new \FacebookAds\Object\AdAccount($adAccountId))->getInsights(
-            $fields,
-            $params
-        )->getResponse()->getContent(), JSON_PRETTY_PRINT);
-
-
+        $campaigns = $fb->getCampaigns($adAccountId, $reports);
+        //$adsets = $fb->getAdsets($campaigns[0]['id'], $reports);
+        $adsets = $fb->getAdsets($adAccountId, $reports);
+        //$fb->updateStatus($campaigns[0]['id'], 'PAUSED');
+        dd($adsets);
         exit();
     }
 

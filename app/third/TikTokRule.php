@@ -20,7 +20,7 @@ class TikTokRule extends Model
     public function apply()
     {
         // DEBUG
-        Log::info('Applying rule ' . $this->name . ' (' . $this->id . ')...');
+        Log::info('TikTok: Applying rule ' . $this->name . ' (' . $this->id . ')...');
 
         $advertiser_id = $this->value['advertiser_id'];
         $campaign_ids = $this->value['campaign_ids'];

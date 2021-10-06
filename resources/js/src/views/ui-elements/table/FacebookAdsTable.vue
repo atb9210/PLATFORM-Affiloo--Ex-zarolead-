@@ -25,8 +25,12 @@
                     <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
                     <vs-button @click="changeView('adsets')" :color="(view == 'adsets') ? 'success' : 'primary'">Adsets</vs-button>
                     <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
+                    <vs-button @click="changeView('rules')" :color="(view == 'rules') ? 'success' : 'primary'">Rules</vs-button>
                 </span>
                 <vs-button v-if="view == 'ads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="adLauncherPopup"></vs-button>
+                <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
+                <vs-button v-if="view == 'rules'" :disabled="selectedRules.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-menu" @click="showBulkEditRuleForm"></vs-button>
+                <vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
             </p>
 
             <div v-if="showFilters" class="mb-12">
@@ -73,7 +77,7 @@
 
             <vue-context ref="ad_account_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.ad_account_context_menu.close();adAccount = data;changeView('campaigns', data.id);" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.ad_account_context_menu.close();adAccount = data;changeView('campaigns', data);" class="flex items-center text-sm">
                     <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show Campaigns</span>
                   </a>
@@ -94,7 +98,7 @@
 
             <vue-context ref="campaign_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.campaign_context_menu.close();changeView('adsets', data.id);" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.campaign_context_menu.close();changeView('adsets', data);" class="flex items-center text-sm">
                     <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show Adsets</span>
                   </a>
@@ -115,7 +119,7 @@
 
             <vue-context ref="adset_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data);" class="flex items-center text-sm">
                     <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show Ads</span>
                   </a>
@@ -161,6 +165,51 @@
                 </li>
             </vue-context>
 
+            <vue-context ref="rule_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();showCampaignList(data);" class="flex items-center text-sm">
+                    <feather-icon icon="MenuIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Campaigns list</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();runRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="SettingsIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Run now</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Enable/Disable</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();cloneRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Clone</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
+                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Delete</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
+
             <vs-dropdown vs-trigger-click class="cursor-pointer">
                 <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
                     <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
@@ -187,7 +236,6 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th>Has ad rules</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -204,10 +252,6 @@
                                     {{item.name}}
                                 </vs-chip>
                             </div>
-                        </vs-td>
-
-                        <vs-td class="column-no-padding">
-                            <vs-avatar size="24px" icon-pack="feather" :icon="item.has_ad_rules ? 'icon-check' : 'icon-x'" :color="item.has_ad_rules ? 'success' : 'danger'" />
                         </vs-td>
 
                     </vs-tr>
@@ -416,6 +460,7 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
                     <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
                     <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
@@ -441,9 +486,9 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="impressions">Impressions</vs-th>
+                    <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
-                    <vs-th sort-key="cpm">CPM</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -506,6 +551,59 @@
                         </vs-chip>
                     </vs-td>
                     <!-- END TOTAL STATS-->
+                </template>
+            </vs-table>
+
+            <!-- Rules table -->
+            <vs-table v-if="view == 'rules'" stripe multiple v-model="selectedRules" :max-items="maxItems" pagination search :data="rules" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="name" ref="sort_by_name">Name</vs-th>
+                    <vs-th>Campaigns</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="frequency">Frequency</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            {{data[indextr].id}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].name">
+                            <div @contextmenu.prevent="$refs.rule_context_menu.open($event, data[indextr])">
+                                <vs-chip
+                                    transparent
+                                    class="disabled-object">
+                                    <vs-avatar icon-pack="feather" icon="icon-user" />
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].value.campaign_ids.length">
+                            {{(data[indextr].value.all_campaigns == true) ? 'All' : data[indextr].value.campaign_ids.length}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].status">
+                            <vs-switch
+                                :color="(data[indextr].status == 'active') ? 'success' : 'danger'"
+                                v-model="data[indextr].status == 'active'"
+                                vs-icon-off="pause" vs-icon-on="done"
+                                @input="switchStatusRule(data[indextr])">
+                                <span slot="on" v-if="data[indextr].status == 'active'">Active</span>
+                                <span slot="off">Disabled</span>
+                            </vs-switch>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].frequency">
+                            {{data[indextr].frequency}}
+                        </vs-td>
+
+                    </vs-tr>
+
                 </template>
             </vs-table>
 
@@ -1023,107 +1121,300 @@
 
             </vs-popup>
 
-            <!-- Ad rules popup -->
-            <vs-popup title="Ad rules" :active.sync="showPopup['ad_rules']">
-                <div class="w-full pr-2 pl-2">
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>Ad rule template</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-select autocomplete v-model="adRuleTemplate" class="w-full select-large" @change="changeAdRule">
-                                <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adRulesOptions" class="w-full" />
-                            </vs-select>
-                            <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdRule"></vs-button>
-                        </div>
+            <!-- Create rule popup -->
+            <vs-popup title="Create rule" :active.sync="showPopup['create_rule']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Name</span>
                     </div>
-
-                    <hr>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>Name</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="adRule['name']" />
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>What</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-select autocomplete v-model="adRule['entity_type']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleEntityTypeOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>Action</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-select autocomplete v-model="adRule['execution_type']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleExecutionTypeOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>Time preset</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-select autocomplete v-model="adRule['time_preset']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleTimePresetOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <span>When</span>
-                        </div>
-                        <div class="vx-col sm:w-2/3 w-full">
-                            <vs-select autocomplete v-model="adRule['schedule_type']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleScheduleTypeOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6" v-for="(filterItem, filterIndex) in adRule['filters']">
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <vs-select autocomplete v-model="adRule['filters'][filterIndex]['field']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleFieldOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <vs-select autocomplete v-model="adRule['filters'][filterIndex]['operator']" class="w-full select-large">
-                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in adRuleOperatorOptions" class="w-full" />
-                            </vs-select>
-                        </div>
-                        <div class="vx-col sm:w-1/6 w-full">
-                            <vs-input type="number" min="0" step="0.01" class="w-full" v-model="adRule['filters'][filterIndex]['value']" />
-                        </div>
-                        <div class="vx-col sm:w-1/6 w-full">
-                            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAdRuleFilter(filterIndex)"></vs-button>
-                        </div>
-                    </div>
-
-                    <div class="vx-row mb-6 mt-6">
-                        <div class="vx-col sm:w-2/3 w-full">
-                        </div>
-                        <div class="vx-col sm:w-1/3 w-full">
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAdRuleFilter"></vs-button>
-                        </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
                     </div>
                 </div>
 
                 <div class="vx-row mb-6">
-                    <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Save Template</vs-button>
-                    <vs-button class="mt-12 mr-auto ml-auto" @click="createAdRule" color="primary" type="filled" :disabled="!isValidForm('ad_rule')">Create Ad Rule</vs-button>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Frequency</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                            <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full flex">
+                        <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                        <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Time</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                            <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Rules</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                            <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                            <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Actions</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                            <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="createRule" color="primary" type="filled" :disabled="!isValidForm('create_rule')">Create rule</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Edit rule popup -->
+            <vs-popup title="Edit rule" :active.sync="showPopup['edit_rule']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Frequency</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                            <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full flex">
+                        <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                        <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Time</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                            <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Rules</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                            <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                            <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Actions</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                            <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateRule" color="primary" type="filled" :disabled="!isValidForm('edit_rule')">Update rule</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Bulk edit rule popup -->
+            <vs-popup title="Bulk edit rule" :active.sync="showPopup['bulk_edit_rule']">
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="bulkUpdateRules" color="primary" type="filled" :disabled="!isValidForm('bulk_edit_rule')">Bulk update</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Campaign ids list view popup -->
+            <vs-popup title="Campaign ids list" :active.sync="showPopup['campaign_ids']">
+                <div class="vx-row mb-6 flex items-center">
+                    <h2>Campaign ids list</h2>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-col v-for="(item, index) in campaignsList" :key="index">
+                        <vs-checkbox v-model="campaignsListUpdated" :vs-value="item.id">{{ item.name }}</vs-checkbox>
+                    </vs-col>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateCampaignsList" color="primary" type="filled">Update campaigns list</vs-button>
                 </div>
             </vs-popup>
 
@@ -1138,6 +1429,20 @@ import { VueContext } from 'vue-context'
 // TODO: Move this function into a utilities package?
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function forceJson(o) {
+  if (typeof o == 'string') {
+    return JSON.parse(o)
+  }
+  return(o)
+}
+
+function intersect(a, b) {
+  let setA = new Set(a)
+  let setB = new Set(b)
+  let intersection = new Set([...setA].filter(x => setB.has(x)))
+  return Array.from(intersection)
 }
 
 async function convertImgToBase64(url) {
@@ -1205,7 +1510,14 @@ export default {
       ads: [],
       selectedAds: [],
 
-      parentId: null,
+      rules: [],
+      selectedRules: [],
+
+      parent: null,
+      currentAdAccount: null,
+      currentCampaign: null,
+      currentAdset: null,
+      currentAd: null,
 
       statusOptions: ['ACTIVE', 'PAUSED', 'REVIEW'],
       statusColors: {
@@ -1230,7 +1542,10 @@ export default {
         'duplicate_adset': false,
         'duplicate_adset_bidder': false,
         'ad_launcher': false,
-        'ad_rules': false,
+        'create_rule': false,
+        'edit_rule': false,
+        'bulk_edit_rule': false,
+        'campaign_ids': false,
       },
 
       adAccount: {},
@@ -1300,57 +1615,61 @@ export default {
         { label: 'Desktop', value: 'desktop' },
       ],
 
-      adRuleTemplate: 0,
-      adRuleEntityTypeOptions: [
-        'CAMPAIGN',
-        'ADSET',
-        'AD',
-      ],
-      adRuleExecutionTypeOptions: [
-        'PAUSE',
-        'UNPAUSE',
-      ],
-      adRuleScheduleTypeOptions: [
-        'DAILY',
-        'SEMI_HOURLY',
-      ],
-      adRuleTimePresetOptions: [
-        'TODAY',
-        'YESTERDAY',
-        'LIFETIME',
-      ],
-      adRuleFieldOptions: [
-        'lifetime_impressions',
-        'spent',
-        'result',
-        'cost_per_link_click',
-        'frequency',
-        'website_purchase_roas',
-        'cpm',
-        'link_ctr',
-        'cost_per',
-      ],
-      adRuleOperatorOptions: [
-        'GREATER_THAN',
-        'LESS_THAN',
+      rule: {
+        name: '',
+        ad_account_id: '',
+        campaign_ids: [],
+        all_campaigns: false,
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+        time: 'lifetime',
+      },
+      campaignsOptions: [],
+      currAdAccId: null,
+
+      ruleFrequencyOptions: [
+        { value: 'every_five_minutes',    label: 'Every 5 minutes' },
+        { value: 'every_ten_minutes',     label: 'Every 10 minutes' },
+        { value: 'every_fifteen_minutes', label: 'Every 15 minutes' },
+        { value: 'every_thirty_minutes',  label: 'Every 30 minutes' },
+        { value: 'hourly',                label: 'Every hour' },
+        { value: 'every_three_hours',     label: 'Every 3 hours' },
+        { value: 'daily',                 label: 'Daily' },
       ],
 
-      adRule: {
-        'name': '',
-        'entity_type': 'AD',
-        'time_preset': 'TODAY',
-        'execution_type': 'PAUSE',
-        'schedule_type': 'DAILY',
-        'filters': [
-          {
-            'field': 'lifetime_impressions',
-            'operator': 'GREATER_THAN',
-            'value': '0',
-          }
-        ],
-      },
-      adRules: [],
-      adRulesOptions: [],
+      ruleTimeOptions: [
+        { value: 'current_day',  label: 'Current day' },
+        { value: 'last_1_days',  label: 'Last day' },
+        { value: 'last_2_days',  label: 'Last 2 days' },
+        { value: 'last_3_days',  label: 'Last 3 days' },
+        { value: 'last_7_days',  label: 'Last 7 days' },
+        { value: 'last_14_days', label: 'Last 14 days' },
+        { value: 'last_30_days', label: 'Last 30 days' },
+        { value: 'lifetime',     label: 'Lifetime' },
+      ],
+
+      ruleMetricOptions: [
+        { value: 'impressions',         label: 'Impressions' },
+        { value: 'spend',               label: 'Spent' },
+        { value: 'cmp',                 label: 'CPM' },
+      ],
+
+      ruleComparisonOptions: [
+        '<', '<=', '==', '>=', '>',
+      ],
+
+      ruleActionOptions: [
+        { value: 'inc_bid',      label: 'Increase bid' },
+        { value: 'dec_bid',      label: 'Decrease bid' },
+        { value: 'inc_budget',   label: 'Increase budget' },
+        { value: 'dec_budget',   label: 'Decrease budget' },
+        { value: 'enable',       label: 'Enable' },
+        { value: 'disable',      label: 'Disable' },
+      ],
+
+      campaignsList: [],
+      campaignsListUpdated: [],
     }
   },
   computed: {
@@ -1405,8 +1724,8 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
-    async changeView(view, parentId = null) {
-      this.parentId = parentId
+    async changeView(view, parent = null) {
+      this.parent = parent
       if (view == 'ad_accounts') {
         this.view = view
         this.$vs.loading()
@@ -1415,31 +1734,36 @@ export default {
         this.$vs.loading.close()
       } else if (view == 'campaigns') {
         this.view = view
-        if (parentId !== null) {
+        if (parent !== null) {
           this.$vs.loading()
           this.selectedCampaigns = []
-          this.campaigns = await this.fetchCampaigns(parentId)
+          this.campaigns = await this.fetchCampaigns(parent.id)
           this.$vs.loading.close()
         }
         this.calculateStats()
       } else if (view == 'adsets') {
         this.view = view
-        if (parentId !== null) {
+        if (parent !== null) {
           this.$vs.loading()
           this.selectedAdsets = []
-          this.adsets = await this.fetchAdsets(parentId)
+          this.adsets = await this.fetchAdsets(parent.id)
           this.$vs.loading.close()
         }
         this.calculateStats()
       } else if (view == 'ads') {
         this.view = view
-        if (parentId !== null) {
+        if (parent !== null) {
           this.$vs.loading()
           this.selectedAds = []
-          this.ads = await this.fetchAds(parentId)
+          this.ads = await this.fetchAds(parent.id)
           this.$vs.loading.close()
         }
         this.calculateStats()
+      } else if (view == 'rules') {
+        this.view = view
+        this.$vs.loading()
+        this.rules = await this.fetchRules()
+        this.$vs.loading.close()
       }
     },
     getObjectIndexById(id) {
@@ -1502,13 +1826,23 @@ export default {
           }
           return true
         }
-      } else if (type == 'ad_rule') {
-        return true
+      } else if (type == 'create_rule' || type == 'edit_rule') {
+        if (this.rule.name != '' && this.rule.frequency != '' &&
+            this.rule.ad_account_id != '' &&
+            this.rule.campaign_ids.length >= 0 &&
+            this.rule.rules.length > 0 && this.rule.time != '') {
+          return true
+        }
+      } else if (type == 'bulk_edit_rule') {
+        if (this.rule.ad_account_id != '' &&
+            this.rule.campaign_ids.length >= 0) {
+          return true
+        }
       }
       return false
     },
     applyFilters() {
-      this.changeView(this.view, this.parentId)
+      this.changeView(this.view, this.parent)
     },
     resetFilters() {
       this.filters = {
@@ -1662,7 +1996,6 @@ export default {
         } catch (error) {
           hasAdRules = false
         }
-        obj.has_ad_rules = hasAdRules
 
         adAccounts[i] = obj
       }
@@ -1843,6 +2176,7 @@ export default {
         obj.spent = spent
         obj.impressions = impressions
         obj.cpm = cpm
+        obj.value = value
 
         obj.profit = obj.value - obj.spent
         obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
@@ -1914,6 +2248,7 @@ export default {
         obj.spent = spent
         obj.impressions = impressions
         obj.cpm = cpm
+        obj.value = value
 
         obj.profit = obj.value - obj.spent
         obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
@@ -2798,108 +3133,6 @@ export default {
 
       await this.fetchAdTemplates()
     },
-    adRulesPopup() {
-      this.adRule = {
-        'name': '',
-        'entity_type': 'AD',
-        'time_preset': 'TODAY',
-        'execution_type': 'PAUSE',
-        'schedule_type': 'DAILY',
-        'filters': [
-          {
-            'field': 'lifetime_impressions',
-            'operator': 'GREATER_THAN',
-            'value': '0',
-          }
-        ],
-      }
-    },
-    async saveAdRule() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-        name: this.adRule['name'],
-        value: JSON.stringify(this.adRule),
-      }
-      try {
-        const response = await this.$http.post('/api/3rd/fb-ad-rules', params, { headers })
-        this.adRules.push(response.data.data)
-        this.adRulesOptions.push(response.data.data)
-        this.adRuleTemplate = response.data.data.id
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Ad rule template saved',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'success'
-        })
-      } catch (error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Unknown error while saving ad rule template',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
-
-      this.$vs.loading.close()
-    },
-    changeAdRule() {
-      let index = -1
-      for (let i = 0; i < this.adRulesOptions.length; i++) {
-        if (this.adRulesOptions[i].id == this.adRuleTemplate) {
-          index = i
-          break
-        }
-      }
-      if (index > -1) {
-        this.adRule = this.adRulesOptions[index].value
-      }
-    },
-    async deleteAdRule() {
-      let id = this.adRuleTemplate
-      if (id <= 0) return
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      this.$vs.loading()
-      await this.$http.delete('/api/3rd/fb-ad-rules/' + id, { headers })
-
-      // Retrieve fb ad rules
-      const fbAdRulesResponse = await this.$http.get('/api/3rd/fb-ad-rules', { headers })
-      this.adRules = []
-      this.adRulesOptions = []
-      this.adRulesOptions.push({
-        id: 0,
-        name: 'New',
-        value: {
-          'name': '',
-          'entity_type': 'AD',
-          'time_preset': 'TODAY',
-          'execution_type': 'PAUSE',
-          'schedule_type': 'DAILY',
-          'filters': [
-            {
-              'field': 'lifetime_impressions',
-              'operator': 'GREATER_THAN',
-              'value': '0',
-            }
-          ],
-        },
-      })
-      fbAdRulesResponse.data.data.forEach((r) => {
-        this.adRulesOptions.push(r)
-        this.adRules.push(r)
-      })
-      this.adRuleTemplate = 0
-
-      this.$vs.loading.close()
-    },
     showAdAccountPopup(adAccount) {
       this.adAccount = adAccount
       this.showForm('ad_account')
@@ -2912,18 +3145,459 @@ export default {
       }
       return false
     },
-    addAdRuleFilter() {
-      this.adRule['filters'].push({
-        'field': '',
-        'operator': '',
-        'value': '0',
+
+    // Rules methods
+    async fetchRules() {
+      let rules = []
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/3rd/facebook/rules', { headers: headers })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+          rules = response.data.data
+        }
+      } catch (error) {
+        // Nothing
+      }
+      return rules
+    },
+    showCampaignList(rule) {
+      // TODO:
+    },
+    async runRule(rule) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/facebook/rules/' + rule.id + '/run', {}, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot run the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule executed',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async createRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        name: this.rule.name,
+        access_token: this.accessToken,
+        ad_account_id: this.rule.ad_account_id,
+        all_campaigns: this.rule.all_campaigns,
+        campaign_ids: this.rule.campaign_ids,
+        rules: JSON.stringify(this.rule.rules),
+        actions: JSON.stringify(this.rule.actions),
+        frequency: this.rule.frequency,
+        time: this.rule.time,
+      }
+      try {
+        const response = await this.$http.post('/api/3rd/facebook/rules', data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.showPopup['create_rule'] = false
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule created successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async cloneRule(rule) {
+      let value = rule.value
+      if (typeof(value) == 'string') {
+        value = JSON.parse(value)
+      }
+
+      let name = rule.name + ' - Copy'
+      let adAccountId = value.ad_account_id
+      let campaignIds = value.campaign_ids
+      if (typeof(campaignIds) == 'string') {
+        campaignIds = JSON.parse(campaignIds)
+      }
+      let rules = value.rules
+      if (typeof(rules) == 'string') {
+        rules = JSON.parse(rules)
+      }
+      let actions = value.actions
+      if (typeof(actions) == 'string') {
+        actions = JSON.parse(actions)
+      }
+      let frequency = rule.frequency
+      let time = ''
+      if (value.hasOwnProperty('time')) {
+        time = value.time
+      }
+
+      this.rule = {
+        name: name,
+        ad_account_id: adAccountId,
+        all_campaigns: this.rule.all_campaigns,
+        campaign_ids: campaignIds,
+        rules: rules,
+        actions: actions,
+        frequency: this.rule.frequency,
+      }
+      if (time !== '') {
+        this.rule.time = time
+      }
+
+      await this.createRule()
+    },
+    async updateRule() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        name: this.rule.name,
+        access_token: this.accessToken,
+        ad_account_id: this.rule.ad_account_id,
+        all_campaigns: this.rule.all_campaigns,
+        campaign_ids: this.rule.campaign_ids,
+        rules: JSON.stringify(this.rule.rules),
+        actions: JSON.stringify(this.rule.actions),
+        frequency: this.rule.frequency,
+        time: this.rule.time,
+      }
+      try {
+        const response = await this.$http.put('/api/3rd/facebook/rules/' + this.rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.showPopup['edit_rule'] = false
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule update successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading.close()
+    },
+    async switchStatusRule(rule) {
+      this.$vs.loading.close()
+
+      this.selectedRules = []
+
+      let newStatus = 'disabled'
+      if (rule.status == 'disabled') {
+        newStatus = 'active'
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        status: newStatus
+      }
+      try {
+        const response = await this.$http.put('/api/3rd/facebook/rules/' + rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule updated successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading()
+    },
+    async deleteRule(rule) {
+      this.$vs.loading.close()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.delete('/api/3rd/facebook/rules/' + rule.id, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule deleted successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.applyFilters()
+
+      this.$vs.loading()
+    },
+    addRule() {
+      this.rule.rules.push({
+        metric: 'impressions',
+        comparison: '<',
+        value: 10,
       })
     },
-    removeAdRuleFilter(index) {
-      this.adRule['filters'].splice(index, 1)
+    removeRule(index) {
+      this.rule.rules.splice(index, 1)
     },
-    createAdRule() {
-      // TODO
+    addAction() {
+      this.rule.actions.push({
+        type: 'inc_bid',
+        value: 1,
+        max_value: 10,
+      })
+    },
+    removeAction(index) {
+      this.rule.actions.splice(index, 1)
+    },
+    async refreshCampaignsOptions() {
+      this.$vs.loading()
+      this.campaignsOptions = await this.fetchCampaigns(this.rule.ad_account_id, false)
+      this.$vs.loading.close()
+    },
+    showCreateRuleForm() {
+      this.rule = {
+        name: '',
+        ad_account_id: '',
+        all_campaigns: false,
+        campaign_ids: [],
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+        time: 'lifetime',
+      }
+      this.addRule()
+      this.addAction()
+      this.showPopup['create_rule'] = true
+    },
+    showEditRuleForm(rule) {
+      let ruleTime = 'lifetime'
+      if (rule.value.hasOwnProperty('time')) {
+        ruleTime = rule.value.time
+      }
+
+      this.rule = {
+        id: rule.id,
+        name: rule.name,
+        ad_account_id: rule.value.ad_account_id,
+        all_campaigns: (rule.value.hasOwnProperty('all_campaigns') ? rule.value.all_campaigns : false),
+        campaign_ids: forceJson(rule.value.campaign_ids),
+        rules: forceJson(rule.value.rules),
+        actions: forceJson(rule.value.actions),
+        frequency: rule.frequency,
+        time: ruleTime,
+      }
+      this.currAdAccId = rule.value.ad_account_id
+
+      this.showPopup['edit_rule'] = true
+      this.refreshCampaignsOptions()
+    },
+    showBulkEditRuleForm() {
+      if (this.selectedRules.length <= 0) {
+        return
+      }
+
+      let adAccId = this.selectedRules[0].value.ad_account_id
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        if (this.selectedRules[0].value.ad_account_id != adAccId) {
+          return
+        }
+      }
+
+      let bulkCampaignIds = this.selectedRules[0].value.campaign_ids
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        bulkCampaignIds = intersect(this.selectedRules[i].value.campaign_ids, bulkCampaignIds)
+      }
+
+      this.rule = {
+        name: '',
+        ad_account_id: adAccId,
+        campaign_ids: bulkCampaignIds,
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+        time: 'lifetime',
+      }
+      this.currAdAccId = adAccId
+
+      this.showPopup['bulk_edit_rule'] = true
+      this.refreshCampaignsOptions()
+    },
+    async bulkUpdateRules() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        ad_account_id: this.rule.ad_account_id,
+        campaign_ids: this.rule.campaign_ids,
+      }
+      for (let i = 0; i < this.selectedRules.length; i++) {
+        let rule = this.selectedRules[i]
+        try {
+          const response = await this.$http.put('/api/3rd/facebook/rules/' + rule.id, data, { headers })
+        } catch(error) {
+          this.$vs.notify({
+            title: 'Error',
+            text: 'Cannot update all the selected rules',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+          this.$vs.loading.close()
+          return
+        }
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rules updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['bulk_edit_rule'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async showCampaignList(rule) {
+      this.currAdAccId = null
+      this.rule.id = rule.id
+      this.rule.ad_account_id = rule.value.ad_account_id
+      await this.refreshCampaignsOptions()
+
+      this.campaignsList = []
+      this.campaignsListUpdated = []
+      let campaignIds = rule.value.campaign_ids
+      for (let i = 0; i < this.campaignsOptions.length; i++) {
+        if (campaignIds.includes(this.campaignsOptions[i].id)) {
+          this.campaignsList.push(this.campaignsOptions[i])
+          this.campaignsListUpdated.push(this.campaignsOptions[i].id)
+        }
+      }
+
+      this.showPopup['campaign_ids'] = true
+    },
+    async updateCampaignsList() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+        ad_account_id: this.rule.ad_account_id,
+        campaign_ids: this.campaignsListUpdated,
+      }
+
+      try {
+        const response = await this.$http.put('/api/3rd/tiktok/rules/' + this.rule.id, data, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Rule updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['campaign_ids'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async copyIds() {
+      let stringToCopy = ''
+      let objs = this.selectedObjects
+      for (let i = 0; i < objs.length; i++) {
+        stringToCopy += objs[i].id + '\n'
+      }
+      await navigator.clipboard.writeText(stringToCopy)
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Ids copied to the clipboard',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   async mounted() {

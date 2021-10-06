@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Log;
 
 class Facebook
 {
-    protected string $apiToken = '';
+    protected string $accessToken = '';
     protected static string $apiUrl = 'https://graph.facebook.com/v12.0';
         
-    public function __construct(string $apiToken)
+    public function __construct(string $accessToken)
     {
-        $this->apiToken = $apiToken;
+        $this->accessToken = $accessToken;
     }
 
     protected function getRequest(
@@ -33,7 +33,7 @@ class Facebook
         ];
 
         if (!isset($params['access_token'])) {
-            $params['access_token'] = $this->apiToken;
+            $params['access_token'] = $this->accessToken;
         }
 
         foreach ($params as $key => $value) {
@@ -75,10 +75,10 @@ class Facebook
         ];
 
         if (!isset($urlParams['access_token'])) {
-            $urlParams['access_token'] = $this->apiToken;
+            $urlParams['access_token'] = $this->accessToken;
         }
         if (!isset($bodyParams['access_token'])) {
-            $bodyParams['access_token'] = $this->apiToken;
+            $bodyParams['access_token'] = $this->accessToken;
         }
 
         $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
@@ -124,8 +124,7 @@ class Facebook
         return $output;
     }
 
-    public function getCampaigns(
-        string $advertiserId,
+    public function getAdAccounts(
         array $reports = []): array
     {
         $params = [
@@ -146,12 +145,84 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
+                $insights = 'insights';
+                if (isset($params['time_range'])) {
+                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
+                } else if (isset($params['date_preset'])) {
+                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
+                }
+                $insights .= '{';
+                $insights .= implode(',', $reports['metrics']);
+                $insights .= '}';
+                $params['fields'][] = $insights;
             }
         }
 
-        $data = $this->getRequestAllPages('/act_' . $advertiserId . '/campaigns', $params);
-        return($data);
+        $objects = $this->getRequestAllPages('/me/adaccounts', $params);
+        for ($i = 0; $i < count($objects); $i++) {
+            if (isset($objects[$i]['insights']['data'][0])) {
+                $insights = $objects[$i]['insights']['data'][0];
+                unset($insights['date_start']);
+                unset($insights['date_stop']);
+                $objects[$i] = array_merge($objects[$i], $insights);
+            }
+        }
+
+        return($objects);
+    }
+
+    public function getCampaigns(
+        string $advertiserId,
+        array $reports = []): array
+    {
+        $params = [
+            'fields' => [
+                'id',
+                'name',
+                'status',
+                'effective_status',
+                'objective',
+                'daily_budget',
+                'bid_strategy',
+                'bid_amount',
+            ],
+            'date_preset' => 'maximum',
+        ];
+
+        if (count($reports) > 0) {
+            if (isset($reports['start_date'])) {
+                $params['time_range']['since'] = $reports['start_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['end_date'])) {
+                $params['time_range']['until'] = $reports['end_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['metrics'])) {
+                $insights = 'insights';
+                if (isset($params['time_range'])) {
+                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
+                } else if (isset($params['date_preset'])) {
+                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
+                }
+                $insights .= '{';
+                $insights .= implode(',', $reports['metrics']);
+                $insights .= '}';
+                $params['fields'][] = $insights;
+            }
+        }
+
+        $objects = $this->getRequestAllPages('/' . $advertiserId . '/campaigns', $params);
+        for ($i = 0; $i < count($objects); $i++) {
+            if (isset($objects[$i]['insights']['data'][0])) {
+                $insights = $objects[$i]['insights']['data'][0];
+                unset($insights['date_start']);
+                unset($insights['date_stop']);
+                $objects[$i] = array_merge($objects[$i], $insights);
+            }
+        }
+
+        return($objects);
     }
 
     public function getAdsets(
@@ -161,7 +232,13 @@ class Facebook
         $params = [
             'fields' => [
                 'id',
+                'campaign_id',
                 'name',
+                'status',
+                'effective_status',
+                'daily_budget',
+                'bid_strategy',
+                'bid_amount',
             ],
             'date_preset' => 'maximum',
         ];
@@ -176,12 +253,30 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
+                $insights = 'insights';
+                if (isset($params['time_range'])) {
+                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
+                } else if (isset($params['date_preset'])) {
+                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
+                }
+                $insights .= '{';
+                $insights .= implode(',', $reports['metrics']);
+                $insights .= '}';
+                $params['fields'][] = $insights;
             }
         }
 
-        $data = $this->getRequestAllPages('/' . $parentId . '/adsets', $params);
-        return($data);
+        $objects = $this->getRequestAllPages('/' . $parentId . '/adsets', $params);
+        for ($i = 0; $i < count($objects); $i++) {
+            if (isset($objects[$i]['insights']['data'][0])) {
+                $insights = $objects[$i]['insights']['data'][0];
+                unset($insights['date_start']);
+                unset($insights['date_stop']);
+                $objects[$i] = array_merge($objects[$i], $insights);
+            }
+        }
+
+        return($objects);
     }
 
     public function getAds(
@@ -206,12 +301,72 @@ class Facebook
                 unset($params['date_preset']);
             }
             if (isset($reports['metrics'])) {
-                $params['fields'] = array_merge($params['fields'], $reports['metrics']);
+                $insights = 'insights';
+                if (isset($params['time_range'])) {
+                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
+                } else if (isset($params['date_preset'])) {
+                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
+                }
+                $insights .= '{';
+                $insights .= implode(',', $reports['metrics']);
+                $insights .= '}';
+                $params['fields'][] = $insights;
             }
         }
 
-        $data = $this->getRequestAllPages('/' . $parentId . '/ads', $params);
-        return($data);
+        $objects = $this->getRequestAllPages('/' . $parentId . '/ads', $params);
+        for ($i = 0; $i < count($objects); $i++) {
+            if (isset($objects[$i]['insights']['data'][0])) {
+                $insights = $objects[$i]['insights']['data'][0];
+                unset($insights['date_start']);
+                unset($insights['date_stop']);
+                $objects[$i] = array_merge($objects[$i], $insights);
+            }
+        }
+
+        return($objects);
+    }
+
+    public function updateStatus(
+        string $objectId,
+        string $status): bool
+    {
+        $params = [
+          'status' => $status,
+        ];
+        $response = $this->postRequest('/' . $objectId, $params, $params);
+        if (isset($response['error'])) {
+            return false;
+        }
+        return true;
+    }
+
+    public function updateAdsetBudget(
+        string $adsetId,
+        float $budget): bool
+    {
+        $params = [
+          'daily_budget' => intval($budget*100),
+        ];
+        $response = $this->postRequest('/' . $adsetId, $params, $params);
+        if (isset($response['error'])) {
+            return false;
+        }
+        return true;
+    }
+
+    public function updateAdsetBidAmount(
+        string $adsetId,
+        float $bidAmount): bool
+    {
+        $params = [
+          'bid_amount' => intval($bidAmount*100),
+        ];
+        $response = $this->postRequest('/' . $adsetId, $params, $params);
+        if (isset($response['error'])) {
+            return false;
+        }
+        return true;
     }
 
     public function sendEvent(

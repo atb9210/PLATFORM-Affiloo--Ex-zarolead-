@@ -8,40 +8,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 use Driverfury\Facebook\Facebook;
-use App\Http\Resources\api\third\FacebookRuleResource;
 
 use App\third\FacebookAdvertiser;
 use App\Http\Resources\api\third\FacebookAdvertiserResource;
 
-use App\third\FacebookLogin;
+use App\third\FacebookRule;
+use App\Http\Resources\api\third\FacebookRuleResource;
 
 class FacebookController extends Controller
 {
-    // TODO: Put this inside .env
-    private $fbAppId = '1031757410984629';
-    private $fbAppSecret = '766d936bd8980c34b4947960e479a9be';
-    private $fbApiVersion = 'v12.0';
-
-    private function fbClient()
-    {
-        return new \Facebook\Facebook([
-            'app_id' => $this->fbAppId,
-            'app_secret' => $this->fbAppSecret,
-            'default_graph_version' => $this->fbApiVersion,
-        ]);
-    }
-
-    public function login(Request $request)
-    {
-        session_start();
-        $fb = $this->fbClient();
-        $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['email'];
-        $callbackUrl = env('APP_URL') . '/facebook/callback';
-        $loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
-        return redirect($loginUrl);
-    }
-
     public function callback(Request $request)
     {
         session_start();
@@ -68,279 +43,6 @@ class FacebookController extends Controller
         }
         */
         return redirect('/');
-    }
-
-    public function me(Request $request)
-    {
-        session_start();
-        echo 'HI';
-        dd($request->session()->get('facebook_access_token'));
-    }
-
-    /**
-     * Get advertisers list
-     *
-     * @response {
-     *  "data": [advertisers],
-     * }
-     */
-    public function advertisers(Request $request)
-    {
-        // TODO: Authorization
-
-        $advertisers = FacebookAdvertiser::all();
-        return FacebookAdvertiserResource::collection($advertisers);
-    }
-
-    /**
-     * Create advertiser
-     *
-     * @bodyParam id string required Advertiser's id
-     * @bodyParam name string required Advertiser's name
-     * @bodyParam access_token string required Advertiser's access token
-     *
-     * @response {
-     *  "message": "Advertiser has been successfully created",
-     *  "data": advertiser,
-     * }
-     */
-    public function storeAdvertiser(Request $request)
-    {
-        // TODO: Authorization
-
-        // Param validation
-        $params = $request->validate([
-            'id' => 'required|string|unique:third_facebook_advertisers,id',
-            'name' => 'required|string|min:1',
-            'access_token' => 'required|string|min:1',
-        ]);
-
-        $advertiser = FacebookAdvertiser::create($params);
-        return response([
-            'message' => 'Advertiser has been successfully created',
-            'data' => new FacebookAdvertiserResource($advertiser),
-        ]);
-    }
-
-    /**
-     * Update advertiser
-     *
-     * @urlParam id string required Advertiser's id
-     *
-     * @bodyParam id string Advertiser's new id
-     * @bodyParam name string Advertiser's new name
-     * @bodyParam access_token string Advertiser's new access token
-     *
-     * @response {
-     *  "data": advertiser,
-     * }
-     */
-    public function updateAdvertiser($id, Request $request)
-    {
-        // TODO: Authorization
-
-        $advertiser = FacebookAdvertiser::findOrFail($id);
-
-        // Param validation
-        $params = $request->validate([
-            'id' => 'string|unique:third_facebook_advertisers,id,' . $advertiser->id,
-            'name' => 'string|min:1',
-            'access_token' => 'string|min:1',
-        ]);
-
-        $advertiser->update($params);
-
-        return response([
-            'data' => new FacebookAdvertiserResource($advertiser),
-        ]);
-    }
-
-    /**
-     * Delete advertiser
-     *
-     * @urlParam id string required Advertiser's id
-     *
-     * @response {
-     *  "message": "Advertiser deleted",
-     * }
-     */
-    public function destroyAdvertiser($id, Request $request)
-    {
-        // TODO: Authorization
-
-        $advertiser = FacebookAdvertiser::findOrFail($id);
-        $advertiser->delete();
-        return response([
-            'message' => 'Advertiser deleted',
-        ]);
-    }
-
-    /**
-     * Get campaigns list
-     *
-     * @bodyParam advertiser_id string required Advertiser's id
-     * @bodyParam reports bool Reports (default: true)
-     * @bodyParam filter_date_from string From date (Y-m-d format)
-     * @bodyParam filter_date_to string To date (Y-m-d format)
-     *
-     * @response {
-     *  "data": [campaigns],
-     * }
-     */
-    public function campaigns(Request $request)
-    {
-        // TODO: Authorization
-
-        // Param validation
-        $params = $request->validate([
-            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
-            'reports' => 'nullable|boolean',
-            'filter_date_from' => 'date|date_format:Y-m-d',
-            'filter_date_to' => 'date|date_format:Y-m-d',
-        ]);
-
-        $reports = [
-            'metrics' => [
-                'bid',
-                'budget',
-                'result',
-                'spent',
-                'impressions',
-                'clicks',
-                'cpm',
-                'ctr',
-                'value',
-            ],
-        ];
-
-        if (isset($params['filter_date_from'])) {
-            $reports['start_date'] = $params['filter_date_from'];
-        }
-        if (isset($params['filter_date_to'])) {
-            $reports['end_date'] = $params['filter_date_to'];
-        }
-
-        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
-        $fb = new Facebook($advertiser->access_token);
-        $campaigns = $fb->getCampaigns($params['advertiser_id'], $reports);
-
-        return response([
-            'data' => $campaigns,
-        ]);
-    }
-
-    /**
-     * Get adsets list
-     *
-     * @bodyParam advertiser_id string required Advertiser's id
-     * @bodyParam filter_campaign integer required Campaign (parent) id
-     * @bodyParam filter_date_from string From date (Y-m-d format)
-     * @bodyParam filter_date_to string To date (Y-m-d format)
-     *
-     * @response {
-     *  "data": [adsets],
-     * }
-     */
-    public function adsets(Request $request)
-    {
-        // TODO: Authorization
-
-        // Param validation
-        $params = $request->validate([
-            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
-            'filter_campaign' => 'required|numeric|min:1',
-            'filter_date_from' => 'date|date_format:Y-m-d',
-            'filter_date_to' => 'date|date_format:Y-m-d',
-        ]);
-
-        $reports = [
-            'metrics' => [
-                'bid',
-                'budget',
-                'result',
-                'spent',
-                'impressions',
-                'clicks',
-                'cpm',
-                'ctr',
-            ],
-        ];
-
-        if (isset($params['filter_date_from'])) {
-            $reports['start_date'] = $params['filter_date_from'];
-        }
-        if (isset($params['filter_date_to'])) {
-            $reports['end_date'] = $params['filter_date_to'];
-        }
-        $parentId = '';
-        if (isset($params['filter_campaign'])) {
-            $parentId = strval($params['filter_campaign']);
-        }
-
-        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
-        $fb = new Facebook($advertiser->access_token);
-        $adsets = $fb->getAdsets($parentId, $reports);
-
-        return response([
-            'data' => $adsets,
-        ]);
-    }
-
-    /**
-     * Get ads list
-     *
-     * @bodyParam advertiser_id string required Advertiser's id
-     * @bodyParam filter_adset integer required Adset (parent) id
-     * @bodyParam filter_date_from string From date (Y-m-d format)
-     * @bodyParam filter_date_to string To date (Y-m-d format)
-     *
-     * @response {
-     *  "data": [ads],
-     * }
-     */
-    public function ads(Request $request)
-    {
-        // TODO: Authorization
-
-        // Param validation
-        $params = $request->validate([
-            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
-            'filter_adset' => 'required|numeric|min:1',
-            'filter_date_from' => 'date|date_format:Y-m-d',
-            'filter_date_to' => 'date|date_format:Y-m-d',
-        ]);
-
-        $reports = [
-            'metrics' => [
-                'bid',
-                'budget',
-                'result',
-                'spent',
-                'impressions',
-                'clicks',
-                'cpm',
-                'ctr',
-            ],
-        ];
-
-        if (isset($params['filter_date_from'])) {
-            $reports['start_date'] = $params['filter_date_from'];
-        }
-        if (isset($params['filter_date_to'])) {
-            $reports['end_date'] = $params['filter_date_to'];
-        }
-        $parentId = '';
-        if (isset($params['filter_adset'])) {
-            $parentId = strval($params['filter_adset']);
-        }
-
-        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
-        $fb = new Facebook($advertiser->access_token);
-        $ads = $fb->getAds($parentId, $reports);
-
-        return response([
-            'data' => $ads,
-        ]);
     }
 
     /**
@@ -419,6 +121,212 @@ class FacebookController extends Controller
 
         return response([
             'message' => 'Event has been sent',
+        ]);
+    }
+
+    /**
+     * Get rules
+     *
+     * @response {
+     *  "data": [rules]
+     * }
+     */
+    public function rules(Request $request)
+    {
+        // TODO: Authorization
+
+        $rules = FacebookRule::all();
+
+        return FacebookRuleResource::collection($rules);
+    }
+
+    /**
+     * Create rule
+     *
+     * @bodyParam name string required Rule's name
+     * @bodyParam access_token string required Access token
+     * @bodyParam ad_account_id string required Ad account's id
+     * @bodyParam all_campaigns bool Apply the rule to every campaign
+     * @bodyParam campaign_ids array required Campaigns ids
+     * @bodyParam rules string required Rules
+     * @bodyParam actions string required Actions
+     * @bodyParam status string Status
+     * @bodyParam frequency string required Frequency
+     * @bodyParam time string Time
+     *
+     * @response {
+     *  "message": "Rule created",
+     *  "data": rule
+     * }
+     */
+    public function createRule(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string|required',
+            'access_token' => 'string|required',
+            'ad_account_id' => 'string|required',
+            'all_campaigns' => 'boolean',
+            'campaign_ids' => 'array|required',
+            'rules' => 'json|required',
+            'actions' => 'json|required',
+            'status' => 'in:active,disabled',
+            'frequency' => 'required|in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_two_hours,every_three_hours,daily',
+            'time' => 'string',
+        ]);
+
+        $access_token = $params['access_token'];
+        $ad_account_id = $params['ad_account_id'];
+        $all_campaigns = false;
+        if (isset($params['all_campaigns'])) {
+            $all_campaigns = ($params['all_campaigns'] == true);
+        }
+        $campaign_ids = $params['campaign_ids'];
+        $rules = $params['rules'];
+        $actions = $params['actions'];
+        $time = 'lifetime';
+        if (isset($params['time'])) {
+            $time = $params['time'];
+        }
+
+        // TODO: Check campaign_ids, rules and actions
+
+        $rule = FacebookRule::create([
+            'name' => $params['name'],
+            'value' => [
+                'access_token' => $access_token,
+                'ad_account_id' => $ad_account_id,
+                'all_campaigns' => $all_campaigns,
+                'campaign_ids' => $campaign_ids,
+                'rules' => $rules,
+                'actions' => $actions,
+                'time' => $time,
+            ],
+        ]);
+
+        return response([
+            'message' => 'Rule created',
+            'data' => $rule,
+        ]);
+    }
+
+    /**
+     * Update rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @bodyParam name string Rule's name
+     * @bodyParam access_token string Access token
+     * @bodyParam ad_account_id string Ad account's id
+     * @bodyParam all_campaigns bool Apply the rule to every campaign
+     * @bodyParam campaign_ids string Campaigns ids
+     * @bodyParam rules string Rules
+     * @bodyParam actions string Actions
+     * @bodyParam status string Status
+     * @bodyParam frequency string Frequency
+     * @bodyParam time string Time
+     *
+     * @response {
+     *  "message": "Rule updated",
+     *  "data": rule
+     * }
+     */
+    public function updateRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = FacebookRule::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string',
+            'access_token' => 'string',
+            'ad_account_id' => 'string',
+            'all_campaigns' => 'boolean',
+            'campaign_ids' => 'array',
+            'rules' => 'json',
+            'actions' => 'json',
+            'status' => 'in:active,disabled',
+            'frequency' => 'in:every_five_minutes,every_ten_minutes,every_fifteen_minutes,every_thirty_minutes,hourly,every_two_hours,every_three_hours,daily',
+            'time' => 'string',
+        ]);
+
+        $value = $rule->value;
+        if (isset($params['access_token'])) {
+            $value['access_token'] = $params['access_token'];
+        }
+        if (isset($params['ad_account_id'])) {
+            $value['ad_account_id'] = $params['ad_account_id'];
+        }
+        if (isset($params['all_campaigns'])) {
+            $value['all_campaigns'] = $params['all_campaigns'];
+        }
+        if (isset($params['campaign_ids'])) {
+            $value['campaign_ids'] = $params['campaign_ids'];
+        }
+        if (isset($params['rules'])) {
+            $value['rules'] = $params['rules'];
+        }
+        if (isset($params['actions'])) {
+            $value['actions'] = $params['actions'];
+        }
+        if (isset($params['time'])) {
+            $value['time'] = $params['time'];
+        }
+        $params['value'] = $value;
+
+        // TODO: Check campaign_ids, rules and actions
+
+        $rule->update($params);
+
+        return response([
+            'message' => 'Rule created',
+            'data' => $rule,
+        ]);
+    }
+
+    /**
+     * Delete rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @response {
+     *  "message": "Rule updated",
+     *  "data": rule
+     * }
+     */
+    public function deleteRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = FacebookRule::findOrFail($id);
+        $rule->delete();
+
+        return response([
+            'message' => 'Rule deleted',
+        ]);
+    }
+
+    /**
+     * Run rule
+     *
+     * @urlParam id int required Rule's id
+     *
+     * @response {
+     *  "message": "Rule executed",
+     * }
+     */
+    public function runRule($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $rule = FacebookRule::findOrFail($id);
+        $rule->apply();
+
+        return response([
+            'message' => 'Rule executed',
         ]);
     }
 }
