@@ -61,6 +61,8 @@ Route::get('/marketplace/campaigns/{id}/product-json', 'api\third\MarketplaceCon
     ->name('marketplace.campaigns.product-json');
 
 /* Facebook routes */
+Route::get('/facebook/token/refresh', 'api\third\FacebookController@refreshToken')->middleware('auth:api')
+    ->name('facebook.token.refresh');
 Route::get('/facebook/rules', 'api\third\FacebookController@rules')->middleware('auth:api')
     ->name('facebook.rules');
 Route::post('/facebook/rules', 'api\third\FacebookController@createRule')->middleware('auth:api')

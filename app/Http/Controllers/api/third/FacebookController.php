@@ -17,32 +17,32 @@ use App\Http\Resources\api\third\FacebookRuleResource;
 
 class FacebookController extends Controller
 {
-    public function callback(Request $request)
+    /**
+     * Get long lived access token
+     *
+     * @bodyParam access_token string required Access token // TODO DEBUG
+     *
+     * @response {
+     *  "access_token": access_token,
+     * }
+     */
+    public function refreshToken(Request $request)
     {
-        session_start();
-        $fb = $this->fbClient();
-        $helper = $fb->getRedirectLoginHelper();
-        $accessToken = $helper->getAccessToken();
-        $oAuth2Client = $fb->getOAuth2Client();
-        if (!$accessToken->isLongLived()) {
-            $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
-        }
-        $request->session()->put('facebook_access_token', $accessToken);
-        /*
-        $user_id = 1;// $request->get('user'); // TODO:
-        $params = [
-            'user_id' => $user_id,
-            'access_token' => $accessToken->getValue(),
-            'expires_at' => $accessToken->getExpiresAt(),
-        ];
-        $fbLogin = FacebookLogin::getByUserId($user_id);
-        if ($fbLogin === null) {
-            FacebookLogin::create($params);
-        } else {
-            FacebookLogin::update($params);
-        }
-        */
-        return redirect('/');
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'access_token' => 'required|string|min:1',
+        ]);
+
+        $fb = new \Driverfury\Facebook\Facebook($params['access_token']);
+        $newAccessToken = $fb->getLongLivedAccessToken(
+            env('FACEBOOK_APP_ID'),
+            env('FACEBOOK_APP_SECRET'));
+
+        return response([
+            'access_token' => $newAccessToken,
+        ]);
     }
 
     /**

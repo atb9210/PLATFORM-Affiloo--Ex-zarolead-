@@ -369,6 +369,26 @@ class Facebook
         return true;
     }
 
+    public function getLongLivedAccessToken(
+        string $appId,
+        string $appSecret): string
+    {
+        $newAccessToken = '';
+
+        $params = [
+            'grant_type' => 'fb_exchange_token',
+            'client_id' => $appId,
+            'client_secret' => $appSecret,
+            'fb_exchange_token' => $this->accessToken,
+        ];
+        $response = $this->getRequest('/oauth/access_token', $params);
+        if (isset($response['access_token'])) {
+            $newAccessToken = $response['access_token'];
+        }
+
+        return $newAccessToken;
+    }
+
     public function sendEvent(
         string $pixel,
         string $event,

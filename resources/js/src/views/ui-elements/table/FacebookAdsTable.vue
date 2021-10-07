@@ -1475,7 +1475,6 @@ export default {
   },
   data () {
     return {
-      appId: '1031757410984629',
       loggedIn: false,
       FB: {},
       fbApiVersion: 'v12.0',
@@ -1946,9 +1945,10 @@ export default {
       }
     },
     login() {
-      this.FB.login((response) => {
+      this.FB.login(async (response) => {
         if (response.authResponse) {
           this.accessToken = response.authResponse.accessToken
+          this.accessToken = await this.getLongLivedAccessToken()
           localStorage.setItem('fb_access_token', this.accessToken)
           this.loggedIn = true
           this.changeView('ad_accounts')
@@ -1967,6 +1967,26 @@ export default {
     logout() {
       localStorage.removeItem('fb_access_token')
       this.loggedIn = false
+    },
+    async getLongLivedAccessToken() {
+      let newToken = ''
+
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        let params = {
+          access_token: this.accessToken,
+        }
+        const response = await this.$http.get('/api/3rd/facebook/token/refresh', { headers: headers, params: params })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('access_token')) {
+          newToken = response.data.access_token
+        }
+      } catch (error) {
+        newToken = ''
+      }
+
+      return newToken
     },
     async fetchAdAccounts(insights = true) {
       let adAccounts = []
