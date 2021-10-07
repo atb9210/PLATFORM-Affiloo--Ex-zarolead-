@@ -98,7 +98,7 @@ class FacebookRule extends Model
 
             $flag = true;
             foreach ($rules as $rule) {
-                // TODO
+                // TODO: Custom metrics
                 /*
                 // Custom metrics
                 if ($rule['metric'] == 'lifetime_spend') {
