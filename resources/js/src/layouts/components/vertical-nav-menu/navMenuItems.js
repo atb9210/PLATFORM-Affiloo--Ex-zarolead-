@@ -229,7 +229,7 @@ export default [
         slug: 'facebok-ads',
         icon: 'FacebookIcon',
         i18n: 'Facebook Ads',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager', 'facebook_test'],
       },
 
       {
