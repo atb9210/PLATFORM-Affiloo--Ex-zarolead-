@@ -233,6 +233,15 @@ export default [
       },
 
       {
+        url: '/dashboard/ecommerce',
+        name: 'Ecommerce',
+        slug: 'ecommerce',
+        icon: 'ShoppingCartIcon',
+        i18n: 'Ecommerce',
+        roles: ['developer', 'admin'],
+      },
+
+      {
         url: '/dashboard/marketplace',
         name: 'Marketplace',
         slug: 'marketplace',

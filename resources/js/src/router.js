@@ -58,6 +58,7 @@ const router = new Router({
             pageTitle: 'Dashboard',
           }
         },
+        /*
         {
           path: '/dashboard/ecommerce',
           name: 'dashboard-ecommerce',
@@ -66,6 +67,7 @@ const router = new Router({
             rule: 'admin'
           }
         },
+        */
 
         // =============================================================================
         // Application Routes
@@ -1779,6 +1781,21 @@ const router = new Router({
               { title: 'Facebook Ads', active: true }
             ],
             pageTitle: 'Facebook Ads',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/ecommerce',
+          props: true,
+          name: 'ecommerce',
+          component: () => import('./views/Ecommerce.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce', active: true }
+            ],
+            pageTitle: 'Ecommerce',
             rule: 'editor'
           }
         },

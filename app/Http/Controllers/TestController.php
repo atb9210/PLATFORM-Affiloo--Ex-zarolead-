@@ -73,28 +73,13 @@ class TestController extends Controller
 
     public function test()
     {
-        $accessToken = 'EAAOqYL354rUBAIpCXnPDauO3HlEaJd98fSqOJ5LGeHFjCAWdS2FcXJYWz0NRfJmnZBfhZCbOAaCJneT8I3mXEFZCZAxjZAhVXvqLVMbJJFMNl8tmRzzZCpVKAvdArwNPKQ3lp3QY6ZAMadQBcb1q2dFH4Waq90UShRaEhD2hNrh4ZA06n69GJ8dq3rpx4kB0D4hXMC4alQnK5z4zC7bgEPxASqRzxTLpiegZD';
-        $fb = new \Driverfury\Facebook\Facebook($accessToken);
-        $adAccountId = 'act_532604394293960';
-        $reports = [
-            'start_date' => '2020-05-01',
-            'end_date' => '2021-10-06',
-            'metrics' => [
-                'spend',
-                'impressions',
-                'cpm',
-                'actions',
-                'action_values',
-                'conversions',
-                'conversion_values',
-                'cost_per_conversion',
-            ],
-        ];
-        $campaigns = $fb->getCampaigns($adAccountId, $reports);
-        //$adsets = $fb->getAdsets($campaigns[0]['id'], $reports);
-        $adsets = $fb->getAdsets($adAccountId, $reports);
-        //$fb->updateStatus($campaigns[0]['id'], 'PAUSED');
-        dd($adsets);
+        $woo = new \Automattic\WooCommerce\Client(
+            env('WOOCOMMERCE_URL'),
+            env('WOOCOMMERCE_API_KEY'),
+            env('WOOCOMMERCE_API_SECRET')
+        );
+        $objects = $woo->get('orders');
+        dd($objects);
         exit();
     }
 

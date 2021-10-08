@@ -138,3 +138,11 @@ Route::post('/tiktok/rules/{id}/run', 'api\third\TikTokController@runRule')->mid
     ->name('tiktok.rules.run');
 Route::post('/tiktok/events/trigger', 'api\third\TikTokController@triggerEvent')
     ->name('tiktok.events.trigger');
+
+/* Ecommerce rules */
+Route::get('/ecommerce/customers', 'api\third\EcommerceController@customers')->middleware('auth:api')
+    ->name('ecommerce.customers');
+Route::get('/ecommerce/products', 'api\third\EcommerceController@products')->middleware('auth:api')
+    ->name('ecommerce.products');
+Route::get('/ecommerce/orders', 'api\third\EcommerceController@orders')->middleware('auth:api')
+    ->name('ecommerce.orders');
