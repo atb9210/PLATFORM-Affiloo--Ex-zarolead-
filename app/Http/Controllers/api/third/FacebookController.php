@@ -12,11 +12,51 @@ use Driverfury\Facebook\Facebook;
 use App\third\FacebookAdvertiser;
 use App\Http\Resources\api\third\FacebookAdvertiserResource;
 
+use App\third\FacebookLogin;
+
 use App\third\FacebookRule;
 use App\Http\Resources\api\third\FacebookRuleResource;
 
 class FacebookController extends Controller
 {
+    /**
+     * Get current access token
+     *
+     * @response {
+     *  "access_token": access_token,
+     * }
+     */
+    public function getToken(Request $request)
+    {
+        // TODO: Authorization
+        
+        $accessToken = FacebookLogin::getAccessToken();
+
+        return response([
+            'access_token' => $accessToken,
+        ]);
+    }
+
+    /**
+     * Remove current access token
+     *
+     * @response {
+     *  "message": "Token has been removed",
+     *  "access_token": access_token,
+     * }
+     */
+    public function removeToken(Request $request)
+    {
+        // TODO: Authorization
+        
+        $accessToken = FacebookLogin::setAccessToken(null);
+
+        return response([
+            'message' => 'Token has been removed',
+            'access_token' => $accessToken,
+        ]);
+    }
+
     /**
      * Get long lived access token
      *
@@ -39,6 +79,7 @@ class FacebookController extends Controller
         $newAccessToken = $fb->getLongLivedAccessToken(
             env('FACEBOOK_APP_ID'),
             env('FACEBOOK_APP_SECRET'));
+        FacebookLogin::setAccessToken($newAccessToken);
 
         return response([
             'access_token' => $newAccessToken,

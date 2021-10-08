@@ -1908,6 +1908,21 @@ export default {
       return formattedDate + ' ' + formattedTime
     },
 
+    async getCurrentAccessToken() {
+      let currentToken = null
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/3rd/facebook/token', { headers: headers })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('access_token')) {
+          currentToken = response.data.access_token
+        }
+      } catch (error) {
+        // Nothing
+      }
+      return currentToken
+    },
     async checkToken(fbAccessToken) {
       try {
         let params = {
@@ -1927,7 +1942,7 @@ export default {
     },
     async autoLogin() {
       // Check if user is already logged in
-      let fbAccessToken = localStorage.getItem('fb_access_token')
+      let fbAccessToken = await this.getCurrentAccessToken()
       if (fbAccessToken !== null) {
         // Check if current access token is valid
         let isValid = await this.checkToken(fbAccessToken)
@@ -1936,11 +1951,9 @@ export default {
           this.loggedIn = true
           this.changeView('ad_accounts')
         } else {
-          localStorage.removeItem('fb_access_token')
           this.loggedIn = false
         }
       } else {
-        localStorage.removeItem('fb_access_token')
         this.loggedIn = false
       }
     },
@@ -1949,7 +1962,6 @@ export default {
         if (response.authResponse) {
           this.accessToken = response.authResponse.accessToken
           this.accessToken = await this.getLongLivedAccessToken()
-          localStorage.setItem('fb_access_token', this.accessToken)
           this.loggedIn = true
           this.changeView('ad_accounts')
 
@@ -1957,16 +1969,26 @@ export default {
           console.log("Logged in")
         } else {
           this.loggedIn = false
-          localStorage.removeItem('fb_access_token')
 
           // DEBUG TODO: to delete
           console.log("Not logged in")
         }
       })
     },
-    logout() {
-      localStorage.removeItem('fb_access_token')
+    async logout() {
+      this.$vs.loading()
+
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.delete('/api/3rd/facebook/token', { headers: headers })
+      } catch (error) {
+        // Nothing
+      }
       this.loggedIn = false
+
+      this.$vs.loading.close()
     },
     async getLongLivedAccessToken() {
       let newToken = ''
@@ -3620,7 +3642,7 @@ export default {
       })
     },
   },
-  async mounted() {
+  async created() {
     await this.autoLogin()
 
     let _this = this
