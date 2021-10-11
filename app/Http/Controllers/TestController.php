@@ -78,8 +78,23 @@ class TestController extends Controller
             env('WOOCOMMERCE_API_KEY'),
             env('WOOCOMMERCE_API_SECRET')
         );
-        $objects = $woo->get('orders');
-        dd($objects);
+
+        $orders = $woo->get('orders');
+        $products = $woo->get('products');
+        $customers = $woo->get('customers');
+
+        echo 'Orders:<br>';
+        echo '<pre>'.htmlspecialchars(json_encode($orders)).'</pre>';
+        echo '<br><br>+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++<br><br>';
+
+        echo 'Products:<br>';
+        echo '<pre>'.htmlspecialchars(json_encode($products)).'</pre>';
+        echo '<br><br>+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++<br><br>';
+
+        echo 'Customers:<br>';
+        echo '<pre>'.htmlspecialchars(json_encode($customers)).'</pre>';
+        echo '<br><br>+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++<br><br>';
+
         exit();
     }
 

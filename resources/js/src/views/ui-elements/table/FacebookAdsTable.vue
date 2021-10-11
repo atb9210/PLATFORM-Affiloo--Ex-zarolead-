@@ -59,6 +59,7 @@
                         <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                     </div>
                 </div>
+
                 <div class="vx-row mb-2">
                     <div class="vx-col md:w-1/3 w-full">
                         <label>Status</label>
@@ -67,6 +68,7 @@
                         </vs-select>
                     </div>
                 </div>
+
                 <div class="vx-row mt-6">
                     <div class="vx-col w-full">
                         <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
