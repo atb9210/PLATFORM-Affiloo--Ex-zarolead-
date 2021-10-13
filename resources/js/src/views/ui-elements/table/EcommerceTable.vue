@@ -7,8 +7,8 @@
                 <vs-button @click="changeView('orders')" :color="(view == 'orders') ? 'success' : 'primary'">Orders</vs-button>
                 <vs-button @click="changeView('customers')" :color="(view == 'customers') ? 'success' : 'primary'">Customers</vs-button>
                 <vs-button @click="changeView('products')" :color="(view == 'products') ? 'success' : 'primary'">Products</vs-button>
+                <vs-button @click="changeView('calc_profit')" :color="(view == 'calc_profit') ? 'success' : 'primary'">ProfitCalc</vs-button>
             </span>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="calculateProfit">Calc Profit</vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <div v-if="showProfit" class="mb-12 vx-row">
+        <div v-if="view == 'calc_profit'" class="mb-12 vx-row">
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
                 <statistics-card-line icon="PackageIcon" :statistic="this.stats.completedOrders" statisticTitle="Completed orders" color="primary"></statistics-card-line>
             </div>
@@ -72,11 +72,27 @@
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.vatTotal.toFixed(2)" statisticTitle="VAT Total" color="danger"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.taxTotal.toFixed(2)" statisticTitle="Tax Total" color="danger"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
                 <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.paymentGatewayFees.toFixed(2)" statisticTitle="Payment Gateway fees" color="danger"></statistics-card-line>
+            </div>
+
+            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+                <statistics-card-line icon="PackageIcon" :statistic="'€ ' + this.stats.avgOrderTotal.toFixed(2)" statisticTitle="AVG Order Value" color="danger"></statistics-card-line>
+            </div>
+
+            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+                <statistics-card-line icon="LayoutIcon" :statistic="'€ ' + this.stats.adSpent.toFixed(2)" statisticTitle="Total Ad Spend (TODO)" color="danger"></statistics-card-line>
+            </div>
+
+            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + this.stats.profitMargin.toFixed(2)" statisticTitle="Profit margin" color="danger"></statistics-card-line>
+            </div>
+
+            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
+                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.roas.toFixed(2)" statisticTitle="ROAS" color="danger"></statistics-card-line>
             </div>
         </div>
 
@@ -358,7 +374,6 @@ export default {
         'outofstock': 'danger',
       },
 
-      showProfit: false,
       stats: {},
     }
   },
@@ -405,6 +420,9 @@ export default {
         this.view = view
       } else if (view == 'customers') {
         this.customers = await this.fetchCustomers()
+        this.view = view
+      } else if (view == 'calc_profit') {
+        await this.calculateProfit()
         this.view = view
       }
 
@@ -499,25 +517,38 @@ export default {
       return formattedDate
     },
     async calculateProfit() {
-      this.$vs.loading()
-
       this.orders = await this.fetchOrders()
+
+      let paymentGatewayFeesTable = {
+        'paypal': {
+          fixed: 0.3,
+          rate:  0.029,
+        },
+        'stripe': {
+          fixed: 0.3,
+          rate:  0.029,
+        },
+      }
 
       let completedOrders = 0
       let refundedOrders = 0
       let failedOrders = 0
       let cancelledOrders = 0
 
+      let avgOrderTotal = 0.0
       let paymentGatewayFees = 0.0
       let revenue = 0.0
+      let taxTotal = 0.0
       let profit = 0.0
+      let profitMargin = 0.0
+      let roas = 0.0
+      let adSpent = 0.0
+
+      // TODO: Get ad spent
 
       for (let i = 0; i < this.orders.length; i++) {
         let obj = this.orders[i]
 
-        // DEBUG
-        // TODO: to uncomment
-        /*
         if (obj.status === 'refunded') {
           refundedOrders++
           continue
@@ -530,23 +561,38 @@ export default {
         } else if (obj.status !== 'completed') {
           continue
         }
-        */
 
         completedOrders++
 
         let orderTotal = parseFloat(obj.total)
 
         revenue += orderTotal
-        paymentGatewayFees += 0.3 + 0.029*orderTotal
+
+        if (paymentGatewayFeesTable.hasOwnProperty(obj.payment_method)) {
+          let pm = paymentGatewayFeesTable[obj.payment_method]
+          paymentGatewayFees += pm.fixed + pm.rate*orderTotal
+        }
+
+        if (obj.hasOwnProperty('tax_total')) {
+          taxTotal += obj.tax_total
+        }
       }
 
-      // Subtract payment gateway fees from revenue
-      profit = revenue - paymentGatewayFees
+      if (completedOrders > 0) {
+        avgOrderTotal = revenue / completedOrders
+      }
 
-      // Subtract VAT from revenue
-      let vat = 0.22
-      let vatTotal = profit*vat
-      profit -= vatTotal
+      profit = revenue - paymentGatewayFees - taxTotal - adSpent
+
+      if (revenue > 0) {
+        profitMargin = (profit / revenue)*100
+      }
+
+      if (adSpent > 0) {
+        roas = (profit / adSpent)*100
+      } else if (profit > 0) {
+        roas = 9999.99
+      }
 
       this.stats = {
         completedOrders: completedOrders,
@@ -556,12 +602,12 @@ export default {
         revenue: revenue,
         profit: profit,
         paymentGatewayFees: paymentGatewayFees,
-        vatTotal: vatTotal,
+        taxTotal: taxTotal,
+        avgOrderTotal: avgOrderTotal,
+        adSpent: adSpent,
+        profitMargin: profitMargin,
+        roas: roas,
       }
-
-      this.showProfit = true
-
-      this.$vs.loading.close()
     },
 
     // Backend functions
