@@ -88,11 +88,11 @@
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + this.stats.profitMargin.toFixed(2)" statisticTitle="Profit margin" color="danger"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="this.stats.profitMargin.toFixed(2) + '%'" statisticTitle="Profit margin" color="success"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.roas.toFixed(2)" statisticTitle="ROAS" color="danger"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="this.stats.roas.toFixed(2) + '%'" statisticTitle="ROAS" color="success"></statistics-card-line>
             </div>
         </div>
 
