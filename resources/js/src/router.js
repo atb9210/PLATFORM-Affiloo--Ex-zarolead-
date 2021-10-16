@@ -1800,6 +1800,51 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/ecommerce/orders',
+          props: true,
+          name: 'ecommerce-orders',
+          component: () => import('./views/EcommerceOrders.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Orders', active: true }
+            ],
+            pageTitle: 'Ecommerce Orders',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/ecommerce/products',
+          props: true,
+          name: 'ecommerce-products',
+          component: () => import('./views/EcommerceProducts.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Products', active: true }
+            ],
+            pageTitle: 'Ecommerce Products',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/ecommerce/customers',
+          props: true,
+          name: 'ecommerce-customers',
+          component: () => import('./views/EcommerceCustomers.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Customers', active: true }
+            ],
+            pageTitle: 'Ecommerce Customers',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

@@ -233,12 +233,41 @@ export default [
       },
 
       {
-        url: '/dashboard/ecommerce',
+        url: null,
         name: 'Ecommerce',
-        slug: 'ecommerce',
         icon: 'ShoppingCartIcon',
         i18n: 'Ecommerce',
         roles: ['developer', 'admin'],
+        submenu: [
+          {
+            url: '/dashboard/ecommerce',
+            name: 'Dashboard',
+            slug: 'ecommerce',
+            i18n: 'Dashboard',
+            roles: ['developer', 'admin'],
+          },
+          {
+            url: '/dashboard/ecommerce/orders',
+            name: 'Orders',
+            slug: 'ecommerce-orders',
+            i18n: 'Orders',
+            roles: ['developer', 'admin'],
+          },
+          {
+            url: '/dashboard/ecommerce/products',
+            name: 'Products',
+            slug: 'ecommerce-products',
+            i18n: 'Products',
+            roles: ['developer', 'admin'],
+          },
+          {
+            url: '/dashboard/ecommerce/customers',
+            name: 'Customers',
+            slug: 'ecommerce-customers',
+            i18n: 'Customers',
+            roles: ['developer', 'admin'],
+          },
+        ]
       },
 
       {

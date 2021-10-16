@@ -1,14 +1,8 @@
 <template>
-    <vx-card title="Table" code-toggler>
+    <vx-card title="Dashboard" code-toggler>
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <span class="btn-group flex items-center mr-2">
-                <vs-button @click="changeView('orders')" :color="(view == 'orders') ? 'success' : 'primary'">Orders</vs-button>
-                <vs-button @click="changeView('customers')" :color="(view == 'customers') ? 'success' : 'primary'">Customers</vs-button>
-                <vs-button @click="changeView('products')" :color="(view == 'products') ? 'success' : 'primary'">Products</vs-button>
-                <vs-button @click="changeView('calc_profit')" :color="(view == 'calc_profit') ? 'success' : 'primary'">ProfitCalc</vs-button>
-            </span>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -37,6 +31,20 @@
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
             </div>
+
+            <div class="vx-row mb-2">
+              <div class="vx-col w-full">
+                <vs-select
+                    class="w-full"
+                    multiple
+                    autocomplete
+                    label="Order status"
+                    v-model="filters.status"
+                    >
+                    <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in orderStatuses" />
+                </vs-select>
+              </div>
+            </div>
             
             <div class="vx-row mt-6">
                 <div class="vx-col w-full">
@@ -46,53 +54,41 @@
             </div>
         </div>
 
-        <div v-if="view == 'calc_profit'" class="mb-12 vx-row">
+        <div v-if="view == 'dashboard'" class="mb-12 vx-row">
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="this.stats.completedOrders" statisticTitle="Completed orders" color="primary"></statistics-card-line>
+                <statistics-card-line icon="PackageIcon" :statistic="stats.numOrders" statisticTitle="Orders" color="primary"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="this.stats.refundedOrders" statisticTitle="Refunded orders" color="warning"></statistics-card-line>
+                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + stats.revenue.toFixed(2)" statisticTitle="Revenue" color="primary"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="this.stats.failedOrders" statisticTitle="Failed orders" color="danger"></statistics-card-line>
+                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + stats.profit.toFixed(2)" statisticTitle="Profit" color="success"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="this.stats.cancelledOrders" statisticTitle="Cancelled orders" color="danger"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + stats.taxTotal.toFixed(2)" statisticTitle="Tax Total" color="danger"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + this.stats.revenue.toFixed(2)" statisticTitle="Revenue" color="primary"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + stats.paymentGatewayFees.toFixed(2)" statisticTitle="Payment Gateway fees" color="danger"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + this.stats.profit.toFixed(2)" statisticTitle="Profit" color="success"></statistics-card-line>
+                <statistics-card-line icon="PackageIcon" :statistic="'€ ' + stats.avgOrderTotal.toFixed(2)" statisticTitle="AVG Order Value" color="danger"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.taxTotal.toFixed(2)" statisticTitle="Tax Total" color="danger"></statistics-card-line>
+                <statistics-card-line icon="LayoutIcon" :statistic="'€ ' + stats.adSpent.toFixed(2)" statisticTitle="Total Ad Spent" color="danger"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + this.stats.paymentGatewayFees.toFixed(2)" statisticTitle="Payment Gateway fees" color="danger"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="stats.profitMargin.toFixed(2) + '%'" statisticTitle="Profit margin" color="success"></statistics-card-line>
             </div>
 
             <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="'€ ' + this.stats.avgOrderTotal.toFixed(2)" statisticTitle="AVG Order Value" color="danger"></statistics-card-line>
-            </div>
-
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="LayoutIcon" :statistic="'€ ' + this.stats.adSpent.toFixed(2)" statisticTitle="Total Ad Spend (TODO)" color="danger"></statistics-card-line>
-            </div>
-
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="this.stats.profitMargin.toFixed(2) + '%'" statisticTitle="Profit margin" color="success"></statistics-card-line>
-            </div>
-
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="this.stats.roas.toFixed(2) + '%'" statisticTitle="ROAS" color="success"></statistics-card-line>
+                <statistics-card-line icon="PercentIcon" :statistic="stats.roas.toFixed(2) + '%'" statisticTitle="ROAS" color="success"></statistics-card-line>
             </div>
         </div>
 
@@ -117,191 +113,6 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vue-context ref="order_context_menu" v-slot="{ data }">
-            <!--
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
-
-        <vue-context ref="product_context_menu" v-slot="{ data }">
-            <!--
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
-
-        <vue-context ref="customer_context_menu" v-slot="{ data }">
-            <!--
-            <li>
-              <a href="#" @click="$refs.customer_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.customer_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.customer_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
-
-        <!-- Orders table -->
-        <vs-table v-if="view == 'orders'" stripe multiple v-model="selectedOrders" :max-items="maxItems" pagination search :data="orders" :currentPage="currentPage" @change-page="onPageChanged">
-
-            <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="date">Date</vs-th>
-                <vs-th sort-key="products">Products</vs-th>
-                <vs-th sort-key="total">Amount</vs-th>
-                <vs-th sort-key="status">Status</vs-th>
-            </template>
-
-            <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
-
-                    <vs-td class="column-no-padding" :data="item.id">
-                        #{{item.id}}
-                    </vs-td>
-                    
-                    <vs-td class="column-no-padding" :data="item.date">
-                        {{formatDate(item.date)}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.products">
-                        <div @contextmenu.prevent="$refs.order_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.products}}
-                            </vs-chip>
-                        </div>
-                    </vs-td>
-                    
-                    <vs-td class="column-no-padding" :data="item.id">
-                        {{item.currency_symbol}} {{item.total}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.status">
-                        <vs-chip :color="orderStatusColor[item.status]">
-                            {{item.status}}
-                        </vs-chip>
-                    </vs-td>
-
-                </vs-tr>
-            </template>
-        </vs-table>
-
-        <!-- Products table -->
-        <vs-table v-if="view == 'products'" stripe multiple v-model="selectedProducts" :max-items="maxItems" pagination search :data="products" :currentPage="currentPage" @change-page="onPageChanged">
-
-            <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="name">name</vs-th>
-                <vs-th sort-key="price">Price</vs-th>
-                <vs-th sort-key="status">Status</vs-th>
-                <vs-th sort-key="stock_status">Stock Status</vs-th>
-            </template>
-
-            <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
-
-                    <vs-td class="column-no-padding" :data="item.id">
-                        {{item.id}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.name">
-                        <div @contextmenu.prevent="$refs.product_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.name}}
-                            </vs-chip>
-                        </div>
-                    </vs-td>
-                    
-                    <vs-td class="column-no-padding" :data="item.id">
-                        € {{item.price}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.status">
-                        <vs-chip :color="productStatusColor[item.status]">
-                            {{item.status}}
-                        </vs-chip>
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.stock_status">
-                        <vs-chip :color="productStockStatusColor[item.stock_status]">
-                            {{item.stock_status}}
-                        </vs-chip>
-                    </vs-td>
-
-                </vs-tr>
-            </template>
-        </vs-table>
-
-        <!-- Customers table -->
-        <vs-table v-if="view == 'customers'" stripe multiple v-model="selectedCustomers" :max-items="maxItems" pagination search :data="customers" :currentPage="currentPage" @change-page="onPageChanged">
-
-            <template slot="thead">
-                <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="name">name</vs-th>
-            </template>
-
-            <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
-
-                    <vs-td class="column-no-padding" :data="item.id">
-                        {{item.id}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.name">
-                        <div @contextmenu.prevent="$refs.customer_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.name}}
-                            </vs-chip>
-                        </div>
-                    </vs-td>
-                    
-                </vs-tr>
-            </template>
-        </vs-table>
 
     </vx-card>
 </template>
@@ -310,6 +121,8 @@
 import { VueContext } from 'vue-context'
 import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
+import Ecommerce from 'ecommerce'
+
 export default {
   components: {
     VueContext,
@@ -317,23 +130,20 @@ export default {
   },
   data () {
     return {
+      ecommerce: null,
+
       maxItems: 20,
-      view: 'orders',
+      view: 'dashboard',
 
       showFilters: false,
       filters: {
         date_from: '',
         date_to: '',
+        status: ['completed','pending','processing'],
       },
 
       orders: [],
       selectedOrders: [],
-
-      customers: [],
-      selectedCustomers: [],
-
-      products: [],
-      selectedProducts: [],
 
       orderStatuses: [
         'pending',
@@ -354,27 +164,17 @@ export default {
         'failed':     'danger',
       },
 
-      productStatuses: [
-        'publish',
-        'pending',
-        'draft',
-      ],
-      productStatusColor: {
-        'publish': 'success',
-        'pending': 'primary',
-        'draft':   'warning',
+      stats: {
+        numOrders: 0,
+        revenue: 0.0,
+        profit: 0.0,
+        paymentGatewayFees: 0.0,
+        taxTotal: 0.0,
+        avgOrderTotal: 0.0,
+        adSpent: 0.0,
+        profitMargin: 0.0,
+        roas: 0.0,
       },
-
-      productStockStatuses: [
-        'instock',
-        'outofstock',
-      ],
-      productStockStatusColor: {
-        'instock':    'success',
-        'outofstock': 'danger',
-      },
-
-      stats: {},
     }
   },
   computed: {
@@ -396,11 +196,6 @@ export default {
       }
     },
     objects() {
-      if (this.view == 'orders') {
-        return this.orders
-      } else if (this.view == 'customers') {
-        return this.customers
-      }
       return []
     },
   },
@@ -412,16 +207,7 @@ export default {
     async changeView(view) {
       this.$vs.loading()
 
-      if (view == 'orders') {
-        this.orders = await this.fetchOrders()
-        this.view = view
-      } else if (view == 'products') {
-        this.products = await this.fetchProducts()
-        this.view = view
-      } else if (view == 'customers') {
-        this.customers = await this.fetchCustomers()
-        this.view = view
-      } else if (view == 'calc_profit') {
+      if (view == 'dashboard') {
         await this.calculateProfit()
         this.view = view
       }
@@ -467,6 +253,7 @@ export default {
       this.filters = {
         date_from: '',
         date_to: '',
+        status: ['completed','pending','processing'],
       }
       await this.filterDatesShortcut('this_month')
     },
@@ -517,7 +304,7 @@ export default {
       return formattedDate
     },
     async calculateProfit() {
-      this.orders = await this.fetchOrders()
+      let orders = await this.ecommerce.fetchOrders(this.filters)
 
       let paymentGatewayFeesTable = {
         'paypal': {
@@ -530,11 +317,7 @@ export default {
         },
       }
 
-      let completedOrders = 0
-      let refundedOrders = 0
-      let failedOrders = 0
-      let cancelledOrders = 0
-
+      let numOrders = 0
       let avgOrderTotal = 0.0
       let paymentGatewayFees = 0.0
       let revenue = 0.0
@@ -542,27 +325,20 @@ export default {
       let profit = 0.0
       let profitMargin = 0.0
       let roas = 0.0
-      let adSpent = 0.0
+      let adSpent = {}
 
       // TODO: Get ad spent
+      let csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJCULZurYAQAGkak5mbvxjQthxjXQiB5XXk83gLua_pn_EqENBpS6J8EWzxGTkrs6MThi1ksRe5NCz/pub?gid=0&single=true&output=csv'
+      adSpent = await this.ecommerce.getAdSpentFromCsv(csvUrl)
 
-      for (let i = 0; i < this.orders.length; i++) {
-        let obj = this.orders[i]
+      for (let i = 0; i < orders.length; i++) {
+        let obj = orders[i]
 
-        if (obj.status === 'refunded') {
-          refundedOrders++
-          continue
-        } else if (obj.status === 'failed') {
-          failedOrders++
-          continue
-        } else if (obj.status === 'cancelled') {
-          cancelledOrders++
-          continue
-        } else if (obj.status !== 'completed') {
+        if (!this.filters.status.includes(obj.status)) {
           continue
         }
 
-        completedOrders++
+        numOrders++
 
         let orderTotal = parseFloat(obj.total)
 
@@ -578,133 +354,38 @@ export default {
         }
       }
 
-      if (completedOrders > 0) {
-        avgOrderTotal = revenue / completedOrders
+      if (numOrders > 0) {
+        avgOrderTotal = revenue / numOrders
       }
 
-      profit = revenue - paymentGatewayFees - taxTotal - adSpent
+      profit = revenue - paymentGatewayFees - taxTotal - adSpent['total']
 
       if (revenue > 0) {
         profitMargin = (profit / revenue)*100
       }
 
-      if (adSpent > 0) {
-        roas = (profit / adSpent)*100
+      if (adSpent['total'] > 0) {
+        roas = (profit / adSpent['total'])*100
       } else if (profit > 0) {
         roas = 9999.99
       }
 
       this.stats = {
-        completedOrders: completedOrders,
-        refundedOrders: refundedOrders,
-        failedOrders: failedOrders,
-        cancelledOrders: cancelledOrders,
+        numOrders: numOrders,
         revenue: revenue,
         profit: profit,
         paymentGatewayFees: paymentGatewayFees,
         taxTotal: taxTotal,
         avgOrderTotal: avgOrderTotal,
-        adSpent: adSpent,
+        adSpent: adSpent['total'],
         profitMargin: profitMargin,
         roas: roas,
       }
     },
-
-    // Backend functions
-    async fetchOrders() {
-      let objects = []
-
-      try {
-        let headers = {
-          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-        }
-        let params = {}
-
-        if (this.filters.date_from != '') {
-          params.filter_date_from = this.filters.date_from
-        }
-        if (this.filters.date_to != '') {
-          params.filter_date_to = this.filters.date_to
-        }
-
-        const response = await this.$http.get('/api/3rd/ecommerce/orders', { headers, params })
-        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
-          objects = response.data.data
-        }
-
-        for (let i = 0; i < objects.length; i++) {
-          let obj = objects[i]
-
-          obj.date = new Date(obj.date_created);
-
-          obj.products = ''
-          if (obj.hasOwnProperty('line_items')) {
-            if (obj.line_items.length > 0) {
-              obj.products += obj.line_items[0].name
-            }
-            for (let j = 1; j < obj.line_items.length; j++) {
-              obj.products += ', ' + obj.line_items[j].name
-            }
-          }
-
-          obj.customer = null
-          if (obj.hasOwnProperty('customer_id')) {
-            obj.customer = this.getProductById(obj.customer_id)
-          }
-
-          if (obj.hasOwnProperty('total')) {
-            obj.total = parseFloat(obj.total)
-          }
-        }
-
-        /*objects = objects.map((obj) => {
-          if (obj.hasOwnProperty('total')) {
-            obj.total = parseFloat(obj.total)
-          }
-          return obj
-        })*/
-      } catch (error) {
-        // Nothing
-      }
-
-      return objects
-    },
-    async fetchCustomers() {
-      let objects = []
-
-      try {
-        let headers = {
-          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-        }
-        const response = await this.$http.get('/api/3rd/ecommerce/customers', { headers })
-        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
-          objects = response.data.data
-        }
-      } catch (error) {
-        // Nothing
-      }
-
-      return objects
-    },
-    async fetchProducts() {
-      let objects = []
-
-      try {
-        let headers = {
-          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-        }
-        const response = await this.$http.get('/api/3rd/ecommerce/products', { headers })
-        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
-          objects = response.data.data
-        }
-      } catch (error) {
-        // Nothing
-      }
-
-      return objects
-    },
   },
   async created() {
+    this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
+
     this.$vs.loading()
 
     await this.resetFilters()
