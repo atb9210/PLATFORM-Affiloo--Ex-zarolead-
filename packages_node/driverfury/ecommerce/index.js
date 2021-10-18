@@ -83,11 +83,156 @@ class Ecommerce {
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         objects = response.data.data
       }
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        if (obj.hasOwnProperty('price')) {
+          if (obj.price != '') {
+            obj.price = parseFloat(obj.price)
+          } else {
+            obj.price = 0.0
+          }
+        }
+        if (obj.hasOwnProperty('regular_price')) {
+          if (obj.regular_price != '') {
+            obj.regular_price = parseFloat(obj.regular_price)
+          } else {
+            obj.regular_price = 0.0
+          }
+        }
+
+        objects[i] = obj
+      }
     } catch (error) {
       // Nothing
     }
 
     return objects
+  }
+
+  async fetchProduct(id) {
+    let object = {}
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/products/' + id + '/variations', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+
+        if (object.hasOwnProperty('price')) {
+          if (object.price != '') {
+            object.price = parseFloat(object.price)
+          } else {
+            object.price = 0.0
+          }
+        }
+        if (object.hasOwnProperty('regular_price')) {
+          if (object.regular_price != '') {
+            object.regular_price = parseFloat(object.regular_price)
+          } else {
+            object.regular_price = 0.0
+          }
+        }
+
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async fetchProductVariations(id) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/products/' + id + '/variations', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        if (obj.hasOwnProperty('price')) {
+          if (obj.price != '') {
+            obj.price = parseFloat(obj.price)
+          } else {
+            obj.price = 0.0
+          }
+        }
+        if (obj.hasOwnProperty('regular_price')) {
+          if (obj.regular_price != '') {
+            obj.regular_price = parseFloat(obj.regular_price)
+          } else {
+            obj.regular_price = 0.0
+          }
+        }
+
+        objects[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
+  async updateProduct(id, params = {}) {
+    let product = null
+
+    try {
+      let headers = this.getHeaders()
+      let paramsData = {
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.put('/api/3rd/ecommerce/products/' + id, paramsData, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        product = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return product
+  }
+
+  async updateProductVariation(pid, vid, params = {}) {
+    let variation = null
+
+    try {
+      let headers = this.getHeaders()
+      let paramsData = {
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.put('/api/3rd/ecommerce/products/' + pid + '/variations/' + vid, paramsData, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        variation = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return variation
+  }
+
+  async updateProductVariations(pid, params = {}) {
+    let variations = []
+
+    try {
+      let tmpVariations = await this.fetchProductVariations(pid)
+      for (let i = 0; i < tmpVariations.length; i++) {
+        let tmpVar = tmpVariations[i]
+        const variation = await this.updateProductVariation(pid, tmpVar.id, params)
+        variations.push(variation)
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return variations
   }
 
   csvToArray(strData, strDelimiter) {
@@ -212,6 +357,22 @@ class Ecommerce {
     }
 
     return adSpent
+  }
+
+  async fetchCarts() {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/carts', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+    } catch (error) {
+      //
+    }
+
+    return objects
   }
 }
 

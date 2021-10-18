@@ -1845,6 +1845,21 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/ecommerce/carts',
+          props: true,
+          name: 'ecommerce-carts',
+          component: () => import('./views/EcommerceCarts.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Carts', active: true }
+            ],
+            pageTitle: 'Ecommerce Carts',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

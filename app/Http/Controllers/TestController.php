@@ -79,8 +79,20 @@ class TestController extends Controller
             env('WOOCOMMERCE_API_SECRET')
         );
 
-        $objects = $woo->get('shipping_methods');
-        dd($objects);
+        $prodId = '2089';
+        ////$prodId = '2418';
+        ////$prod = $woo->put('products/' . $prodId, [
+        ////    'regular_price' => '88.00',
+        ////]);
+        ////dd($prod);
+        ////$products = $woo->get('products');
+        //dd($woo->get('products/' . $products[0]->id . '/variations'));
+        //dd($woo->get('products/attributes'));
+        //dd($woo->get('products/attributes/2/terms'));
+        //
+        $prodId = '2089';
+        dd($woo->get('products/' . $prodId . '/variations'));
+        dd($products);
 
         exit();
     }

@@ -267,6 +267,13 @@ export default [
             i18n: 'Customers',
             roles: ['developer', 'admin'],
           },
+          {
+            url: '/dashboard/ecommerce/carts',
+            name: 'Carts',
+            slug: 'ecommerce-carts',
+            i18n: 'Carts',
+            roles: ['developer', 'admin'],
+          },
         ]
       },
 

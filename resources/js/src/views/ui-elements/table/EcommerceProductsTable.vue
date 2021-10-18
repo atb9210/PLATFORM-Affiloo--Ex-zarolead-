@@ -62,20 +62,12 @@
         </vs-dropdown>
 
         <vue-context ref="product_context_menu" v-slot="{ data }">
-            <!--
             <li>
-              <a href="#" @click="$refs.product_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
+              <a href="#" @click="$refs.product_context_menu.close();showVariations(data);" class="flex items-center text-sm">
+                <feather-icon icon="GitBranchIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Variations</span>
               </a>
             </li>
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
             <li>
               <a href="#" @click="$refs.product_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
@@ -89,7 +81,7 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="name">name</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="price">Price</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="stock_status">Stock Status</vs-th>
@@ -110,8 +102,13 @@
                         </div>
                     </vs-td>
                     
-                    <vs-td class="column-no-padding" :data="item.id">
-                        € {{item.price}}
+                    <vs-td class="column-no-padding" :data="item.price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].price"
+                            @onUpdate="updatePrice(data[indextr])">
+                              € {{ item.price.toFixed(2) }}
+                        </editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.status">
@@ -126,6 +123,39 @@
                         </vs-chip>
                     </vs-td>
 
+                </vs-tr>
+            </template>
+        </vs-table>
+
+        <!-- Variations table -->
+        <vs-table v-if="view == 'variations'" stripe multiple v-model="selectedVariations" :max-items="maxItems" pagination search :data="variations" :currentPage="currentPage" @change-page="onPageChanged">
+
+            <template slot="thead">
+                <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="price">Price</vs-th>
+            </template>
+
+            <template slot-scope="{data}">
+                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+
+                    <vs-td class="column-no-padding" :data="item.id">
+                        {{item.id}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.name">
+                        {{item.name}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].price"
+                            @onUpdate="updateVariationPrice(data[indextr])">
+                              € {{ item.price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+                    
                 </vs-tr>
             </template>
         </vs-table>
@@ -160,6 +190,11 @@ export default {
       products: [],
       selectedProducts: [],
 
+      product: null,
+
+      variations: [],
+      selectedVariations: [],
+
       productStatuses: [
         'publish',
         'pending',
@@ -179,6 +214,8 @@ export default {
         'instock':    'success',
         'outofstock': 'danger',
       },
+
+      newPrice: 0.0,
     }
   },
   computed: {
@@ -282,9 +319,92 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+
+    async updatePrice(product) {
+      this.$vs.loading()
+
+      let priceParam = String(this.newPrice).replace(',', '.')
+      let params = {
+        price: priceParam,
+        regular_price: priceParam,
+      }
+
+      if (product.type === 'variable') {
+        await this.ecommerce.updateProductVariations(product.id, params)
+      }
+      await this.ecommerce.updateProduct(product.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Product price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async showVariations(product) {
+      if (product.type !== 'variable') return
+
+      this.$vs.loading()
+
+      this.product = product
+      this.variations = await this.ecommerce.fetchProductVariations(product.id)
+      for (let i = 0; i < this.variations.length; i++) {
+        let obj = this.variations[i]
+
+        obj.name = ''
+        for (let j = 0; j < obj.attributes.length; j++) {
+          let attr = obj.attributes[j]
+          obj.name += attr.option + ' - '
+        }
+        obj.name += this.product.name
+
+        this.variations[i] = obj
+      }
+      this.view = 'variations'
+
+      this.$vs.loading.close()
+    },
+    async updateVariationPrice(variation) {
+      this.$vs.loading()
+
+      let priceParam = String(this.newPrice).replace(',', '.')
+      let params = {
+        price: priceParam,
+        regular_price: priceParam,
+      }
+
+      await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Variation price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.showVariations(this.product)
+    },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
+
+    // DEBUG TODO: to delete
+    /*
+    let params = {
+      price: '13.33',
+      regular_price: '13.33',
+    }
+    this.ecommerce.updateProduct(2089, params)
+    this.ecommerce.updateProductVariations(2089, params)
+    */
 
     this.$vs.loading()
 
