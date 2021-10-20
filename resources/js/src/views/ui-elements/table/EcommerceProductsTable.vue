@@ -2,6 +2,7 @@
     <vx-card title="Products" code-toggler>
 
         <p class="flex items-center mb-4">
+            <vs-button v-if="view == 'variations'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('products')"></vs-button>
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
         </p>
 
@@ -82,9 +83,14 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="price">Price</vs-th>
+                <vs-th sort-key="sku">SKU</vs-th>
+                <vs-th sort-key="shipping_class">Shipping Class</vs-th>
+                <vs-th sort-key="regular_price">Regular Price</vs-th>
+                <vs-th sort-key="sale_price">Sale Price</vs-th>
+                <vs-th sort-key="cog_cost">Cost</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="stock_status">Stock Status</vs-th>
+                <vs-th sort-key="">Info</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -101,13 +107,39 @@
                             </vs-chip>
                         </div>
                     </vs-td>
-                    
-                    <vs-td class="column-no-padding" :data="item.price">
+
+                    <vs-td class="column-no-padding" :data="item.sku">
+                        {{item.sku}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.shipping_class">
+                        {{item.shipping_class}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.regular_price">
                         <editable-value
                             v-model="newPrice"
-                            @onEdit="newPrice = data[indextr].price"
+                            @onEdit="newPrice = data[indextr].regular_price"
+                            @onUpdate="updateRegularPrice(data[indextr])">
+                              € {{ item.regular_price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+                    
+                    <vs-td class="column-no-padding" :data="item.sale_price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].sale_price"
                             @onUpdate="updatePrice(data[indextr])">
-                              € {{ item.price.toFixed(2) }}
+                              € {{ item.sale_price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.cog_cost">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].cog_cost"
+                            @onUpdate="updateCost(data[indextr])">
+                              € {{ item.cog_cost.toFixed(2) }}
                         </editable-value>
                     </vs-td>
 
@@ -123,6 +155,12 @@
                         </vs-chip>
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.stock_status">
+                        <div class="flex items-center">
+                            <vs-avatar color="primary" size="24px" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
+                        </div>
+                    </vs-td>
+
                 </vs-tr>
             </template>
         </vs-table>
@@ -133,7 +171,9 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="price">Price</vs-th>
+                <vs-th sort-key="regular_price">Regular Price</vs-th>
+                <vs-th sort-key="sale_price">Sale Price</vs-th>
+                <vs-th sort-key="cog_cost">Cost</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -147,18 +187,72 @@
                         {{item.name}}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.price">
+                    <vs-td class="column-no-padding" :data="item.regular_price">
                         <editable-value
                             v-model="newPrice"
-                            @onEdit="newPrice = data[indextr].price"
+                            @onEdit="newPrice = data[indextr].regular_price"
+                            @onUpdate="updateVariationRegularPrice(data[indextr])">
+                              € {{ item.regular_price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.sale_price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].sale_price"
                             @onUpdate="updateVariationPrice(data[indextr])">
-                              € {{ item.price.toFixed(2) }}
+                              € {{ item.sale_price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.cog_cost">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].cog_cost"
+                            @onUpdate="updateVariationCost(data[indextr])">
+                              € {{ item.cog_cost.toFixed(2) }}
                         </editable-value>
                     </vs-td>
                     
                 </vs-tr>
             </template>
         </vs-table>
+
+        <!-- Product info popup -->
+        <vs-popup title="Product info" :active.sync="showPopup['info']">
+
+            <div v-if="product !== null">
+                <div class="vx-row mb-6 flex items-center" v-if="product.hasOwnProperty('name')">
+                    <vs-button class="mr-auto ml-auto">{{ product.name }}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div v-if="product.hasOwnProperty('images') && product.images.length > 0" class="vx-col sm:w-1/4 w-full mt-2" :key="imgIndex" v-for="(image, imgIndex) in product.images">
+                        <img :src="image.src" class="w-full">
+                    </div>
+                    <div v-else class="w-full mt-2">
+                        <span>This product has no images.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        Length: <span>{{ product.dimensions.length }}</span>
+                    </div>
+                    <div class="vx-col w-full">
+                        Width: <span>{{ product.dimensions.width }}</span>
+                    </div>
+                    <div class="vx-col w-full">
+                        Height: <span>{{ product.dimensions.height }}</span>
+                    </div>
+                    <div class="vx-col w-full">
+                        Weight: <span>{{ product.weight }}</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </vs-popup>
 
     </vx-card>
 </template>
@@ -168,6 +262,16 @@ import { VueContext } from 'vue-context'
 import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
 import Ecommerce from 'ecommerce'
+
+function formatMoney(num) {
+  let s = ''
+  if (typeof(num) === 'number') {
+    s = num.toFixed(2)
+  } else {
+    s = parseFloat(num.replace(',', '.')).toFixed(2)
+  }
+  return s.replace(',', '.')
+}
 
 export default {
   components: {
@@ -185,6 +289,10 @@ export default {
       filters: {
         date_from: '',
         date_to: '',
+      },
+
+      showPopup: {
+        'info': false,
       },
 
       products: [],
@@ -245,12 +353,15 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
-    async changeView(view) {
+    async changeView(view, parent = null) {
       this.$vs.loading()
 
       if (view == 'products') {
         this.products = await this.ecommerce.fetchProducts()
         this.view = view
+      } else if (view == 'variations') {
+        this.variations = await this.ecommerce.fetchProductVariations(parent.id)
+        this.product = parent
       }
 
       this.$vs.loading.close()
@@ -319,13 +430,16 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+    async showInfo(product) {
+      this.product = product
+      this.showPopup['info'] = true
+    },
 
-    async updatePrice(product) {
+    async updateRegularPrice(product) {
       this.$vs.loading()
 
-      let priceParam = String(this.newPrice).replace(',', '.')
+      let priceParam = formatMoney(this.newPrice)
       let params = {
-        price: priceParam,
         regular_price: priceParam,
       }
 
@@ -336,7 +450,83 @@ export default {
 
       this.$vs.notify({
         title: 'Success',
-        text: 'Product price updated',
+        text: 'Product regular price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async updatePrice(product) {
+      this.$vs.loading()
+
+      let priceParam = formatMoney(this.newPrice)
+      let params = {
+        sale_price: product.sale_price,
+      }
+
+      if (product.type === 'variable') {
+        await this.ecommerce.updateProductVariations(product.id, params)
+      }
+      await this.ecommerce.updateProduct(product.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Product sale price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async updateCost(product) {
+      this.$vs.loading()
+
+      let priceParam = formatMoney(this.newPrice)
+
+      let meta_data = []
+      if (product.hasOwnProperty('meta_data')) {
+        meta_data = product.meta_data
+      }
+
+      let cog_cost_index = -1
+      for (let mIndex = 0; mIndex < meta_data.length; mIndex++) {
+        let md = meta_data[mIndex]
+        if (md.key === '_wc_cog_cost') {
+          cog_cost_index = mIndex
+        }
+      }
+      if (cog_cost_index === -1) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Product has no "_wc_cog_cost" meta data',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+      meta_data[cog_cost_index].value = priceParam
+
+      let params = {
+        meta_data: meta_data,
+      }
+
+      if (product.type === 'variable') {
+        await this.ecommerce.updateProductVariations(product.id, params)
+      }
+      await this.ecommerce.updateProduct(product.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Product cost updated',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
@@ -372,17 +562,16 @@ export default {
     async updateVariationPrice(variation) {
       this.$vs.loading()
 
-      let priceParam = String(this.newPrice).replace(',', '.')
+      let priceParam = formatMoney(this.newPrice)
       let params = {
-        price: priceParam,
-        regular_price: priceParam,
+        sale_price: priceParam,
       }
 
       await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
 
       this.$vs.notify({
         title: 'Success',
-        text: 'Variation price updated',
+        text: 'Variation sale price updated',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
@@ -392,19 +581,79 @@ export default {
 
       this.showVariations(this.product)
     },
+    async updateVariationRegularPrice(variation) {
+      this.$vs.loading()
+
+      let priceParam = formatMoney(this.newPrice)
+      let params = {
+        regular_price: priceParam,
+      }
+
+      await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Variation regular price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.showVariations(this.product)
+    },
+    async updateVariationCost(variation) {
+      this.$vs.loading()
+
+      let priceParam = formatMoney(this.newPrice)
+
+      let meta_data = []
+      if (variation.hasOwnProperty('meta_data')) {
+        meta_data = variation.meta_data
+      }
+
+      let cog_cost_index = -1
+      for (let mIndex = 0; mIndex < meta_data.length; mIndex++) {
+        let md = meta_data[mIndex]
+        if (md.key === '_wc_cog_cost') {
+          cog_cost_index = mIndex
+        }
+      }
+      if (cog_cost_index === -1) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Product has no "_wc_cog_cost" meta data',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
+      }
+      meta_data[cog_cost_index].value = priceParam
+
+      let params = {
+        meta_data: meta_data,
+      }
+
+      await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Variation regular price updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.showVariations(this.variation)
+    },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
-
-    // DEBUG TODO: to delete
-    /*
-    let params = {
-      price: '13.33',
-      regular_price: '13.33',
-    }
-    this.ecommerce.updateProduct(2089, params)
-    this.ecommerce.updateProductVariations(2089, params)
-    */
 
     this.$vs.loading()
 

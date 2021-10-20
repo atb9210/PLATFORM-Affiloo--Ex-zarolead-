@@ -18,6 +18,26 @@ class EcommerceController extends Controller
         );
     }
 
+    private function getRequestAllPages($url, $params = [])
+    {
+        $objects = [];
+
+        $woo = $this->getClient();
+        $wooParams = array_merge($params, [
+            'per_page' => 100,
+            'page' => 1,
+        ]);
+        do {
+            $otherObjects = $woo->get($url, $wooParams);
+            foreach ($otherObjects as $obj) {
+                $objects[] = $obj;
+            }
+            $wooParams['page'] += 1;
+        } while(count($otherObjects) > 0);
+
+        return $objects;
+    }
+
     /**
      * Get customers list.
      *
@@ -29,8 +49,7 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        $woo = $this->getClient();
-        $objects = $woo->get('customers');
+        $objects = $this->getRequestAllPages('customers');
 
         return response([
             'data' => $objects,
@@ -69,8 +88,7 @@ class EcommerceController extends Controller
             $wooParams['before'] = $d;
         }
 
-        $woo = $this->getClient();
-        $objects = $woo->get('orders', $wooParams);
+        $objects = $this->getRequestAllPages('orders', $wooParams);
 
         return response([
             'data' => $objects,
@@ -88,8 +106,7 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        $woo = $this->getClient();
-        $objects = $woo->get('products');
+        $objects = $this->getRequestAllPages('products');
 
         return response([
             'data' => $objects,
@@ -126,8 +143,7 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        $woo = $this->getClient();
-        $objects = $woo->get('products/' . strval($id) . '/variations');
+        $objects = $this->getRequestAllPages('products/' . strval($id) . '/variations');
 
         return response([
             'data' => $objects,

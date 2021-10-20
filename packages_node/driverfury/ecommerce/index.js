@@ -87,24 +87,38 @@ class Ecommerce {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
-        if (obj.hasOwnProperty('price')) {
-          if (obj.price != '') {
-            obj.price = parseFloat(obj.price)
+        if (obj.hasOwnProperty('sale_price')) {
+          if (obj.sale_price !== '') {
+            obj.sale_price = parseFloat(obj.sale_price)
           } else {
-            obj.price = 0.0
+            obj.sale_price = 0.0
           }
         }
+
         if (obj.hasOwnProperty('regular_price')) {
-          if (obj.regular_price != '') {
+          if (obj.regular_price !== '') {
             obj.regular_price = parseFloat(obj.regular_price)
           } else {
             obj.regular_price = 0.0
           }
         }
 
+        obj.cog_cost = 0.0
+        if (obj.hasOwnProperty('meta_data')) {
+          for (let mIndex = 0; mIndex < obj.meta_data.length; mIndex++) {
+            let md = obj.meta_data[mIndex]
+            if (md.key === '_wc_cog_cost' && md.value !== '') {
+              obj.cog_cost = parseFloat(md.value)
+            }
+          }
+        }
+
         objects[i] = obj
       }
     } catch (error) {
+      // DEBUG TODO: to delete
+      console.error(error)
+
       // Nothing
     }
 
@@ -116,15 +130,15 @@ class Ecommerce {
 
     try {
       let headers = this.getHeaders()
-      const response = await this.$http.get('/api/3rd/ecommerce/products/' + id + '/variations', { headers })
+      const response = await this.$http.get('/api/3rd/ecommerce/products/' + id, { headers })
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         object = response.data.data
 
-        if (object.hasOwnProperty('price')) {
-          if (object.price != '') {
-            object.price = parseFloat(object.price)
+        if (object.hasOwnProperty('sale_price')) {
+          if (object.sale_price != '') {
+            object.sale_price = parseFloat(object.sale_price)
           } else {
-            object.price = 0.0
+            object.sale_price = 0.0
           }
         }
         if (object.hasOwnProperty('regular_price')) {
@@ -156,11 +170,11 @@ class Ecommerce {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
-        if (obj.hasOwnProperty('price')) {
-          if (obj.price != '') {
-            obj.price = parseFloat(obj.price)
+        if (obj.hasOwnProperty('sale_price')) {
+          if (obj.sale_price != '') {
+            obj.sale_price = parseFloat(obj.sale_price)
           } else {
-            obj.price = 0.0
+            obj.sale_price = 0.0
           }
         }
         if (obj.hasOwnProperty('regular_price')) {
@@ -168,6 +182,16 @@ class Ecommerce {
             obj.regular_price = parseFloat(obj.regular_price)
           } else {
             obj.regular_price = 0.0
+          }
+        }
+
+        obj.cog_cost = 0.0
+        if (obj.hasOwnProperty('meta_data')) {
+          for (let mIndex = 0; mIndex < obj.meta_data.length; mIndex++) {
+            let md = obj.meta_data[mIndex]
+            if (md.key === '_wc_cog_cost' && md.value !== '') {
+              obj.cog_cost = parseFloat(md.value)
+            }
           }
         }
 
