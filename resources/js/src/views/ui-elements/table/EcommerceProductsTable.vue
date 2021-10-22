@@ -85,6 +85,7 @@
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="sku">SKU</vs-th>
                 <vs-th sort-key="shipping_class">Shipping Class</vs-th>
+                <vs-th sort-key="price">Price</vs-th>
                 <vs-th sort-key="regular_price">Regular Price</vs-th>
                 <vs-th sort-key="sale_price">Sale Price</vs-th>
                 <vs-th sort-key="cog_cost">Cost</vs-th>
@@ -116,11 +117,20 @@
                         {{item.shipping_class}}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].price"
+                            @onUpdate="updatePrice(data[indextr], 'price')">
+                              € {{ item.price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.regular_price">
                         <editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].regular_price"
-                            @onUpdate="updateRegularPrice(data[indextr])">
+                            @onUpdate="updatePrice(data[indextr], 'regular_price')">
                               € {{ item.regular_price.toFixed(2) }}
                         </editable-value>
                     </vs-td>
@@ -129,7 +139,7 @@
                         <editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].sale_price"
-                            @onUpdate="updatePrice(data[indextr])">
+                            @onUpdate="updatePrice(data[indextr], 'sale_price')">
                               € {{ item.sale_price.toFixed(2) }}
                         </editable-value>
                     </vs-td>
@@ -171,6 +181,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="price">Price</vs-th>
                 <vs-th sort-key="regular_price">Regular Price</vs-th>
                 <vs-th sort-key="sale_price">Sale Price</vs-th>
                 <vs-th sort-key="cog_cost">Cost</vs-th>
@@ -187,11 +198,20 @@
                         {{item.name}}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.price">
+                        <editable-value
+                            v-model="newPrice"
+                            @onEdit="newPrice = data[indextr].price"
+                            @onUpdate="updateVariationPrice(data[indextr], 'price')">
+                              € {{ item.price.toFixed(2) }}
+                        </editable-value>
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.regular_price">
                         <editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].regular_price"
-                            @onUpdate="updateVariationRegularPrice(data[indextr])">
+                            @onUpdate="updateVariationPrice(data[indextr], 'regular_price')">
                               € {{ item.regular_price.toFixed(2) }}
                         </editable-value>
                     </vs-td>
@@ -200,7 +220,7 @@
                         <editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].sale_price"
-                            @onUpdate="updateVariationPrice(data[indextr])">
+                            @onUpdate="updateVariationPrice(data[indextr], 'sale_price')">
                               € {{ item.sale_price.toFixed(2) }}
                         </editable-value>
                     </vs-td>
@@ -435,12 +455,18 @@ export default {
       this.showPopup['info'] = true
     },
 
-    async updateRegularPrice(product) {
+    async updatePrice(product, type = 'price') {
       this.$vs.loading()
 
       let priceParam = formatMoney(this.newPrice)
-      let params = {
-        regular_price: priceParam,
+
+      let params = {}
+      if (type === 'price') {
+        params.price = priceParam
+      } else if (type === 'sale_price') {
+        params.sale_price = priceParam
+      } else if (type === 'regular_price') {
+        params.regular_price = priceParam
       }
 
       if (product.type === 'variable') {
@@ -450,32 +476,7 @@ export default {
 
       this.$vs.notify({
         title: 'Success',
-        text: 'Product regular price updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      this.applyFilters()
-    },
-    async updatePrice(product) {
-      this.$vs.loading()
-
-      let priceParam = formatMoney(this.newPrice)
-      let params = {
-        sale_price: product.sale_price,
-      }
-
-      if (product.type === 'variable') {
-        await this.ecommerce.updateProductVariations(product.id, params)
-      }
-      await this.ecommerce.updateProduct(product.id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Product sale price updated',
+        text: 'Product updated',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
@@ -559,41 +560,24 @@ export default {
 
       this.$vs.loading.close()
     },
-    async updateVariationPrice(variation) {
+    async updateVariationPrice(variation, type = 'price') {
       this.$vs.loading()
 
       let priceParam = formatMoney(this.newPrice)
-      let params = {
-        sale_price: priceParam,
-      }
 
+      let params = {}
+      if (type === 'price') {
+        params.price = priceParam
+      } else if (type === 'sale_price') {
+        params.sale_price = priceParam
+      } else if (type === 'regular_price') {
+        params.regular_price = priceParam
+      }
       await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
 
       this.$vs.notify({
         title: 'Success',
-        text: 'Variation sale price updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      this.showVariations(this.product)
-    },
-    async updateVariationRegularPrice(variation) {
-      this.$vs.loading()
-
-      let priceParam = formatMoney(this.newPrice)
-      let params = {
-        regular_price: priceParam,
-      }
-
-      await this.ecommerce.updateProductVariation(this.product.id, variation.id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Variation regular price updated',
+        text: 'Product\'s variation updated',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'

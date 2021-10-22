@@ -87,12 +87,24 @@ class Ecommerce {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
+        if (obj.hasOwnProperty('price')) {
+          if (obj.price !== '') {
+            obj.price = parseFloat(obj.price)
+          } else {
+            obj.price = 0.0
+          }
+        } else {
+          obj.price = 0.0
+        }
+
         if (obj.hasOwnProperty('sale_price')) {
           if (obj.sale_price !== '') {
             obj.sale_price = parseFloat(obj.sale_price)
           } else {
             obj.sale_price = 0.0
           }
+        } else {
+          obj.sale_price = 0.0
         }
 
         if (obj.hasOwnProperty('regular_price')) {
@@ -101,6 +113,8 @@ class Ecommerce {
           } else {
             obj.regular_price = 0.0
           }
+        } else {
+          obj.regular_price = 0.0
         }
 
         obj.cog_cost = 0.0
@@ -134,19 +148,34 @@ class Ecommerce {
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         object = response.data.data
 
+        if (object.hasOwnProperty('price')) {
+          if (object.price != '') {
+            object.price = parseFloat(object.price)
+          } else {
+            object.price = 0.0
+          }
+        } else {
+          object.price = 0.0
+        }
+
         if (object.hasOwnProperty('sale_price')) {
           if (object.sale_price != '') {
             object.sale_price = parseFloat(object.sale_price)
           } else {
             object.sale_price = 0.0
           }
+        } else {
+          object.sale_price = 0.0
         }
+
         if (object.hasOwnProperty('regular_price')) {
           if (object.regular_price != '') {
             object.regular_price = parseFloat(object.regular_price)
           } else {
             object.regular_price = 0.0
           }
+        } else {
+          object.regular_price = 0.0
         }
 
       }
