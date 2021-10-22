@@ -26,6 +26,8 @@ Vue.component(VxInputGroup.name, VxInputGroup)
 // NOTE: Custom (created by driverfury)
 import EditableValue  from './components/EditableValue.vue'
 Vue.component(EditableValue.name, EditableValue)
+import FastEditableValue  from './components/FastEditableValue.vue'
+Vue.component(FastEditableValue.name, FastEditableValue)
 
 
 // v-select component

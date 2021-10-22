@@ -64,6 +64,12 @@
 
         <vue-context ref="product_context_menu" v-slot="{ data }">
             <li>
+              <a href="#" @click="$refs.product_context_menu.close();switchStatus(data);" class="flex items-center text-sm">
+                <feather-icon icon="CommandIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Publish/draft</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.product_context_menu.close();showVariations(data);" class="flex items-center text-sm">
                 <feather-icon icon="GitBranchIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Variations</span>
@@ -91,6 +97,7 @@
                 <vs-th sort-key="cog_cost">Cost</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
                 <vs-th sort-key="stock_status">Stock Status</vs-th>
+                <vs-th sort-key="stock_quantity">Stock Q.ty</vs-th>
                 <vs-th sort-key="">Info</vs-th>
             </template>
 
@@ -118,43 +125,43 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].price"
                             @onUpdate="updatePrice(data[indextr], 'price')">
                               € {{ item.price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.regular_price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].regular_price"
                             @onUpdate="updatePrice(data[indextr], 'regular_price')">
                               € {{ item.regular_price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
                     
                     <vs-td class="column-no-padding" :data="item.sale_price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].sale_price"
                             @onUpdate="updatePrice(data[indextr], 'sale_price')">
                               € {{ item.sale_price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.cog_cost">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].cog_cost"
                             @onUpdate="updateCost(data[indextr])">
                               € {{ item.cog_cost.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.status">
-                        <vs-chip :color="productStatusColor[item.status]">
+                        <vs-chip :color="productStatusColor[item.status]" @dblclick="switchStatus(item)">
                             {{item.status}}
                         </vs-chip>
                     </vs-td>
@@ -163,6 +170,10 @@
                         <vs-chip :color="productStockStatusColor[item.stock_status]">
                             {{item.stock_status}}
                         </vs-chip>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.stock_quantity">
+                        {{item.stock_quantity}}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.stock_status">
@@ -199,39 +210,39 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].price"
                             @onUpdate="updateVariationPrice(data[indextr], 'price')">
                               € {{ item.price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.regular_price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].regular_price"
                             @onUpdate="updateVariationPrice(data[indextr], 'regular_price')">
                               € {{ item.regular_price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.sale_price">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].sale_price"
                             @onUpdate="updateVariationPrice(data[indextr], 'sale_price')">
                               € {{ item.sale_price.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.cog_cost">
-                        <editable-value
+                        <fast-editable-value
                             v-model="newPrice"
                             @onEdit="newPrice = data[indextr].cog_cost"
                             @onUpdate="updateVariationCost(data[indextr])">
                               € {{ item.cog_cost.toFixed(2) }}
-                        </editable-value>
+                        </fast-editable-value>
                     </vs-td>
                     
                 </vs-tr>
@@ -634,6 +645,30 @@ export default {
       this.$vs.loading.close()
 
       this.showVariations(this.variation)
+    },
+    async switchStatus(product) {
+      this.$vs.loading()
+
+      let params = {
+        status: 'publish'
+      }
+      if (product.status == 'publish') {
+        params.status = 'draft'
+      }
+
+      await this.ecommerce.updateProduct(product.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Product updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
     },
   },
   async created() {
