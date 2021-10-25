@@ -142,6 +142,8 @@ Route::post('/tiktok/events/trigger', 'api\third\TikTokController@triggerEvent')
 /* Ecommerce rules */
 Route::get('/ecommerce/orders', 'api\third\EcommerceController@orders')->middleware('auth:api')
     ->name('ecommerce.orders.index');
+Route::put('/ecommerce/orders/{id}', 'api\third\EcommerceController@updateOrder')->middleware('auth:api')
+    ->name('ecommerce.orders.update');
 
 Route::get('/ecommerce/customers', 'api\third\EcommerceController@customers')->middleware('auth:api')
     ->name('ecommerce.customers.index');
@@ -150,12 +152,12 @@ Route::get('/ecommerce/products', 'api\third\EcommerceController@products')->mid
     ->name('ecommerce.products.index');
 Route::get('/ecommerce/products/{id}', 'api\third\EcommerceController@product')->middleware('auth:api')
     ->name('ecommerce.products.get');
+Route::put('/ecommerce/products/{id}', 'api\third\EcommerceController@updateProduct')->middleware('auth:api')
+    ->name('ecommerce.products.update');
 Route::get('/ecommerce/products/{id}/variations', 'api\third\EcommerceController@productVariations')->middleware('auth:api')
     ->name('ecommerce.products.variations');
 Route::put('/ecommerce/products/{pid}/variations/{vid}', 'api\third\EcommerceController@updateProductVariation')->middleware('auth:api')
     ->name('ecommerce.products.variations.update');
-Route::put('/ecommerce/products/{id}', 'api\third\EcommerceController@updateProduct')->middleware('auth:api')
-    ->name('ecommerce.products.update');
 
 Route::get('/ecommerce/carts', 'api\third\EcommerceController@carts')->middleware('auth:api')
     ->name('ecommerce.carts.index');

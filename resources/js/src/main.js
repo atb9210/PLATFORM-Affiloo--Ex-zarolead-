@@ -81,6 +81,10 @@ Vue.use(VueGoogleMaps, {
 import { VueHammer } from 'vue2-hammer'
 Vue.use(VueHammer)
 
+// Popover plugin
+import Popover from 'vue-js-popover'
+Vue.use(Popover)
+
 // PrismJS
 import 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'

@@ -208,6 +208,34 @@ class EcommerceController extends Controller
     }
 
     /**
+     * Update order.
+     *
+     * @urlParam id int required Order's id
+     *
+     * @bodyParam params json reqruired Order's params
+     *
+     * @response {
+     *  "data": order,
+     * }
+     */
+    public function updateOrder($id, Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'params' => 'json|required',
+        ]);
+
+        $params = json_decode($params['params'], true);
+
+        $woo = $this->getClient();
+        $order = $woo->put('orders/' . strval($id), $params);
+
+        return response([
+            'data' => $order,
+        ]);
+    }
+
+    /**
      * Get carts list.
      *
      * @response {

@@ -61,28 +61,11 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vue-context ref="order_context_menu" v-slot="{ data }">
-            <!--
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.order_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+        <popover class="customer_popover" :name="'customer_popover_' + order.id" event="hover" v-for="(order, index) in orders" :key="index">
+            <div><b>{{ order.customer_name }}</b></div>
+            <div>{{ order.billing.address_1 }}, {{ order.billing.postcode }} {{ order.billing.city }} ({{ order.billing.state }})</div>
+            <div>{{ order.billing.phone }}</div>
+        </popover>
 
         <!-- Orders table -->
         <vs-table v-if="view == 'orders'" stripe multiple v-model="selectedOrders" :max-items="maxItems" pagination search :data="orders" :currentPage="currentPage" @change-page="onPageChanged">
@@ -90,9 +73,12 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="date">Date</vs-th>
-                <vs-th sort-key="products">Products</vs-th>
+                <vs-th sort-key="customer_name">Customer</vs-th>
+                <vs-th sort-key="num_items">Items</vs-th>
                 <vs-th sort-key="total">Amount</vs-th>
+                <vs-th sort-key="payment_method">Payment Method</vs-th>
                 <vs-th sort-key="status">Status</vs-th>
+                <vs-th sort-key="">Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -103,48 +89,109 @@
                     </vs-td>
                     
                     <vs-td class="column-no-padding" :data="item.date">
-                        {{formatDate(item.date)}}
+                        {{formatDate(item.date)}} ({{dateTimeAgo(item.date)}})
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.products">
-                        <div @contextmenu.prevent="$refs.order_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.products}}
-                            </vs-chip>
-                        </div>
+                    <vs-td class="column-no-padding" :data="item.customer_name">
+                        <vs-chip v-popover="{name:'customer_popover_' + item.id}">
+                            {{item.customer_name}}
+                        </vs-chip>
                     </vs-td>
-                    
-                    <vs-td class="column-no-padding" :data="item.id">
+
+                    <vs-td class="column-no-padding" :data="item.num_items">
+                        <vx-tooltip :text="item.products" position="bottom">
+                            <span>{{item.num_items}} {{ item.num_items == 1 ? 'item' : 'items' }}</span>
+                        </vx-tooltip>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.total">
                         {{item.currency_symbol}} {{item.total}}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.payment_method">
+                        {{item.payment_method}}
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.status">
-                        <vs-chip :color="orderStatusColor[item.status]">
-                            {{item.status}}
-                        </vs-chip>
+                        <fast-editable-value-select
+                            :options="orderStatuses"
+                            v-model="newStatus"
+                            @onEdit="newStatus = data[indextr].status"
+                            @onUpdate="updateStatus(data[indextr])">
+                              <vs-chip :color="orderStatusColor[item.status]">
+                                  {{item.status}}
+                              </vs-chip>
+                        </fast-editable-value-select>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <div class="flex items-center">
+                            <vx-tooltip text="Info" position="top">
+                                <vs-button class="mr-2" color="primary" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
+                            </vx-tooltip>
+                            <vx-tooltip :text="item.notes" position="top">
+                                <vs-button class="mr-2" color="primary" @click="showNotes(item)" icon-pack="feather" icon="icon-message-circle" />
+                            </vx-tooltip>
+                            <vx-tooltip text="** Genera spedizione **" position="top">
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" />
+                            </vx-tooltip>
+                            <vx-tooltip text="Edit product" position="top">
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="goToEditOrderPage(item)" />
+                            </vx-tooltip>
+                        </div>
                     </vs-td>
 
                 </vs-tr>
             </template>
         </vs-table>
 
+        <!-- Order info popup -->
+        <vs-popup title="Order info" :active.sync="showPopup['info']">
+            <div class="vx-row mb-6" :key="index" v-for="(value, name, index) in order">
+                <div class="vx-col sm:w-1/2 w-full">
+                    <span><b>{{name}}</b></span>
+                </div>
+                <div class="vx-col sm:w-1/2 w-full">
+                    <span>{{value}}</span>
+                </div>
+            </div>
+        </vs-popup>
+
+        <!-- Notes popup -->
+        <vs-popup title="Notes" :active.sync="showPopup['notes']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <h3>Notes</h3>
+                        <vs-textarea v-model="order.notes"></vs-textarea>
+                        <div class="flex" style="float: right;">
+                            <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="updateNotes(order)"></vs-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
 <script>
-import { VueContext } from 'vue-context'
 import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
 import Ecommerce from 'ecommerce'
 
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
+TimeAgo.addDefaultLocale(en)
+
 export default {
   components: {
-    VueContext,
     StatisticsCardLine,
   },
   data () {
     return {
       ecommerce: null,
+      timeAgo: null,
 
       maxItems: 20,
       view: 'orders',
@@ -155,8 +202,15 @@ export default {
         date_to: '',
       },
 
+      showPopup: {
+        'info': false,
+        'notes': false,
+      },
+
       orders: [],
       selectedOrders: [],
+
+      order: {},
 
       orderStatuses: [
         'pending',
@@ -176,6 +230,8 @@ export default {
         'refunded':   'success',
         'failed':     'danger',
       },
+
+      newStatus: 'pending',
     }
   },
   computed: {
@@ -279,9 +335,69 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+    dateTimeAgo(dateObj) {
+      return this.timeAgo.format(dateObj)
+    },
+    showInfo(order) {
+      this.order = order
+      this.showPopup['info'] = true
+    },
+    showNotes(order) {
+      this.order = order
+      this.showPopup['notes'] = true
+    },
+    async updateNotes(order) {
+      this.$vs.loading()
+
+      order.meta_data.push({
+        id: 999,
+        key: '_zl_notes',
+        value: order.notes,
+      })
+      let params = {
+        meta_data: order.meta_data,
+      }
+      await this.ecommerce.updateOrder(order.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Order\'s notes updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['notes'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async updateStatus(order) {
+      this.$vs.loading()
+
+      let params = {
+        status: this.newStatus,
+      }
+      await this.ecommerce.updateOrder(order.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Order\'s status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    goToEditOrderPage(order) {
+      let url = 'https://homygadget.com/wp-admin/post.php?post=' + order.id + '&action=edit'
+      window.open(url, '_blank').focus()
+    },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
+    this.timeAgo = new TimeAgo('en-US')
 
     this.$vs.loading()
 
@@ -292,3 +408,12 @@ export default {
 }
 
 </script>
+
+<style>
+
+.customer_popover {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+</style>

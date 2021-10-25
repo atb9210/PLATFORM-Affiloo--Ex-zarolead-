@@ -48,6 +48,38 @@ class Ecommerce {
 
         if (obj.hasOwnProperty('total')) {
           obj.total = parseFloat(obj.total)
+        } else {
+          obj.total = 0.0
+        }
+
+        obj.customer_name = ''
+        if (obj.hasOwnProperty('billing')) {
+          if (obj.billing.hasOwnProperty('first_name')) {
+            obj.customer_name += obj.billing.first_name
+          }
+          if (obj.billing.hasOwnProperty('last_name')) {
+            obj.customer_name += ' ' + obj.billing.last_name
+          }
+        }
+
+        obj.notes = ''
+        if (obj.hasOwnProperty('meta_data')) {
+          for (let mIndex = 0; mIndex < obj.meta_data.length; mIndex++) {
+            let md = obj.meta_data[mIndex]
+            if (md.key === '_zl_notes') {
+              obj.notes = md.value
+              break
+            }
+          }
+        }
+
+        obj.num_items = 0
+        if (obj.hasOwnProperty('line_items')) {
+          for (let itemIndex = 0; itemIndex < obj.line_items.length; itemIndex++) {
+            if (obj.line_items[itemIndex].hasOwnProperty('quantity')) {
+              obj.num_items += parseInt(obj.line_items[itemIndex].quantity)
+            }
+          }
         }
       }
 
@@ -123,6 +155,7 @@ class Ecommerce {
             let md = obj.meta_data[mIndex]
             if (md.key === '_wc_cog_cost' && md.value !== '') {
               obj.cog_cost = parseFloat(md.value)
+              break
             }
           }
         }
@@ -220,6 +253,7 @@ class Ecommerce {
             let md = obj.meta_data[mIndex]
             if (md.key === '_wc_cog_cost' && md.value !== '') {
               obj.cog_cost = parseFloat(md.value)
+              break
             }
           }
         }
@@ -410,6 +444,25 @@ class Ecommerce {
     }
 
     return adSpent
+  }
+
+  async updateOrder(id, params = {}) {
+    let order = null
+
+    try {
+      let headers = this.getHeaders()
+      let paramsData = {
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.put('/api/3rd/ecommerce/orders/' + id, paramsData, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        order = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return order
   }
 
   async fetchCarts() {

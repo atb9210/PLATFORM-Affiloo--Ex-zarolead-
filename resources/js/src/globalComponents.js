@@ -28,6 +28,8 @@ import EditableValue  from './components/EditableValue.vue'
 Vue.component(EditableValue.name, EditableValue)
 import FastEditableValue  from './components/FastEditableValue.vue'
 Vue.component(FastEditableValue.name, FastEditableValue)
+import FastEditableValueSelect  from './components/FastEditableValueSelect.vue'
+Vue.component(FastEditableValueSelect.name, FastEditableValueSelect)
 
 
 // v-select component

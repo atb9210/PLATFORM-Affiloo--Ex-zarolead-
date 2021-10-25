@@ -176,7 +176,7 @@
                         {{item.stock_quantity}}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.stock_status">
+                    <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vs-avatar color="primary" size="24px" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
                         </div>
