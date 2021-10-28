@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use Driverfury\Worldfilia\Worldfilia;
 
+use App\third\EcommerceSettings;
+
 class EcommerceController extends Controller
 {
     private function getClient()
@@ -232,6 +234,214 @@ class EcommerceController extends Controller
 
         return response([
             'data' => $order,
+        ]);
+    }
+
+    /**
+     * Get payment methods list.
+     *
+     * @response {
+     *  "data": [payment_methods],
+     * }
+     */
+    public function paymentMethods(Request $request)
+    {
+        // TODO: Authorization
+
+        $woo = $this->getClient();
+        $objects = $woo->get('payment_gateways');
+
+        // Fees
+        $settings = EcommerceSettings::get();
+        for ($i = 0; $i < count($objects); $i += 1) {
+            $objects[$i]->fixed_fee = 0.00;
+            $objects[$i]->flat_fee = 0.00;
+
+            if (isset($settings['fees'][$objects[$i]->id]['fixed'])) {
+                $objects[$i]->fixed_fee = $settings['fees'][$objects[$i]->id]['fixed'];
+            }
+            if (isset($settings['fees'][$objects[$i]->id]['flat'])) {
+                $objects[$i]->flat_fee = $settings['fees'][$objects[$i]->id]['flat'];
+            }
+        }
+
+        return response([
+            'data' => $objects,
+        ]);
+    }
+
+    /**
+     * Update payment method's settings.
+     *
+     * @urlParam id int required Payment method's id
+     *
+     * @bodyParam settings json reqruired Settings
+     *
+     * @response {
+     *  "message": "Fees updated",
+     * }
+     */
+    public function updatePaymentMethodFees($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'fixed' => 'required|numeric',
+            'flat' => 'required|numeric',
+        ]);
+
+        // Update fee
+        $settings = EcommerceSettings::get();
+        if (!isset($settings['fees'])) {
+            $settings['fees'] = [];
+        }
+        if (!isset($settings['fees'][$id])) {
+            $settings['fees'][$id] = [
+                'fixed' => 0.0,
+                'flat'  => 0.0,
+            ];
+        }
+        $settings['fees'][$id] = [
+            'fixed' => floatval($params['fixed']),
+            'flat'  => floatval($params['flat']),
+        ];
+        EcommerceSettings::set($settings);
+
+        return response([
+            'message' => 'Fees updated',
+        ]);
+    }
+
+    /**
+     * Get advertising csv
+     *
+     * @response {
+     *  "data": "csv_url"
+     * }
+     */
+    public function getAdvertisingCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        $csv = EcommerceSettings::getK('advertising');
+        if ($csv === null) {
+            $csv = '';
+        }
+
+        return response([
+            'data' => $csv,
+        ]);
+    }
+
+    /**
+     * Update advertising csv
+     *
+     * @response {
+     *  "message": "Advertising CSV updated",
+     * }
+     */
+    public function updateAdvertisingCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'csv' => 'required|url',
+        ]);
+
+        EcommerceSettings::setK('advertising', $params['csv']);
+
+        return response([
+            'message' => 'Advertising CSV updated',
+        ]);
+    }
+
+    /**
+     * Get shipping csv
+     *
+     * @response {
+     *  "data": "csv_url"
+     * }
+     */
+    public function getShippingCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        $csv = EcommerceSettings::getK('shipping');
+        if ($csv === null) {
+            $csv = '';
+        }
+
+        return response([
+            'data' => $csv,
+        ]);
+    }
+
+    /**
+     * Update shipping csv
+     *
+     * @response {
+     *  "message": "Advertising CSV updated",
+     * }
+     */
+    public function updateShippingCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'csv' => 'required|url',
+        ]);
+
+        EcommerceSettings::setK('shipping', $params['csv']);
+
+        return response([
+            'message' => 'Shipping CSV updated',
+        ]);
+    }
+    
+    /**
+     * Get extra cost csv
+     *
+     * @response {
+     *  "data": "csv_url"
+     * }
+     */
+    public function getExtraCostCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        $csv = EcommerceSettings::getK('extra_cost');
+        if ($csv === null) {
+            $csv = '';
+        }
+
+        return response([
+            'data' => $csv,
+        ]);
+    }
+
+    /**
+     * Update extra cost csv
+     *
+     * @response {
+     *  "message": "Advertising CSV updated",
+     * }
+     */
+    public function updateExtraCostCsv(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'csv' => 'required|url',
+        ]);
+
+        EcommerceSettings::setK('extra_cost', $params['csv']);
+
+        return response([
+            'message' => 'Extra cost CSV updated',
         ]);
     }
 

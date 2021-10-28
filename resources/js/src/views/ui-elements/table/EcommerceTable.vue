@@ -3,6 +3,8 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="changeView('payment_methods')">Payment methods</vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="changeView('sync_csv')">Sync CSV</vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -55,64 +57,124 @@
         </div>
 
         <div v-if="view == 'dashboard'" class="mb-12 vx-row">
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="stats.numOrders" statisticTitle="Orders" color="primary"></statistics-card-line>
+
+            <!-- Revenue data -->
+            <stats-card :title="'€ ' + stats.revenue.toFixed(2)" body="Revenue" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.taxTotal.toFixed(2)" body="Tax Total" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <div class="vx-col w-full sm:w-full xl:w-1/2 mb-base">
             </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + stats.revenue.toFixed(2)" statisticTitle="Revenue" color="primary"></statistics-card-line>
+            <!-- Profit data -->
+            <stats-card :title="'€ ' + stats.revenueNet.toFixed(2)" body="Net Revenue" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.costTotal.toFixed(2)" body="Cost Total" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.profit.toFixed(2)" body="Profit" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="stats.profitMargin.toFixed(2) + '%'" body="Profit margin" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <div class="vx-col w-full sm:w-full xl:w-full mb-base">
             </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="DollarSignIcon" :statistic="'€ ' + stats.profit.toFixed(2)" statisticTitle="Profit" color="success"></statistics-card-line>
+            <!-- Order data -->
+            <stats-card :title="stats.numOrders.toString()" body="Orders" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.avgOrderTotal.toFixed(2)" body="AVG Order Value" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.avgOrderCost.toFixed(2)" body="AVG Order Cost" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.avgOrderProfit.toFixed(2)" body="AVG Order Profit" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <div class="vx-col w-full sm:w-full xl:w-full mb-base">
             </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + stats.taxTotal.toFixed(2)" statisticTitle="Tax Total" color="danger"></statistics-card-line>
+            <!-- Cost data -->
+            <stats-card :title="'€ ' + stats.cogCostTotal.toFixed(2)" body="COG Cost Total" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.shippingCostTotal.toFixed(2)" body="Shipping Cost Total" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.adSpentTotal.toFixed(2)" body="Total Ad Spent" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.transactionFees.toFixed(2)" body="Payment Gateway fees" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.extraCostTotal.toFixed(2)" body="Extra cost" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <div class="vx-col w-full sm:w-1/2 xl:w-3/4 mb-base">
             </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="'€ ' + stats.paymentGatewayFees.toFixed(2)" statisticTitle="Payment Gateway fees" color="danger"></statistics-card-line>
+            <!-- Inventory data -->
+            <stats-card :title="stats.inventoryStockQty.toString()" body="Stock Q.ty" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.inventoryStockCost.toFixed(2)" body="Stock Cost" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <stats-card :title="'€ ' + stats.inventoryStockValue.toFixed(2)" body="Stock Value" class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base" />
+
+            <div class="vx-col w-full sm:w-1/2 xl:w-1/4 mb-base">
             </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PackageIcon" :statistic="'€ ' + stats.avgOrderTotal.toFixed(2)" statisticTitle="AVG Order Value" color="danger"></statistics-card-line>
-            </div>
+        </div>
+        
+        <div v-if="view == 'payment_methods'" class="mb-12 vx-row">
+            <div class="w-full mb-base" v-for="(item, index) in paymentMethods" :key="index">
+                <div class="vx-row md:w-1/2 flex items-center">
+                    <div class="vx-col w-full">
+                        {{ item.id }}
+                    </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="LayoutIcon" :statistic="'€ ' + stats.adSpent.toFixed(2)" statisticTitle="Total Ad Spent" color="danger"></statistics-card-line>
-            </div>
+                    <div class="vx-col w-full md:w-2/5">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-dollar-sign" type="number" min="0.0" step="0.01" v-model="paymentMethods[index].fixed_fee" />
+                    </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="stats.profitMargin.toFixed(2) + '%'" statisticTitle="Profit margin" color="success"></statistics-card-line>
-            </div>
+                    <div class="vx-col w-full md:w-1/5">
+                        <div class="w-full text-center">+</div>
+                    </div>
 
-            <div class="vx-col w-full sm:w-1/2 md:w-1/2 lg:w-1/4 xl:w-1/4 mb-base">
-                <statistics-card-line icon="PercentIcon" :statistic="stats.roas.toFixed(2) + '%'" statisticTitle="ROAS" color="success"></statistics-card-line>
+                    <div class="vx-col w-full md:w-2/5">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-percent" type="number" min="0.0" step="0.01" v-model="paymentMethods[index].flat_fee" />
+                    </div>
+                </div>
             </div>
+            <vs-button color="primary" icon-pack="feather" icon="icon-save" @click="updatePaymentMethodsFees">Save changes</vs-button>
         </div>
 
-        <vs-dropdown vs-trigger-click class="cursor-pointer">
-            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
-            </div>
-            <vs-dropdown-menu>
-                <vs-dropdown-item @click="maxItems = 20">
-                    <span>20</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 50">
-                    <span>50</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 100">
-                    <span>100</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 150">
-                    <span>150</span>
-                </vs-dropdown-item>
-            </vs-dropdown-menu>
-        </vs-dropdown>
+        <div v-if="view == 'sync_csv'" class="mb-12 vx-row">
+            <p>
+                <h1>Sync CSV</h1>
 
+                <div class="vx-row w-full">
+                    <div class="vx-col w-full">
+                        Advertising
+                    </div>
+                    <div class="vx-col w-full">
+                        <vs-input class="w-full" type="text" icon-pack="feather" icon="icon-link" v-model="advertisingCsv" />
+                    </div>
+                </div>
+
+                <div class="vx-row w-full">
+                    <div class="vx-col w-full">
+                        Shipping
+                    </div>
+                    <div class="vx-col w-full">
+                        <vs-input class="w-full" type="text" icon-pack="feather" icon="icon-link" v-model="shippingCsv" />
+                    </div>
+                </div>
+
+                <div class="vx-row w-full">
+                    <div class="vx-col w-full">
+                        Extra cost
+                    </div>
+                    <div class="vx-col w-full">
+                        <vs-input class="w-full" type="text" icon-pack="feather" icon="icon-link" v-model="extraCostCsv" />
+                    </div>
+                </div>
+
+                <div class="vx-row w-full">
+                    <vs-button color="primary" icon-pack="feather" icon="icon-refresh-cw" @click="updateCsv">Sync now</vs-button>
+                </div>
+            </p>
+        </div>
 
     </vx-card>
 </template>
@@ -145,6 +207,13 @@ export default {
       orders: [],
       selectedOrders: [],
 
+      products: [],
+      paymentMethods: [],
+
+      advertisingCsv: '',
+      shippingCsv: '',
+      extraCostCsv: '',
+
       orderStatuses: [
         'pending',
         'processing',
@@ -165,15 +234,22 @@ export default {
       },
 
       stats: {
-        numOrders: 0,
         revenue: 0.0,
-        profit: 0.0,
-        paymentGatewayFees: 0.0,
         taxTotal: 0.0,
-        avgOrderTotal: 0.0,
-        adSpent: 0.0,
+        revenueNet: 0.0,
+        costTotal: 0.0,
+        profit: 0.0,
         profitMargin: 0.0,
-        roas: 0.0,
+        numOrders: 0,
+        avgOrderTotal: 0.0,
+        avgOrderCost: 0.0,
+        avgOrderProfit: 0.0,
+        cogCostTotal: 0.0,
+        shippingTotal: 0.0,
+        shippingCostTotal: 0.0,
+        adSpentTotal: 0.0,
+        transactionFees: 0.0,
+        extraCostTotal: 0.0,
       },
     }
   },
@@ -209,6 +285,14 @@ export default {
 
       if (view == 'dashboard') {
         await this.calculateProfit()
+        this.view = view
+      } else if (view == 'payment_methods') {
+        this.paymentMethods = await this.ecommerce.fetchPaymentMethods()
+        this.view = view
+      } else if (view == 'sync_csv') {
+        this.advertisingCsv = await this.ecommerce.getAdvertisingCsv()
+        this.shippingCsv = await this.ecommerce.getShippingCsv()
+        this.extraCostCsv = await this.ecommerce.getExtraCostCsv()
         this.view = view
       }
 
@@ -306,30 +390,50 @@ export default {
     async calculateProfit() {
       let orders = await this.ecommerce.fetchOrders(this.filters)
 
-      let paymentGatewayFeesTable = {
-        'paypal': {
-          fixed: 0.3,
-          rate:  0.029,
-        },
-        'stripe': {
-          fixed: 0.3,
-          rate:  0.029,
-        },
+      // Build payment methods fee table
+      let pm = await this.ecommerce.fetchPaymentMethods()
+      let paymentMethodsFeesTable = {}
+      for (let i = 0; i < pm.length; i++) {
+        paymentMethodsFeesTable[pm[i].id] = {
+          fixed: parseFloat(pm[i].fixed_fee),
+          flat: parseFloat(pm[i].flat_fee),
+        }
       }
 
-      let numOrders = 0
-      let avgOrderTotal = 0.0
-      let paymentGatewayFees = 0.0
       let revenue = 0.0
       let taxTotal = 0.0
+      let revenueNet = 0.0
+      let costTotal = 0.0
       let profit = 0.0
       let profitMargin = 0.0
-      let roas = 0.0
-      let adSpent = {}
+      let numOrders = 0
+      let avgOrderTotal = 0.0
+      let avgOrderCost = 0.0
+      let avgOrderProfit = 0.0
+      let cogCostTotal = 0.0
+      let shippingTotal = 0.0
+      let shippingCostTotal = 0.0
+      let adSpentTotal = 0.0
+      let transactionFees = 0.0
+      let extraCostTotal = 0.0
 
-      // TODO: Get ad spent
-      let csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJCULZurYAQAGkak5mbvxjQthxjXQiB5XXk83gLua_pn_EqENBpS6J8EWzxGTkrs6MThi1ksRe5NCz/pub?gid=0&single=true&output=csv'
-      adSpent = await this.ecommerce.getAdSpentFromCsv(csvUrl)
+      // Get ad spent
+      let adSpent = await this.ecommerce.getAdSpent(this.filters)
+      if (adSpent.hasOwnProperty('total') && adSpent['total'] != '') {
+        adSpentTotal = parseFloat(adSpent['total'])
+      }
+
+      // Get shipping cost
+      let shippingCost = await this.ecommerce.getExtraCost(this.filters)
+      if (shippingCost.hasOwnProperty('total') && shippingCost['total'] != '') {
+        shippingCostTotal = parseFloat(shippingCost['total'])
+      }
+
+      // Get extra cost
+      let extraCost = await this.ecommerce.getExtraCost(this.filters)
+      if (extraCost.hasOwnProperty('total') && extraCost['total'] != '') {
+        extraCostTotal = parseFloat(extraCost['total'])
+      }
 
       for (let i = 0; i < orders.length; i++) {
         let obj = orders[i]
@@ -344,49 +448,123 @@ export default {
 
         revenue += orderTotal
 
-        if (paymentGatewayFeesTable.hasOwnProperty(obj.payment_method)) {
-          let pm = paymentGatewayFeesTable[obj.payment_method]
-          paymentGatewayFees += pm.fixed + pm.rate*orderTotal
+        if (paymentMethodsFeesTable.hasOwnProperty(obj.payment_method)) {
+          let pm = paymentMethodsFeesTable[obj.payment_method]
+          transactionFees += pm.fixed + pm.flat*orderTotal
         }
 
-        if (obj.hasOwnProperty('tax_total')) {
-          taxTotal += obj.tax_total
+        if (obj.hasOwnProperty('total_tax') && obj.total_tax != '') {
+          taxTotal += parseFloat(obj.total_tax)
+        }
+
+        if (obj.hasOwnProperty('shipping_total') && obj.shipping_total != '') {
+          shippingTotal += parseFloat(obj.shipping_total)
+        }
+
+        for (let j = 0; j < obj.line_items.length; j++) {
+          let item = obj.line_items[j]
+
+          if(item.hasOwnProperty('cog_item_total_cost') && item.cog_item_total_cost != '') {
+            cogCostTotal += parseFloat(item.cog_item_total_cost)
+          }
         }
       }
 
-      if (numOrders > 0) {
-        avgOrderTotal = revenue / numOrders
-      }
-
-      profit = revenue - paymentGatewayFees - taxTotal - adSpent['total']
+      revenueNet = revenue - taxTotal
+      costTotal = cogCostTotal + shippingCostTotal + adSpentTotal + transactionFees
+      profit = revenueNet - costTotal
 
       if (revenue > 0) {
         profitMargin = (profit / revenue)*100
       }
 
-      if (adSpent['total'] > 0) {
-        roas = (profit / adSpent['total'])*100
-      } else if (profit > 0) {
-        roas = 9999.99
+      if (numOrders > 0) {
+        avgOrderTotal = revenueNet / numOrders
+        avgOrderCost = costTotal / numOrders
+        avgOrderProfit = profit / numOrders
+      }
+
+      // Inventory stats
+      let inventoryStockQty = 0
+      let inventoryStockCost = 0.0
+      let inventoryStockValue = 0.0
+      for (let i = 0; i < this.products.length; i++) {
+        let p = this.products[i]
+
+        if (p.stock_quantity != null) {
+          inventoryStockQty += parseInt(p.stock_quantity)
+        }
+        inventoryStockCost += parseFloat(p.cog_cost)
+        inventoryStockValue += parseFloat(p.price)
       }
 
       this.stats = {
-        numOrders: numOrders,
         revenue: revenue,
-        profit: profit,
-        paymentGatewayFees: paymentGatewayFees,
         taxTotal: taxTotal,
-        avgOrderTotal: avgOrderTotal,
-        adSpent: adSpent['total'],
+        revenueNet: revenueNet,
+        costTotal: costTotal,
+        profit: profit,
         profitMargin: profitMargin,
-        roas: roas,
+        numOrders: numOrders,
+        avgOrderTotal: avgOrderTotal,
+        avgOrderCost: avgOrderCost,
+        avgOrderProfit: avgOrderProfit,
+        cogCostTotal: cogCostTotal,
+        shippingTotal: shippingTotal,
+        shippingCostTotal: shippingCostTotal,
+        adSpentTotal: adSpentTotal,
+        transactionFees: transactionFees,
+        extraCostTotal: extraCostTotal,
+
+        inventoryStockQty: inventoryStockQty,
+        inventoryStockCost: inventoryStockCost,
+        inventoryStockValue: inventoryStockValue,
       }
+    },
+
+    async updatePaymentMethodsFees() {
+      this.$vs.loading()
+
+      for (let i = 0; i < this.paymentMethods.length; i++) {
+        let pm = this.paymentMethods[i]
+        await this.ecommerce.updatePaymentMethodFees(pm.id, pm.fixed_fee, pm.flat_fee)
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Fees updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+    },
+
+    async updateCsv() {
+      this.$vs.loading()
+
+      await this.ecommerce.updateAdvertisingCsv(this.advertisingCsv)
+      await this.ecommerce.updateShippingCsv(this.shippingCsv)
+      await this.ecommerce.updateExtraCostCsv(this.extraCostCsv)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'CSVs synced',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
     },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
 
     this.$vs.loading()
+
+    this.products = await this.ecommerce.fetchProducts()
 
     await this.resetFilters()
 

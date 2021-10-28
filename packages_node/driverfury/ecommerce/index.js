@@ -265,7 +265,7 @@ class Ecommerce {
     }
 
     return objects
-  }
+  } 
 
   async updateProduct(id, params = {}) {
     let product = null
@@ -368,7 +368,7 @@ class Ecommerce {
     return arrData
   }
 
-  async getAdSpentFromCsv(csvUrl, filters = {}) {
+  async parseCsv(csvUrl, filters = {}) {
     let adSpent = {
       'total': 0.0,
     }
@@ -446,6 +446,123 @@ class Ecommerce {
     return adSpent
   }
 
+  async getAdvertisingCsv() {
+    let csv = ''
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/advertising/csv', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        csv = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+    return csv
+  }
+
+  async updateAdvertisingCsv(csvUrl) {
+    let params = {
+      csv: csvUrl,
+    }
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/ecommerce/advertising/csv', params, { headers })
+      return true
+    } catch (error) {
+      // Nothing
+    }
+    return false
+  }
+
+  async getExtraCostCsv() {
+    let csv = ''
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/extra-cost/csv', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        csv = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+    return csv
+  }
+
+  async updateExtraCostCsv(csvUrl) {
+    let params = {
+      csv: csvUrl,
+    }
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/ecommerce/extra-cost/csv', params, { headers })
+      return true
+    } catch (error) {
+      // Nothing
+    }
+    return false
+  }
+
+  async getShippingCsv() {
+    let csv = ''
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/shipping/csv', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        csv = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+    return csv
+  }
+
+  async updateShippingCsv(csvUrl) {
+    let params = {
+      csv: csvUrl,
+    }
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/ecommerce/shipping/csv', params, { headers })
+      return true
+    } catch (error) {
+      // Nothing
+    }
+    return false
+  }
+
+  async getAdSpent(filters = {}) {
+    let csv = await this.getAdvertisingCsv()
+
+    if (csv == '') {
+      return {}
+    }
+    let res = await this.parseCsv(csv, filters)
+    return res
+  }
+
+  async getShippingCost(filters = {}) {
+    let csv = await this.getShippingCsv()
+
+    if(csv == '') {
+      return {}
+    }
+    let res = await this.parseCsv(csv, filters)
+    return res
+  }
+
+  async getExtraCost(filters = {}) {
+    let csv = await this.getExtraCostCsv()
+
+    if(csv == '') {
+      return {}
+    }
+    let res = await this.parseCsv(csv, filters)
+    return res
+  }
+
   async updateOrder(id, params = {}) {
     let order = null
 
@@ -463,6 +580,54 @@ class Ecommerce {
     }
 
     return order
+  }
+
+  async fetchPaymentMethods(filters = {}) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/payment-methods', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+
+        for (let i = 0; i < objects.length; i++) {
+          let obj = objects[i]
+
+          if (obj.hasOwnProperty('fixed_fee')) {
+            obj.fixed_fee = parseFloat(obj.fixed_fee)
+          } else {
+            obj.fixed_fee = 0.0
+          }
+
+          if (obj.hasOwnProperty('flat_fee')) {
+            obj.flat_fee = parseFloat(obj.flat_fee)
+          } else {
+            obj.flat_fee = 0.0
+          }
+        }
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
+  async updatePaymentMethodFees(id, fixed, flat) {
+    let params = {
+      fixed: fixed,
+      flat: flat,
+    }
+
+    try {
+      let headers = this.getHeaders()
+      await this.$http.put('/api/3rd/ecommerce/payment-methods/' + id + '/fees', params, { headers })
+    } catch (error) {
+      return false
+    }
+
+    return true
   }
 
   async fetchCarts() {

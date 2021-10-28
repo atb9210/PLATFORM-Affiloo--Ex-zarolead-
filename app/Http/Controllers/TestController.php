@@ -79,6 +79,9 @@ class TestController extends Controller
             env('WOOCOMMERCE_API_SECRET')
         );
 
+        dd($woo->get('payment_gateways'));
+        exit();
+
         $prodId = '2089';
         ////$prodId = '2418';
         ////$prod = $woo->put('products/' . $prodId, [

@@ -159,5 +159,22 @@ Route::get('/ecommerce/products/{id}/variations', 'api\third\EcommerceController
 Route::put('/ecommerce/products/{pid}/variations/{vid}', 'api\third\EcommerceController@updateProductVariation')->middleware('auth:api')
     ->name('ecommerce.products.variations.update');
 
+Route::get('/ecommerce/payment-methods', 'api\third\EcommerceController@paymentMethods')->middleware('auth:api')
+    ->name('ecommerce.payment-methods.index');
+Route::put('/ecommerce/payment-methods/{id}/fees', 'api\third\EcommerceController@updatePaymentMethodFees')->middleware('auth:api')
+    ->name('ecommerce.products.payment-methods.fees');
+Route::get('/ecommerce/advertising/csv', 'api\third\EcommerceController@getAdvertisingCsv')->middleware('auth:api')
+    ->name('ecommerce.advertising.csv.get');
+Route::put('/ecommerce/advertising/csv', 'api\third\EcommerceController@updateAdvertisingCsv')->middleware('auth:api')
+    ->name('ecommerce.advertising.csv.update');
+Route::get('/ecommerce/shipping/csv', 'api\third\EcommerceController@getShippingCsv')->middleware('auth:api')
+    ->name('ecommerce.shipping.csv.get');
+Route::put('/ecommerce/shipping/csv', 'api\third\EcommerceController@updateShippingCsv')->middleware('auth:api')
+    ->name('ecommerce.shipping.csv.update');
+Route::get('/ecommerce/extra-cost/csv', 'api\third\EcommerceController@getExtraCostCsv')->middleware('auth:api')
+    ->name('ecommerce.extra-cost.csv.get');
+Route::put('/ecommerce/extra-cost/csv', 'api\third\EcommerceController@updateExtraCostCsv')->middleware('auth:api')
+    ->name('ecommerce.extra-cost.csv.update');
+
 Route::get('/ecommerce/carts', 'api\third\EcommerceController@carts')->middleware('auth:api')
     ->name('ecommerce.carts.index');
