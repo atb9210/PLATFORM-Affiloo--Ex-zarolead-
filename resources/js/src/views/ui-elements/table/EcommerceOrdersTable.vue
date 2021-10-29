@@ -402,7 +402,11 @@ export default {
     },
     whatsappMessage(order) {
       if (order.hasOwnProperty('billing') && order.billing.hasOwnProperty('phone')) {
-        let url = 'https://api.whatsapp.com/send?phone=' + order.billing.phone
+        let phone = order.billing.phone
+        if (phone[0] != '+') {
+          phone = '+39' + phone
+        }
+        let url = 'https://api.whatsapp.com/send?phone=' + phone
         this.openNewTab(url)
       }
     },
