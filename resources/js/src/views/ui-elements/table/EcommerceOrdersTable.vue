@@ -130,13 +130,16 @@
                                 <vs-button class="mr-2" color="primary" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
                             </vx-tooltip>
                             <vx-tooltip :text="item.notes" position="top">
-                                <vs-button class="mr-2" color="primary" @click="showNotes(item)" icon-pack="feather" icon="icon-message-circle" />
+                                <vs-button class="mr-2" color="primary" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                             </vx-tooltip>
                             <vx-tooltip text="** Genera spedizione **" position="top">
                                 <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" />
                             </vx-tooltip>
                             <vx-tooltip text="Edit product" position="top">
                                 <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="goToEditOrderPage(item)" />
+                            </vx-tooltip>
+                            <vx-tooltip text="Send Whatsapp message" position="top">
+                                <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                             </vx-tooltip>
                         </div>
                     </vs-td>
@@ -390,9 +393,18 @@ export default {
 
       this.applyFilters()
     },
+    openNewTab(url) {
+      window.open(url, '_blank').focus()
+    },
     goToEditOrderPage(order) {
       let url = 'https://homygadget.com/wp-admin/post.php?post=' + order.id + '&action=edit'
-      window.open(url, '_blank').focus()
+      this.openNewTab(url)
+    },
+    whatsappMessage(order) {
+      if (order.hasOwnProperty('billing') && order.billing.hasOwnProperty('phone')) {
+        let url = 'https://api.whatsapp.com/send?phone=' + order.billing.phone
+        this.openNewTab(url)
+      }
     },
   },
   async created() {
