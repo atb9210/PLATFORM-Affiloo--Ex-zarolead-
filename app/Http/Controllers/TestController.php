@@ -71,15 +71,120 @@ class TestController extends Controller
         echo "<pre>".var_export($productJson,true)."</pre>";
     }
 
+    private function decodeCartObj($s)
+    {
+        $type = 'x';
+        $len = 0;
+        $val = '';
+
+        if(strlen($s) >= 3)
+        {
+            $type = $s[0];
+            $s = substr($s, 2);
+
+            $i = 0;
+            while (is_numeric($s[$i])) {
+                $i += 1;
+            }
+            $len = intval(substr($s, 0, $i));
+
+            if ($type == 's') {
+                $s = substr($s, $i + 1);
+                $val = substr($s, 0, -1);
+                $val = substr($val, 1, -1);
+                return $val;
+            } else if ($type == 'i') {
+                return intval($len);
+            } else if ($type == 'd') {
+                return floatval($len);
+            } else if ($type == 'a') {
+                $s = substr($s, $i + 1);
+                $val = $s;
+                if ($val[strlen($val)-1] == ';') {
+                    $val = substr($s, 0, -1);
+                }
+                $val = substr($val, 1, -1);
+
+                $items = [];
+                $start = 0;
+                $end = 0;
+                $scope = 0;
+                while($end < strlen($val)) {
+                    if ($val[$end] == '{') {
+                        $scope += 1;
+                    } else if ($val[$end] == '}') {
+                        $scope -= 1;
+                        if ($scope == 0) {
+                            if ($start > 0) {
+                                $start += 1;
+                            }
+                            $items[] = substr($val, $start, $end - $start + 1);
+                            $start = $end;
+                        }
+                    } else if ($val[$end] == ';' && $scope == 0) {
+                        if ($start > 0) {
+                            $start += 1;
+                        }
+                        $items[] = substr($val, $start, $end - $start);
+                        $start = $end;
+                    }
+                    $end += 1;
+                }
+
+                $even = true;
+                $keys = [];
+                $values = [];
+                foreach ($items as $item) {
+                    if ($item == '') {
+                        continue;
+                    }
+                    $item .= ';';
+                    if($even) {
+                        $keys[] = $this->decodeCartObj($item);
+                        $even = false;
+                    } else {
+                        $values[] = $this->decodeCartObj($item);
+                        $even = true;
+                    }
+                }
+
+                $arr = [];
+                $cnt = min(count($keys), count($values));
+                for ($i = 0; $i < $cnt; $i += 1) {
+                    $arr[$keys[$i]] = $values[$i];
+                }
+                return $arr;
+            } else {
+                die("Invalid");
+            }
+        }
+
+        return null;
+    }
+
     public function test()
     {
+        //$s = 'a:3:{s:7:"country";s:2:"IT";s:4:"city";s:8:"Larciano";s:8:"postcode";s:5:"51036";}';
+        //$s = 'a:1:{i:0;s:7:"country";i:1;s:2:"IT";i:2;a:1:{i:0;s:2:"Hi";};};';
+        $s = 'a:1:{i:0;a:6:{s:13:"product_title";s:29:"Mini Fresa per Unghie (24€)";s:8:"quantity";i:1;s:10:"product_id";i:2811;s:20:"product_variation_id";s:0:"";s:23:"product_variation_price";d:20.45081967;s:11:"product_tax";d:4.5;}}';
+        //$s = 'a:1:{i:0;a:6:{s:13:"product_title";s:29:"Mini Fresa per Unghie (24€)";s:8:"quantity";i:1;s:10:"product_id";i:2811;s:20:"product_variation_id";s:0:"";s:23:"product_variation_price";d:20.45081967;s:11:"product_tax";d:4.5;}}';
+        $obj = $this->decodeCartObj($s);
+        dd($obj);
+        exit();
+
+        $carts = \Illuminate\Support\Facades\DB::connection('woocommerce')
+            ->table('wp_261c24b4ca_cartbounty')
+            ->get();
+        dd($carts);
+        exit();
+
         $woo = new \Automattic\WooCommerce\Client(
             env('WOOCOMMERCE_URL'),
             env('WOOCOMMERCE_API_KEY'),
             env('WOOCOMMERCE_API_SECRET')
         );
 
-        dd($woo->get('payment_gateways'));
+        dd($woo->get('store'));
         exit();
 
         $prodId = '2089';

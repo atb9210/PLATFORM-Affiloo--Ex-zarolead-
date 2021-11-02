@@ -3,6 +3,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="exportAsCsv"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -61,35 +62,26 @@
             </vs-dropdown-menu>
         </vs-dropdown>
 
-        <vue-context ref="cart_context_menu" v-slot="{ data }">
-            <!--
-            <li>
-              <a href="#" @click="$refs.cart_context_menu.close();editForm(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.cart_context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="#" @click="$refs.cart_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+        <popover class="cart_popover" :name="'cart_popover_' + cart.id" event="hover" v-for="(cart, index) in carts" :key="index">
+            <ul>
+                <li v-for="(product, pIndex) in cart.products" :key="pIndex">
+                    {{ product }}
+                </li>
+            </ul>
+        </popover>
 
         <!-- Carts table -->
         <vs-table v-if="view == 'carts'" stripe multiple v-model="selectedCarts" :max-items="maxItems" pagination search :data="carts" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="full_name">Name</vs-th>
                 <vs-th sort-key="email">Email</vs-th>
+                <vs-th sort-key="phone">Phone</vs-th>
+                <vs-th sort-key="location">Location</vs-th>
+                <vs-th sort-key="">Cart contents</vs-th>
+                <vs-th sort-key="cart_total">Cart total</vs-th>
+                <vs-th sort-key="time">Time</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -99,12 +91,34 @@
                         {{item.id}}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.full_name">
+                        {{item.full_name}}
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.email">
-                        <div @contextmenu.prevent="$refs.cart_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.email}}
-                            </vs-chip>
-                        </div>
+                        {{item.email}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.phone">
+                        {{item.phone}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.location">
+                        {{item.location}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <vs-chip v-popover="{name:'cart_popover_' + item.id}">
+                            Contents
+                        </vs-chip>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.cart_total">
+                        € {{item.cart_total.toFixed(2)}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.time">
+                        {{item.time}}
                     </vs-td>
                     
                 </vs-tr>
@@ -115,14 +129,12 @@
 </template>
 
 <script>
-import { VueContext } from 'vue-context'
 import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
 import Ecommerce from 'ecommerce'
 
 export default {
   components: {
-    VueContext,
     StatisticsCardLine,
   },
   data () {
@@ -243,6 +255,26 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+    exportAsCsv() {
+      let csvData = 'ID,Name,Email,Phone,Location,Cart Contents,Cart Total,Time\n'
+      for (let i = 0; i < this.carts.length; i++) {
+        let cart = this.carts[i]
+
+        let contents = cart.products.join(' + ')
+        csvData += cart.id + ',' + cart.full_name + ',' + cart.email + ',' +
+                   cart.phone + ',' + cart.location + ',' + contents + ',' +
+                   cart.cart_total.toFixed(2) + '\n'
+      }
+
+      let filename = 'carts.csv'
+      let element = document.createElement('a')
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csvData))
+      element.setAttribute('download', filename)
+      element.style.display = 'none'
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+    },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
@@ -256,3 +288,12 @@ export default {
 }
 
 </script>
+
+<style>
+
+.cart_popover {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+</style>

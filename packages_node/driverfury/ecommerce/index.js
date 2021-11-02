@@ -638,6 +638,68 @@ class Ecommerce {
       const response = await this.$http.get('/api/3rd/ecommerce/carts', { headers })
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         objects = response.data.data
+
+        for (let i = 0; i < objects.length; i++) {
+          let obj = objects[i]
+
+          obj.full_name = ''
+          if (obj.hasOwnProperty('name') && obj.name !== null) {
+            obj.full_name = obj.name
+          }
+          if (obj.hasOwnProperty('surname') && obj.surname !== null && obj.surname !== '') {
+            obj.full_name += ' ' + obj.surname
+          }
+
+          if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
+            obj.phone = obj.phone.replace(' ', '')
+            if (obj.phone[0] != '+' && obj.phone.length <= 10) {
+              obj.phone = '+39' + obj.phone
+            }
+          }
+
+          if (!obj.hasOwnProperty('location') || obj.location === null) {
+            obj.location = ''
+          } else {
+            let location = ''
+            if (obj.location.hasOwnProperty('country') && obj.location.country != '') {
+              location += obj.location.country
+            }
+            if (obj.location.hasOwnProperty('city') && obj.location.city != '') {
+              location += ', ' + obj.location.city
+            }
+            if (obj.location.hasOwnProperty('postcode') && obj.location.postcode != '') {
+              location += ', ' + obj.location.postcode
+            }
+            obj.location = location
+          }
+
+          if (obj.hasOwnProperty('cart_total') && obj.cart_total !== null && obj.cart_total !== '') {
+            obj.cart_total = parseFloat(obj.cart_total)
+          } else {
+            obj.cart_total = 0.0
+          }
+
+          obj.products = []
+          if (obj.hasOwnProperty('cart_contents') && obj.cart_contents != null) {
+            for (let j = 0; j < obj.cart_contents.length; j++) {
+              obj.products.push(obj.cart_contents[j].product_title)
+            }
+          }
+
+          objects[i] = obj
+        }
+
+        objects.sort((a, b) => {
+          let da = new Date(a.time)
+          let db = new Date(b.time)
+          if (da < db) {
+            return 1
+          } else if (da > db) {
+            return -1
+          } else {
+            return 0
+          }
+        })
       }
     } catch (error) {
       //

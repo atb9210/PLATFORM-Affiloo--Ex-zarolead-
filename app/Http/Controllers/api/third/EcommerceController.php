@@ -445,6 +445,97 @@ class EcommerceController extends Controller
         ]);
     }
 
+    private function decodeCartObj($s)
+    {
+        $type = 'x';
+        $len = 0;
+        $val = '';
+
+        if(strlen($s) >= 3)
+        {
+            $type = $s[0];
+            $s = substr($s, 2);
+
+            $i = 0;
+            while (is_numeric($s[$i])) {
+                $i += 1;
+            }
+            $len = intval(substr($s, 0, $i));
+
+            if ($type == 's') {
+                $s = substr($s, $i + 1);
+                $val = substr($s, 0, -1);
+                $val = substr($val, 1, -1);
+                return $val;
+            } else if ($type == 'i') {
+                return intval($len);
+            } else if ($type == 'd') {
+                return floatval($len);
+            } else if ($type == 'a') {
+                $s = substr($s, $i + 1);
+                $val = $s;
+                if ($val[strlen($val)-1] == ';') {
+                    $val = substr($s, 0, -1);
+                }
+                $val = substr($val, 1, -1);
+
+                $items = [];
+                $start = 0;
+                $end = 0;
+                $scope = 0;
+                while($end < strlen($val)) {
+                    if ($val[$end] == '{') {
+                        $scope += 1;
+                    } else if ($val[$end] == '}') {
+                        $scope -= 1;
+                        if ($scope == 0) {
+                            if ($start > 0) {
+                                $start += 1;
+                            }
+                            $items[] = substr($val, $start, $end - $start + 1);
+                            $start = $end;
+                        }
+                    } else if ($val[$end] == ';' && $scope == 0) {
+                        if ($start > 0) {
+                            $start += 1;
+                        }
+                        $items[] = substr($val, $start, $end - $start);
+                        $start = $end;
+                    }
+                    $end += 1;
+                }
+
+                $even = true;
+                $keys = [];
+                $values = [];
+                foreach ($items as $item) {
+                    if ($item == '') {
+                        continue;
+                    }
+                    $item .= ';';
+                    if($even) {
+                        $keys[] = $this->decodeCartObj($item);
+                        $even = false;
+                    } else {
+                        $values[] = $this->decodeCartObj($item);
+                        $even = true;
+                    }
+                }
+
+                $arr = [];
+                $cnt = min(count($keys), count($values));
+                for ($i = 0; $i < $cnt; $i += 1) {
+                    $arr[$keys[$i]] = $values[$i];
+                }
+                return $arr;
+            } else {
+                die("Invalid");
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Get carts list.
      *
@@ -458,6 +549,7 @@ class EcommerceController extends Controller
 
         $carts = [];
 
+        /*
         // TODO: DEBUG: Is this valid every time?
         $cookies = 'wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_ef80ef114711cf36b767a2aed961be0b=admin%7C1634743615%7CMbd4phDhWhZ8xYNXROvBmByoooxap90cKHX3gzTscQF%7Cf3dde3140d1a8b46d6e85381c68741574e901311cad5bed403e1547a8421539a; tk_ai=woo%3AFPmVmIAlkNb0%2B1BPYOMVtPoh; wp-settings-1=libraryContent%3Dbrowse%26ampposts_list_mode%3Dlist%26posts_list_mode%3Dlist%26editor%3Dtinymce%26hidetb%3D1%26post_dfw%3Don%26mfold%3Do; wp-settings-time-1=1634570817; woocommerce_items_in_cart=1; wp_woocommerce_session_ef80ef114711cf36b767a2aed961be0b=1%7C%7C1634743618%7C%7C1634740018%7C%7Cdce526d4f3bb9e6a547ab8d1aaf34927; woocommerce_cart_hash=ef8c6a3674526897001b81f6b8d14703';
 
@@ -482,6 +574,33 @@ class EcommerceController extends Controller
             if (isset($response['result'])) {
                 $carts = $response['result'];
             }
+        }
+        */
+
+        $url = 'https://homygadget.com/zaroapi/carts.php';
+        $headers = [
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+
+        if ($response != null && $response != '') {
+            $carts = json_decode($response, true);
+        }
+
+        for ($cartIndex = 0; $cartIndex < count($carts); $cartIndex += 1) {
+            $cart = $carts[$cartIndex];
+
+            $carts[$cartIndex]['location'] = $this->decodeCartObj($cart['location']);
+            $carts[$cartIndex]['cart_contents'] = $this->decodeCartObj($cart['cart_contents']);
+            $carts[$cartIndex]['other_fields'] = $this->decodeCartObj($cart['other_fields']);
         }
 
         return response([
