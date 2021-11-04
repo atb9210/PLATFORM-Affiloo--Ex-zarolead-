@@ -10,6 +10,7 @@
         "cloudflare/sdk": "^1.1",
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/cloudflare": "dev-master",
+        "driverfury/elogy": "dev-master",
         "driverfury/facebook": "dev-master",
         "driverfury/fraudfilter": "dev-master",
         "driverfury/tiktok": "dev-master",
@@ -101,6 +102,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/facebook"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/elogy"
         }
     ]
 }
