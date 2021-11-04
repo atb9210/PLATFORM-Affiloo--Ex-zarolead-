@@ -144,6 +144,8 @@ Route::get('/ecommerce/orders', 'api\third\EcommerceController@orders')->middlew
     ->name('ecommerce.orders.index');
 Route::put('/ecommerce/orders/{id}', 'api\third\EcommerceController@updateOrder')->middleware('auth:api')
     ->name('ecommerce.orders.update');
+Route::post('/ecommerce/orders/{id}/push', 'api\third\EcommerceController@pushOrder')->middleware('auth:api')
+    ->name('ecommerce.orders.push');
 
 Route::get('/ecommerce/customers', 'api\third\EcommerceController@customers')->middleware('auth:api')
     ->name('ecommerce.customers.index');

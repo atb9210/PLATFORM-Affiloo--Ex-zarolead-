@@ -96,6 +96,13 @@ return [
             'path' => storage_path('logs/facebook.log'),
             'level' => 'debug',
         ],
+
+        // DEBUG
+        'elogy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/elogy.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

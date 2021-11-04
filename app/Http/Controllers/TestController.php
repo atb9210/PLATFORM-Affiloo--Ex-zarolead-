@@ -71,137 +71,45 @@ class TestController extends Controller
         echo "<pre>".var_export($productJson,true)."</pre>";
     }
 
-    private function decodeCartObj($s)
-    {
-        $type = 'x';
-        $len = 0;
-        $val = '';
-
-        if(strlen($s) >= 3)
-        {
-            $type = $s[0];
-            $s = substr($s, 2);
-
-            $i = 0;
-            while (is_numeric($s[$i])) {
-                $i += 1;
-            }
-            $len = intval(substr($s, 0, $i));
-
-            if ($type == 's') {
-                $s = substr($s, $i + 1);
-                $val = substr($s, 0, -1);
-                $val = substr($val, 1, -1);
-                return $val;
-            } else if ($type == 'i') {
-                return intval($len);
-            } else if ($type == 'd') {
-                return floatval($len);
-            } else if ($type == 'a') {
-                $s = substr($s, $i + 1);
-                $val = $s;
-                if ($val[strlen($val)-1] == ';') {
-                    $val = substr($s, 0, -1);
-                }
-                $val = substr($val, 1, -1);
-
-                $items = [];
-                $start = 0;
-                $end = 0;
-                $scope = 0;
-                while($end < strlen($val)) {
-                    if ($val[$end] == '{') {
-                        $scope += 1;
-                    } else if ($val[$end] == '}') {
-                        $scope -= 1;
-                        if ($scope == 0) {
-                            if ($start > 0) {
-                                $start += 1;
-                            }
-                            $items[] = substr($val, $start, $end - $start + 1);
-                            $start = $end;
-                        }
-                    } else if ($val[$end] == ';' && $scope == 0) {
-                        if ($start > 0) {
-                            $start += 1;
-                        }
-                        $items[] = substr($val, $start, $end - $start);
-                        $start = $end;
-                    }
-                    $end += 1;
-                }
-
-                $even = true;
-                $keys = [];
-                $values = [];
-                foreach ($items as $item) {
-                    if ($item == '') {
-                        continue;
-                    }
-                    $item .= ';';
-                    if($even) {
-                        $keys[] = $this->decodeCartObj($item);
-                        $even = false;
-                    } else {
-                        $values[] = $this->decodeCartObj($item);
-                        $even = true;
-                    }
-                }
-
-                $arr = [];
-                $cnt = min(count($keys), count($values));
-                for ($i = 0; $i < $cnt; $i += 1) {
-                    $arr[$keys[$i]] = $values[$i];
-                }
-                return $arr;
-            } else {
-                die("Invalid");
-            }
-        }
-
-        return null;
-    }
-
     public function test()
     {
-        //$s = 'a:3:{s:7:"country";s:2:"IT";s:4:"city";s:8:"Larciano";s:8:"postcode";s:5:"51036";}';
-        //$s = 'a:1:{i:0;s:7:"country";i:1;s:2:"IT";i:2;a:1:{i:0;s:2:"Hi";};};';
-        $s = 'a:1:{i:0;a:6:{s:13:"product_title";s:29:"Mini Fresa per Unghie (24€)";s:8:"quantity";i:1;s:10:"product_id";i:2811;s:20:"product_variation_id";s:0:"";s:23:"product_variation_price";d:20.45081967;s:11:"product_tax";d:4.5;}}';
-        //$s = 'a:1:{i:0;a:6:{s:13:"product_title";s:29:"Mini Fresa per Unghie (24€)";s:8:"quantity";i:1;s:10:"product_id";i:2811;s:20:"product_variation_id";s:0:"";s:23:"product_variation_price";d:20.45081967;s:11:"product_tax";d:4.5;}}';
-        $obj = $this->decodeCartObj($s);
-        dd($obj);
-        exit();
-
-        $carts = \Illuminate\Support\Facades\DB::connection('woocommerce')
-            ->table('wp_261c24b4ca_cartbounty')
-            ->get();
-        dd($carts);
-        exit();
-
-        $woo = new \Automattic\WooCommerce\Client(
-            env('WOOCOMMERCE_URL'),
-            env('WOOCOMMERCE_API_KEY'),
-            env('WOOCOMMERCE_API_SECRET')
-        );
-
-        dd($woo->get('store'));
-        exit();
-
-        $prodId = '2089';
-        ////$prodId = '2418';
-        ////$prod = $woo->put('products/' . $prodId, [
-        ////    'regular_price' => '88.00',
-        ////]);
-        ////dd($prod);
-        ////$products = $woo->get('products');
-        //dd($woo->get('products/' . $products[0]->id . '/variations'));
-        //dd($woo->get('products/attributes'));
-        //dd($woo->get('products/attributes/2/terms'));
-        //
-        $prodId = '2089';
-        dd($woo->get('products/' . $prodId . '/variations'));
-        dd($products);
-
+        $elogy = new \Driverfury\Elogy\Elogy(env('ELOGY_API_TOKEN'));
+        //dd($elogy->getOrders());
+        $elogy->createOrder([
+            'order_name' => 'test',
+            'order_number' => 'test',
+            'country' => 'IT',
+            'total_price' => '123.45',
+            'sub_total_price' => '113.45',
+            'shipping_price' => '10',
+            'total_tax' => '0.0',
+            'tax_included' => 1,
+            'gateway' => 'cashondelivery',
+            'currency' => 'EUR',
+            'customer_first_name' => 'Test',
+            'customer_last_name' => 'Test',
+            'shipping_first_name' => 'Test',
+            'shipping_last_name' => 'Test',
+            'shipping_address1' => 'Via dei Test, 1',
+            'shipping_address2' => '',
+            'shipping_city' => 'Test',
+            'shipping_zip' => '12345',
+            'shipping_province_code' => 'RM',
+            'shipping_country_code' => 'IT',
+            'shipping_phone' => '1234567890',
+            'shipping_email' => 'test@zarolead.com',
+            'shipping_notes' => '',
+            'created_at' => date('dd/mm/YYYY h:i'),
+            'completed_at' => date('dd/mm/YYYY h:i'),
+            'products' => [
+                [
+                    'sku' => 'test',
+                    'quantity' => 1,
+                    'subtotal' => '113.45',
+                ],
+            ],
+            'params' => [],
+        ]);
         exit();
     }
 

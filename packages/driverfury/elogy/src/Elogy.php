@@ -2,10 +2,13 @@
 
 namespace Driverfury\Elogy;
 
+// DEBUG
+use Illuminate\Support\Facades\Log;
+
 class Elogy
 {
     protected string $accessToken = '';
-    protected static string $apiUrl = 'https://graph.facebook.com/v12.0';
+    protected static string $apiUrl = 'https://api.elogy.io:8443/api';
         
     public function __construct(string $accessToken)
     {
@@ -26,12 +29,9 @@ class Elogy
         }
 
         $headers = [
+            'Authorization: ' . $this->accessToken,
             'Content-Type: application/json',
         ];
-
-        if (!isset($params['access_token'])) {
-            $params['access_token'] = $this->accessToken;
-        }
 
         foreach ($params as $key => $value) {
             $params[$key] = is_string($value) ? $value : json_encode($value);
@@ -68,15 +68,9 @@ class Elogy
         }
 
         $headers = [
+            'Authorization: ' . $this->accessToken,
             'Content-Type: application/json',
         ];
-
-        if (!isset($urlParams['access_token'])) {
-            $urlParams['access_token'] = $this->accessToken;
-        }
-        if (!isset($bodyParams['access_token'])) {
-            $bodyParams['access_token'] = $this->accessToken;
-        }
 
         $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
 
@@ -88,6 +82,7 @@ class Elogy
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch); 
+
         if ($response !== null) {
             $output = json_decode($response, true);
         }
@@ -99,6 +94,11 @@ class Elogy
     {
         $output = [];
 
+        if(!isset($params['length'])) {
+            $params['length'] = 100;
+        }
+        $params['offset'] = 0;
+        $total = 0;
         $next = [];
         $endLoop = false;
         do {
@@ -107,12 +107,12 @@ class Elogy
                 foreach ($response['data'] as $item) {
                     $output[] = $item;
                 }
-            }
-
-            if (isset($response['paging']['next'])) {
-                $tmp = parse_url($response['paging']['next']);
-                parse_str($tmp['query'], $next);
-                $params = array_merge($params, $next);
+                $total += count($response['data']);
+                if (isset($response['total']) &&
+                    $total >= $response['total']) {
+                    $endLoop = true;
+                }
+                $params['offset'] += count($response['data']);
             } else {
                 $endLoop = true;
             }
@@ -121,332 +121,31 @@ class Elogy
         return $output;
     }
 
-    public function getAdAccounts(
-        array $reports = []): array
+    public function getOrders(): array
     {
+        $orders = [];
+
         $params = [
-            'fields' => [
-                'id',
-                'name',
-            ],
-            'date_preset' => 'maximum',
+            'offset' => 0,
+            'length' => 100,
         ];
+        $orders = $this->getRequestAllPages('/orders', $params);
 
-        if (count($reports) > 0) {
-            if (isset($reports['start_date'])) {
-                $params['time_range']['since'] = $reports['start_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['end_date'])) {
-                $params['time_range']['until'] = $reports['end_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['metrics'])) {
-                $insights = 'insights';
-                if (isset($params['time_range'])) {
-                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
-                } else if (isset($params['date_preset'])) {
-                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
-                }
-                $insights .= '{';
-                $insights .= implode(',', $reports['metrics']);
-                $insights .= '}';
-                $params['fields'][] = $insights;
-            }
-        }
-
-        $objects = $this->getRequestAllPages('/me/adaccounts', $params);
-        for ($i = 0; $i < count($objects); $i++) {
-            if (isset($objects[$i]['insights']['data'][0])) {
-                $insights = $objects[$i]['insights']['data'][0];
-                unset($insights['date_start']);
-                unset($insights['date_stop']);
-                $objects[$i] = array_merge($objects[$i], $insights);
-            }
-        }
-
-        return($objects);
+        return $orders;
     }
 
-    public function getCampaigns(
-        string $advertiserId,
-        array $reports = []): array
+    public function createOrder(array $params): bool
     {
-        $params = [
-            'fields' => [
-                'id',
-                'name',
-                'status',
-                'effective_status',
-                'objective',
-                'daily_budget',
-                'bid_strategy',
-                'bid_amount',
-            ],
-            'date_preset' => 'maximum',
-        ];
-
-        if (count($reports) > 0) {
-            if (isset($reports['start_date'])) {
-                $params['time_range']['since'] = $reports['start_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['end_date'])) {
-                $params['time_range']['until'] = $reports['end_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['metrics'])) {
-                $insights = 'insights';
-                if (isset($params['time_range'])) {
-                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
-                } else if (isset($params['date_preset'])) {
-                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
-                }
-                $insights .= '{';
-                $insights .= implode(',', $reports['metrics']);
-                $insights .= '}';
-                $params['fields'][] = $insights;
+        $response = $this->postRequest('/orders', $params, $params);
+        if ($response !== null && isset($response['success'])) {
+            if (isset($response['data']['failedOrders']) &&
+                count($response['data']['failedOrders']) == 0) {
+                return true;
+            } else {
+                Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
+                return false;
             }
         }
-
-        $objects = $this->getRequestAllPages('/' . $advertiserId . '/campaigns', $params);
-        for ($i = 0; $i < count($objects); $i++) {
-            if (isset($objects[$i]['insights']['data'][0])) {
-                $insights = $objects[$i]['insights']['data'][0];
-                unset($insights['date_start']);
-                unset($insights['date_stop']);
-                $objects[$i] = array_merge($objects[$i], $insights);
-            }
-        }
-
-        return($objects);
-    }
-
-    public function getAdsets(
-        string $parentId,
-        array $reports = []): array
-    {
-        $params = [
-            'fields' => [
-                'id',
-                'campaign_id',
-                'name',
-                'status',
-                'effective_status',
-                'daily_budget',
-                'bid_strategy',
-                'bid_amount',
-            ],
-            'date_preset' => 'maximum',
-        ];
-
-        if (count($reports) > 0) {
-            if (isset($reports['start_date'])) {
-                $params['time_range']['since'] = $reports['start_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['end_date'])) {
-                $params['time_range']['until'] = $reports['end_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['metrics'])) {
-                $insights = 'insights';
-                if (isset($params['time_range'])) {
-                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
-                } else if (isset($params['date_preset'])) {
-                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
-                }
-                $insights .= '{';
-                $insights .= implode(',', $reports['metrics']);
-                $insights .= '}';
-                $params['fields'][] = $insights;
-            }
-        }
-
-        $objects = $this->getRequestAllPages('/' . $parentId . '/adsets', $params);
-        for ($i = 0; $i < count($objects); $i++) {
-            if (isset($objects[$i]['insights']['data'][0])) {
-                $insights = $objects[$i]['insights']['data'][0];
-                unset($insights['date_start']);
-                unset($insights['date_stop']);
-                $objects[$i] = array_merge($objects[$i], $insights);
-            }
-        }
-
-        return($objects);
-    }
-
-    public function getAds(
-        string $parentId,
-        array $reports = []): array
-    {
-        $params = [
-            'fields' => [
-                'id',
-                'name',
-            ],
-            'date_preset' => 'maximum',
-        ];
-
-        if (count($reports) > 0) {
-            if (isset($reports['start_date'])) {
-                $params['time_range']['since'] = $reports['start_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['end_date'])) {
-                $params['time_range']['until'] = $reports['end_date'];
-                unset($params['date_preset']);
-            }
-            if (isset($reports['metrics'])) {
-                $insights = 'insights';
-                if (isset($params['time_range'])) {
-                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
-                } else if (isset($params['date_preset'])) {
-                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
-                }
-                $insights .= '{';
-                $insights .= implode(',', $reports['metrics']);
-                $insights .= '}';
-                $params['fields'][] = $insights;
-            }
-        }
-
-        $objects = $this->getRequestAllPages('/' . $parentId . '/ads', $params);
-        for ($i = 0; $i < count($objects); $i++) {
-            if (isset($objects[$i]['insights']['data'][0])) {
-                $insights = $objects[$i]['insights']['data'][0];
-                unset($insights['date_start']);
-                unset($insights['date_stop']);
-                $objects[$i] = array_merge($objects[$i], $insights);
-            }
-        }
-
-        return($objects);
-    }
-
-    public function updateStatus(
-        string $objectId,
-        string $status): bool
-    {
-        $params = [
-          'status' => $status,
-        ];
-        $response = $this->postRequest('/' . $objectId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
-        }
-        return true;
-    }
-
-    public function updateAdsetBudget(
-        string $adsetId,
-        float $budget): bool
-    {
-        $params = [
-          'daily_budget' => intval($budget*100),
-        ];
-        $response = $this->postRequest('/' . $adsetId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
-        }
-        return true;
-    }
-
-    public function updateAdsetBidAmount(
-        string $adsetId,
-        float $bidAmount): bool
-    {
-        $params = [
-          'bid_amount' => intval($bidAmount*100),
-        ];
-        $response = $this->postRequest('/' . $adsetId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
-        }
-        return true;
-    }
-
-    public function getLongLivedAccessToken(
-        string $appId,
-        string $appSecret): string
-    {
-        $newAccessToken = '';
-
-        $params = [
-            'grant_type' => 'fb_exchange_token',
-            'client_id' => $appId,
-            'client_secret' => $appSecret,
-            'fb_exchange_token' => $this->accessToken,
-        ];
-        $response = $this->getRequest('/oauth/access_token', $params);
-        if (isset($response['access_token'])) {
-            $newAccessToken = $response['access_token'];
-        }
-
-        return $newAccessToken;
-    }
-
-    public function sendEvent(
-        string $pixel,
-        string $event,
-        array $userData,
-        string $eventSourceUrl,
-        array $customData = []): bool
-    {
-        $params = [
-            'data' => [
-                [
-                    'event_name' => $event,
-                    'event_time' => strtotime('now'),
-                    'user_data' => $userData,
-                    'event_source_url' => $eventSourceUrl,
-                    'action_source' => 'website',
-                    'custom_data' => $customData,
-                ],
-            ],
-        ];
-
-        $response = $this->postRequest('/' . $pixel . '/events', $params, $params);
-        if (isset($response['events_received']) && $response['events_received'] > 0) {
-            return true;
-        }
-
-        // DEBUG
-        Log::channel('facebook')->info('Event not sent. Response: ' . json_encode($response));
-
-        return false;
-    }
-
-    public function sendEventTest(
-        string $pixel,
-        string $testCode,
-        string $event,
-        array $userData,
-        string $eventSourceUrl,
-        array $customData = []): bool
-    {
-        $params = [
-            'test_event_code' => $testCode,
-            'data' => [
-                [
-                    'event_name' => $event,
-                    'event_time' => strtotime('now'),
-                    'user_data' => $userData,
-                    'event_source_url' => $eventSourceUrl,
-                    'action_source' => 'website',
-                    'custom_data' => $customData,
-                ],
-            ],
-        ];
-
-        $response = $this->postRequest('/' . $pixel . '/events', $params, $params);
-        if (isset($response['events_received']) && $response['events_received'] > 0) {
-            return true;
-        }
-
-        // DEBUG
-        Log::channel('facebook')->info('Event not sent. Response: ' . json_encode($response));
-
         return false;
     }
 }

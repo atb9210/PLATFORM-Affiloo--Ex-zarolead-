@@ -607,4 +607,84 @@ class EcommerceController extends Controller
             'data' => $carts,
         ]);
     }
+    
+    /**
+     * Push the order to elogy.
+     *
+     * @urlParam id int required Order's id
+     *
+     * @response {
+     *  "message": "Order pushed",
+     * }
+     */
+    public function pushOrder($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // DEBUG TODO: to delete
+        echo 'CIAO';
+        exit();
+
+        $woo = $this->getClient();
+        $order = $woo->get('orders/' . $id);
+
+        $totalPrice = floatval($order['total']);
+        $shippingTotal = floatval($oder['shipping_total']);
+        $taxTotal = floatval($oder['total_tax']);
+        $subtotalPrice = $totalPrice - $shippingTotal - $taxTotal;
+        $subtotalPrice = number_format($subtotalPrice, 2, '.', '');
+
+        $gateway = 'online';
+        if ($order['payment_method'] === 'cod') {
+            $gateway = 'cashondelivery';
+        }
+
+        $products = [];
+        foreach ($order['line_items'] as $item) {
+            $products[] = [
+                'sku' => $item['sku'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['total'],
+            ];
+        }
+
+        $params = [
+            'order_name' => '#' . $order['id'],
+            'order_number' => $order['id'],
+            'country' => 'IT',
+            'total_price' => $order['total'],
+            'subtotal_price' => $subtotalPrice,
+            'shipping_price' => $order['shipping_total'],
+            'total_tax' => $order['total_tax'],
+            'tax_included' => 1,
+            'gateway' => $gateway,
+            'currency' => 'EUR',
+            'customer_first_name' => $order['billing']['first_name'],
+            'customer_last_name' => $order['billing']['last_name'],
+            'shipping_first_name' => $order['shipping']['first_name'],
+            'shipping_last_name' => $order['shipping']['last_name'],
+            'shipping_address1' => $order['shipping']['address1'],
+            'shipping_address2' => $order['shipping']['address2'],
+            'shipping_city' => $order['shipping']['city'],
+            'shipping_zip' => $order['shipping']['postcode'],
+            'shipping_province_code' => $order['shipping']['state'],
+            'shipping_country_code' => $order['shipping']['country'],
+            'shipping_phone' => $order['billing']['phone'],
+            'shipping_email' => $order['billing']['email'],
+            'shipping_notes' => $order['customer_note'],
+            'created_at' => $order['date_created'],
+            'completed_at' => date('dd/mm/YYYY h:i'),
+            'products' => $products,
+            'params' => [],
+        ];
+        if (!$elogy->createOrder($params)) {
+            return response([
+                'message' => 'Cannot push the order',
+            ], 500);
+        }
+
+        return response([
+            'message' => 'Order pushed',
+        ]);
+    }
 }

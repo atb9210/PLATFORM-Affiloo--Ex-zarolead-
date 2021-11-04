@@ -582,6 +582,17 @@ class Ecommerce {
     return order
   }
 
+  async pushOrder(id) {
+    try {
+      let headers = this.getHeaders()
+      await this.$http.post('/api/3rd/ecommerce/orders/' + id + '/push', {}, { headers: headers })
+      return true
+    } catch (error) {
+      return false
+    }
+    return false
+  }
+
   async fetchPaymentMethods(filters = {}) {
     let objects = []
 

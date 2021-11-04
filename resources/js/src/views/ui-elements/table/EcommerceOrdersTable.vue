@@ -74,6 +74,7 @@
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="date">Date</vs-th>
                 <vs-th sort-key="customer_name">Customer</vs-th>
+                <vs-th sort-key="billing.phone">Phone</vs-th>
                 <vs-th sort-key="num_items">Items</vs-th>
                 <vs-th sort-key="total">Amount</vs-th>
                 <vs-th sort-key="payment_method">Payment Method</vs-th>
@@ -95,6 +96,14 @@
                     <vs-td class="column-no-padding" :data="item.customer_name">
                         <vs-chip v-popover="{name:'customer_popover_' + item.id}">
                             {{item.customer_name}}
+                        </vs-chip>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <vs-chip v-if="item.billing.hasOwnProperty('phone') && item.billing.phone != ''">
+                            <span @dblclick="whatsappMessage(item)">
+                                {{item.billing.phone}}
+                            </span>
                         </vs-chip>
                     </vs-td>
 
@@ -130,10 +139,10 @@
                                 <vs-button class="mr-2" color="primary" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
                             </vx-tooltip>
                             <vx-tooltip :text="item.notes" position="top">
-                                <vs-button class="mr-2" color="primary" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                                <vs-button class="mr-2" :color="item.notes != '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                             </vx-tooltip>
                             <vx-tooltip text="** Genera spedizione **" position="top">
-                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" />
+                                <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" @click="pushOrder(item)" />
                             </vx-tooltip>
                             <vx-tooltip text="Edit product" position="top">
                                 <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="goToEditOrderPage(item)" />
@@ -392,6 +401,30 @@ export default {
       this.$vs.loading.close()
 
       this.applyFilters()
+    },
+    async pushOrder(order) {
+      this.$vs.loading()
+
+      const result = await this.ecommerce.pushOrder(order.id)
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Order pushed',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot push the order',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
     },
     openNewTab(url) {
       window.open(url, '_blank').focus()
