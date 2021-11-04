@@ -621,10 +621,6 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        // DEBUG TODO: to delete
-        echo 'CIAO';
-        exit();
-
         $woo = $this->getClient();
         $order = $woo->get('orders/' . $id);
 
