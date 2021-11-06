@@ -142,7 +142,7 @@ Route::post('/tiktok/events/trigger', 'api\third\TikTokController@triggerEvent')
 /* Ecommerce rules */
 Route::get('/ecommerce/leads', 'api\third\EcommerceController@leads')->middleware('auth:api')
     ->name('ecommerce.leads.index');
-Route::post('/ecommerce/leads', 'api\third\EcommerceController@createLead')->middleware('auth:api')
+Route::post('/ecommerce/leads', 'api\third\EcommerceController@createLead')
     ->name('ecommerce.leads.create');
 Route::put('/ecommerce/leads/{id}', 'api\third\EcommerceController@updateLead')->middleware('auth:api')
     ->name('ecommerce.leads.update');

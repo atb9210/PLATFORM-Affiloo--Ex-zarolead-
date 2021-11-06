@@ -925,5 +925,98 @@ class NetworksTableSeeder extends Seeder
             ],
         ]);
 
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/ecommerce/leads' : $app_url . '/api/3rd/ecommerce/leads');
+        \App\Network::create([
+            'name' => 'Ecommerce',
+            'api' => [
+                'default_status' => 'waiting',
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'urlParams' => [
+                            'first_name' => '{input.name}',
+                            'last_name' => '{input.name}',
+                            'phone' => '{input.phone}',
+                            'order_id' => '{order.id}',
+                            'sku' => '{form.sku}',
+                            'product_name' => '{form.product_name}',
+                            'price' => '{input.price}',
+                            'total' => '{input.price}',
+                            'quantity' => '{input.quantity}',
+                        ],
+                        'validation' => [
+                            'urlParams' => [
+                                'first_name' => 'required|string|min:3',
+                                'last_name' => 'required|string|min:3',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                                'order_id' => 'required|integer|exists:orders,id',
+                                'sku' => 'required|string',
+                                'product_name' => 'required|string',
+                                'price' => 'required|numeric|min:0',
+                                'total' => 'required|numeric|min:0',
+                                'quantity' => 'required|string',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'status' => 'required|in:success',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'phone',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Indirizzo e numero civico'
+                            ],
+                        ],
+                    ],
+                    'params' => [
+                        'product_name' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                        'sku' => [
+                            'type' => 'text',
+                            'required' => '',
+                        ],
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                            'address' => 'required|string|min:4',
+                        ],
+                        'params' => [
+                            'product_name' => 'required|string|min:1',
+                            'sku' => 'required|string|min:1',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
     }
 }

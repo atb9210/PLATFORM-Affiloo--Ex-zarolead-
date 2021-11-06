@@ -707,6 +707,7 @@ class EcommerceController extends Controller
      * Create a lead.
      *
      * @response {
+     *  "success": true,
      *  "data": lead,
      * }
      */
@@ -722,15 +723,42 @@ class EcommerceController extends Controller
             'notes'      => 'string',
             'info'       => 'json',
             'status'     => 'string|in:confirmed,no answer,cancelled',
+
+            'order_id'     => 'numeric',
+            'sku'          => 'string',
+            'product_name' => 'string',
+            'price'        => 'numeric',
+            'total'        => 'numeric',
+            'quantity'     => 'numeric',
         ]);
 
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], true);
         }
 
+        if (isset($params['order_id'])) {
+            $params['info']['order_id'] = $params['order_id'];
+        }
+        if (isset($params['sku'])) {
+            $params['info']['sku'] = $params['sku'];
+        }
+        if (isset($params['product_name'])) {
+            $params['info']['product_name'] = $params['product_name'];
+        }
+        if (isset($params['price'])) {
+            $params['info']['price'] = $params['price'];
+        }
+        if (isset($params['total'])) {
+            $params['info']['total'] = $params['total'];
+        }
+        if (isset($params['quantity'])) {
+            $params['info']['quantity'] = $params['quantity'];
+        }
+
         $lead = EcommerceLead::create($params);
 
         return response([
+            'status' => 'success',
             'data' => $lead,
         ]);
     }

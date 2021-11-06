@@ -20,7 +20,7 @@ class CreateEcommerceLeads extends Migration
             $table->string('phone');
             $table->enum('status', ['confirmed', 'no answer', 'cancelled'])->default('no answer');
             $table->json('info')->nullable();
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
