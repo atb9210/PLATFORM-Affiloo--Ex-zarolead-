@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use Driverfury\Worldfilia\Worldfilia;
 
+use App\third\EcommerceLead;
 use App\third\EcommerceSettings;
 
 class EcommerceController extends Controller
@@ -681,6 +682,112 @@ class EcommerceController extends Controller
 
         return response([
             'message' => 'Order pushed',
+        ]);
+    }
+
+    /**
+     * Get leads list.
+     *
+     * @response {
+     *  "data": [leads],
+     * }
+     */
+    public function leads()
+    {
+        // TODO: Authorization
+
+        $objects = EcommerceLead::all();
+
+        return response([
+            'data' => $objects,
+        ]);
+    }
+
+    /**
+     * Create a lead.
+     *
+     * @response {
+     *  "data": lead,
+     * }
+     */
+    public function createLead(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'first_name' => 'required|string|min:1',
+            'last_name'  => 'required|string|min:1',
+            'phone'      => 'required|string|min:7',
+            'notes'      => 'string',
+            'info'       => 'json',
+            'status'     => 'string|in:confirmed,no answer,cancelled',
+        ]);
+
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $lead = EcommerceLead::create($params);
+
+        return response([
+            'data' => $lead,
+        ]);
+    }
+    
+    /**
+     * Update a lead.
+     *
+     * @urlParam id int required Lead's id
+     *
+     * @response {
+     *  "data": lead,
+     * }
+     */
+    public function updateLead($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'first_name' => 'string|min:1',
+            'last_name'  => 'string|min:1',
+            'phone'      => 'string|min:7',
+            'notes'      => 'string',
+            'info'       => 'json',
+            'status'     => 'string|in:confirmed,no answer,cancelled',
+        ]);
+
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $lead = EcommerceLead::findOrFail($id);
+        $lead->update($params);
+
+        return response([
+            'data' => $lead,
+        ]);
+    }
+
+    /**
+     * Delete a lead.
+     *
+     * @urlParam id int required Lead's id
+     *
+     * @response {
+     *  "message": "Lead successfully deleted",
+     * }
+     */
+    public function destroyLead($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = EcommerceLead::findOrFail($id);
+        $lead->delete();
+
+        return response([
+            'message' => 'Lead successfully deleted',
         ]);
     }
 }

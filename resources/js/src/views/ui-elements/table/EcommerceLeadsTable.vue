@@ -74,6 +74,7 @@
         <vs-table v-if="view == 'leads'" stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
+                <vs-th sort-key="id">ID</vs-th>
                 <vs-th sort-key="full_name">Name</vs-th>
                 <vs-th sort-key="phone">Phone</vs-th>
                 <vs-th sort-key="sku">SKU</vs-th>
@@ -87,6 +88,10 @@
 
             <template slot-scope="{data}">
                 <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+
+                    <vs-td class="column-no-padding" :data="item.id">
+                        {{item.id}}
+                    </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.name">
                         <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
@@ -121,7 +126,7 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.contact">
-                        <vs-checkbox disabled="true" v-model="data[indextr].contact" />
+                        <vs-checkbox v-model="data[indextr].contact" @change="updateContact(data[indextr])" />
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.status">
@@ -319,6 +324,9 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+    openNewTab(url) {
+      window.open(url, '_blank').focus()
+    },
     whatsappMessage(lead) {
       if (lead.hasOwnProperty('phone')) {
         let phone = lead.phone
@@ -331,17 +339,70 @@ export default {
     },
 
     async updateStatus(lead) {
-      /* TODO */
-      return
+      this.$vs.loading()
+
+      let params = {
+        status: this.newStatus,
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead\'s status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
     },
     showNotes(lead) {
       this.lead = lead
       this.showPopup['notes'] = true
     },
     async updateNotes(lead) {
-      /* TODO */
-      return
-    }
+      this.$vs.loading()
+
+      let params = {
+        notes: lead.notes,
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead\'s notes updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['notes'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async updateContact(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      info.contact = lead.contact
+      let params = {
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead\'s contact updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
   },
   async created() {
     this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))

@@ -725,57 +725,17 @@ class Ecommerce {
   }
 
   async fetchLeads(filters = {}) {
-    /* TODO */
-    let objects = [
-      {
-        first_name: 'Test1',
-        last_name: 'Test1',
-        phone: '3314568991',
-        sku: 'xxxxxxxx',
-        price: '24.99',
-        quantity: '1',
-        total: '29.99',
-        contact: true,
-        status: 'cancelled',
-        notes: '',
-      },
-      {
-        first_name: 'Test2',
-        last_name: 'Test2',
-        phone: '3314568992',
-        sku: 'xxxxxxxx',
-        price: '24.99',
-        quantity: '1',
-        total: '29.99',
-        contact: true,
-        status: 'no answer',
-        notes: '',
-      },
-      {
-        first_name: 'Test3',
-        last_name: 'Test3',
-        phone: '3314568993',
-        sku: 'xxxxxxxx',
-        price: '49.98',
-        quantity: '2',
-        total: '54.98',
-        contact: true,
-        status: 'confirmed',
-        notes: 'note',
-      },
-      {
-        first_name: 'Test4',
-        last_name: 'Test4',
-        phone: '3314568994',
-        sku: 'xxxxxxxx',
-        price: '24.99',
-        quantity: '1',
-        total: '29.99',
-        contact: false,
-        status: 'no answer',
-        notes: '',
-      },
-    ]
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/leads', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
 
     for (let i = 0; i < objects.length; i++) {
       let obj = objects[i]
@@ -785,14 +745,60 @@ class Ecommerce {
         obj.phone = this.adjustPhoneNumber(obj.phone)
       }
 
-      obj.price = parseFloat(obj.price)
-      obj.quantity = parseInt(obj.quantity)
-      obj.total = parseFloat(obj.total)
+      obj.sku = ''
+      obj.price = 0.0
+      obj.quantity = 0
+      obj.total = 0.0
+      obj.contact = false
+      if (obj.hasOwnProperty('info') && obj.info !== null) {
+        if (obj.info.hasOwnProperty('sku')) {
+          obj.sku = obj.info.sku
+        }
+        if (obj.info.hasOwnProperty('price')) {
+          obj.price = parseFloat(obj.info.price)
+        }
+        if (obj.info.hasOwnProperty('quantity')) {
+          obj.quantity = parseInt(obj.info.quantity)
+        }
+        if (obj.info.hasOwnProperty('total')) {
+          obj.total = parseFloat(obj.info.total)
+        }
+        if (obj.info.hasOwnProperty('contact')) {
+          obj.contact = obj.info.contact
+        }
+      }
 
       objects[i] = obj
     }
 
     return objects
+  }
+
+  async updateLead(id, params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/ecommerce/leads/' + id, params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async deleteLead(id) {
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.delete('/api/3rd/ecommerce/leads/' + id, { headers })
+      return true
+    } catch (error) {
+      return false
+    }
+    return false
   }
 }
 
