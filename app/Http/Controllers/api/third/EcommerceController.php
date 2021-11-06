@@ -622,7 +622,7 @@ class EcommerceController extends Controller
         // TODO: Authorization
 
         $woo = $this->getClient();
-        $order = $woo->get('orders/' . $id);
+        $order = (array)$woo->get('orders/' . $id);
 
         $totalPrice = floatval($order['total']);
         $shippingTotal = floatval($oder['shipping_total']);
