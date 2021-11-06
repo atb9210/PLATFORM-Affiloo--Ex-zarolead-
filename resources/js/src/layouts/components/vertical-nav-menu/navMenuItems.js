@@ -247,6 +247,13 @@ export default [
             roles: ['developer', 'admin'],
           },
           {
+            url: '/dashboard/ecommerce/leads',
+            name: 'Leads',
+            slug: 'ecommerce-leads',
+            i18n: 'Leads',
+            roles: ['developer', 'admin'],
+          },
+          {
             url: '/dashboard/ecommerce/orders',
             name: 'Orders',
             slug: 'ecommerce-orders',

@@ -1860,6 +1860,22 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/ecommerce/leads',
+          props: true,
+          name: 'ecommerce-leads',
+          component: () => import('./views/EcommerceLeads.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Leads', active: true }
+            ],
+            pageTitle: 'Ecommerce Leads',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

@@ -6,6 +6,14 @@ class Ecommerce {
     this.$http = axios
   }
 
+  adjustPhoneNumber(phone) {
+    phone = phone.replace(' ', '')
+    if (phone[0] != '+' && phone.length <= 10) {
+      phone = '+39' + phone
+    }
+    return phone
+  }
+
   getHeaders() {
     return {
       Authorization: 'Bearer ' + this.apiKey,
@@ -662,10 +670,7 @@ class Ecommerce {
           }
 
           if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
-            obj.phone = obj.phone.replace(' ', '')
-            if (obj.phone[0] != '+' && obj.phone.length <= 10) {
-              obj.phone = '+39' + obj.phone
-            }
+            obj.phone = this.adjustPhoneNumber(obj.phone)
           }
 
           if (!obj.hasOwnProperty('location') || obj.location === null) {
@@ -714,6 +719,77 @@ class Ecommerce {
       }
     } catch (error) {
       //
+    }
+
+    return objects
+  }
+
+  async fetchLeads(filters = {}) {
+    /* TODO */
+    let objects = [
+      {
+        first_name: 'Test1',
+        last_name: 'Test1',
+        phone: '3314568991',
+        sku: 'xxxxxxxx',
+        price: '24.99',
+        quantity: '1',
+        total: '29.99',
+        contact: true,
+        status: 'cancelled',
+        notes: '',
+      },
+      {
+        first_name: 'Test2',
+        last_name: 'Test2',
+        phone: '3314568992',
+        sku: 'xxxxxxxx',
+        price: '24.99',
+        quantity: '1',
+        total: '29.99',
+        contact: true,
+        status: 'no answer',
+        notes: '',
+      },
+      {
+        first_name: 'Test3',
+        last_name: 'Test3',
+        phone: '3314568993',
+        sku: 'xxxxxxxx',
+        price: '49.98',
+        quantity: '2',
+        total: '54.98',
+        contact: true,
+        status: 'confirmed',
+        notes: 'note',
+      },
+      {
+        first_name: 'Test4',
+        last_name: 'Test4',
+        phone: '3314568994',
+        sku: 'xxxxxxxx',
+        price: '24.99',
+        quantity: '1',
+        total: '29.99',
+        contact: false,
+        status: 'no answer',
+        notes: '',
+      },
+    ]
+
+    for (let i = 0; i < objects.length; i++) {
+      let obj = objects[i]
+
+      obj.full_name = obj.first_name + ' ' + obj.last_name
+      if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
+        obj.phone = this.adjustPhoneNumber(obj.phone)
+      }
+
+      obj.price = parseFloat(obj.price)
+      obj.quantity = parseInt(obj.quantity)
+      obj.total = parseFloat(obj.total)
+
+      objects[i] = obj
     }
 
     return objects

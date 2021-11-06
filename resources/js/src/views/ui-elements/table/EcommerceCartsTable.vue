@@ -192,7 +192,7 @@ export default {
       this.$vs.loading.close()
     },
     getObjectById(id) {
-      for (let i = 0; i < this.orders.length; i++) {
+      for (let i = 0; i < this.carts.length; i++) {
         if (this.objects[i].id === id) {
           return this.objects[i]
         }
