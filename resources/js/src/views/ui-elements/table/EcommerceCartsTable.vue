@@ -75,13 +75,16 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
+                <vs-th sort-key="time">Time</vs-th>
                 <vs-th sort-key="full_name">Name</vs-th>
                 <!--<vs-th sort-key="email">Email</vs-th>-->
                 <vs-th sort-key="phone">Phone</vs-th>
-                <vs-th sort-key="location">Location</vs-th>
+                <!--<vs-th sort-key="location">Location</vs-th>-->
                 <vs-th sort-key="">Cart contents</vs-th>
                 <vs-th sort-key="cart_total">Cart total</vs-th>
-                <vs-th sort-key="time">Time</vs-th>
+                <vs-th sort-key="contact">Contact</vs-th>
+                <vs-th sort-key="status">Status</vs-th>
+                <vs-th>Actions</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -89,6 +92,10 @@
 
                     <vs-td class="column-no-padding" :data="item.id">
                         {{item.id}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.time">
+                        {{item.time}}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.full_name">
@@ -109,9 +116,11 @@
                         </vs-chip>
                     </vs-td>
 
+                    <!--
                     <vs-td class="column-no-padding" :data="item.location">
                         {{item.location}}
                     </vs-td>
+                    -->
 
                     <vs-td class="column-no-padding">
                         <vs-chip v-popover="{name:'cart_popover_' + item.id}">
@@ -123,13 +132,51 @@
                         € {{item.cart_total.toFixed(2)}}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.time">
-                        {{item.time}}
+                    <vs-td class="column-no-padding" :data="item.contact">
+                        <vs-checkbox v-model="data[indextr].contact" @change="updateContact(data[indextr])" />
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.status">
+                        <fast-editable-value-select
+                            :options="cartStatuses"
+                            v-model="newStatus"
+                            @onEdit="newStatus = data[indextr].status"
+                            @onUpdate="updateStatus(data[indextr])">
+                              <vs-chip :color="cartStatusColor[item.status]">
+                                  {{item.status}}
+                              </vs-chip>
+                        </fast-editable-value-select>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <div class="flex items-center">
+                            <vx-tooltip :text="item.notes" position="top">
+                                <vs-button class="mr-2" :color="item.notes != '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                            </vx-tooltip>
+                            <vx-tooltip text="Send Whatsapp message" position="top">
+                                <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
+                            </vx-tooltip>
+                        </div>
                     </vs-td>
                     
                 </vs-tr>
             </template>
         </vs-table>
+
+        <!-- Notes popup -->
+        <vs-popup title="Notes" :active.sync="showPopup['notes']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <h3>Notes</h3>
+                        <vs-textarea v-model="cart.notes"></vs-textarea>
+                        <div class="flex" style="float: right;">
+                            <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="updateNotes(cart)"></vs-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
 
     </vx-card>
 </template>
@@ -156,8 +203,24 @@ export default {
         date_to: '',
       },
 
+      showPopup: {
+        'notes': false,
+      },
+
       carts: [],
       selectedCarts: [],
+      cart: {},
+
+      cartStatuses: [
+        'confirmed',
+        'no answer',
+        'cancelled',
+      ],
+      cartStatusColor: {
+        'confirmed': 'success',
+        'no answer': 'warning',
+        'cancelled': 'danger',
+      },
     }
   },
   computed: {
@@ -284,15 +347,91 @@ export default {
     openNewTab(url) {
       window.open(url, '_blank').focus()
     },
-    whatsappMessage(order) {
-      if (order.hasOwnProperty('phone')) {
-        let phone = order.phone
+    whatsappMessage(cart) {
+      if (cart.hasOwnProperty('phone')) {
+        let phone = cart.phone
         if (phone[0] != '+') {
           phone = '+39' + phone
         }
-        let url = 'https://api.whatsapp.com/send?phone=' + phone
+        let text = 'Buongiorno ' + cart.full_name + ', La contatto da Homy. La ringrazio per aver visitato il nostro negozio. '
+        text += 'Ho visto che ha abbandonato il suo carrello con: '
+        for (let i = 0; i < cart.products.length; i++) {
+          if (i > 0) {
+            text += ', '
+          }
+          text += cart.products[i]
+        }
+        text += '. C\'è stato qualche problema?'
+
+        let url = 'https://api.whatsapp.com/send?phone=' + phone + '&text=' + encodeURI(text)
         this.openNewTab(url)
       }
+    },
+
+    async updateStatus(cart) {
+      this.$vs.loading()
+
+      let params = {
+        status: this.newStatus,
+      }
+      await this.ecommerce.updateCart(cart.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Cart\'s status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    showNotes(cart) {
+      this.cart = cart
+      this.showPopup['notes'] = true
+    },
+    async updateNotes(cart) {
+      this.$vs.loading()
+
+      let params = {
+        notes: cart.notes,
+      }
+      await this.ecommerce.updateCart(cart.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Cart\'s notes updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['notes'] = false
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    async updateContact(cart) {
+      this.$vs.loading()
+
+      let info = cart.info
+      info.contact = cart.contact
+      let params = {
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateCart(cart.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Cart\'s contact updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.$vs.loading.close()
+
+      this.applyFilters()
     },
   },
   async created() {

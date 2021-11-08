@@ -661,46 +661,50 @@ class Ecommerce {
         for (let i = 0; i < objects.length; i++) {
           let obj = objects[i]
 
-          obj.full_name = ''
-          if (obj.hasOwnProperty('name') && obj.name !== null) {
-            obj.full_name = obj.name
-          }
-          if (obj.hasOwnProperty('surname') && obj.surname !== null && obj.surname !== '') {
-            obj.full_name += ' ' + obj.surname
-          }
-
+          obj.full_name = obj.first_name + ' ' + obj.last_name
           if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
             obj.phone = this.adjustPhoneNumber(obj.phone)
           }
 
-          if (!obj.hasOwnProperty('location') || obj.location === null) {
-            obj.location = ''
-          } else {
-            let location = ''
-            if (obj.location.hasOwnProperty('country') && obj.location.country != '') {
-              location += obj.location.country
+          let location = ''
+          let cart_total = 0.0
+          let contact = false
+          let products = []
+          if (obj.hasOwnProperty('info') && obj.info !== null) {
+            if (obj.info.hasOwnProperty('contact')) {
+              contact = obj.info.contact
+            } else {
+              contact = false
             }
-            if (obj.location.hasOwnProperty('city') && obj.location.city != '') {
-              location += ', ' + obj.location.city
-            }
-            if (obj.location.hasOwnProperty('postcode') && obj.location.postcode != '') {
-              location += ', ' + obj.location.postcode
-            }
-            obj.location = location
-          }
 
-          if (obj.hasOwnProperty('cart_total') && obj.cart_total !== null && obj.cart_total !== '') {
-            obj.cart_total = parseFloat(obj.cart_total)
-          } else {
-            obj.cart_total = 0.0
-          }
+            if (obj.info.hasOwnProperty('cart_total') && obj.info.cart_total !== null && obj.info.cart_total !== '') {
+              cart_total = parseFloat(obj.info.cart_total)
+            } else {
+              cart_total = 0.0
+            }
 
-          obj.products = []
-          if (obj.hasOwnProperty('cart_contents') && obj.cart_contents != null) {
-            for (let j = 0; j < obj.cart_contents.length; j++) {
-              obj.products.push(obj.cart_contents[j].product_title)
+            if (obj.info.hasOwnProperty('cart_contents') && obj.info.cart_contents != null) {
+              for (let j = 0; j < obj.info.cart_contents.length; j++) {
+                products.push(obj.info.cart_contents[j].product_title)
+              }
+            }
+
+            if (obj.info.hasOwnProperty('location') && obj.info.location !== null) {
+              if (obj.info.location.hasOwnProperty('country') && obj.info.location.country != '') {
+                location += obj.info.location.country
+              }
+              if (obj.info.location.hasOwnProperty('city') && obj.info.location.city != '') {
+                location += ', ' + obj.info.location.city
+              }
+              if (obj.info.location.hasOwnProperty('postcode') && obj.info.location.postcode != '') {
+                location += ', ' + obj.info.location.postcode
+              }
             }
           }
+          obj.cart_total = cart_total
+          obj.contact = contact
+          obj.products = products
+          obj.location = location
 
           objects[i] = obj
         }
@@ -722,6 +726,33 @@ class Ecommerce {
     }
 
     return objects
+  }
+
+  async updateCart(id, params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/ecommerce/carts/' + id, params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async deleteCart(id) {
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.delete('/api/3rd/ecommerce/carts/' + id, { headers })
+      return true
+    } catch (error) {
+      return false
+    }
+    return false
   }
 
   async fetchLeads(filters = {}) {

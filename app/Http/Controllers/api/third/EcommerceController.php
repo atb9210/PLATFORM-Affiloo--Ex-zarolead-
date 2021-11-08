@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use Driverfury\Worldfilia\Worldfilia;
 
+use App\third\EcommerceCart;
 use App\third\EcommerceLead;
 use App\third\EcommerceSettings;
 
@@ -446,97 +447,6 @@ class EcommerceController extends Controller
         ]);
     }
 
-    private function decodeCartObj($s)
-    {
-        $type = 'x';
-        $len = 0;
-        $val = '';
-
-        if(strlen($s) >= 3)
-        {
-            $type = $s[0];
-            $s = substr($s, 2);
-
-            $i = 0;
-            while (is_numeric($s[$i])) {
-                $i += 1;
-            }
-            $len = intval(substr($s, 0, $i));
-
-            if ($type == 's') {
-                $s = substr($s, $i + 1);
-                $val = substr($s, 0, -1);
-                $val = substr($val, 1, -1);
-                return $val;
-            } else if ($type == 'i') {
-                return intval($len);
-            } else if ($type == 'd') {
-                return floatval($len);
-            } else if ($type == 'a') {
-                $s = substr($s, $i + 1);
-                $val = $s;
-                if ($val[strlen($val)-1] == ';') {
-                    $val = substr($s, 0, -1);
-                }
-                $val = substr($val, 1, -1);
-
-                $items = [];
-                $start = 0;
-                $end = 0;
-                $scope = 0;
-                while($end < strlen($val)) {
-                    if ($val[$end] == '{') {
-                        $scope += 1;
-                    } else if ($val[$end] == '}') {
-                        $scope -= 1;
-                        if ($scope == 0) {
-                            if ($start > 0) {
-                                $start += 1;
-                            }
-                            $items[] = substr($val, $start, $end - $start + 1);
-                            $start = $end;
-                        }
-                    } else if ($val[$end] == ';' && $scope == 0) {
-                        if ($start > 0) {
-                            $start += 1;
-                        }
-                        $items[] = substr($val, $start, $end - $start);
-                        $start = $end;
-                    }
-                    $end += 1;
-                }
-
-                $even = true;
-                $keys = [];
-                $values = [];
-                foreach ($items as $item) {
-                    if ($item == '') {
-                        continue;
-                    }
-                    $item .= ';';
-                    if($even) {
-                        $keys[] = $this->decodeCartObj($item);
-                        $even = false;
-                    } else {
-                        $values[] = $this->decodeCartObj($item);
-                        $even = true;
-                    }
-                }
-
-                $arr = [];
-                $cnt = min(count($keys), count($values));
-                for ($i = 0; $i < $cnt; $i += 1) {
-                    $arr[$keys[$i]] = $values[$i];
-                }
-                return $arr;
-            } else {
-                die("Invalid");
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Get carts list.
      *
@@ -548,64 +458,75 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        $carts = [];
-
-        /*
-        // TODO: DEBUG: Is this valid every time?
-        $cookies = 'wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_ef80ef114711cf36b767a2aed961be0b=admin%7C1634743615%7CMbd4phDhWhZ8xYNXROvBmByoooxap90cKHX3gzTscQF%7Cf3dde3140d1a8b46d6e85381c68741574e901311cad5bed403e1547a8421539a; tk_ai=woo%3AFPmVmIAlkNb0%2B1BPYOMVtPoh; wp-settings-1=libraryContent%3Dbrowse%26ampposts_list_mode%3Dlist%26posts_list_mode%3Dlist%26editor%3Dtinymce%26hidetb%3D1%26post_dfw%3Don%26mfold%3Do; wp-settings-time-1=1634570817; woocommerce_items_in_cart=1; wp_woocommerce_session_ef80ef114711cf36b767a2aed961be0b=1%7C%7C1634743618%7C%7C1634740018%7C%7Cdce526d4f3bb9e6a547ab8d1aaf34927; woocommerce_cart_hash=ef8c6a3674526897001b81f6b8d14703';
-
-        $url = 'https://homygadget.com/wp-json/autonami-admin/carts/recoverable?offset=0&limit=500&_locale=user';
-        $headers = [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'x-wp-nonce: 1a3cbc90ca',
-        ];
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_COOKIE, $cookies);
-
-        $response = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($response != null && $response != '') {
-            $response = json_decode($response, true);
-            if (isset($response['result'])) {
-                $carts = $response['result'];
-            }
-        }
-        */
-
-        $url = 'https://homygadget.com/zaroapi/carts.php';
-        $headers = [
-            'Accept: application/json',
-            'Content-Type: application/json',
-        ];
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($response != null && $response != '') {
-            $carts = json_decode($response, true);
-        }
-
-        for ($cartIndex = 0; $cartIndex < count($carts); $cartIndex += 1) {
-            $cart = $carts[$cartIndex];
-
-            $carts[$cartIndex]['location'] = $this->decodeCartObj($cart['location']);
-            $carts[$cartIndex]['cart_contents'] = $this->decodeCartObj($cart['cart_contents']);
-            $carts[$cartIndex]['other_fields'] = $this->decodeCartObj($cart['other_fields']);
-        }
+        $carts = EcommerceCart::sync();
 
         return response([
             'data' => $carts,
+        ]);
+    }
+
+    /**
+     * Update a cart.
+     *
+     * @urlParam id int required Cart's id
+     *
+     * @bodyParam first_name string Cart's customer first name
+     * @bodyParam last_name string Cart's customer last name
+     * @bodyParam email string Cart's customer email
+     * @bodyParam phone string Cart's customer phone number
+     * @bodyParam notes string Cart's notes
+     * @bodyParam info string Cart's info
+     * @bodyParam status string Cart's status
+     *
+     * @response {
+     *  "data": cart,
+     * }
+     */
+    public function updateCart($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'first_name' => 'string|min:1',
+            'last_name'  => 'string|min:1',
+            'email'      => 'string|min:7',
+            'phone'      => 'string|min:7',
+            'notes'      => 'string',
+            'info'       => 'json',
+            'status'     => 'string|in:confirmed,no answer,cancelled',
+        ]);
+
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $cart = EcommerceCart::findOrFail($id);
+        $cart->update($params);
+
+        return response([
+            'data' => $cart,
+        ]);
+    }
+
+    /**
+     * Delete a cart.
+     *
+     * @urlParam id int required Cart's id
+     *
+     * @response {
+     *  "message": "Cart successfully deleted",
+     * }
+     */
+    public function destroyCart($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $cart = EcommerceCart::findOrFail($id);
+        $cart->delete();
+
+        return response([
+            'message' => 'Cart successfully deleted',
         ]);
     }
     
@@ -711,6 +632,19 @@ class EcommerceController extends Controller
     /**
      * Create a lead.
      *
+     * @bodyParam first_name string required Lead's first name
+     * @bodyParam last_name string required Lead's last name
+     * @bodyParam phone string required Lead's phone number
+     * @bodyParam notes string Lead's notes
+     * @bodyParam info string Lead's info
+     * @bodyParam status string Lead's status
+     * @bodyParam order_id string Lead's order id
+     * @bodyParam sku string Lead's sku
+     * @bodyParam product_name string Lead's product
+     * @bodyParam price string Lead's price
+     * @bodyParam total string Lead's total
+     * @bodyParam quantity string Lead's quantity
+     *
      * @response {
      *  "success": true,
      *  "data": lead,
@@ -772,6 +706,13 @@ class EcommerceController extends Controller
      * Update a lead.
      *
      * @urlParam id int required Lead's id
+     *
+     * @bodyParam first_name string Lead's first name
+     * @bodyParam last_name string Lead's last name
+     * @bodyParam phone string Lead's phone number
+     * @bodyParam notes string Lead's notes
+     * @bodyParam info string Lead's info
+     * @bodyParam status string Lead's status
      *
      * @response {
      *  "data": lead,

@@ -189,3 +189,7 @@ Route::put('/ecommerce/extra-cost/csv', 'api\third\EcommerceController@updateExt
 
 Route::get('/ecommerce/carts', 'api\third\EcommerceController@carts')->middleware('auth:api')
     ->name('ecommerce.carts.index');
+Route::put('/ecommerce/carts/{id}', 'api\third\EcommerceController@updateCart')->middleware('auth:api')
+    ->name('ecommerce.carts.update');
+Route::delete('/ecommerce/carts/{id}', 'api\third\EcommerceController@destroyCart')->middleware('auth:api')
+    ->name('ecommerce.carts.destroy');
