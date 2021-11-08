@@ -624,7 +624,7 @@ class EcommerceController extends Controller
 
         $woo = $this->getClient();
         $order = $woo->get('orders/' . $id);
-        $order = json_encode(json_decode($order, true));
+        $order = json_decode(json_encode($order), true);
 
         $totalPrice = floatval($order['total']);
         $shippingTotal = floatval($order['shipping_total']);
