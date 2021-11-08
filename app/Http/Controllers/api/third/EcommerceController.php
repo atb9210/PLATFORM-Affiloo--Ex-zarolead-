@@ -626,8 +626,8 @@ class EcommerceController extends Controller
         $order = (array)$woo->get('orders/' . $id);
 
         $totalPrice = floatval($order['total']);
-        $shippingTotal = floatval($oder['shipping_total']);
-        $taxTotal = floatval($oder['total_tax']);
+        $shippingTotal = floatval($order['shipping_total']);
+        $taxTotal = floatval($order['total_tax']);
         $subtotalPrice = $totalPrice - $shippingTotal - $taxTotal;
         $subtotalPrice = number_format($subtotalPrice, 2, '.', '');
 

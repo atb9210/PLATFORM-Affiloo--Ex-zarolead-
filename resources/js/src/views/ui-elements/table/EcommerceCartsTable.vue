@@ -76,7 +76,7 @@
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="full_name">Name</vs-th>
-                <vs-th sort-key="email">Email</vs-th>
+                <!--<vs-th sort-key="email">Email</vs-th>-->
                 <vs-th sort-key="phone">Phone</vs-th>
                 <vs-th sort-key="location">Location</vs-th>
                 <vs-th sort-key="">Cart contents</vs-th>
@@ -95,12 +95,18 @@
                         {{item.full_name}}
                     </vs-td>
 
+                    <!--
                     <vs-td class="column-no-padding" :data="item.email">
                         {{item.email}}
                     </vs-td>
+                    -->
 
                     <vs-td class="column-no-padding" :data="item.phone">
-                        {{item.phone}}
+                        <vs-chip v-if="item.hasOwnProperty('phone') && item.phone != ''">
+                            <span @dblclick="whatsappMessage(item)">
+                                {{item.phone}}
+                            </span>
+                        </vs-chip>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.location">
@@ -274,6 +280,19 @@ export default {
       document.body.appendChild(element)
       element.click()
       document.body.removeChild(element)
+    },
+    openNewTab(url) {
+      window.open(url, '_blank').focus()
+    },
+    whatsappMessage(order) {
+      if (order.hasOwnProperty('phone')) {
+        let phone = order.phone
+        if (phone[0] != '+') {
+          phone = '+39' + phone
+        }
+        let url = 'https://api.whatsapp.com/send?phone=' + phone
+        this.openNewTab(url)
+      }
     },
   },
   async created() {

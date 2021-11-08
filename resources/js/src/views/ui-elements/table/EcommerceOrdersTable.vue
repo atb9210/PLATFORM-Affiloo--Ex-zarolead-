@@ -429,10 +429,6 @@ export default {
     openNewTab(url) {
       window.open(url, '_blank').focus()
     },
-    goToEditOrderPage(order) {
-      let url = 'https://homygadget.com/wp-admin/post.php?post=' + order.id + '&action=edit'
-      this.openNewTab(url)
-    },
     whatsappMessage(order) {
       if (order.hasOwnProperty('billing') && order.billing.hasOwnProperty('phone')) {
         let phone = order.billing.phone
@@ -442,6 +438,10 @@ export default {
         let url = 'https://api.whatsapp.com/send?phone=' + phone
         this.openNewTab(url)
       }
+    },
+    goToEditOrderPage(order) {
+      let url = 'https://homygadget.com/wp-admin/post.php?post=' + order.id + '&action=edit'
+      this.openNewTab(url)
     },
   },
   async created() {
