@@ -675,6 +675,7 @@ class EcommerceController extends Controller
             'products' => $products,
             'params' => [],
         ];
+        $elogy = new \Driverfury\Elogy\Elogy(env('ELOGY_API_TOKEN'));
         if (!$elogy->createOrder($params)) {
             return response([
                 'message' => 'Cannot push the order',
