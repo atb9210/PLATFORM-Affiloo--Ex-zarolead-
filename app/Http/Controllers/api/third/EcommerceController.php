@@ -623,7 +623,8 @@ class EcommerceController extends Controller
         // TODO: Authorization
 
         $woo = $this->getClient();
-        $order = (array)$woo->get('orders/' . $id);
+        $order = $woo->get('orders/' . $id);
+        $order = json_encode(json_decode($order, true));
 
         $totalPrice = floatval($order['total']);
         $shippingTotal = floatval($order['shipping_total']);
@@ -638,7 +639,6 @@ class EcommerceController extends Controller
 
         $products = [];
         foreach ($order['line_items'] as $item) {
-            $item = (array)$item;
             $products[] = [
                 'sku' => $item['sku'],
                 'quantity' => $item['quantity'],
