@@ -638,6 +638,7 @@ class EcommerceController extends Controller
 
         $products = [];
         foreach ($order['line_items'] as $item) {
+            $item = (array)$item;
             $products[] = [
                 'sku' => $item['sku'],
                 'quantity' => $item['quantity'],
