@@ -73,6 +73,12 @@ class TestController extends Controller
 
     public function test()
     {
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD'));
+        exit();
+
         $elogy = new \Driverfury\Elogy\Elogy(env('ELOGY_API_TOKEN'));
         //dd($elogy->getOrders());
         $elogy->createOrder([

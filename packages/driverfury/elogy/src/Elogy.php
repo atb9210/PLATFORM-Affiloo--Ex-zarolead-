@@ -8,11 +8,44 @@ use Illuminate\Support\Facades\Log;
 class Elogy
 {
     protected string $accessToken = '';
+    protected string $refreshToken = '';
     protected static string $apiUrl = 'https://api.elogy.io:8443/api';
         
-    public function __construct(string $accessToken)
+    public function __construct(string $apiKey, string $email, string $password)
     {
-        $this->accessToken = $accessToken;
+        $output = [];
+
+        $headers = [
+            'Authorization: ' . $apiKey,
+            'Content-Type: application/json',
+        ];
+
+        $urlParams = [
+            'email' => $email,
+            'password' => $password,
+            'source' => 'api',
+            'host' => 'app.elogy.io',
+        ];
+        $bodyParams = $urlParams;
+
+        $url  = 'https://api.elogy.io:8443/public-api/login';
+        $url .= '?' . http_build_query($urlParams);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch); 
+
+        if ($response !== null) {
+            $output = json_decode($response, true);
+        }
+
+        $this->accessToken = $output['token'];
+        $this->refreshToken = $output['refresh_token'];
     }
 
     protected function getRequest(
@@ -89,6 +122,48 @@ class Elogy
 
         return $output;
     }
+
+    /*
+    protected function refreshToken(): string
+    {
+        $output = [];
+
+        if (strlen($path) === 0) {
+            return $output;
+        }
+        if ($path[0] !== '/') {
+            $path = '/' . $path;
+        }
+
+        $headers = [
+            'Authorization: ' . $this->accessToken,
+            'Content-Type: application/json',
+        ];
+
+        $urlParams = [
+            'refresh_token' => $this->accessToken,
+            'user_id' =>          
+        ];
+
+        $url  = 'https://api.elogy.io:8443/public-api/refresh'
+        $url .= '?' . http_build_query($urlParams);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch); 
+
+        if ($response !== null) {
+            $output = json_decode($response, true);
+        }
+
+        return $output;
+    }
+    */
 
     protected function getRequestAllPages(string $path, array $params): array
     {
