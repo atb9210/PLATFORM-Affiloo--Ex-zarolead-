@@ -145,6 +145,9 @@ class Elogy
                 Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
                 return false;
             }
+        } else {
+            Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
+            return false;
         }
         return false;
     }
