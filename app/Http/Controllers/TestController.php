@@ -73,6 +73,15 @@ class TestController extends Controller
 
     public function test()
     {
+        $carts = \App\third\EcommerceCart::all();
+        foreach ($carts as $cart) {
+            $tmp = $cart->phone;
+            $cart->phone = $cart->email;
+            $cart->email = $tmp;
+            $cart->save();
+        }
+        exit();
+
         $elogy = new \Driverfury\Elogy\Elogy(
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),

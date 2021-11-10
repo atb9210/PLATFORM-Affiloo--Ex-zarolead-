@@ -151,10 +151,10 @@
                     <vs-td class="column-no-padding">
                         <div class="flex items-center">
                             <vx-tooltip :text="item.notes" position="top">
-                                <vs-button class="mr-2" :color="item.notes != '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                                <vs-button class="mr-2 small-button" :color="(item.notes === null || item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                             </vx-tooltip>
                             <vx-tooltip text="Send Whatsapp message" position="top">
-                                <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
+                                <vs-button class="mr-2 small-button" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                             </vx-tooltip>
                         </div>
                     </vs-td>
@@ -448,6 +448,18 @@ export default {
 </script>
 
 <style>
+
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.small-button {
+  width: 25px !important;
+  height: 25px !important;
+}
 
 .cart_popover {
   z-index: 999999 !important;

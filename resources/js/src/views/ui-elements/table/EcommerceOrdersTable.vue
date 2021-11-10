@@ -139,7 +139,7 @@
                                 <vs-button class="mr-2" color="primary" @click="showInfo(item)" icon-pack="feather" icon="icon-help-circle" />
                             </vx-tooltip>
                             <vx-tooltip :text="item.notes" position="top">
-                                <vs-button class="mr-2" :color="item.notes == '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                                <vs-button class="mr-2" :color="(item.notes === null || item.notes === '') ? 'warning' : 'primary'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                             </vx-tooltip>
                             <vx-tooltip text="** Genera spedizione **" position="top">
                                 <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" @click="pushOrder(item)" />

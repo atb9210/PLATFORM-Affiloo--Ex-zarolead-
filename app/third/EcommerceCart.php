@@ -160,8 +160,8 @@ class EcommerceCart extends Model
                 $params = [
                     'first_name' => $newCarts[$cartIndex]['name'],
                     'last_name' => $newCarts[$cartIndex]['surname'],
-                    'phone' => $newCarts[$cartIndex]['email'],
-                    'email' => $newCarts[$cartIndex]['phone'],
+                    'email' => $newCarts[$cartIndex]['email'],
+                    'phone' => $newCarts[$cartIndex]['phone'],
                     'info' => $info,
                     'time' => $newCarts[$cartIndex]['time'],
                 ];
