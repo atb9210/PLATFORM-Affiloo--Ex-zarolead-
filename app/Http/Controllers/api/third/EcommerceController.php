@@ -196,6 +196,8 @@ class EcommerceController extends Controller
      */
     public function updateProductVariation($pid, $vid, Request $request)
     {
+        // TODO: Authorization
+
         // Param validation
         $params = $request->validate([
             'params' => 'json|required',
@@ -208,6 +210,34 @@ class EcommerceController extends Controller
 
         return response([
             'data' => $variation,
+        ]);
+    } 
+
+    /**
+     * Create order.
+     *
+     * @bodyParam params json reqruired Order's params
+     *
+     * @response {
+     *  "data": order,
+     * }
+     */
+    public function createOrder(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'params' => 'json|required',
+        ]);
+
+        $params = json_decode($params['params'], true);
+
+        $woo = $this->getClient();
+        $order = $woo->post('orders', $params);
+
+        return response([
+            'data' => $order,
         ]);
     }
 
@@ -224,6 +254,8 @@ class EcommerceController extends Controller
      */
     public function updateOrder($id, Request $request)
     {
+        // TODO: Authorization
+
         // Param validation
         $params = $request->validate([
             'params' => 'json|required',
@@ -236,6 +268,87 @@ class EcommerceController extends Controller
 
         return response([
             'data' => $order,
+        ]);
+    }
+
+    /**
+     * Push the order to elogy.
+     *
+     * @urlParam id int required Order's id
+     *
+     * @response {
+     *  "message": "Order pushed",
+     * }
+     */
+    public function pushOrder($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $woo = $this->getClient();
+        $order = $woo->get('orders/' . $id);
+        $order = json_decode(json_encode($order), true);
+
+        $totalPrice = floatval($order['total']);
+        $shippingTotal = floatval($order['shipping_total']);
+        $taxTotal = floatval($order['total_tax']);
+        $subtotalPrice = $totalPrice - $shippingTotal - $taxTotal;
+        $subtotalPrice = number_format($subtotalPrice, 2, '.', '');
+
+        $gateway = 'online';
+        if ($order['payment_method'] === 'cod') {
+            $gateway = 'cashondelivery';
+        }
+
+        $products = [];
+        foreach ($order['line_items'] as $item) {
+            $products[] = [
+                'sku' => $item['sku'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['total'],
+            ];
+        }
+
+        $params = [
+            'order_name' => '#' . $order['id'],
+            'order_number' => $order['id'],
+            'country' => 'IT',
+            'total_price' => $order['total'],
+            'subtotal_price' => $subtotalPrice,
+            'shipping_price' => $order['shipping_total'],
+            'total_tax' => $order['total_tax'],
+            'tax_included' => 1,
+            'gateway' => $gateway,
+            'currency' => 'EUR',
+            'customer_first_name' => $order['billing']['first_name'],
+            'customer_last_name' => $order['billing']['last_name'],
+            'shipping_first_name' => $order['shipping']['first_name'],
+            'shipping_last_name' => $order['shipping']['last_name'],
+            'shipping_address1' => $order['shipping']['address_1'],
+            'shipping_address2' => $order['shipping']['address_2'],
+            'shipping_city' => $order['shipping']['city'],
+            'shipping_zip' => $order['shipping']['postcode'],
+            'shipping_province_code' => $order['shipping']['state'],
+            'shipping_country_code' => $order['shipping']['country'],
+            'shipping_phone' => $order['billing']['phone'],
+            'shipping_email' => $order['billing']['email'],
+            'shipping_notes' => $order['customer_note'],
+            'created_at' => $order['date_created'],
+            'completed_at' => '',
+            'products' => $products,
+            'params' => [],
+        ];
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD'));
+        if (!$elogy->createOrder($params)) {
+            return response([
+                'message' => 'Cannot push the order',
+            ], 500);
+        }
+
+        return response([
+            'message' => 'Order pushed',
         ]);
     }
 
@@ -529,87 +642,6 @@ class EcommerceController extends Controller
             'message' => 'Cart successfully deleted',
         ]);
     }
-    
-    /**
-     * Push the order to elogy.
-     *
-     * @urlParam id int required Order's id
-     *
-     * @response {
-     *  "message": "Order pushed",
-     * }
-     */
-    public function pushOrder($id, Request $request)
-    {
-        // TODO: Authorization
-
-        $woo = $this->getClient();
-        $order = $woo->get('orders/' . $id);
-        $order = json_decode(json_encode($order), true);
-
-        $totalPrice = floatval($order['total']);
-        $shippingTotal = floatval($order['shipping_total']);
-        $taxTotal = floatval($order['total_tax']);
-        $subtotalPrice = $totalPrice - $shippingTotal - $taxTotal;
-        $subtotalPrice = number_format($subtotalPrice, 2, '.', '');
-
-        $gateway = 'online';
-        if ($order['payment_method'] === 'cod') {
-            $gateway = 'cashondelivery';
-        }
-
-        $products = [];
-        foreach ($order['line_items'] as $item) {
-            $products[] = [
-                'sku' => $item['sku'],
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['total'],
-            ];
-        }
-
-        $params = [
-            'order_name' => '#' . $order['id'],
-            'order_number' => $order['id'],
-            'country' => 'IT',
-            'total_price' => $order['total'],
-            'subtotal_price' => $subtotalPrice,
-            'shipping_price' => $order['shipping_total'],
-            'total_tax' => $order['total_tax'],
-            'tax_included' => 1,
-            'gateway' => $gateway,
-            'currency' => 'EUR',
-            'customer_first_name' => $order['billing']['first_name'],
-            'customer_last_name' => $order['billing']['last_name'],
-            'shipping_first_name' => $order['shipping']['first_name'],
-            'shipping_last_name' => $order['shipping']['last_name'],
-            'shipping_address1' => $order['shipping']['address_1'],
-            'shipping_address2' => $order['shipping']['address_2'],
-            'shipping_city' => $order['shipping']['city'],
-            'shipping_zip' => $order['shipping']['postcode'],
-            'shipping_province_code' => $order['shipping']['state'],
-            'shipping_country_code' => $order['shipping']['country'],
-            'shipping_phone' => $order['billing']['phone'],
-            'shipping_email' => $order['billing']['email'],
-            'shipping_notes' => $order['customer_note'],
-            'created_at' => $order['date_created'],
-            'completed_at' => date('dd/mm/YYYY h:i'),
-            'products' => $products,
-            'params' => [],
-        ];
-        $elogy = new \Driverfury\Elogy\Elogy(
-            env('ELOGY_API_TOKEN'),
-            env('ELOGY_EMAIL'),
-            env('ELOGY_PASSWORD'));
-        if (!$elogy->createOrder($params)) {
-            return response([
-                'message' => 'Cannot push the order',
-            ], 500);
-        }
-
-        return response([
-            'message' => 'Order pushed',
-        ]);
-    }
 
     /**
      * Get leads list.
@@ -762,6 +794,28 @@ class EcommerceController extends Controller
 
         return response([
             'message' => 'Lead successfully deleted',
+        ]);
+    }
+
+    /**
+     * Get stock products list.
+     *
+     * @response {
+     *  "data": [stock_products],
+     * }
+     */
+    public function stockProducts()
+    {
+        // TODO: Authorization
+
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD'));
+        $objects = $elogy->getProducts();
+
+        return response([
+            'data' => $objects,
         ]);
     }
 }

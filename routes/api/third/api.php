@@ -151,6 +151,8 @@ Route::delete('/ecommerce/leads/{id}', 'api\third\EcommerceController@destroyLea
 
 Route::get('/ecommerce/orders', 'api\third\EcommerceController@orders')->middleware('auth:api')
     ->name('ecommerce.orders.index');
+Route::post('/ecommerce/orders', 'api\third\EcommerceController@createOrder')->middleware('auth:api')
+    ->name('ecommerce.orders.create');
 Route::put('/ecommerce/orders/{id}', 'api\third\EcommerceController@updateOrder')->middleware('auth:api')
     ->name('ecommerce.orders.update');
 Route::post('/ecommerce/orders/{id}/push', 'api\third\EcommerceController@pushOrder')->middleware('auth:api')
@@ -169,6 +171,8 @@ Route::get('/ecommerce/products/{id}/variations', 'api\third\EcommerceController
     ->name('ecommerce.products.variations');
 Route::put('/ecommerce/products/{pid}/variations/{vid}', 'api\third\EcommerceController@updateProductVariation')->middleware('auth:api')
     ->name('ecommerce.products.variations.update');
+Route::get('/ecommerce/stock/products', 'api\third\EcommerceController@stockProducts')->middleware('auth:api')
+    ->name('ecommerce.stock.products.index');
 
 Route::get('/ecommerce/payment-methods', 'api\third\EcommerceController@paymentMethods')->middleware('auth:api')
     ->name('ecommerce.payment-methods.index');

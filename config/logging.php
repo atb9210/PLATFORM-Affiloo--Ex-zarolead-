@@ -98,6 +98,13 @@ return [
         ],
 
         // DEBUG
+        'tiktok' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/tiktok.log'),
+            'level' => 'debug',
+        ],
+
+        // DEBUG
         'elogy' => [
             'driver' => 'single',
             'path' => storage_path('logs/elogy.log'),

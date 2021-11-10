@@ -20,7 +20,7 @@ class TikTokRule extends Model
     public function apply()
     {
         // DEBUG
-        Log::info('TikTok: Applying rule ' . $this->name . ' (' . $this->id . ')...');
+        Log::channel('tiktok')->info('TikTok: Applying rule ' . $this->name . ' (' . $this->id . ')...');
 
         $advertiser_id = $this->value['advertiser_id'];
         $campaign_ids = $this->value['campaign_ids'];
@@ -179,7 +179,7 @@ class TikTokRule extends Model
             foreach ($actions as $action) {
                 if ($action['type'] == 'inc_bid') {
                     // Increate bid
-                    Log::info('Inc bid');
+                    Log::channel('tiktok')->info('Inc bid');
                     $bid = floatval($adgroup['conversion_bid'] + $action['value']);
                     $bid = min($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
@@ -189,7 +189,7 @@ class TikTokRule extends Model
                         floatval($bid));
                 } else if ($action['type'] == 'dec_bid') {
                     // Decrease bid
-                    Log::info('Dec bid');
+                    Log::channel('tiktok')->info('Dec bid');
                     $bid = floatval($adgroup['conversion_bid'] - $action['value']);
                     $bid = max($bid, floatval($action['max_value']));
                     $tt->updateAdgroupBid(
@@ -199,7 +199,7 @@ class TikTokRule extends Model
                         floatval($bid));
                 } else if ($action['type'] == 'inc_budget') {
                     // Increase budget
-                    Log::info('Inc budget');
+                    Log::channel('tiktok')->info('Inc budget');
                     $budget = floatval($adgroup['budget'] + $action['value']);
                     $budget = min($budget, floatval($action['max_value']));
                     $tt->updateAdgroupBudget(
@@ -208,7 +208,7 @@ class TikTokRule extends Model
                         floatval($budget));
                 } else if ($action['type'] == 'dec_budget') {
                     // Decrease budget
-                    Log::info('Dec budget');
+                    Log::channel('tiktok')->info('Dec budget');
                     $budget = floatval($adgroup['budget'] - $action['value']);
                     $budget = max($budget, floatval($action['max_value']));
                     $tt->updateAdgroupBudget(
@@ -217,14 +217,14 @@ class TikTokRule extends Model
                         floatval($budget));
                 } else if ($action['type'] == 'enable') {
                     // Enable adgroup
-                    Log::info('Enable');
+                    Log::channel('tiktok')->info('Enable');
                     $tt->updateAdgroupStatus(
                         $advertiser_id,
                         $adgroup['adgroup_id'],
                         'ENABLE');
                 } else if ($action['type'] == 'disable') {
                     // Disable adgroup
-                    Log::info('Disable');
+                    Log::channel('tiktok')->info('Disable');
                     $tt->updateAdgroupStatus(
                         $advertiser_id,
                         $adgroup['adgroup_id'],

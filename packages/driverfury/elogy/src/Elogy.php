@@ -198,15 +198,15 @@ class Elogy
 
     public function getOrders(): array
     {
-        $orders = [];
+        $objects = [];
 
         $params = [
             'offset' => 0,
             'length' => 100,
         ];
-        $orders = $this->getRequestAllPages('/orders', $params);
+        $objects = $this->getRequestAllPages('/orders', $params);
 
-        return $orders;
+        return $objects;
     }
 
     public function createOrder(array $params): bool
@@ -225,5 +225,18 @@ class Elogy
             return false;
         }
         return false;
+    }
+
+    public function getProducts(): array
+    {
+        $objects = [];
+
+        $params = [
+            'offset' => 0,
+            'length' => 100,
+        ];
+        $objects = $this->getRequestAllPages('/products', $params);
+
+        return $objects;
     }
 }

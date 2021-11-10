@@ -571,6 +571,23 @@ class Ecommerce {
     return res
   }
 
+  async createOrder(params) {
+    let order = null
+    try {
+      let headers = this.getHeaders()
+      let paramsData = {
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.post('/api/3rd/ecommerce/orders', paramsData, { headers: headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        order = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+    return order
+  }
+
   async updateOrder(id, params = {}) {
     let order = null
 
@@ -830,6 +847,31 @@ class Ecommerce {
       return false
     }
     return false
+  }
+
+  async fetchStockProducts(filters = {}) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/ecommerce/stock/products', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        objects[i] = obj
+      }
+    } catch (error) {
+      // DEBUG TODO: to delete
+      console.error(error)
+
+      // Nothing
+    }
+
+    return objects
   }
 }
 

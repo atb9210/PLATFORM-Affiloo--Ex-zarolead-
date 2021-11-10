@@ -32,6 +32,8 @@ import FastEditableValueSelect  from './components/FastEditableValueSelect.vue'
 Vue.component(FastEditableValueSelect.name, FastEditableValueSelect)
 import StatsCard  from './components/StatsCard.vue'
 Vue.component(StatsCard.name, StatsCard)
+import LocationInput  from './components/LocationInput.vue'
+Vue.component(LocationInput.name, LocationInput)
 
 
 // v-select component
