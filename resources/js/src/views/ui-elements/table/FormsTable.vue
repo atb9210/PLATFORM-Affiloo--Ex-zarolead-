@@ -668,7 +668,6 @@ export default {
       allObjects: [],
       objects: [],
       selected: [],
-      deleted: [],
 
       trafficSourcesShortcuts: {
         'Facebook': 'FB',
@@ -940,46 +939,33 @@ export default {
           })
         })
     },
-    deleteSelected() {
+    async deleteSelected() {
       if (this.selected.length == 0) return
 
       this.$vs.loading()
-
-      this.deleted = []
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.selected.forEach((form) => {
-        this.$http.delete('/api/v1/forms/' + form.id, { headers })
-          .then((response) => {
-            this.deleted.push(form.id)
-            if (this.deleted.length == this.selected.length) {
-              this.$vs.loading.close()
-              this.$vs.notify({
-                title: 'Success',
-                text: this.deleted.length + ' Form(s) archived',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
-              })
-              this.selected = []
-              this.deleted = []
-              this.applyFilters()
-            }
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Error',
-              text: error.message,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'danger'
-            })
-          })
+      for (let i = 0; i < this.selected.length; i++) {
+        let form = this.selected[i]
+        await this.$http.delete('/api/v1/forms/' + form.id, { headers })
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: this.selected.length + ' Form(s) archived',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
       })
+
+      this.selected = []
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
     },
     showForm(type) {
       this.showPopup[type] = true
