@@ -225,7 +225,9 @@ export default {
       products: [],
       selectedProducts: [],
 
-      product: null,
+      product: {
+        name: '',
+      },
 
       productStatuses: [
         'publish',
