@@ -862,6 +862,9 @@ class Ecommerce {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
+        obj.min_price = parseFloat(obj.min_price)
+        obj.max_price = parseFloat(obj.max_price)
+
         objects[i] = obj
       }
     } catch (error) {

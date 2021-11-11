@@ -268,6 +268,13 @@ export default [
             roles: ['developer', 'admin'],
           },
           {
+            url: '/dashboard/ecommerce/stock',
+            name: 'Stock',
+            slug: 'ecommerce-stock',
+            i18n: 'Stock',
+            roles: ['developer', 'admin'],
+          },
+          {
             url: '/dashboard/ecommerce/customers',
             name: 'Customers',
             slug: 'ecommerce-customers',

@@ -1874,6 +1874,21 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/ecommerce/stock',
+          props: true,
+          name: 'ecommerce-stock',
+          component: () => import('./views/EcommerceStock.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Ecommerce Stock', active: true }
+            ],
+            pageTitle: 'Ecommerce Stock',
+            rule: 'editor'
+          }
+        },
 
         {
           path: '/dashboard/3rd-party',
