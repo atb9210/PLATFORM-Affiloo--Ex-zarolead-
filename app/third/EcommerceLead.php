@@ -9,7 +9,7 @@ class EcommerceLead extends Model
     protected $table = 'third_ecommerce_leads';
 
     protected $fillable = [
-        'first_name', 'last_name', 'phone', 'status', 'info', 'notes',
+        'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes',
     ];
 
     protected $casts = [

@@ -73,8 +73,8 @@
                 </li>
             </vue-context>
 
-            <!-- Customers table -->
-            <vs-table v-if="view == 'leads'" stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
+            <!-- Leads table -->
+            <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
@@ -310,8 +310,9 @@
                     </div>
                 </div>
 
-                <div class="vx-row w-full mt-3 mb-3 font-bold">
-                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createOrder">Create Order</vs-button>
+                <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)">Save</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createOrder">Create Order</vs-button>
                 </div>
 
             </div>
@@ -367,6 +368,7 @@ export default {
       selectedLeads: [],
       lead: {},
       order: {
+        lead_id: '',
         first_name: '',
         last_name: '',
         phone: '',
@@ -476,34 +478,114 @@ export default {
       } else if (view == 'order_builder') {
         await this.fetchProducts()
         let lead = item
+
+        let first_name = lead.first_name
+        let last_name = lead.last_name
+        let phone = lead.phone
+        let email = lead.email
+        let products = []
+        let insurance = 0.0
+        let street_address = ''
+        let city = ''
+        let province = ''
+        let state = ''
+        let country = ''
+        let postcode = ''
+        let address = ''
+
+        if (lead.info !== null) {
+          if (lead.info.hasOwnProperty('products')) {
+            products = lead.info.products
+          }
+          if (lead.info.hasOwnProperty('insurance')) {
+            insurance = lead.info.insurance
+          }
+
+          if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
+            if (lead.info.shipping.hasOwnProperty('first_name')) {
+              first_name = lead.info.shipping.first_name
+
+              // DEBUG TODO: to delete
+              console.log("first_name", first_name)
+            }
+            if (lead.info.shipping.hasOwnProperty('last_name')) {
+              last_name = lead.info.shipping.last_name
+
+              // DEBUG TODO: to delete
+              console.log("last_name", last_name)
+            }
+            if (lead.info.shipping.hasOwnProperty('phone')) {
+              phone = lead.info.shipping.phone
+
+              // DEBUG TODO: to delete
+              console.log("phone", phone)
+            }
+            if (lead.info.shipping.hasOwnProperty('email')) {
+              email = lead.info.shipping.email
+
+              // DEBUG TODO: to delete
+              console.log("email", email)
+            }
+            if (lead.info.shipping.hasOwnProperty('street_address')) {
+              street_address = lead.info.shipping.street_address
+            }
+            if (lead.info.shipping.hasOwnProperty('city')) {
+              city = lead.info.shipping.city
+            }
+            if (lead.info.shipping.hasOwnProperty('province')) {
+              province = lead.info.shipping.province
+            }
+            if (lead.info.shipping.hasOwnProperty('state')) {
+              state = lead.info.shipping.state
+            }
+            if (lead.info.shipping.hasOwnProperty('country')) {
+              country = lead.info.shipping.country
+            }
+            if (lead.info.shipping.hasOwnProperty('postcode')) {
+              postcode = lead.info.shipping.postcode
+            }
+            if (lead.info.shipping.hasOwnProperty('address')) {
+              address = lead.info.shipping.address
+            }
+          }
+        }
+
         this.order = {
+          lead_id: lead.id,
           first_name: lead.first_name,
           last_name: lead.last_name,
           phone: lead.phone,
           email: lead.email,
           shipping: {
-            first_name: lead.first_name,
-            last_name: lead.last_name,
-            phone: lead.phone,
-            email: '',
-            notes: '',
-            street_address: '',
-            city: '',
-            province: '',
-            state: '',
-            country: '',
-            postcode: '',
-            address: '',
+            first_name: first_name,
+            last_name: last_name,
+            phone: phone,
+            email: email,
+            notes: lead.notes,
+            street_address: street_address,
+            city: city,
+            province: province,
+            state: state,
+            country: country,
+            postcode: postcode,
+            address: address,
           },
           location: {},
-          products: [],
-          insurance: '0.0',
+          products: products,
+          insurance: insurance,
           review: {
             products: [],
           },
           total: '0.0',
           newTotal: '0.0',
         }
+
+        if (lead.info !== null && lead.info.hasOwnProperty('total')) {
+          this.order.total = lead.info.total
+        } else {
+          this.refreshOrderReviewTotal()
+        }
+
         this.view = view
       }
 
@@ -774,9 +856,53 @@ export default {
 
       this.order.total = total.toFixed(2)
     },
+    async updateLeadInfo(leadInfo) {
+      this.$vs.loading()
+
+      let lead = this.getObjectById(leadInfo.lead_id)
+      let info = lead.info
+      let o = leadInfo
+
+      info.shipping = {
+        first_name: o.shipping.first_name,
+        last_name: o.shipping.last_name,
+        phone: o.shipping.phone,
+        email: o.shipping.email,
+        street_address: o.shipping.street_address,
+        city: o.shipping.city,
+        state: o.shipping.state,
+        province: o.shipping.province,
+        postcode: o.shipping.postcode,
+        country: o.shipping.country,
+      }
+
+      info.products = o.products
+      info.insurance = o.insurance
+      info.total = o.total
+
+      let params = {
+        first_name: o.first_name,
+        last_name: o.last_name,
+        phone: o.phone,
+        email: o.email,
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead saved',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+    },
     async createOrder() {
       this.$vs.loading()
 
+      await updateLeadInfo(this.order)
       let wooProducts = await this.ecommerce.fetchProducts()
 
       let o = this.order

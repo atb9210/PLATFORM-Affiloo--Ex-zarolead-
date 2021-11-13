@@ -654,7 +654,7 @@ class EcommerceController extends Controller
     {
         // TODO: Authorization
 
-        $objects = EcommerceLead::all();
+        $objects = EcommerceLead::orderBy('created_at', 'desc')->get();
 
         return response([
             'data' => $objects,
@@ -758,7 +758,8 @@ class EcommerceController extends Controller
         $params = $request->validate([
             'first_name' => 'string|min:1',
             'last_name'  => 'string|min:1',
-            'phone'      => 'string|min:7',
+            'phone'      => 'nullable|string|min:7',
+            'email'      => 'nullable|string|min:4',
             'notes'      => 'string',
             'info'       => 'json',
             'status'     => 'string|in:confirmed,no answer,cancelled',

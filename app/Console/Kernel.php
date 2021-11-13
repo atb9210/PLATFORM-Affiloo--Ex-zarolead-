@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // DEBUG
         $schedule->call(function () {
-            Log::info('** DEBUG **: Every minute');
+            Log::channel('tiktok')->info('** DEBUG **: Every minute');
         })->everyMinute();
 
         $schedule->call(function () {

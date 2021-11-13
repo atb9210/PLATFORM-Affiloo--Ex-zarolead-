@@ -17,7 +17,8 @@ class CreateEcommerceLeads extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('phone');
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
             $table->enum('status', ['confirmed', 'no answer', 'cancelled'])->default('no answer');
             $table->json('info')->nullable();
             $table->text('notes')->nullable();
