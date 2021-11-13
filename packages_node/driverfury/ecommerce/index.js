@@ -788,17 +788,24 @@ class Ecommerce {
     for (let i = 0; i < objects.length; i++) {
       let obj = objects[i]
 
-      obj.full_name = obj.first_name + ' ' + obj.last_name
+      obj.full_name = obj.first_name
+      if (obj.last_name !== '.') {
+        obj.full_name += ' ' + obj.last_name
+      }
       if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
         obj.phone = this.adjustPhoneNumber(obj.phone)
       }
 
+      obj.product_name = ''
       obj.sku = ''
       obj.price = 0.0
       obj.quantity = 0
       obj.total = 0.0
       obj.contact = false
       if (obj.hasOwnProperty('info') && obj.info !== null) {
+        if (obj.info.hasOwnProperty('product_name')) {
+          obj.product_name = obj.info.product_name
+        }
         if (obj.info.hasOwnProperty('sku')) {
           obj.sku = obj.info.sku
         }

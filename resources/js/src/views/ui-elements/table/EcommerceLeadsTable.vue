@@ -81,6 +81,7 @@
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
+                    <vs-th sort-key="product_name">Product Name</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Quantity</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
@@ -96,7 +97,7 @@
                             {{item.id}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.name">
+                        <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
                                 <vs-chip>
                                     {{item.full_name}}
@@ -114,6 +115,12 @@
 
                         <vs-td class="column-no-padding" :data="item.sku">
                             {{item.sku}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.product_name">
+                            <vs-chip>
+                                {{item.product_name}}
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
@@ -147,7 +154,7 @@
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vx-tooltip :text="item.notes" position="top">
-                                    <vs-button class="mr-2" :color="item.notes != '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                                    <vs-button class="mr-2" :color="item.notes == '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Create order" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" @click="changeView('order_builder', item)" />
