@@ -447,7 +447,7 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 
 .column-no-padding {
   padding-top: 0px !important;

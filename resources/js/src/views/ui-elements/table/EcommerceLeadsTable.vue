@@ -78,6 +78,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="created_at">Date</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
@@ -95,6 +96,10 @@
 
                         <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.created_at">
+                            {{formatDate(new Date(item.created_at))}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.full_name">
@@ -795,11 +800,6 @@ export default {
       this.products = []
       for (let i = 0; i < products.length; i++) {
         let p = products[i]
-
-        if (p.status != 'active' || p.quantity_stock == 0) {
-          continue
-        }
-
         this.products.push(this.mapProduct(p))
       }
     },
@@ -1021,3 +1021,14 @@ export default {
 }
 
 </script>
+
+<style scoped>
+
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+</style>
