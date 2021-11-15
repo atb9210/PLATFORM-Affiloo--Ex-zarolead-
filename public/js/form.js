@@ -780,18 +780,6 @@ Form.prototype.finishCrossSell = function() {
 Form.prototype.finishInput = function() {
     /* TODO: Submit form here */
     this.onSubmit(1);
-
-    if (this.upSellEnabled) {
-        this.currentStep = 'upSell';
-        this.showForm('upSellStep');
-    } else if (this.crossSellEnabled) {
-        this.currentStep = 'crossSell';
-        this.showForm('crossSellStep');
-    } else if (this.deliveryEnabled) {
-        this.currentStep = 'delivery';
-        this.showForm('deliveryStep');
-        this.setDeliveryOption(0);
-    }
 }
 
 Form.prototype.finishDelivery = function() {
@@ -887,7 +875,19 @@ Form.prototype.validateInput = function() {
 
             this.validatedInput = this.notValidatedInput;
 
+            if (this.upSellEnabled) {
+                this.currentStep = 'upSell';
+                this.showForm('upSellStep');
+            } else if (this.crossSellEnabled) {
+                this.currentStep = 'crossSell';
+                this.showForm('crossSellStep');
+            } else if (this.deliveryEnabled) {
+                this.currentStep = 'delivery';
+                this.showForm('deliveryStep');
+                this.setDeliveryOption(0);
+            }
             this.onSubmit(2);
+
             // TODO: Old code
             /*
             if (this.currentStep == 'final') {
