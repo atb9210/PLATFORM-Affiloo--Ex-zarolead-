@@ -931,7 +931,7 @@ export default {
     async createOrder() {
       this.$vs.loading()
 
-      await updateLeadInfo(this.order)
+      await this.updateLeadInfo(this.order)
       let wooProducts = await this.ecommerce.fetchProducts()
 
       let o = this.order
