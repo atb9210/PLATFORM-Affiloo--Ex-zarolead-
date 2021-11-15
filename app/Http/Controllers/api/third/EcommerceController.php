@@ -693,7 +693,7 @@ class EcommerceController extends Controller
             'phone'      => 'required|string|min:7',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|in:confirmed,no answer,cancelled',
+            'status'     => 'string|in:confirmed,no answer,cancelled,fake,duplicate,to recall',
 
             'order_id'     => 'numeric',
             'sku'          => 'string',
@@ -727,6 +727,24 @@ class EcommerceController extends Controller
         }
 
         $lead = EcommerceLead::create($params);
+
+        $sku = '';
+        if (isset($params['sku'])) {
+            $sku = $params['sku'];
+        }
+        if ($sku !== '') {
+            $phone = $params['phone'];
+            $checkLead = EcommerceLead::where('phone', $phone)->get();
+            foreach ($checkLead as $l) {
+                if ($l !== null) {
+                    if ($l->id != $lead->id && $l->info !== null && isset($l->info['sku']) &&
+                        $l->info['sku'] == $sku) {
+                        $lead->status = 'duplicate';
+                        $lead->save();
+                    }
+                }
+            }
+        }
 
         return response([
             'status' => 'success',
@@ -762,7 +780,7 @@ class EcommerceController extends Controller
             'email'      => 'nullable|string|min:4',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|in:confirmed,no answer,cancelled',
+            'status'     => 'string|in:confirmed,no answer,cancelled,fake,duplicate,to recall',
         ]);
 
         if (isset($params['info'])) {

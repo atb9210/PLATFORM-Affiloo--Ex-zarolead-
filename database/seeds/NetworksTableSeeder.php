@@ -929,7 +929,7 @@ class NetworksTableSeeder extends Seeder
         \App\Network::create([
             'name' => 'Ecommerce',
             'api' => [
-                'default_status' => 'waiting',
+                'default_status' => 'confirmed',
                 'store' => [
                     'request' => [
                         'url' => $url,
@@ -945,7 +945,6 @@ class NetworksTableSeeder extends Seeder
                             'price' => '{input.price}',
                             'total' => '{input.price}',
                             'quantity' => '{input.quantity}',
-                            'status' => 'confirmed',
                         ],
                         'validation' => [
                             'bodyParams' => [

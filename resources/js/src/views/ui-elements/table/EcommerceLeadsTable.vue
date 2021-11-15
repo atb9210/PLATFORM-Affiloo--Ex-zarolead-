@@ -129,15 +129,30 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
-                            € {{item.price.toFixed(2)}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = data[indextr].price.toFixed(2)"
+                                @onUpdate="updatePrice(data[indextr])">
+                                  € {{ item.price.toFixed(2) }}
+                            </fast-editable-value>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.quantity">
-                            {{item.quantity}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = data[indextr].quantity"
+                                @onUpdate="updateQuantity(data[indextr])">
+                                  {{ item.quantity }}
+                            </fast-editable-value>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.total">
-                            € {{item.total.toFixed(2)}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = data[indextr].total.toFixed(2)"
+                                @onUpdate="updateTotal(data[indextr])">
+                                  € {{ item.total.toFixed(2) }}
+                            </fast-editable-value>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.contact">
@@ -415,14 +430,21 @@ export default {
         'confirmed',
         'no answer',
         'cancelled',
+        'fake',
+        'duplicate',
+        'to recall',
       ],
       leadStatusColor: {
         'confirmed': 'success',
         'no answer': 'warning',
         'cancelled': 'danger',
+        'fake':      'danger',
+        'duplicate': 'danger',
+        'to recall': 'primary',
       },
 
       newStatus: '',
+      newValue: '',
     }
   },
   computed: {
@@ -1003,6 +1025,48 @@ export default {
           })
         }
       }
+
+      this.$vs.loading.close()
+
+      this.changeView('leads')
+    },
+    async updatePrice(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      info.price = this.newValue
+      let params = {
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.loading.close()
+
+      this.changeView('leads')
+    },
+    async updateQuantity(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      info.quantity = this.newValue
+      let params = {
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateLead(lead.id, params)
+
+      this.$vs.loading.close()
+
+      this.changeView('leads')
+    },
+    async updateTotal(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      info.total = this.newValue
+      let params = {
+        info: JSON.stringify(info),
+      }
+      await this.ecommerce.updateLead(lead.id, params)
 
       this.$vs.loading.close()
 
