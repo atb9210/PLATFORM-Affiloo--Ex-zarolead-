@@ -292,7 +292,6 @@ class EcommerceController extends Controller
         $shippingTotal = floatval($order['shipping_total']);
         $taxTotal = floatval($order['total_tax']);
         $subtotalPrice = $totalPrice - $shippingTotal - $taxTotal;
-        $subtotalPrice = number_format($subtotalPrice, 2, '.', '');
 
         $gateway = 'online';
         if ($order['payment_method'] === 'cod') {

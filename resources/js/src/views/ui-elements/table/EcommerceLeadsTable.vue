@@ -907,7 +907,7 @@ export default {
     async updateLeadInfo(leadInfo) {
       this.$vs.loading()
 
-      this.updateLeadInfoNoLoading(leadInfo)
+      await this.updateLeadInfoNoLoading(leadInfo)
 
       this.$vs.notify({
         title: 'Success',
@@ -926,6 +926,9 @@ export default {
       let wooProducts = await this.ecommerce.fetchProducts()
 
       let o = this.order
+
+      // TODO: to delete
+      console.log("o", o)
 
       let email = ''
       if (o.email !== null) {
