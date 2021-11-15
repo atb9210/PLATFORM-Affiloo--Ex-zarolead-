@@ -885,9 +885,7 @@ export default {
 
       this.order.total = total.toFixed(2)
     },
-    async updateLeadInfo(leadInfo) {
-      this.$vs.loading()
-
+    async updateLeadInfoNoLoading(leadInfo) {
       let lead = this.getObjectById(leadInfo.lead_id)
       let info = lead.info
       let o = leadInfo
@@ -917,6 +915,11 @@ export default {
         info: JSON.stringify(info),
       }
       await this.ecommerce.updateLead(lead.id, params)
+    },
+    async updateLeadInfo(leadInfo) {
+      this.$vs.loading()
+
+      this.updateLeadInfoNoLoading(leadInfo)
 
       this.$vs.notify({
         title: 'Success',
@@ -931,7 +934,7 @@ export default {
     async createOrder() {
       this.$vs.loading()
 
-      await this.updateLeadInfo(this.order)
+      await this.updateLeadInfoNoLoading(this.order)
       let wooProducts = await this.ecommerce.fetchProducts()
 
       let o = this.order
