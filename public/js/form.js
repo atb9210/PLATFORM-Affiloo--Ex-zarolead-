@@ -111,6 +111,8 @@ function Form(id, debug = false, alpha = false, beta = false) {
     this.delivery = [];
     this.deliveryOption = 0;
 
+    this.lead = null;
+
     this.steps = [
         { index: 0, enabled: false, id: 'mainForm',      button_id: 'submit-button'   },
         { index: 1, enabled: false, id: 'upSellStep',    button_id: 'up-sell-done'    },
@@ -736,6 +738,8 @@ Form.prototype.showForm = function(formId) {
     $('#upSellStep').css('display', 'none');
     $('#crossSellStep').css('display', 'none');
     $('#deliveryStep').css('display', 'none');
+    $('#thankyou-page').css('display', 'none');
+
     $('#' + formId).css('display', 'block');
 
     var s = this.getStepById(formId);
@@ -758,7 +762,7 @@ Form.prototype.finishUpSell = function() {
         this.setDeliveryOption(0);
     } else {
         this.currentStep = 'final';
-        this.onSubmit(1);
+        this.onSubmit(3);
     }
 }
 
@@ -769,11 +773,14 @@ Form.prototype.finishCrossSell = function() {
         this.setDeliveryOption(0);
     } else {
         this.currentStep = 'final';
-        this.onSubmit(1);
+        this.onSubmit(3);
     }
 }
 
 Form.prototype.finishInput = function() {
+    /* TODO: Submit form here */
+    this.onSubmit(1);
+
     if (this.upSellEnabled) {
         this.currentStep = 'upSell';
         this.showForm('upSellStep');
@@ -784,9 +791,6 @@ Form.prototype.finishInput = function() {
         this.currentStep = 'delivery';
         this.showForm('deliveryStep');
         this.setDeliveryOption(0);
-    } else {
-        this.currentStep = 'final';
-        this.onSubmit(1);
     }
 }
 
@@ -797,8 +801,11 @@ Form.prototype.finishDelivery = function() {
 
     $('#delivery').val(this.deliveryOption);
 
+    // DEBUG TODO: to delete
+    console.log("called this.onSubmit(3) in finishDelivery()");
+
     this.currentStep = 'final';
-    this.onSubmit(1);
+    this.onSubmit(3);
 }
 
 Form.prototype.crossSellAddToCart = function() {
@@ -880,11 +887,12 @@ Form.prototype.validateInput = function() {
 
             this.validatedInput = this.notValidatedInput;
 
+            this.onSubmit(2);
+            // TODO: Old code
+            /*
             if (this.currentStep == 'final') {
                 this.onSubmit(2);
             } else {
-                // TODO: Old code
-                /*
                 if (this.deliveryEnabled) {
                     this.currentStep = 'delivery';
                     $('#upSellStep').css('display', 'none');
@@ -893,8 +901,8 @@ Form.prototype.validateInput = function() {
                     $('#deliveryStep').css('display', 'block');
                     this.setDeliveryOption(0);
                 }
-                */
             }
+            */
             $("#submit-button").removeAttr("disabled");
         }.bind(this),
         error: function(response) {
@@ -952,12 +960,16 @@ Form.prototype.resetForm = function() {
 
 /*
  * Step 1 => form validation
- * Step 2 => up sell & submission
+ * Step 2 => submission
+ * Step 3 => upsell/update lead
  */
 Form.prototype.onSubmit = function(step) {
     if (this.sendingForm) return;
 
     this.sendingForm = true;
+
+    // DEBUG TODO: to delete
+    console.log("called onSubmit(" + step + ")");
 
     // Form validation
     $("#submit-button").prop("disabled", true);
@@ -969,7 +981,7 @@ Form.prototype.onSubmit = function(step) {
         this.sendingForm = false;
         return;
     } else if (step == 2) {
-        // Up sell & submission
+        // Submission
         $("#submit-button").prop("disabled", true);
 
         this.networkData = this.validatedInput;
@@ -1009,8 +1021,17 @@ Form.prototype.onSubmit = function(step) {
                 // Store the order's info
                 this.order = data.data;
 
+                // Store lead's id
+                this.lead = null;
+                if (data.hasOwnProperty('api_call') && data.api_call.hasOwnProperty('response') &&
+                    data.api_call.response.hasOwnProperty('data')) {
+                    this.lead = data.api_call.response.data;
+                }
+
                 this.pluginManager.afterSubmit(data);
 
+                // TODO: old code
+                /*
                 // Show thank you page
                 //var thankyou_page = $('#thankyou_page').val();
                 //window.location.replace(thankyou_page);
@@ -1025,6 +1046,7 @@ Form.prototype.onSubmit = function(step) {
                     $('#deliveryStep').css('display', 'none');
                     $('#thankyou-page').css('display', 'block');
                 }
+                */
                 this.sendingForm = false;
             }.bind(this),
             error: function(data) {
@@ -1036,6 +1058,45 @@ Form.prototype.onSubmit = function(step) {
                 this.sendingForm = false;
             }.bind(this)
         });
+    } else if (step == 3) {
+        if (this.lead !== null) {
+            var info = this.lead.info;
+            info.quantity = $('#quantity').val();
+            info.price    = $('#price').val();
+            var data = {
+                info: info,
+            };
+            $.ajax({
+                url: this.API_URL_3RD + 'ecommerce/leads/' + this.lead.id,
+                method: "PUT",
+                dataType: "json",
+                data: data,
+                success: function(data) {
+                    console.log("[+] LEAD UPDATED");
+                    console.log(data);
+
+                    // Show thank you page
+                    //var thankyou_page = $('#thankyou_page').val();
+                    //window.location.replace(thankyou_page);
+
+                    if (data.hasOwnProperty('redirect') && data.redirect != '') {
+                        this.pluginManager.onRedirect();
+                        window.location.replace(data.redirect);
+                    } else {
+                        this.showForm('thankyou-page');
+                    }
+                    this.sendingForm = false;
+                }.bind(this),
+                error: function(data) {
+                    console.log("[!] ERROR: LEAD NOT UPDATED");
+                    console.log(data);
+                    $("#submit-button").removeAttr("disabled");
+                    alert("Errore ordine!");
+                    this.resetForm();
+                    this.sendingForm = false;
+                }.bind(this)
+            });
+        }
     }
 }
 

@@ -144,7 +144,7 @@ Route::get('/ecommerce/leads', 'api\third\EcommerceController@leads')->middlewar
     ->name('ecommerce.leads.index');
 Route::post('/ecommerce/leads', 'api\third\EcommerceController@createLead')
     ->name('ecommerce.leads.create');
-Route::put('/ecommerce/leads/{id}', 'api\third\EcommerceController@updateLead')->middleware('auth:api')
+Route::put('/ecommerce/leads/{id}', 'api\third\EcommerceController@updateLead')
     ->name('ecommerce.leads.update');
 Route::delete('/ecommerce/leads/{id}', 'api\third\EcommerceController@destroyLead')->middleware('auth:api')
     ->name('ecommerce.leads.destroy');
