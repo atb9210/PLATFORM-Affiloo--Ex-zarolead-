@@ -995,7 +995,7 @@ export default {
 
       let params = {
         payment_method: 'cod',
-        billing: billing,
+        //billing: billing,
         shipping: shipping,
         line_items: line_items,
       }
