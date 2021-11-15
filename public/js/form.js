@@ -1064,7 +1064,7 @@ Form.prototype.onSubmit = function(step) {
             info.quantity = $('#quantity').val();
             info.price    = $('#price').val();
             var data = {
-                info: info,
+                info: JSON.stringify(info),
             };
             $.ajax({
                 url: this.API_URL_3RD + 'ecommerce/leads/' + this.lead.id,
