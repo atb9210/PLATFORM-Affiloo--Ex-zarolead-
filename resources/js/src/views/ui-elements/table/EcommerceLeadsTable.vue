@@ -479,7 +479,7 @@ export default {
         }
 
         if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getProductById(pId)
+          let p = this.getStockProductById(pId)
           revProducts[pId] = {
             name: p.name,
             quantity: 1,
@@ -538,27 +538,15 @@ export default {
           if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
             if (lead.info.shipping.hasOwnProperty('first_name')) {
               first_name = lead.info.shipping.first_name
-
-              // DEBUG TODO: to delete
-              console.log("first_name", first_name)
             }
             if (lead.info.shipping.hasOwnProperty('last_name')) {
               last_name = lead.info.shipping.last_name
-
-              // DEBUG TODO: to delete
-              console.log("last_name", last_name)
             }
             if (lead.info.shipping.hasOwnProperty('phone')) {
               phone = lead.info.shipping.phone
-
-              // DEBUG TODO: to delete
-              console.log("phone", phone)
             }
             if (lead.info.shipping.hasOwnProperty('email')) {
               email = lead.info.shipping.email
-
-              // DEBUG TODO: to delete
-              console.log("email", email)
             }
             if (lead.info.shipping.hasOwnProperty('street_address')) {
               street_address = lead.info.shipping.street_address
@@ -833,7 +821,7 @@ export default {
       this.order.products.splice(index, 1)
       this.refreshOrderReviewTotal()
     },
-    getProductById(id) {
+    getStockProductById(id) {
       let p = null
       for (let i = 0; i < this.products.length; i++) {
         if (this.products[i].id == id) {
@@ -857,7 +845,7 @@ export default {
         }
 
         if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getProductById(pId)
+          let p = this.getStockProductById(pId)
           revProducts[pId] = {
             name: p.name,
             quantity: 1,
@@ -938,23 +926,32 @@ export default {
       let wooProducts = await this.ecommerce.fetchProducts()
 
       let o = this.order
+
+      let email = ''
+      if (o.email !== null) {
+        email = o.email
+      }
+      let phone = ''
+      if (o.phone !== null) {
+        phone = o.phone
+      }
       let billing = {
         first_name: o.first_name,
         last_name: o.last_name,
-        address1: o.shipping.street_address,
-        address2: '',
+        address_1: o.shipping.street_address,
+        address_2: '',
         city: o.shipping.city,
         state: o.shipping.province,
         postcode: o.shipping.postcode,
         country: o.shipping.country,
-        email: o.email,
-        phone: o.phone,
+        email: email,
+        phone: phone,
       }
       let shipping = {
         first_name: o.shipping.first_name,
         last_name: o.shipping.last_name,
-        address1: o.shipping.street_address,
-        address2: '',
+        address_1: o.shipping.street_address,
+        address_2: '',
         city: o.shipping.city,
         state: o.shipping.province,
         postcode: o.shipping.postcode,
@@ -962,9 +959,11 @@ export default {
       }
 
       let line_items_tmp = []
-      for (let i = 0; i < o.products; i++) {
-        // TODO: HERE
-        let p = this.getProductById(o.products[i])
+      for (let i = 0; i < o.products.length; i++) {
+        let p = this.getStockProductById(o.products[i])
+        if (p === null) {
+          continue
+        }
 
         let woop = null
         for (let j = 0; j < wooProducts.length; j++) {
@@ -978,18 +977,38 @@ export default {
           continue
         }
 
-        if (line_items_tmp.hasOwnProperty(woop.id)) {
-          line_items_tmp[woop.id] += 1
+        let woopId = '_' + woop.id
+        if (line_items_tmp.hasOwnProperty(woopId)) {
+          line_items_tmp[woopId] += 1
         } else {
-          line_items_tmp[woop.id] = 1
+          line_items_tmp[woopId] = 1
         }
       }
 
       let line_items = []
       for (const [key, value] of Object.entries(line_items_tmp)) {
+        let pId = key.substring(1)
+
+        let woop = null
+        for (let j = 0; j < wooProducts.length; j++) {
+          if (pId == wooProducts[j].id) {
+            woop = wooProducts[j]
+            break
+          }
+        }
+
+        if (woop === null) {
+          continue
+        }
+
+        let quantity = parseInt(value)
+        let price = parseFloat(woop.sale_price)
+        let total = quantity*price
         line_items.push({
-          'product_id': key,
-          'quantity': value,
+          'product_id': pId,
+          'quantity': quantity,
+          'sku': woop.sku,
+          'total': total.toFixed(2),
         })
       }
 
@@ -998,7 +1017,15 @@ export default {
         //billing: billing,
         shipping: shipping,
         line_items: line_items,
+        total: o.total,
+        shipping_total: 0,
+        total_tax: 0,
+        customer_note: '',
       }
+
+      // TODO: to delete
+      console.log("params", params)
+
       let order = await this.ecommerce.createOrder(params)
       if (order === null) {
         this.$vs.notify({
