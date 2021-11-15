@@ -159,7 +159,7 @@
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vx-tooltip :text="item.notes" position="top">
-                                    <vs-button class="mr-2" :color="item.notes == '' ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
+                                    <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Create order" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" @click="changeView('order_builder', item)" />

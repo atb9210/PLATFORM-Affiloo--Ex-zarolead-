@@ -935,7 +935,7 @@ class NetworksTableSeeder extends Seeder
                         'url' => $url,
                         'method' => 'post',
                         'type' => 'json',
-                        'urlParams' => [
+                        'bodyParams' => [
                             'first_name' => '{input.name}',
                             'last_name' => ' . ',
                             'phone' => '{input.phone}',
@@ -945,9 +945,10 @@ class NetworksTableSeeder extends Seeder
                             'price' => '{input.price}',
                             'total' => '{input.price}',
                             'quantity' => '{input.quantity}',
+                            'status' => 'confirmed',
                         ],
                         'validation' => [
-                            'urlParams' => [
+                            'bodyParams' => [
                                 'first_name' => 'required|string|min:3',
                                 'last_name' => 'required|string|min:3',
                                 'phone' => 'required|string|min:10|regex:' . $phone_regex,

@@ -111,6 +111,12 @@ function Form(id, debug = false, alpha = false, beta = false) {
     this.delivery = [];
     this.deliveryOption = 0;
 
+    this.steps = [
+        { index: 0, enabled: false, id: 'mainForm',      button_id: 'submit-button'   },
+        { index: 1, enabled: false, id: 'upSellStep',    button_id: 'up-sell-done'    },
+        { index: 2, enabled: false, id: 'crossSellStep', button_id: 'cross-sell-done' },
+        { index: 3, enabled: false, id: 'deliveryStep',  button_id: 'delivery-done'   },
+    ];
     this.currentStep = '';
 
     this.errors = [];
@@ -244,10 +250,21 @@ Form.prototype.formVisited = function() {
     this.pluginManager.onVisit();
 }
 
+/**
+ * Form steps:
+ * - Form (name, address, phone, ...)
+ * - upsell
+ * - cross-sell
+ * - delivery
+ */
+
 Form.prototype.initializeFirstStep = function() {
+    //TODO: old code
+    /*
     $('#upSellStep').css('display', 'none');
     $('#crossSellStep').css('display', 'none');
     $('#mainForm').css('display', 'none');
+    $('#deliveryStep').css('display', 'none');
     if (this.upSellEnabled) {
         this.currentStep = 'upSell';
         $('#upSellStep').css('display', 'block');
@@ -258,9 +275,12 @@ Form.prototype.initializeFirstStep = function() {
         this.currentStep = 'input';
         $('#mainForm').css('display', 'block');
     }
+    */
+    this.showForm('mainForm');
 }
 
 Form.prototype.initializeInput = function() {
+    this.setStepEnabled('mainForm', true);
     $.ajax({
         url: this.API_URL + 'forms/' + this.FORM_ID + '/initialize',
         method: 'GET',
@@ -278,6 +298,7 @@ Form.prototype.initializeInput = function() {
                 this.upSellEnabled = (this.upSell.enabled == true && Object.keys(this.quantity.options).length > 1);
             }
             if (this.upSellEnabled) {
+                this.setStepEnabled('upSellStep', true);
                 this.initializeUpSellStep();
             }
 
@@ -286,6 +307,7 @@ Form.prototype.initializeInput = function() {
                 this.crossSellEnabled = (this.crossSell.enabled == true);
             }
             if (this.crossSellEnabled) {
+                this.setStepEnabled('crossSellStep', true);
                 this.initializeCrossSellStep();
             }
 
@@ -295,6 +317,7 @@ Form.prototype.initializeInput = function() {
                     Array.isArray(this.delivery.options) && this.delivery.options.length > 0);
             }
             if (this.deliveryEnabled) {
+                this.setStepEnabled('deliveryStep', true);
                 this.initializeDeliveryStep();
             }
 
@@ -615,10 +638,18 @@ Form.prototype.goToInputStep = function(stepNum) {
     if (this.currentInputStep + 1 < this.inputSteps.length) {
         $("#submit-button").html("Continua");
     } else {
-        if (!this.deliveryEnabled) {
+        if (this.isLastStep('mainForm')) {
             $("#submit-button").html(window.global_button_text);
         } else {
             $("#submit-button").html("Continua");
+        }
+    }
+}
+
+Form.prototype.setStepEnabled = function(formId, value) {
+    for (let i = 0; i < this.steps.length; i++) {
+        if (formId == this.steps[i].id) {
+            this.steps[i].enabled = value;
         }
     }
 }
@@ -628,11 +659,14 @@ Form.prototype.goToNextStep = function() {
         $("#submit-button").html("Continua");
         this.goToInputStep(this.currentInputStep + 1);
     } else {
+        // TODO: old code
+        /*
         if (!this.deliveryEnabled) {
             $("#submit-button").html(window.global_button_text);
         } else {
             $("#submit-button").html("Continua");
         }
+        */
         this.finishInput();
     }
 }
@@ -661,35 +695,97 @@ Form.prototype.setDeliveryOption = function(index) {
     $('#cartDeliveryDay').html(formatDeliveryDay(deliveryDay));
 }
 
+Form.prototype.getStepById = function(formId) {
+    var s = null;
+
+    for (let i = 0; i < this.steps.length; i++) {
+        if (this.steps[i].id == formId) {
+            s = this.steps[i];
+        }
+    }
+
+    return s;
+}
+
+Form.prototype.isLastStep = function(formId) {
+    var result = false;
+
+    var stepIndex = -1;
+    for (let i = 0; i < this.steps.length; i++) {
+        if (this.steps[i].id == formId) {
+            stepIndex = this.steps[i].index;
+        }
+    }
+
+    if (stepIndex >= 0) {
+        result = true;
+        for (let i = 0; i < this.steps.length; i++) {
+            let s = this.steps[i]
+            if (s.enabled && s.index > stepIndex) {
+                result = false;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+Form.prototype.showForm = function(formId) {
+    $('#mainForm').css('display', 'none');
+    $('#upSellStep').css('display', 'none');
+    $('#crossSellStep').css('display', 'none');
+    $('#deliveryStep').css('display', 'none');
+    $('#' + formId).css('display', 'block');
+
+    var s = this.getStepById(formId);
+    if (s !== null) {
+        if (this.isLastStep(formId)) {
+            $("#" + s.button_id).html(window.global_button_text);
+        } else {
+            $("#" + s.button_id).html("Continua");
+        }
+    }
+}
+
 Form.prototype.finishUpSell = function() {
     if (this.crossSellEnabled) {
         this.currentStep = 'crossSell';
-        $('#upSellStep').css('display', 'none');
-        $('#crossSellStep').css('display', 'block');
-        $('#mainForm').css('display', 'none');
-        $('#deliveryStep').css('display', 'none');
+        this.showForm('crossSellStep');
+    } else if (this.deliveryEnabled) {
+        this.currentStep = 'delivery';
+        this.showForm('deliveryStep');
+        this.setDeliveryOption(0);
     } else {
-        this.currentStep = 'input';
-        $('#upSellStep').css('display', 'none');
-        $('#crossSellStep').css('display', 'none');
-        $('#mainForm').css('display', 'block');
-        $('#deliveryStep').css('display', 'none');
+        this.currentStep = 'final';
+        this.onSubmit(1);
     }
 }
 
 Form.prototype.finishCrossSell = function() {
-    this.currentStep = 'input';
-    $('#upSellStep').css('display', 'none');
-    $('#crossSellStep').css('display', 'none');
-    $('#mainForm').css('display', 'block');
-    $('#deliveryStep').css('display', 'none');
+    if (this.deliveryEnabled) {
+        this.currentStep = 'delivery';
+        this.showForm('deliveryStep');
+        this.setDeliveryOption(0);
+    } else {
+        this.currentStep = 'final';
+        this.onSubmit(1);
+    }
 }
 
 Form.prototype.finishInput = function() {
-    if (!this.deliveryEnabled) {
-        this.currentStep = 'final';
-        this.onSubmit(1);
+    if (this.upSellEnabled) {
+        this.currentStep = 'upSell';
+        this.showForm('upSellStep');
+    } else if (this.crossSellEnabled) {
+        this.currentStep = 'crossSell';
+        this.showForm('crossSellStep');
+    } else if (this.deliveryEnabled) {
+        this.currentStep = 'delivery';
+        this.showForm('deliveryStep');
+        this.setDeliveryOption(0);
     } else {
+        this.currentStep = 'final';
         this.onSubmit(1);
     }
 }
@@ -787,6 +883,8 @@ Form.prototype.validateInput = function() {
             if (this.currentStep == 'final') {
                 this.onSubmit(2);
             } else {
+                // TODO: Old code
+                /*
                 if (this.deliveryEnabled) {
                     this.currentStep = 'delivery';
                     $('#upSellStep').css('display', 'none');
@@ -795,6 +893,7 @@ Form.prototype.validateInput = function() {
                     $('#deliveryStep').css('display', 'block');
                     this.setDeliveryOption(0);
                 }
+                */
             }
             $("#submit-button").removeAttr("disabled");
         }.bind(this),

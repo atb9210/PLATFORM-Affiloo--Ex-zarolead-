@@ -476,33 +476,6 @@ body {
         <div class="upSellTotalReview w-100 text-center mb-3">
             TOTALE €<span id="upSellTotalAmount"></span>
         </div>
-        <!-- Old up sell -->
-        <!--
-        <table id="upSellTable">
-            <tbody>
-                <tr>
-                    <td class="product_price_top_up"></td>
-                    <td class="product_price_top_up BEST-SELLER">IL PIÙ VENDUTO</td>
-                    <td class="product_price_top_up"></td>
-                </tr>
-                <tr>
-                    <td class="product_qty mp_product_qty_1 product_price_top">
-                        <b>1</b>x <span class="price_qty">21,99€</span><span class="per_qty">/pz.</span>
-                        <hr class="total_price_qty_btns">
-                        <span class="total_qty_price"> Importo totale: 21,99€ </span>
-                    </td>
-                    <td class="product_qty mp_product_qty_2 product_price_basic"><b>2</b>x <span class="price_qty">17,59€</span><span class="per_qty">/pz.</span>
-                        <hr class="total_price_qty_btns">
-                        <span class="total_qty_price"> Importo totale: 35,18€ </span>
-                    </td>
-                    <td class="product_qty mp_product_qty_3 product_price_basic"><b>3</b>x <span class="price_qty">15,39€</span><span class="per_qty">/pz.</span>
-                        <hr class="total_price_qty_btns">
-                        <span class="total_qty_price"> Importo totale: 46,17€ </span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        -->
 		<button id="up-sell-done" class="form-button">Continua</button>
 	</div>
 
