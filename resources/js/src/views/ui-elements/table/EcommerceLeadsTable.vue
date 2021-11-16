@@ -1005,9 +1005,6 @@ export default {
           continue
         }
 
-        // TODO: to delete
-        console.log(woop)
-
         let quantity = parseInt(value)
         let price = parseFloat(woop.price)
         let total = quantity*price
@@ -1029,9 +1026,6 @@ export default {
         total_tax: 0,
         customer_note: '',
       }
-
-      // TODO: to delete
-      console.log("params", params)
 
       let order = await this.ecommerce.createOrder(params)
       if (order === null) {
