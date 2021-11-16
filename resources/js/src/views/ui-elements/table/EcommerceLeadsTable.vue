@@ -66,6 +66,12 @@
 
             <vue-context ref="lead_context_menu" v-slot="{ data }">
                 <li>
+                  <a href="#" @click="$refs.lead_context_menu.close();deleteLead(data)" class="flex items-center text-sm">
+                    <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Delete</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.lead_context_menu.close()" class="flex items-center text-sm">
                     <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Close</span>
@@ -1101,6 +1107,12 @@ export default {
 
       this.$vs.loading.close()
 
+      this.changeView('leads')
+    },
+    async deleteLead(lead) {
+      this.$vs.loading()
+      await this.ecommerce.deleteLead(lead.id)
+      this.$vs.loading.close()
       this.changeView('leads')
     },
   },
