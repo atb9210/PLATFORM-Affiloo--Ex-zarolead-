@@ -883,6 +883,25 @@ class Ecommerce {
 
     return objects
   }
+
+  async createDelivery(params) {
+    let delivery = null
+
+    try {
+      let headers = this.getHeaders()
+      let paramsData = {
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.post('/api/3rd/ecommerce/delivery', paramsData, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        delivery = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return delivery
+  }
 }
 
 export default Ecommerce

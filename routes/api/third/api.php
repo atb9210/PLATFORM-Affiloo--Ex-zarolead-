@@ -197,3 +197,6 @@ Route::put('/ecommerce/carts/{id}', 'api\third\EcommerceController@updateCart')-
     ->name('ecommerce.carts.update');
 Route::delete('/ecommerce/carts/{id}', 'api\third\EcommerceController@destroyCart')->middleware('auth:api')
     ->name('ecommerce.carts.destroy');
+
+Route::post('/ecommerce/delivery', 'api\third\EcommerceController@createDelivery')->middleware('auth:api')
+    ->name('ecommerce.delivery.create');

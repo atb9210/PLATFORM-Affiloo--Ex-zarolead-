@@ -350,7 +350,7 @@ class EcommerceController extends Controller
         return response([
             'message' => 'Order pushed',
         ]);
-    }
+    } 
 
     /**
      * Get payment methods list.
@@ -835,6 +835,41 @@ class EcommerceController extends Controller
 
         return response([
             'data' => $objects,
+        ]);
+    }
+
+    /**
+     * Create delivery (elogy).
+     *
+     * @urlParam id int required Order's id
+     *
+     * @response {
+     *  "message": "Order pushed",
+     * }
+     */
+    public function createDelivery(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'params' => 'json|required',
+        ]);
+
+        $params = json_decode($params['params'], true);
+
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD'));
+        if (!$elogy->createOrder($params)) {
+            return response([
+                'message' => 'Cannot push the order',
+            ], 500);
+        }
+
+        return response([
+            'message' => 'Order pushed',
         ]);
     }
 }

@@ -247,13 +247,6 @@ export default [
             roles: ['developer', 'admin'],
           },
           {
-            url: '/dashboard/ecommerce/leads',
-            name: 'Leads',
-            slug: 'ecommerce-leads',
-            i18n: 'Leads',
-            roles: ['developer', 'admin'],
-          },
-          {
             url: '/dashboard/ecommerce/orders',
             name: 'Orders',
             slug: 'ecommerce-orders',
@@ -268,13 +261,6 @@ export default [
             roles: ['developer', 'admin'],
           },
           {
-            url: '/dashboard/ecommerce/stock',
-            name: 'Stock',
-            slug: 'ecommerce-stock',
-            i18n: 'Stock',
-            roles: ['developer', 'admin'],
-          },
-          {
             url: '/dashboard/ecommerce/customers',
             name: 'Customers',
             slug: 'ecommerce-customers',
@@ -286,6 +272,30 @@ export default [
             name: 'Carts',
             slug: 'ecommerce-carts',
             i18n: 'Carts',
+            roles: ['developer', 'admin'],
+          },
+        ]
+      },
+
+      {
+        url: null,
+        name: 'Warehouse',
+        icon: 'PackageIcon',
+        i18n: 'Warehouse',
+        roles: ['developer', 'admin'],
+        submenu: [
+          {
+            url: '/dashboard/warehouse/leads',
+            name: 'Leads',
+            slug: 'warehouse-leads',
+            i18n: 'Leads',
+            roles: ['developer', 'admin'],
+          },
+          {
+            url: '/dashboard/warehouse/stock',
+            name: 'Stock',
+            slug: 'warehouse-stock',
+            i18n: 'Stock',
             roles: ['developer', 'admin'],
           },
         ]

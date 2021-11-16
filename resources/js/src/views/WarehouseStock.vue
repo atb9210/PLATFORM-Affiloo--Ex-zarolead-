@@ -10,16 +10,16 @@
 
 <template>
     <div id="table-demo">
-        <EcommerceStockTable />
+        <WarehouseStockTable />
     </div>
 </template>
 
 <script>
-import EcommerceStockTable from './ui-elements/table/EcommerceStockTable.vue'
+import WarehouseStockTable from './ui-elements/table/WarehouseStockTable.vue'
 
 export default{
   components: {
-    EcommerceStockTable
+    WarehouseStockTable
   },
 }
 </script>

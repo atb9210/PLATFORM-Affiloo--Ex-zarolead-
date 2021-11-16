@@ -1859,33 +1859,34 @@ const router = new Router({
             rule: 'editor'
           }
         },
+
         {
-          path: '/dashboard/ecommerce/leads',
+          path: '/dashboard/warehouse/leads',
           props: true,
-          name: 'ecommerce-leads',
-          component: () => import('./views/EcommerceLeads.vue'),
+          name: 'warehouse-leads',
+          component: () => import('./views/WarehouseLeads.vue'),
           meta: {
             authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
-              { title: 'Ecommerce Leads', active: true }
+              { title: 'Warehouse Leads', active: true }
             ],
-            pageTitle: 'Ecommerce Leads',
+            pageTitle: 'Warehouse Leads',
             rule: 'editor'
           }
         },
         {
-          path: '/dashboard/ecommerce/stock',
+          path: '/dashboard/warehouse/stock',
           props: true,
-          name: 'ecommerce-stock',
-          component: () => import('./views/EcommerceStock.vue'),
+          name: 'warehouse-stock',
+          component: () => import('./views/WarehouseStock.vue'),
           meta: {
             authRequired: true,
             breadcrumb: [
               { title: 'Home', url: '/' },
-              { title: 'Ecommerce Stock', active: true }
+              { title: 'Warehouse Stock', active: true }
             ],
-            pageTitle: 'Ecommerce Stock',
+            pageTitle: 'Warehouse Stock',
             rule: 'editor'
           }
         },

@@ -345,7 +345,7 @@
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createOrder">Create Order</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createDelivery">Create Order</vs-button>
                 </div>
 
             </div>
@@ -684,6 +684,16 @@ export default {
       let formattedDate = yyyy + '-' + mm + '-' + dd
       return formattedDate
     },
+    formatDateTime(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      let yyyy = dateObj.getFullYear()
+      let hh = String(dateObj.getHours() - 1).padStart(2, '0') // TODO: Why -1?
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+      return formattedDate
+    },
     openNewTab(url) {
       window.open(url, '_blank').focus()
     },
@@ -926,6 +936,93 @@ export default {
 
       this.$vs.loading.close()
     },
+    async createDelivery() {
+      this.$vs.loading()
+
+      let o = this.order
+
+      let productsCount = {}
+      for (let i = 0; i < o.products.length; i++) {
+        let pId = '_' + o.products[i]
+        if (productsCount.hasOwnProperty(pId)) {
+          productsCount[pId] += 1
+        } else {
+          productsCount[pId] = 1
+        }
+      }
+
+      let productsTotal = 0.0
+      let products = []
+      for (const [key, value] of Object.entries(productsCount)) {
+        let pId = key.substring(1)
+        let p = this.getStockProductById(pId)
+        if (p === null) {
+          continue
+        }
+
+        let quantity = parseInt(value)
+        let price = parseFloat(p.price)
+        let subtotal = quantity*price
+        productsTotal += subtotal
+        products.push({
+          sku: p.sku,
+          quantity: quantity,
+          subtotal: subtotal.toFixed(2),
+        })
+      }
+
+      let taxTotal = 0.0
+      let shippingPrice = 0.0
+      let total = productsTotal + shippingPrice + taxTotal
+
+      let shippingPhone = ''
+      let shippingEmail = ''
+      if (o.shipping.hasOwnProperty('phone') && o.shipping.phone !== null) {
+        shippingPhone = o.shipping.phone
+      }
+      if (o.shipping.hasOwnProperty('email') && o.shipping.email !== null) {
+        shippingPhone = o.shipping.email
+      }
+
+      let params = {
+        country: 'IT',
+        total_price: total.toFixed(2),
+        subtotal_price: productsTotal.toFixed(2),
+        shipping_price: shippingPrice.toFixed(2),
+        total_tax: taxTotal.toFixed(2),
+        tax_included: 1,
+        gateway: 'cashondelivery',
+        currency: 'EUR',
+        customer_first_name:    o.first_name,
+        customer_last_name:     o.last_name,
+        shipping_first_name:    o.shipping.first_name,
+        shipping_last_name:     o.shipping.last_name,
+        shipping_address1:      o.shipping.street_address,
+        shipping_address2:      '',
+        shipping_city:          o.shipping.city,
+        shipping_zip:           o.shipping.postcode,
+        shipping_province_code: o.shipping.province,
+        shipping_country_code:  o.shipping.country,
+        shipping_phone:         shippingPhone,
+        shipping_email:         shippingEmail,
+        shipping_notes:         '',
+        created_at: this.formatDateTime(new Date()),
+        completed_at: '',
+        products: products,
+      }
+
+      // TODO: to delete
+      console.log("params", params)
+
+      await this.ecommerce.createDelivery(params)
+
+      this.$vs.loading.close()
+
+      this.changeView('leads')
+    },
+
+    // TODO: old code
+    /*
     async createOrder() {
       this.$vs.loading()
 
@@ -1067,6 +1164,7 @@ export default {
 
       this.changeView('leads')
     },
+    */
     async updatePrice(lead) {
       this.$vs.loading()
 
