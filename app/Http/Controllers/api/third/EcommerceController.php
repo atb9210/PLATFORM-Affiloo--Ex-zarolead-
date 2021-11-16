@@ -336,6 +336,7 @@ class EcommerceController extends Controller
             'products' => $products,
             'params' => [],
         ];
+
         $elogy = new \Driverfury\Elogy\Elogy(
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),

@@ -602,7 +602,8 @@ export default {
           newTotal: '0.0',
         }
 
-        if (lead.info !== null && lead.info.hasOwnProperty('total')) {
+        if (lead.info !== null && lead.info.hasOwnProperty('total') &&
+            parseFloat(lead.info.total) > 0) {
           this.order.total = lead.info.total
         } else {
           this.refreshOrderReviewTotal()
@@ -927,9 +928,6 @@ export default {
 
       let o = this.order
 
-      // TODO: to delete
-      console.log("o", o)
-
       let email = ''
       if (o.email !== null) {
         email = o.email
@@ -940,25 +938,28 @@ export default {
       }
       let billing = {
         first_name: o.first_name,
-        last_name: o.last_name,
-        address_1: o.shipping.street_address,
-        address_2: '',
-        city: o.shipping.city,
-        state: o.shipping.province,
-        postcode: o.shipping.postcode,
-        country: o.shipping.country,
-        email: email,
-        phone: phone,
+        last_name:  o.last_name,
+        address_1:  o.shipping.street_address,
+        city:       o.shipping.city,
+        state:      o.shipping.province,
+        postcode:   o.shipping.postcode,
+        country:    o.shipping.country,
+      }
+      if (email !== '') {
+        billing.email = email
+      }
+      if (phone !== '') {
+        billing.phone = phone
       }
       let shipping = {
         first_name: o.shipping.first_name,
-        last_name: o.shipping.last_name,
-        address_1: o.shipping.street_address,
-        address_2: '',
-        city: o.shipping.city,
-        state: o.shipping.province,
-        postcode: o.shipping.postcode,
-        country: o.shipping.country,
+        last_name:  o.shipping.last_name,
+        address_1:  o.shipping.street_address,
+        address_2:  '',
+        city:       o.shipping.city,
+        state:      o.shipping.province,
+        postcode:   o.shipping.postcode,
+        country:    o.shipping.country,
       }
 
       let line_items_tmp = []
@@ -1004,8 +1005,11 @@ export default {
           continue
         }
 
+        // TODO: to delete
+        console.log(woop)
+
         let quantity = parseInt(value)
-        let price = parseFloat(woop.sale_price)
+        let price = parseFloat(woop.price)
         let total = quantity*price
         line_items.push({
           'product_id': pId,
@@ -1017,7 +1021,7 @@ export default {
 
       let params = {
         payment_method: 'cod',
-        //billing: billing,
+        billing: billing,
         shipping: shipping,
         line_items: line_items,
         total: o.total,
