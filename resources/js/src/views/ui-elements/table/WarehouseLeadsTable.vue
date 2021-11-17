@@ -257,7 +257,7 @@
                 <div class="vx-row mb-3 w-full">
                     <div class="vx-row mb-3 w-full" v-for="(product, pIndex) in order.products">
                         <div class="vx-col w-5/6">
-                          <vs-select class="w-full" v-model="order.products[pIndex]">
+                          <vs-select class="w-full" v-model="order.products[pIndex]" @input="refreshOrderReviewTotal()">
                               <vs-select-item :key="poIndex" :value="productOption.id" :text="productOption.name" v-for="(productOption, poIndex) in products" />
                           </vs-select>
                         </div>
