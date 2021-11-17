@@ -981,7 +981,7 @@ export default {
         shippingPhone = o.shipping.phone
       }
       if (o.shipping.hasOwnProperty('email') && o.shipping.email !== null) {
-        shippingPhone = o.shipping.email
+        shippingEmail = o.shipping.email
       }
 
       let params = {
@@ -1010,9 +1010,6 @@ export default {
         completed_at: '',
         products: products,
       }
-
-      // TODO: to delete
-      console.log("params", params)
 
       await this.ecommerce.createDelivery(params)
 
