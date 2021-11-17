@@ -777,7 +777,21 @@ class Ecommerce {
 
     try {
       let headers = this.getHeaders()
-      const response = await this.$http.get('/api/3rd/ecommerce/leads', { headers })
+      let params = {}
+
+      if (filters.hasOwnProperty('date_from') && filters.date_from != '') {
+        params.filter_date_from = filters.date_from
+      }
+      if (filters.hasOwnProperty('date_to') && filters.date_to != '') {
+        params.filter_date_to = filters.date_to
+      }
+      if (filters.hasOwnProperty('status') && filters.status != '') {
+        params.filter_status = filters.status
+      }
+      if (filters.hasOwnProperty('product') && filters.product != '') {
+        params.filter_product = filters.product
+      }
+      const response = await this.$http.get('/api/3rd/ecommerce/leads', { headers, params })
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         objects = response.data.data
       }

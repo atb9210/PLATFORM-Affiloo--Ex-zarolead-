@@ -13,6 +13,8 @@ use App\third\EcommerceSettings;
 
 class EcommerceController extends Controller
 {
+    private $statusValidation = 'in:confirmed,no answer,cancelled,fake,duplicate,to recall';
+
     private function getClient()
     {
         return new \Automattic\WooCommerce\Client(
@@ -607,7 +609,7 @@ class EcommerceController extends Controller
             'phone'      => 'string|min:7',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|in:confirmed,no answer,cancelled',
+            'status'     => 'string|' . $this->statusValidation,
         ]);
 
         if (isset($params['info'])) {
@@ -646,15 +648,41 @@ class EcommerceController extends Controller
     /**
      * Get leads list.
      *
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     * @bodyParam filter_status string Leads status
+     * @bodyParam filter_product string Leads product's SKU
+     *
      * @response {
      *  "data": [leads],
      * }
      */
-    public function leads()
+    public function leads(Request $request)
     {
         // TODO: Authorization
 
-        $objects = EcommerceLead::orderBy('created_at', 'desc')->get();
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to'   => 'nullable|date|date_format:Y-m-d',
+            'filter_status'    => 'nullable|string|' . $this->statusValidation,
+            'filter_product'   => 'nullable|string',
+        ]);
+
+        $q = EcommerceLead::query();
+        if (isset($params['filter_date_from'])) {
+            $q = $q->where('created_at', '>=', $params['filter_date_from'] . " 00:00:00");
+        }
+        if (isset($params['filter_date_to'])) {
+            $q = $q->where('created_at', '<=', $params['filter_date_to'] . " 23:59:59");
+        }
+        if (isset($params['filter_status'])) {
+            $q = $q->where('status', $params['filter_status']);
+        }
+        if (isset($params['filter_product'])) {
+            $q = $q->where('info->sku', $params['filter_product']);
+        }
+        $objects = $q->orderBy('created_at', 'desc')->get();
 
         return response([
             'data' => $objects,
@@ -693,7 +721,7 @@ class EcommerceController extends Controller
             'phone'      => 'required|string|min:7',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|in:confirmed,no answer,cancelled,fake,duplicate,to recall',
+            'status'     => 'string|' . $this->statusValidation,
 
             'order_id'     => 'numeric',
             'sku'          => 'string',

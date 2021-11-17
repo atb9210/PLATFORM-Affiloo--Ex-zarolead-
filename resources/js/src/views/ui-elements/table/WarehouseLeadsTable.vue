@@ -2,7 +2,8 @@
     <vx-card title="Leads" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -30,7 +31,18 @@
                     <label>To</label>
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
-
+                <div class="vx-col w-1/2">
+                    <label>Status</label>
+                    <vs-select class="w-full" v-model="filters.status">
+                        <vs-select-item :key="sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
+                    </vs-select>
+                </div>
+                <div class="vx-col w-1/2">
+                    <label>Product</label>
+                    <vs-select class="w-full" v-model="filters.product">
+                        <vs-select-item :key="pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
+                    </vs-select>
+                </div>
             </div>
 
             <div class="vx-row mt-6">
@@ -105,7 +117,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.created_at">
-                            {{formatDate(new Date(item.created_at))}}
+                            {{formatDateTime(new Date(item.created_at))}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.full_name">
@@ -391,6 +403,8 @@ export default {
       filters: {
         date_from: '',
         date_to: '',
+        status: '',
+        product: '',
       },
 
       showPopup: {
@@ -513,10 +527,9 @@ export default {
       this.$vs.loading()
 
       if (view == 'leads') {
-        this.leads = await this.ecommerce.fetchLeads()
+        this.leads = await this.ecommerce.fetchLeads(this.filters)
         this.view = view
       } else if (view == 'order_builder') {
-        await this.fetchProducts()
         let lead = item
 
         let first_name = lead.first_name
@@ -635,6 +648,8 @@ export default {
       this.filters = {
         date_from: '',
         date_to: '',
+        status: '',
+        product: '',
       }
       await this.filterDatesShortcut('this_month')
     },
@@ -1216,6 +1231,7 @@ export default {
 
     this.$vs.loading()
 
+    await this.fetchProducts()
     await this.resetFilters()
 
     this.$vs.loading.close()
