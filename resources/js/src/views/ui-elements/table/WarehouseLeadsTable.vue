@@ -917,12 +917,6 @@ export default {
         subtotal = price*quantity
         this.order.products[i].total = subtotal
         total += subtotal
-
-        // TODO: to delete
-        console.log("p", p)
-        console.log("price", price)
-        console.log("subtotal", subtotal)
-        console.log("this.order.products[i].total", this.order.products[i].total)
       }
 
       let insurance = getCurrencyValue(this.order.insurance)
@@ -981,8 +975,13 @@ export default {
     async createDelivery() {
       this.$vs.loading()
 
+      await this.updateLeadInfoNoLoading(this.order)
+
       let o = this.order
 
+      // TODO: to delete
+      // TODO: Old code
+      /*
       let productsCount = {}
       for (let i = 0; i < o.products.length; i++) {
         let pId = '_' + o.products[i]
@@ -1009,6 +1008,20 @@ export default {
         products.push({
           sku: p.sku,
           quantity: quantity,
+          subtotal: subtotal.toFixed(2),
+        })
+      }
+      */
+
+      let productsTotal = 0.0
+      let products = []
+      for (let i = 0; i < o.products.length; i++) {
+        let p = o.products[i]
+        let subtotal = getCurrencyValue(p.total)
+        productsTotal += subtotal
+        products.push({
+          sku: p.sku,
+          quantity: p.quantity,
           subtotal: subtotal.toFixed(2),
         })
       }
@@ -1053,6 +1066,7 @@ export default {
         products: products,
       }
 
+      // TODO: to uncomment
       await this.warehouse.createDelivery(o.lead_id, params)
 
       this.$vs.loading.close()
@@ -1232,6 +1246,7 @@ export default {
       this.order.products.push({
         id: product.id,
         name: product.name,
+        sku: product.sku,
         price: price,
         quantity: 1,
         total: total,
