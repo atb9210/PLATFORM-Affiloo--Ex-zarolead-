@@ -19,7 +19,7 @@ class CreateEcommerceCarts extends Migration
             $table->string('last_name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->enum('status', ['confirmed', 'no answer', 'cancelled', 'fake', 'duplicate', 'to recall'])->default('no answer');
+            $table->enum('status', ['confirmed', 'no answer', 'cancelled'])->default('no answer');
             $table->json('info')->nullable();
             $table->text('notes')->nullable();
             $table->timestamp('time');

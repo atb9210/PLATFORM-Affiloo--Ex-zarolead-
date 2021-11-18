@@ -91,6 +91,14 @@
                 </li>
             </vue-context>
 
+            <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
+                <ul>
+                    <li v-for="(item, pIndex) in lead.delivery.products" :key="pIndex">
+                      {{item.product_name}} (x{{item.quantity}})
+                    </li>
+                </ul>
+            </popover>
+
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
@@ -101,9 +109,11 @@
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
                     <vs-th sort-key="product_name">Product Name</vs-th>
+                    <!--<vs-th sort-key="delivery.gateway">Gateway</vs-th>-->
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Quantity</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
+                    <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="notes">Notes</vs-th>
@@ -146,6 +156,12 @@
                             </vs-chip>
                         </vs-td>
 
+                        <!--
+                        <vs-td class="column-no-padding" :data="item.delivery.gateway">
+                            {{item.delivery.gateway}}
+                        </vs-td>
+                        -->
+
                         <vs-td class="column-no-padding" :data="item.price">
                             <fast-editable-value
                                 v-model="newValue"
@@ -173,6 +189,12 @@
                             </fast-editable-value>
                         </vs-td>
 
+                        <vs-td class="column-no-padding">
+                            <vs-chip v-popover="{name:'items_popover_' + item.id}">
+                                {{item.delivery.products.length}} items
+                            </vs-chip>
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="item.contact">
                             <vs-checkbox v-model="data[indextr].contact" @change="updateContact(data[indextr])" />
                         </vs-td>
@@ -194,8 +216,14 @@
                                 <vx-tooltip :text="item.notes" position="top">
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
-                                <vx-tooltip text="Create order" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-package" @click="changeView('order_builder', item)" />
+                                <vx-tooltip text="Edit" position="top">
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
+                                </vx-tooltip>
+                                <vx-tooltip text="Create delivery" position="top">
+                                    <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" />
+                                </vx-tooltip>
+                                <vx-tooltip text="Info" position="top">
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
@@ -213,67 +241,76 @@
         <div v-if="view == 'order_builder'">
             <div class="w-full pr-2 pl-2">
                 <h2>Contact data</h2>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.first_name" placeholder="First Name" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.last_name" placeholder="Last Name" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.phone" placeholder="Phone" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.email" placeholder="Email" />
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.first_name" placeholder="First Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.last_name" placeholder="Last Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.phone" placeholder="Phone" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.email" placeholder="Email" />
+                    </div>
                 </div>
 
                 <hr class="mt-3 mb-3">
 
                 <h2>Shipping</h2>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.first_name" placeholder="First Name" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.last_name" placeholder="Last Name" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.phone" placeholder="Phone" />
-                </div>
-                <div class="vx-row mb-6">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.email" placeholder="Email" />
-                </div>
-                <div class="vx-row mb-3">
-                    <LocationInput v-model="order.location" @onEdit="findAddress" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.street_address" placeholder="Street address" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.city" placeholder="City" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.postcode" placeholder="Post code" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.province" placeholder="Province" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.state" placeholder="State" />
-                </div>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="text" v-model="order.shipping.country" placeholder="Country" />
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.first_name" placeholder="First Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.last_name" placeholder="Last Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.phone" placeholder="Phone" />
+                    </div>
+                    <div class="vx-col mb-6 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.email" placeholder="Email" />
+                    </div>
+                    <div class="vx-col mb-3 w-full">
+                        <LocationInput v-model="order.location" @onEdit="findAddress" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.street_address" placeholder="Street address" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.city" placeholder="City" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.postcode" placeholder="Post code" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.province" placeholder="Province" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.state" placeholder="State" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.country" placeholder="Country" />
+                    </div>
+                    <div class="vx-col mt-3 mb-3 w-full">
+                        <vs-input icon-before="true" icon-pack="feather" icon="icon-message-square" class="w-full" type="text" v-model="order.shipping.notes" placeholder="Notes" />
+                    </div>
                 </div>
 
+                <!-- TODO: Old code -->
+                <!--
                 <hr class="mt-3 mb-3">
 
                 <h2>Products</h2>
-                <div class="vx-row mb-3 w-full">
+                <div class="w-full">
                     <div class="vx-row mb-3 w-full" v-for="(product, pIndex) in order.products">
-                        <div class="vx-col w-5/6">
-                          <vs-select class="w-full" v-model="order.products[pIndex]" @input="refreshOrderReviewTotal()">
-                              <vs-select-item :key="poIndex" :value="productOption.id" :text="productOption.name" v-for="(productOption, poIndex) in products" />
-                          </vs-select>
+                        <div class="vx-col w-1/2">
+                            <vs-select class="w-full" v-model="order.products[pIndex]" @input="refreshOrderReviewTotal()">
+                                <vs-select-item :key="poIndex" :value="productOption.id" :text="productOption.name" v-for="(productOption, poIndex) in products" />
+                            </vs-select>
                         </div>
-                        <div class="vx-col w-1/6">
+                        <div class="vx-col w-1/2">
                             <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
                         </div>
                     </div>
@@ -281,70 +318,78 @@
                         <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addProduct"></vs-button>
                     </div>
                 </div>
+                -->
 
                 <hr class="mt-3 mb-3">
 
-                <h2>Insurance</h2>
-                <div class="vx-row mb-3">
-                    <vs-input class="w-full" type="number" step="0.01" min="0.0" v-model="order.insurance" @input="refreshOrderReviewTotal" placeholder="Insurance (Ex. 4.99)" />
-                </div>
-
-                <hr class="mt-3 mb-3">
-
-                <h2>Review</h2>
+                <h2>Products</h2>
                 <div class="vx-row w-full mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         Name
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         Quantity
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         Unit Price
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         Total Price
                     </div>
                 </div>
 
-                <div class="vx-row w-full mb-3" v-for="(pRev, prIndex) in orderReviewProducts" :key="prIndex">
-                    <div class="vx-col w-full md:w-1/4">
-                        {{pRev.name}}
+                <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="pIndex">
+                    <div class="vx-col w-full md:w-1/5">
+                        {{product.name}}
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
-                        x{{pRev.quantity}}
+                    <div class="vx-col w-full md:w-1/5">
+                        <fast-editable-value v-model="product.quantity" @onUpdate="refreshOrderReviewTotal()">
+                            x{{product.quantity}}
+                        </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
-                        € {{pRev.unit_price}}
+                    <div class="vx-col w-full md:w-1/5">
+                        <fast-editable-value v-model="product.price" @onUpdate="refreshOrderReviewTotal()">
+                            € {{product.price}}
+                        </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
-                        € {{(pRev.unit_price*pRev.quantity).toFixed(2)}}
+                    <div class="vx-col w-full md:w-1/5">
+                        € {{(product.total).toFixed(2)}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/5">
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
                     </div>
                 </div>
 
-                <div class="vx-row w-full mb-3" v-if="parseFloat(order.insurance) > 0.0">
-                    <div class="vx-col w-full md:w-1/4">
+                <div class="vx-row w-full mb-3">
+                    <div class="vx-col w-full md:w-1/5">
                         Insurance
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         x1
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
-                        € {{order.insurance}}
+                    <div class="vx-col w-full md:w-1/5">
+                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.insurance}}
+                        </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
-                        € {{order.insurance}}
+                    <div class="vx-col w-full md:w-1/5">
+                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.insurance}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/5">
                     </div>
                 </div>
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                     </div>
-                    <div class="vx-col w-full md:w-1/4">
+                    <div class="vx-col w-full md:w-1/5">
                         ----------------------<br>
                         <fast-editable-value
                             v-model="order.newTotal"
@@ -352,6 +397,8 @@
                             @onUpdate="updateOrderTotal()">
                               € {{order.total}}
                         </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/5">
                     </div>
                 </div>
 
@@ -378,6 +425,34 @@
             </div>
         </vs-popup>
 
+        <!-- Add product popup -->
+        <vs-popup title="Add products" :active.sync="showPopup['add_product']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3 w-full" v-for="(product, pIndex) in products" :key="pIndex">
+                    <div class="vx-col md:w-1/2 w-full">
+                        <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
+                    </div>
+                    <div class="vx-col md:w-1/2 w-full">
+                        {{product.name}}
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
+        <!-- Lead info popup -->
+        <vs-popup title="Lead info" :active.sync="showPopup['lead_info']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3" v-for="(value, key, index) in lead.delivery" :key="index">
+                    <div class="vx-col md:w-1/2 w-full">
+                        <b>{{key}}</b>
+                    </div>
+                    <div class="vx-col md:w-1/2 w-full">
+                        <b>{{value}}</b>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -385,7 +460,17 @@
 import { VueContext } from 'vue-context'
 import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
-import Ecommerce from 'ecommerce'
+import Warehouse from 'warehouse'
+
+function getCurrencyValue(s) {
+  if (typeof(s) === 'number') {
+    return s;
+  } else if (typeof(s) === 'string') {
+    return parseFloat(s.replace(',', '.'))
+  } else {
+    return 0;
+  }
+}
 
 export default {
   components: {
@@ -394,7 +479,7 @@ export default {
   },
   data () {
     return {
-      ecommerce: null,
+      warehouse: null,
 
       maxItems: 20,
       view: 'leads',
@@ -409,6 +494,8 @@ export default {
 
       showPopup: {
         'notes': false,
+        'add_product': false,
+        'lead_info': false,
       },
 
       leads: [],
@@ -433,6 +520,7 @@ export default {
           country: '',
           postcode: '',
           address: '',
+          notes: '',
         },
         location: {},
         products: [],
@@ -463,6 +551,17 @@ export default {
         'to recall': 'primary',
       },
 
+      deliveryStatuses: [
+        'not sent',
+        'error',
+        'sent',
+      ],
+      deliveryStatusColor: {
+        'not sent': 'primary',
+        'error':    'danger',
+        'sent':     'success',
+      },
+
       newStatus: '',
       newValue: '',
     }
@@ -488,6 +587,8 @@ export default {
     objects() {
       return this.leads
     },
+    // TODO: Old code
+    /*
     orderReviewProducts() {
       let revProducts = []
 
@@ -499,7 +600,7 @@ export default {
         }
 
         if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getStockProductById(pId)
+          let p = this.getProductById(pId)
           revProducts[pId] = {
             name: p.name,
             quantity: 1,
@@ -517,6 +618,7 @@ export default {
 
       return toReturn
     },
+    */
   },
   methods: {
     // Frontend functions
@@ -524,114 +626,16 @@ export default {
       this.currentPage = val
     },
     async changeView(view, item = null) {
-      this.$vs.loading()
-
       if (view == 'leads') {
-        this.leads = await this.ecommerce.fetchLeads(this.filters)
+        this.$vs.loading()
+        this.leads = await this.warehouse.fetchLeads(this.filters)
         this.view = view
+        this.$vs.loading.close()
       } else if (view == 'order_builder') {
         let lead = item
-
-        let first_name = lead.first_name
-        let last_name = lead.last_name
-        let phone = lead.phone
-        let email = lead.email
-        let products = []
-        let insurance = 0.0
-        let street_address = ''
-        let city = ''
-        let province = ''
-        let state = ''
-        let country = ''
-        let postcode = ''
-        let address = ''
-
-        if (lead.info !== null) {
-          if (lead.info.hasOwnProperty('products')) {
-            products = lead.info.products
-          }
-          if (lead.info.hasOwnProperty('insurance')) {
-            insurance = lead.info.insurance
-          }
-
-          if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
-            if (lead.info.shipping.hasOwnProperty('first_name')) {
-              first_name = lead.info.shipping.first_name
-            }
-            if (lead.info.shipping.hasOwnProperty('last_name')) {
-              last_name = lead.info.shipping.last_name
-            }
-            if (lead.info.shipping.hasOwnProperty('phone')) {
-              phone = lead.info.shipping.phone
-            }
-            if (lead.info.shipping.hasOwnProperty('email')) {
-              email = lead.info.shipping.email
-            }
-            if (lead.info.shipping.hasOwnProperty('street_address')) {
-              street_address = lead.info.shipping.street_address
-            }
-            if (lead.info.shipping.hasOwnProperty('city')) {
-              city = lead.info.shipping.city
-            }
-            if (lead.info.shipping.hasOwnProperty('province')) {
-              province = lead.info.shipping.province
-            }
-            if (lead.info.shipping.hasOwnProperty('state')) {
-              state = lead.info.shipping.state
-            }
-            if (lead.info.shipping.hasOwnProperty('country')) {
-              country = lead.info.shipping.country
-            }
-            if (lead.info.shipping.hasOwnProperty('postcode')) {
-              postcode = lead.info.shipping.postcode
-            }
-            if (lead.info.shipping.hasOwnProperty('address')) {
-              address = lead.info.shipping.address
-            }
-          }
-        }
-
-        this.order = {
-          lead_id: lead.id,
-          first_name: lead.first_name,
-          last_name: lead.last_name,
-          phone: lead.phone,
-          email: lead.email,
-          shipping: {
-            first_name: first_name,
-            last_name: last_name,
-            phone: phone,
-            email: email,
-            notes: lead.notes,
-            street_address: street_address,
-            city: city,
-            province: province,
-            state: state,
-            country: country,
-            postcode: postcode,
-            address: address,
-          },
-          location: {},
-          products: products,
-          insurance: insurance,
-          review: {
-            products: [],
-          },
-          total: '0.0',
-          newTotal: '0.0',
-        }
-
-        if (lead.info !== null && lead.info.hasOwnProperty('total') &&
-            parseFloat(lead.info.total) > 0) {
-          this.order.total = lead.info.total
-        } else {
-          this.refreshOrderReviewTotal()
-        }
-
+        this.loadOrderInfo(lead)
         this.view = view
       }
-
-      this.$vs.loading.close()
     },
     getObjectById(id) {
       for (let i = 0; i < this.leads.length; i++) {
@@ -729,7 +733,7 @@ export default {
       let params = {
         status: this.newStatus,
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -753,7 +757,7 @@ export default {
       let params = {
         notes: lead.notes,
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -775,7 +779,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -837,7 +841,7 @@ export default {
       }
     },
     async fetchProducts() {
-      let products = await this.ecommerce.fetchStockProducts()
+      let products = await this.warehouse.fetchProducts()
 
       this.products = []
       for (let i = 0; i < products.length; i++) {
@@ -853,7 +857,7 @@ export default {
       this.order.products.splice(index, 1)
       this.refreshOrderReviewTotal()
     },
-    getStockProductById(id) {
+    getProductById(id) {
       let p = null
       for (let i = 0; i < this.products.length; i++) {
         if (this.products[i].id == id) {
@@ -867,6 +871,8 @@ export default {
       this.order.total = this.order.newTotal
     },
     refreshOrderReviewTotal() {
+      // TODO: old code
+      /*
       let revProducts = []
 
       for (let i = 0; i < this.order.products.length; i++) {
@@ -877,7 +883,7 @@ export default {
         }
 
         if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getStockProductById(pId)
+          let p = this.getProductById(pId)
           revProducts[pId] = {
             name: p.name,
             quantity: 1,
@@ -900,8 +906,28 @@ export default {
         let p = revProducts[i]
         total += parseFloat(p.unit_price)*parseInt(p.quantity)
       }
+      */
 
-      total += parseFloat(this.order.insurance)
+      let total = 0.0
+      for (let i = 0; i < this.order.products.length; i++) {
+        let subtotal = 0.0
+        let p = this.order.products[i]
+        let price = getCurrencyValue(p.price)
+        let quantity = parseInt(p.quantity)
+        subtotal = price*quantity
+        this.order.products[i].total = subtotal
+        total += subtotal
+
+        // TODO: to delete
+        console.log("p", p)
+        console.log("price", price)
+        console.log("subtotal", subtotal)
+        console.log("this.order.products[i].total", this.order.products[i].total)
+      }
+
+      let insurance = getCurrencyValue(this.order.insurance)
+
+      total = total + insurance
 
       this.order.total = total.toFixed(2)
     },
@@ -921,6 +947,7 @@ export default {
         province: o.shipping.province,
         postcode: o.shipping.postcode,
         country: o.shipping.country,
+        notes: o.shipping.notes,
       }
 
       info.products = o.products
@@ -934,7 +961,7 @@ export default {
         email: o.email,
         info: JSON.stringify(info),
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
     },
     async updateLeadInfo(leadInfo) {
       this.$vs.loading()
@@ -970,7 +997,7 @@ export default {
       let products = []
       for (const [key, value] of Object.entries(productsCount)) {
         let pId = key.substring(1)
-        let p = this.getStockProductById(pId)
+        let p = this.getProductById(pId)
         if (p === null) {
           continue
         }
@@ -1020,163 +1047,125 @@ export default {
         shipping_country_code:  o.shipping.country,
         shipping_phone:         shippingPhone,
         shipping_email:         shippingEmail,
-        shipping_notes:         '',
+        shipping_notes:         o.shipping.notes,
         created_at: this.formatDateTime(new Date()),
         completed_at: '',
         products: products,
       }
 
-      await this.ecommerce.createDelivery(params)
+      await this.warehouse.createDelivery(o.lead_id, params)
 
       this.$vs.loading.close()
 
       this.changeView('leads')
     },
+    async fastCreateDelivery(lead) {
+      this.loadOrderInfo(lead)
+      await this.createDelivery()
+    },
+    loadOrderInfo(lead) {
+      let first_name = lead.first_name
+      let last_name = lead.last_name
+      let phone = lead.phone
+      let email = lead.email
+      let products = []
+      let insurance = 0.0
+      let street_address = ''
+      let city = ''
+      let province = ''
+      let state = ''
+      let country = ''
+      let postcode = ''
+      let address = ''
+      let notes = ''
 
-    // TODO: old code
-    /*
-    async createOrder() {
-      this.$vs.loading()
-
-      await this.updateLeadInfoNoLoading(this.order)
-      let wooProducts = await this.ecommerce.fetchProducts()
-
-      let o = this.order
-
-      let email = ''
-      if (o.email !== null) {
-        email = o.email
-      }
-      let phone = ''
-      if (o.phone !== null) {
-        phone = o.phone
-      }
-      let billing = {
-        first_name: o.first_name,
-        last_name:  o.last_name,
-        address_1:  o.shipping.street_address,
-        city:       o.shipping.city,
-        state:      o.shipping.province,
-        postcode:   o.shipping.postcode,
-        country:    o.shipping.country,
-      }
-      if (email !== '') {
-        billing.email = email
-      }
-      if (phone !== '') {
-        billing.phone = phone
-      }
-      let shipping = {
-        first_name: o.shipping.first_name,
-        last_name:  o.shipping.last_name,
-        address_1:  o.shipping.street_address,
-        address_2:  '',
-        city:       o.shipping.city,
-        state:      o.shipping.province,
-        postcode:   o.shipping.postcode,
-        country:    o.shipping.country,
-      }
-
-      let line_items_tmp = []
-      for (let i = 0; i < o.products.length; i++) {
-        let p = this.getStockProductById(o.products[i])
-        if (p === null) {
-          continue
+      if (lead.info !== null) {
+        if (lead.info.hasOwnProperty('products')) {
+          products = lead.info.products
+        }
+        if (lead.info.hasOwnProperty('insurance')) {
+          insurance = lead.info.insurance
         }
 
-        let woop = null
-        for (let j = 0; j < wooProducts.length; j++) {
-          if (wooProducts[j].sku == p.sku) {
-            woop = wooProducts[j]
-            break
+        if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
+          if (lead.info.shipping.hasOwnProperty('first_name')) {
+            first_name = lead.info.shipping.first_name
+          }
+          if (lead.info.shipping.hasOwnProperty('last_name')) {
+            last_name = lead.info.shipping.last_name
+          }
+          if (lead.info.shipping.hasOwnProperty('phone')) {
+            phone = lead.info.shipping.phone
+          }
+          if (lead.info.shipping.hasOwnProperty('email')) {
+            email = lead.info.shipping.email
+          }
+          if (lead.info.shipping.hasOwnProperty('street_address')) {
+            street_address = lead.info.shipping.street_address
+          }
+          if (lead.info.shipping.hasOwnProperty('city')) {
+            city = lead.info.shipping.city
+          }
+          if (lead.info.shipping.hasOwnProperty('province')) {
+            province = lead.info.shipping.province
+          }
+          if (lead.info.shipping.hasOwnProperty('state')) {
+            state = lead.info.shipping.state
+          }
+          if (lead.info.shipping.hasOwnProperty('country')) {
+            country = lead.info.shipping.country
+          }
+          if (lead.info.shipping.hasOwnProperty('postcode')) {
+            postcode = lead.info.shipping.postcode
+          }
+          if (lead.info.shipping.hasOwnProperty('address')) {
+            address = lead.info.shipping.address
+          }
+          if (lead.info.shipping.hasOwnProperty('notes')) {
+            notes = lead.info.shipping.notes
           }
         }
-
-        if (woop == null) {
-          continue
-        }
-
-        let woopId = '_' + woop.id
-        if (line_items_tmp.hasOwnProperty(woopId)) {
-          line_items_tmp[woopId] += 1
-        } else {
-          line_items_tmp[woopId] = 1
-        }
       }
 
-      let line_items = []
-      for (const [key, value] of Object.entries(line_items_tmp)) {
-        let pId = key.substring(1)
-
-        let woop = null
-        for (let j = 0; j < wooProducts.length; j++) {
-          if (pId == wooProducts[j].id) {
-            woop = wooProducts[j]
-            break
-          }
-        }
-
-        if (woop === null) {
-          continue
-        }
-
-        let quantity = parseInt(value)
-        let price = parseFloat(woop.price)
-        let total = quantity*price
-        line_items.push({
-          'product_id': pId,
-          'quantity': quantity,
-          'sku': woop.sku,
-          'total': total.toFixed(2),
-        })
+      this.order = {
+        lead_id: lead.id,
+        first_name: lead.first_name,
+        last_name: lead.last_name,
+        phone: lead.phone,
+        email: lead.email,
+        shipping: {
+          first_name: first_name,
+          last_name: last_name,
+          phone: phone,
+          email: email,
+          notes: lead.notes,
+          street_address: street_address,
+          city: city,
+          province: province,
+          state: state,
+          country: country,
+          postcode: postcode,
+          address: address,
+          notes: notes,
+        },
+        location: {},
+        products: products,
+        insurance: insurance,
+        review: {
+          products: [],
+        },
+        total: '0.0',
+        newTotal: '0.0',
       }
 
-      let params = {
-        payment_method: 'cod',
-        billing: billing,
-        shipping: shipping,
-        line_items: line_items,
-        total: o.total,
-        shipping_total: 0,
-        total_tax: 0,
-        customer_note: '',
-      }
-
-      let order = await this.ecommerce.createOrder(params)
-      if (order === null) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot create the order',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
+      if (lead.info !== null && lead.info.hasOwnProperty('total') &&
+          parseFloat(lead.info.total) > 0) {
+        this.order.total = lead.info.total
       } else {
-        let orderPushed = await this.ecommerce.pushOrder(order.id)
-        if (orderPushed) {
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Order created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        } else {
-          this.$vs.notify({
-            title: 'Error',
-            text: 'Order created but not pushed',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        }
+        this.refreshOrderReviewTotal()
       }
-
-      this.$vs.loading.close()
-
-      this.changeView('leads')
     },
-    */
+
     async updatePrice(lead) {
       this.$vs.loading()
 
@@ -1185,7 +1174,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1199,7 +1188,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1213,7 +1202,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.ecommerce.updateLead(lead.id, params)
+      await this.warehouse.updateLead(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1221,13 +1210,58 @@ export default {
     },
     async deleteLead(lead) {
       this.$vs.loading()
-      await this.ecommerce.deleteLead(lead.id)
+      await this.warehouse.deleteLead(lead.id)
       this.$vs.loading.close()
       this.changeView('leads')
     },
+    showAddProductPopup() {
+      this.showPopup['add_product'] = true
+    },
+    toggleProduct(product) {
+      for (let i = 0; i < this.order.products.length; i++) {
+        let p = this.order.products[i]
+        if (product.id === p.id) {
+          this.removeProduct(i)
+          return
+        }
+      }
+
+      let quantity = 1
+      let price = parseFloat(product.price)
+      let total = price*quantity
+      this.order.products.push({
+        id: product.id,
+        name: product.name,
+        price: price,
+        quantity: 1,
+        total: total,
+      })
+      this.refreshOrderReviewTotal()
+    },
+    hasProduct(product) {
+      for (let i = 0; i < this.order.products.length; i++) {
+        let p = this.order.products[i]
+        if (product.id === p.id) {
+          return true
+        }
+      }
+      return false
+    },
+    async showLeadInfo(lead) {
+      this.$vs.loading()
+
+      let delivery = await this.warehouse.getDelivery(lead.id)
+      if (delivery !== null) {
+        this.lead = lead
+        this.lead.delivery = delivery
+        this.showPopup['lead_info'] = true
+      }
+
+      this.$vs.loading.close()
+    },
   },
   async created() {
-    this.ecommerce = new Ecommerce(localStorage.getItem('accessToken'))
+    this.warehouse = new Warehouse(localStorage.getItem('accessToken'))
 
     this.$vs.loading()
 
@@ -1247,6 +1281,11 @@ export default {
   padding-bottom: 0px !important;
   font-size: 0.8em;
   white-space: nowrap;
+}
+
+.items_popover {
+  z-index: 999999 !important;
+  position: fixed !important;
 }
 
 </style>

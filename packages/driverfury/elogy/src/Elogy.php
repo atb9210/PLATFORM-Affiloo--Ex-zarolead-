@@ -209,22 +209,37 @@ class Elogy
         return $objects;
     }
 
-    public function createOrder(array $params): bool
+    public function getOrderByNumber(string $number): array|null
+    {
+        $object = null;
+
+        $orders = $this->getOrders();
+        foreach ($orders as $o) {
+            if (strval($o['order_number']) === $number) {
+                $object = $o;
+                break;
+            }
+        }
+
+        return $object;
+    }
+
+    public function createOrder(array $params): ?array
     {
         $response = $this->postRequest('/orders', $params, $params);
         if ($response !== null && isset($response['success'])) {
             if (isset($response['data']['failedOrders']) &&
                 count($response['data']['failedOrders']) == 0) {
-                return true;
+                return $response['data']['successOrders'][0];
             } else {
                 Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
-                return false;
+                return null;
             }
         } else {
             Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
-            return false;
+            return null;
         }
-        return false;
+        return null;
     }
 
     public function getProducts(): array

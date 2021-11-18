@@ -139,16 +139,7 @@ Route::post('/tiktok/rules/{id}/run', 'api\third\TikTokController@runRule')->mid
 Route::post('/tiktok/events/trigger', 'api\third\TikTokController@triggerEvent')
     ->name('tiktok.events.trigger');
 
-/* Ecommerce rules */
-Route::get('/ecommerce/leads', 'api\third\EcommerceController@leads')->middleware('auth:api')
-    ->name('ecommerce.leads.index');
-Route::post('/ecommerce/leads', 'api\third\EcommerceController@createLead')
-    ->name('ecommerce.leads.create');
-Route::put('/ecommerce/leads/{id}', 'api\third\EcommerceController@updateLead')
-    ->name('ecommerce.leads.update');
-Route::delete('/ecommerce/leads/{id}', 'api\third\EcommerceController@destroyLead')->middleware('auth:api')
-    ->name('ecommerce.leads.destroy');
-
+/* Ecommerce routes */
 Route::get('/ecommerce/orders', 'api\third\EcommerceController@orders')->middleware('auth:api')
     ->name('ecommerce.orders.index');
 Route::post('/ecommerce/orders', 'api\third\EcommerceController@createOrder')->middleware('auth:api')
@@ -171,8 +162,6 @@ Route::get('/ecommerce/products/{id}/variations', 'api\third\EcommerceController
     ->name('ecommerce.products.variations');
 Route::put('/ecommerce/products/{pid}/variations/{vid}', 'api\third\EcommerceController@updateProductVariation')->middleware('auth:api')
     ->name('ecommerce.products.variations.update');
-Route::get('/ecommerce/stock/products', 'api\third\EcommerceController@stockProducts')->middleware('auth:api')
-    ->name('ecommerce.stock.products.index');
 
 Route::get('/ecommerce/payment-methods', 'api\third\EcommerceController@paymentMethods')->middleware('auth:api')
     ->name('ecommerce.payment-methods.index');
@@ -198,5 +187,19 @@ Route::put('/ecommerce/carts/{id}', 'api\third\EcommerceController@updateCart')-
 Route::delete('/ecommerce/carts/{id}', 'api\third\EcommerceController@destroyCart')->middleware('auth:api')
     ->name('ecommerce.carts.destroy');
 
-Route::post('/ecommerce/delivery', 'api\third\EcommerceController@createDelivery')->middleware('auth:api')
-    ->name('ecommerce.delivery.create');
+/* Warehouse routes */
+Route::get('/warehouse/leads', 'api\third\WarehouseController@leads')->middleware('auth:api')
+    ->name('warehouse.leads.index');
+Route::post('/warehouse/leads', 'api\third\WarehouseController@createLead')
+    ->name('warehouse.leads.create');
+Route::put('/warehouse/leads/{id}', 'api\third\WarehouseController@updateLead')
+    ->name('warehouse.leads.update');
+Route::delete('/warehouse/leads/{id}', 'api\third\WarehouseController@destroyLead')->middleware('auth:api')
+    ->name('warehouse.leads.destroy');
+
+Route::get('/warehouse/leads/{lead_id}/delivery', 'api\third\WarehouseController@getDelivery')->middleware('auth:api')
+    ->name('warehouse.delivery.get');
+Route::post('/warehouse/delivery', 'api\third\WarehouseController@createDelivery')->middleware('auth:api')
+    ->name('warehouse.delivery.create');
+Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
+    ->name('warehouse.products.index');

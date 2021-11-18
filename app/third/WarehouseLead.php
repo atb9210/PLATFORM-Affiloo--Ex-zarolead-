@@ -4,9 +4,9 @@ namespace App\third;
 
 use Illuminate\Database\Eloquent\Model;
 
-class EcommerceLead extends Model
+class WarehouseLead extends Model
 {
-    protected $table = 'third_ecommerce_leads';
+    protected $table = 'third_warehouse_leads';
 
     protected $fillable = [
         'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes',
