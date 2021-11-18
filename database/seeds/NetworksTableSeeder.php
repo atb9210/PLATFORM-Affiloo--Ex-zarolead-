@@ -925,7 +925,7 @@ class NetworksTableSeeder extends Seeder
             ],
         ]);
 
-        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/ecommerce/leads' : $app_url . '/api/3rd/ecommerce/leads');
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/warehouse/leads' : $app_url . '/api/3rd/warehouse/leads');
         \App\Network::create([
             'name' => 'Ecommerce',
             'api' => [

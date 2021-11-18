@@ -1067,7 +1067,7 @@ Form.prototype.onSubmit = function(step) {
                 info: JSON.stringify(info),
             };
             $.ajax({
-                url: this.API_URL_3RD + 'ecommerce/leads/' + this.lead.id,
+                url: this.API_URL_3RD + 'warehouse/leads/' + this.lead.id,
                 method: "PUT",
                 dataType: "json",
                 data: data,
