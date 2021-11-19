@@ -254,24 +254,6 @@ class WarehouseController extends Controller
         ]);
     }
 
-    private function mapDelivery(array|null $delivery)
-    {
-        if ($delivery === null) {
-            return [];
-        } else {
-            return [
-                'order_number'  => strval($delivery['order_number']),
-                'gateway'       => $delivery['gateway'],
-                'products'      => $delivery['products'],
-                'status'        => $delivery['status'],
-                'lead_status'   => $delivery['lead_status'],
-                'tracking_link' => $delivery['tracking_link'],
-                'created_at'    => $delivery['created_at'],
-                'completed_at'  => $delivery['completed_at'],
-            ];
-        }
-    }
-
     /**
      * Create delivery (elogy).
      *
@@ -321,7 +303,7 @@ class WarehouseController extends Controller
             if($elogyOrder !== null) {
                 $lead = WarehouseLead::findOrFail($leadId);
                 $info = $lead->info;
-                $info['delivery'] = $this->mapDelivery($elogyOrder);
+                $info['delivery'] = $elogyOrder;
                 $lead->info = $info;
                 $lead->save();
             }
@@ -364,8 +346,7 @@ class WarehouseController extends Controller
                 env('ELOGY_EMAIL'),
                 env('ELOGY_PASSWORD'));
             $delivery = $elogy->getOrderByNumber($info['delivery']['order_number']);
-
-            $info['delivery'] = $this->mapDelivery($delivery);
+            $info['delivery'] = $delivery;
         }
 
         if (!isset($info['delivery'])) {
@@ -392,7 +373,7 @@ class WarehouseController extends Controller
         $lead->save();
 
         return response([
-            'data' => $delivery,
+            'data' => $info['delivery'],
         ]);
     }
 }
