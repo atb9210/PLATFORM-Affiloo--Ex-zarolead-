@@ -1,5 +1,15 @@
 let axios = require('axios')
 
+function getCurrencyValue(s) {
+  if (typeof(s) === 'number') {
+    return s;
+  } else if (typeof(s) === 'string') {
+    return parseFloat(s.replace(',', '.'))
+  } else {
+    return 0;
+  }
+}
+
 class Warehouse {
   constructor(apiKey) {
     this.apiKey = apiKey
@@ -73,13 +83,13 @@ class Warehouse {
           obj.sku = obj.info.sku
         }
         if (obj.info.hasOwnProperty('price')) {
-          obj.price = parseFloat(obj.info.price)
+          obj.price = getCurrencyValue(obj.info.price)
         }
         if (obj.info.hasOwnProperty('quantity')) {
           obj.quantity = parseInt(obj.info.quantity)
         }
         if (obj.info.hasOwnProperty('total')) {
-          obj.total = parseFloat(obj.info.total)
+          obj.total = getCurrencyValue(obj.info.total)
         }
         if (obj.info.hasOwnProperty('contact')) {
           obj.contact = obj.info.contact
@@ -173,8 +183,8 @@ class Warehouse {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
-        obj.min_price = parseFloat(obj.min_price)
-        obj.max_price = parseFloat(obj.max_price)
+        obj.min_price = getCurrencyValue(obj.min_price)
+        obj.max_price = getCurrencyValue(obj.max_price)
 
         objects[i] = obj
       }

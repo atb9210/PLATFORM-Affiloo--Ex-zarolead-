@@ -92,9 +92,9 @@
             </vue-context>
 
             <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
-                <ul>
-                    <li v-for="(item, pIndex) in lead.delivery.products" :key="pIndex">
-                      {{item.product_name}} (x{{item.quantity}})
+                <ul v-if="lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null && lead.info.products.length > 0">
+                    <li v-for="(item, pIndex) in lead.info.products" :key="pIndex">
+                        {{item.name}} (x{{item.quantity}})
                     </li>
                 </ul>
             </popover>
@@ -195,8 +195,11 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding">
-                            <vs-chip v-popover="{name:'items_popover_' + item.id}">
-                                {{item.delivery.products.length}} items
+                            <vs-chip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" v-popover="{name:'items_popover_' + item.id}">
+                                {{item.info.products.length}} items
+                            </vs-chip>
+                            <vs-chip v-else>
+                                0 items
                             </vs-chip>
                         </vs-td>
 
@@ -225,7 +228,7 @@
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" :disabled="item.delivery_status === 'sent'" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Create delivery" position="top">
-                                    <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" />
+                                    <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Info" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
@@ -409,7 +412,7 @@
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createDelivery">Create Order</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createDelivery" :disabled="!canCreateDelivery(order)">Create Order</vs-button>
                 </div>
 
             </div>
@@ -477,6 +480,16 @@ function getCurrencyValue(s) {
   }
 }
 
+function stringContainsNumber(_input) {
+  let string1 = String(_input);
+  for (let i = 0; i < string1.length; i++) {
+    if (!isNaN(string1.charAt(i)) && !(string1.charAt(i) === " ")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export default {
   components: {
     VueContext,
@@ -486,7 +499,7 @@ export default {
     return {
       warehouse: null,
 
-      maxItems: 20,
+      maxItems: 150,
       view: 'leads',
 
       showFilters: false,
@@ -637,11 +650,9 @@ export default {
         this.view = view
         this.$vs.loading.close()
       } else if (view == 'order_builder') {
-        this.$vs.loading()
         let lead = item
         this.loadOrderInfo(lead)
         this.view = view
-        this.$vs.loading.close()
       }
     },
     getObjectById(id) {
@@ -1035,7 +1046,11 @@ export default {
 
       let taxTotal = 0.0
       let shippingPrice = 0.0
-      let total = productsTotal + shippingPrice + taxTotal
+      let totalPrice = productsTotal + shippingPrice + taxTotal
+      if (o.total !== null && o.total !== '' && getCurrencyValue(o.total) > 0) {
+        totalPrice = getCurrencyValue(o.total)
+      }
+      let subtotalPrice = totalPrice // TODO: What about this?
 
       let shippingPhone = ''
       let shippingEmail = ''
@@ -1048,8 +1063,8 @@ export default {
 
       let params = {
         country: 'IT',
-        total_price: total.toFixed(2),
-        subtotal_price: productsTotal.toFixed(2),
+        total_price: totalPrice.toFixed(2),
+        subtotal_price: subtotalPrice.toFixed(2),
         shipping_price: shippingPrice.toFixed(2),
         total_tax: taxTotal.toFixed(2),
         tax_included: 1,
@@ -1081,6 +1096,7 @@ export default {
     },
     async fastCreateDelivery(lead) {
       if (lead.delivery_status === 'sent') return
+      if (!this.canCreateDelivery(lead.info)) return
       this.loadOrderInfo(lead)
       await this.createDelivery()
     },
@@ -1280,6 +1296,21 @@ export default {
       }
 
       this.$vs.loading.close()
+    },
+    canCreateDelivery(leadInfo) {
+      let canCreate = true
+
+      // Check if street address has number
+      if (leadInfo !== null &&
+          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
+          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
+          leadInfo.shipping.street_address !== '') {
+        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
+      } else {
+        canCreate = false
+      }
+
+      return canCreate
     },
   },
   async created() {
