@@ -353,14 +353,17 @@ class WarehouseController extends Controller
         $lead = WarehouseLead::findOrFail($lead_id);
 
         $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
 
         $delivery = null;
-        if ($lead->info !== null && isset($lead->info['delivery']) && isset($lead->info['delivery']['order_number'])) {
+        if (isset($info['delivery']) && isset($info['delivery']['order_number'])) {
             $elogy = new \Driverfury\Elogy\Elogy(
                 env('ELOGY_API_TOKEN'),
                 env('ELOGY_EMAIL'),
                 env('ELOGY_PASSWORD'));
-            $delivery = $elogy->getOrderByNumber($lead->info['delivery']['order_number']);
+            $delivery = $elogy->getOrderByNumber($info['delivery']['order_number']);
 
             $info['delivery'] = $this->mapDelivery($delivery);
         }
