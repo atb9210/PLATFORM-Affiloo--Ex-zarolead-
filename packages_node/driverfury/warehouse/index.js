@@ -64,6 +64,7 @@ class Warehouse {
       obj.quantity = 0
       obj.total = 0.0
       obj.contact = false
+      obj.delivery_status = 'not sent'
       if (obj.hasOwnProperty('info') && obj.info !== null) {
         if (obj.info.hasOwnProperty('product_name')) {
           obj.product_name = obj.info.product_name
@@ -84,8 +85,7 @@ class Warehouse {
           obj.contact = obj.info.contact
         }
 
-        obj.delivery_status = 'not sent'
-        if (obj.info.hasOwnProperty('delivery')) {
+        if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
           if (obj.info.delivery.hasOwnProperty('order_number') && obj.info.delivery.order_number !== null) {
             obj.delivery_status = 'sent'
           } else {
