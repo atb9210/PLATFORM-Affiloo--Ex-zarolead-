@@ -364,19 +364,19 @@ class WarehouseController extends Controller
             $info['delivery'] = $this->mapDelivery($delivery);
 
             if (!isset($info['delivery']['ip']) && isset($info['ip'])) {
-                $info['delivery']['ip'] = $info['ip];
+                $info['delivery']['ip'] = $info['ip'];
             }
             if (!isset($info['delivery']['user_agent']) && isset($info['user_agent'])) {
-                $info['delivery']['user_agent'] = $info['user_agent];
+                $info['delivery']['user_agent'] = $info['user_agent'];
             }
             if (!isset($info['delivery']['source_url']) && isset($info['source_url'])) {
-                $info['delivery']['source_url'] = $info['source_url];
+                $info['delivery']['source_url'] = $info['source_url'];
             }
             if (!isset($info['delivery']['affiliate_id']) && isset($info['affiliate_id'])) {
-                $info['delivery']['affiliate_id'] = $info['affiliate_id];
+                $info['delivery']['affiliate_id'] = $info['affiliate_id'];
             }
             if (!isset($info['delivery']['traffic_source']) && isset($info['traffic_source'])) {
-                $info['delivery']['traffic_source'] = $info['traffic_source];
+                $info['delivery']['traffic_source'] = $info['traffic_source'];
             }
 
             $lead->info = $info;
