@@ -94,12 +94,13 @@ class Warehouse {
         }
 
         obj.delivery = {
-          order_number : '',
-          gateway      : '',
-          products     : [],
-          status       : 'lead',
-          lead_status  : '',
-          tracking_link: '',
+          order_number  : '',
+          gateway       : '',
+          products      : [],
+          status        : 'lead',
+          lead_status   : '',
+          tracking_link : '',
+          completed_at  : '',
         }
         if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
           if (obj.info.delivery.hasOwnProperty('order_number')) {
@@ -119,6 +120,9 @@ class Warehouse {
           }
           if (obj.info.delivery.hasOwnProperty('tracking_link') && obj.info.delivery.tracking_link !== null) {
             obj.delivery.tracking_link = obj.info.delivery.tracking_link
+          }
+          if (obj.info.delivery.hasOwnProperty('completed_at') && obj.info.delivery.completed_at !== null) {
+            obj.delivery.completed_at = obj.info.delivery.completed_at
           }
         }
       }

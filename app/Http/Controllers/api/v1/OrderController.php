@@ -232,6 +232,8 @@ class OrderController extends Controller
         $parsedUrl = parse_url($landing->url);
         $sourceUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
 
+        $trafficSource = $form->traffic_source->name;
+
         $params['price'] = $price;
         $params['commission'] = $commission;
         $params['sub_commission'] = $sub_commission;
@@ -256,6 +258,7 @@ class OrderController extends Controller
         $network_data['ip'] = $ip;
         $network_data['user_agent'] = $userAgent;
         $network_data['source_url'] = $sourceUrl;
+        $network_data['traffic_source'] = $trafficSource;
 
         // Create order
         $order = Order::create($params);

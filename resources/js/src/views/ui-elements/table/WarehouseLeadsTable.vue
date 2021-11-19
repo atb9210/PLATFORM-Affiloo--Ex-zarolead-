@@ -105,11 +105,12 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
+                    <vs-th sort-key="delivery.completed_at">Completed</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
                     <vs-th sort-key="product_name">Product Name</vs-th>
-                    <!--<vs-th sort-key="delivery.gateway">Gateway</vs-th>-->
+                    <vs-th sort-key="delivery.gateway">Gateway</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Quantity</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
@@ -128,6 +129,12 @@
 
                         <vs-td class="column-no-padding" :data="item.created_at">
                             {{formatDateTime(new Date(item.created_at))}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.delivery.completed_at">
+                            <span v-if="item.delivery.completed_at !== ''">
+                                {{formatDateTime(new Date(item.delivery.completed_at))}}
+                            </span>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.full_name">
@@ -156,11 +163,9 @@
                             </vs-chip>
                         </vs-td>
 
-                        <!--
                         <vs-td class="column-no-padding" :data="item.delivery.gateway">
                             {{item.delivery.gateway}}
                         </vs-td>
-                        -->
 
                         <vs-td class="column-no-padding" :data="item.price">
                             <fast-editable-value
@@ -217,7 +222,7 @@
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Edit" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" :disabled="item.delivery_status === 'sent'" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Create delivery" position="top">
                                     <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" />
@@ -632,9 +637,11 @@ export default {
         this.view = view
         this.$vs.loading.close()
       } else if (view == 'order_builder') {
+        this.$vs.loading()
         let lead = item
         this.loadOrderInfo(lead)
         this.view = view
+        this.$vs.loading.close()
       }
     },
     getObjectById(id) {
@@ -1066,7 +1073,6 @@ export default {
         products: products,
       }
 
-      // TODO: to uncomment
       await this.warehouse.createDelivery(o.lead_id, params)
 
       this.$vs.loading.close()
@@ -1074,6 +1080,7 @@ export default {
       this.changeView('leads')
     },
     async fastCreateDelivery(lead) {
+      if (lead.delivery_status === 'sent') return
       this.loadOrderInfo(lead)
       await this.createDelivery()
     },

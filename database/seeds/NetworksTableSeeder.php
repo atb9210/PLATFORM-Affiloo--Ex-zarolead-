@@ -945,6 +945,12 @@ class NetworksTableSeeder extends Seeder
                             'price' => '{input.price}',
                             'total' => '{input.price}',
                             'quantity' => '{input.quantity}',
+
+                            'ip'             => '{input.ip}',
+                            'user_agent'     => '{input.user_agent}',
+                            'source_url'     => '{input.source_url}',
+                            'affiliate_id'   => '{form.affiliate_id}',
+                            'traffic_source' => '{input.traffic_source}',
                         ],
                         'validation' => [
                             'bodyParams' => [
@@ -957,6 +963,12 @@ class NetworksTableSeeder extends Seeder
                                 'price' => 'required|numeric|min:0',
                                 'total' => 'required|numeric|min:0',
                                 'quantity' => 'required|string',
+
+                                'ip'             => 'nullable|string',
+                                'user_agent'     => 'nullable|string',
+                                'source_url'     => 'nullable|string',
+                                'affiliate_id'   => 'nullable|numeric',
+                                'traffic_source' => 'nullable|string',
                             ],
                         ],
                     ],

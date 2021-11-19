@@ -95,6 +95,12 @@ class WarehouseController extends Controller
             'price'        => 'numeric',
             'total'        => 'numeric',
             'quantity'     => 'numeric',
+
+            'ip'             => 'nullable|string',
+            'user_agent'     => 'nullable|string',
+            'source_url'     => 'nullable|string',
+            'affiliate_id'   => 'nullable|numeric',
+            'traffic_source' => 'nullable|string',
         ]);
 
         if (isset($params['info'])) {
@@ -118,6 +124,22 @@ class WarehouseController extends Controller
         }
         if (isset($params['quantity'])) {
             $params['info']['quantity'] = $params['quantity'];
+        }
+
+        if (isset($params['ip'])) {
+            $params['info']['ip'] = $params['ip'];
+        }
+        if (isset($params['user_agent'])) {
+            $params['info']['user_agent'] = $params['user_agent'];
+        }
+        if (isset($params['source_url'])) {
+            $params['info']['source_url'] = $params['source_url'];
+        }
+        if (isset($params['affiliate_id'])) {
+            $params['info']['affiliate_id'] = $params['affiliate_id'];
+        }
+        if (isset($params['traffic_source'])) {
+            $params['info']['traffic_source'] = $params['traffic_source'];
         }
 
         $lead = WarehouseLead::create($params);
@@ -244,6 +266,8 @@ class WarehouseController extends Controller
                 'status'        => $delivery['status'],
                 'lead_status'   => $delivery['lead_status'],
                 'tracking_link' => $delivery['tracking_link'],
+                'created_at'    => $delivery['created_at'],
+                'completed_at'  => $delivery['completed_at'],
             ];
         }
     }
