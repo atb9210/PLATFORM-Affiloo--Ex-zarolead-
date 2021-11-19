@@ -86,10 +86,10 @@ class Warehouse {
 
         obj.delivery_status = 'not sent'
         if (obj.info.hasOwnProperty('delivery')) {
-          if (obj.info.delivery === null) {
-            obj.delivery_status = 'error'
-          } else {
+          if (obj.info.delivery.hasOwnProperty('order_number') && obj.info.delivery.order_number !== null) {
             obj.delivery_status = 'sent'
+          } else {
+            obj.delivery_status = 'error'
           }
         }
 
