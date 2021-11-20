@@ -9,7 +9,7 @@ use App\third\WarehouseLead;
 
 class WarehouseController extends Controller
 {
-    private $statusValidation = 'in:confirmed,no answer,cancelled,fake,duplicate,to recall,to do';
+    private $statusValidation = 'in:confirmed,no answer,cancelled,fake,duplicate,to recall,to do,waiting payment';
 
     /**
      * Get leads list.

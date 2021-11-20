@@ -33,6 +33,7 @@ class Warehouse {
   async fetchLeads(filters = {}) {
     let objects = []
 
+    let products = await this.fetchProducts()
     try {
       let headers = this.getHeaders()
       let params = {}
@@ -68,12 +69,15 @@ class Warehouse {
         obj.phone = this.adjustPhoneNumber(obj.phone)
       }
 
+      obj.products = []
       obj.product_name = ''
       obj.sku = ''
       obj.price = 0.0
       obj.quantity = 0
       obj.total = 0.0
       obj.contact = false
+      obj.carrier = ''
+      obj.order_status = ''
       obj.delivery_status = 'not sent'
       if (obj.hasOwnProperty('info') && obj.info !== null) {
         if (obj.info.hasOwnProperty('product_name')) {
@@ -103,6 +107,26 @@ class Warehouse {
           }
         }
 
+        if (!obj.info.hasOwnProperty('products') || obj.info.products !== null || obj.info.products.length === 0) {
+          obj.info.products = []
+          let p = await this.getProductBySku(obj.sku, products)
+          if (p !== null) {
+            let price = getCurrencyValue(p.min_price)
+            let quantity = 3
+            let total = price*quantity
+            obj.info.products.push({
+              id: p.id,
+              name: p.name,
+              sku: p.sku,
+              price: price,
+              quantity: quantity,
+              total: total,
+              upsell: false,
+            })
+          }
+        }
+        obj.products = obj.info.products
+
         obj.delivery = {
           order_number  : '',
           gateway       : '',
@@ -113,11 +137,22 @@ class Warehouse {
           completed_at  : '',
         }
         if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
+          if (obj.info.delivery.hasOwnProperty('carrier_slug')) {
+            obj.carrier = obj.info.delivery.carrier_slug
+          }
+          if (obj.info.delivery.hasOwnProperty('status')) {
+            obj.order_status = obj.info.delivery.status
+          }
+
           if (obj.info.delivery.hasOwnProperty('order_number')) {
             obj.delivery.order_number = obj.info.delivery.order_number
           }
           if (obj.info.delivery.hasOwnProperty('gateway') && obj.info.delivery.gateway !== null) {
-            obj.delivery.gateway = obj.info.delivery.gateway
+            if (obj.info.delivery.gateway === 'cashondelivery') {
+                obj.delivery.gateway = 'cod'
+            } else if (obj.info.delivery.gateway !== '') {
+                obj.delivery.gateway = 'online'
+            }
           }
           if (obj.info.delivery.hasOwnProperty('products') && obj.info.delivery.products !== null) {
             obj.delivery.products = obj.info.delivery.products
@@ -189,13 +224,30 @@ class Warehouse {
         objects[i] = obj
       }
     } catch (error) {
-      // DEBUG TODO: to delete
-      console.error(error)
-
       // Nothing
     }
 
     return objects
+  }
+
+  async getProductBySku(sku, products = null) {
+    let object = null
+
+    let objects = []
+    if (products === null) {
+      objects = await this.fetchProducts()
+    } else {
+      objects = products
+    }
+
+    for (let i = 0; i < objects.length; i++) {
+      if (sku == objects[i].sku) {
+        object = objects[i]
+        break
+      }
+    }
+
+    return object
   }
 
   async createDelivery(lead_id, params) {

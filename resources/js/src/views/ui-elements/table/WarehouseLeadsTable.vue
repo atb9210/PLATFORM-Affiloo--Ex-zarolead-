@@ -78,6 +78,30 @@
 
             <vue-context ref="lead_context_menu" v-slot="{ data }">
                 <li>
+                  <a href="#" @click="$refs.lead_context_menu.close();showLeadInfo(data)" class="flex items-center text-sm">
+                    <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show info</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.lead_context_menu.close();changeView('order_builder', data)" class="flex items-center text-sm">
+                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" v-if="data !== null && data.hasOwnProperty('info') && canCreateDelivery(data.info)" @click="$refs.lead_context_menu.close();fastCreateDelivery(data)"class="flex items-center text-sm">
+                    <feather-icon icon="PackageIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Create delivery</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.lead_context_menu.close();whatsappMessage(data)"class="flex items-center text-sm">
+                    <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Whatsapp message</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.lead_context_menu.close();deleteLead(data)" class="flex items-center text-sm">
                     <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Delete</span>
@@ -105,7 +129,7 @@
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
-                    <vs-th sort-key="delivery.completed_at">Completed</vs-th>
+                    <!--<vs-th sort-key="delivery.completed_at">Completed</vs-th>-->
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
@@ -117,6 +141,8 @@
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="order_status">Order Status</vs-th>
+                    <vs-th sort-key="carrier">Carrier</vs-th>
                     <vs-th sort-key="notes">Notes</vs-th>
                 </template>
 
@@ -131,11 +157,13 @@
                             {{formatDateTime(new Date(item.created_at))}}
                         </vs-td>
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.delivery.completed_at">
                             <span v-if="item.delivery.completed_at !== ''">
                                 {{formatDateTime(new Date(item.delivery.completed_at))}}
                             </span>
                         </vs-td>
+                        -->
 
                         <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
@@ -219,11 +247,25 @@
                             </fast-editable-value-select>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="item.order_status">
+                            <span>{{item.order_status}}</span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.carrier">
+                            <div v-if="item.carrier != ''" class="w-full">
+                                <img class="carrier-icon" v-if="carrierIcon.hasOwnProperty(item.carrier)" :src="carrierIcon[item.carrier]" />
+                                <span v-else>
+                                    {{item.carrier}}
+                                </span>
+                            </div>
+                        </vs-td>
+
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vx-tooltip :text="item.notes" position="top">
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
+                                <!--
                                 <vx-tooltip text="Edit" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" :disabled="item.delivery_status === 'sent'" />
                                 </vx-tooltip>
@@ -231,11 +273,12 @@
                                     <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Info" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showleadinfo(item)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                                 </vx-tooltip>
+                                -->
                             </div>
                         </vs-td>
                         
@@ -306,98 +349,86 @@
                     </div>
                 </div>
 
-                <!-- TODO: Old code -->
-                <!--
-                <hr class="mt-3 mb-3">
-
-                <h2>Products</h2>
-                <div class="w-full">
-                    <div class="vx-row mb-3 w-full" v-for="(product, pIndex) in order.products">
-                        <div class="vx-col w-1/2">
-                            <vs-select class="w-full" v-model="order.products[pIndex]" @input="refreshOrderReviewTotal()">
-                                <vs-select-item :key="poIndex" :value="productOption.id" :text="productOption.name" v-for="(productOption, poIndex) in products" />
-                            </vs-select>
-                        </div>
-                        <div class="vx-col w-1/2">
-                            <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
-                        </div>
-                    </div>
-                    <div>
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addProduct"></vs-button>
-                    </div>
-                </div>
-                -->
-
                 <hr class="mt-3 mb-3">
 
                 <h2>Products</h2>
                 <div class="vx-row w-full mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         Name
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         Quantity
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         Unit Price
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         Total Price
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        Upsell
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
                     </div>
                 </div>
 
                 <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="pIndex">
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         {{product.name}}
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         <fast-editable-value v-model="product.quantity" @onUpdate="refreshOrderReviewTotal()">
                             x{{product.quantity}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         <fast-editable-value v-model="product.price" @onUpdate="refreshOrderReviewTotal()">
                             € {{product.price}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         € {{(product.total).toFixed(2)}}
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
+                        <vs-checkbox v-model="order.products[pIndex].upsell" />
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
                         <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
                     </div>
                 </div>
 
                 <div class="vx-row w-full mb-3">
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         Insurance
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         x1
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
                             € {{order.insurance}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
                             € {{order.insurance}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
                     </div>
                 </div>
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
                         ----------------------<br>
                         <fast-editable-value
                             v-model="order.newTotal"
@@ -406,7 +437,9 @@
                               € {{order.total}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/5">
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
                     </div>
                 </div>
 
@@ -436,12 +469,31 @@
         <!-- Add product popup -->
         <vs-popup title="Add products" :active.sync="showPopup['add_product']">
             <div class="w-full pr-2 pl-2">
-                <div class="vx-row mb-3 w-full" v-for="(product, pIndex) in products" :key="pIndex">
-                    <div class="vx-col md:w-1/2 w-full">
+                <div class="vx-row mb-3 w-full font-bold">
+                    <div class="vx-col md:w-1/6 w-full">
+                    </div>
+                    <div class="vx-col md:w-1/3 w-full">
+                        Name
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        Q.ty
+                    </div>
+                    <div class="vx-col md:w-1/3 w-full">
+                        SKU
+                    </div>
+                </div>
+                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="pIndex">
+                    <div class="vx-col md:w-1/6 w-full">
                         <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
                     </div>
-                    <div class="vx-col md:w-1/2 w-full">
+                    <div class="vx-col md:w-1/3 w-full">
                         {{product.name}}
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        {{product.quantity_stock}}
+                    </div>
+                    <div class="vx-col md:w-1/3 w-full">
+                        {{product.sku}}
                     </div>
                 </div>
             </div>
@@ -455,7 +507,7 @@
                         <b>{{key}}</b>
                     </div>
                     <div class="vx-col md:w-1/2 w-full">
-                        <b>{{value}}</b>
+                        {{value}}
                     </div>
                 </div>
             </div>
@@ -559,14 +611,18 @@ export default {
         'fake',
         'duplicate',
         'to recall',
+        'to do',
+        'waiting payment',
       ],
       leadStatusColor: {
-        'confirmed': 'success',
-        'no answer': 'warning',
-        'cancelled': 'danger',
-        'fake':      'danger',
-        'duplicate': 'danger',
-        'to recall': 'primary',
+        'confirmed'      : 'success',
+        'no answer'      : 'warning',
+        'cancelled'      : 'danger',
+        'fake'           : 'danger',
+        'duplicate'      : 'danger',
+        'to recall'      : 'primary',
+        'to do'          : 'primary',
+        'waiting payment': 'primary',
       },
 
       deliveryStatuses: [
@@ -576,8 +632,21 @@ export default {
       ],
       deliveryStatusColor: {
         'not sent': 'primary',
-        'error':    'danger',
-        'sent':     'success',
+        'error'   : 'danger',
+        'sent'    : 'success',
+      },
+
+      carriers: [
+        'brt',
+        'liccardi',
+        'gls',
+        'crono',
+      ],
+      carrierIcon: {
+        'brt'     : 'https://app.elogy.io/assets/img/carriers/brt.png',
+        'liccardi': 'https://app.elogy.io/assets/img/carriers/liccardi.png',
+        'gls'     : 'https://app.elogy.io/assets/img/carriers/gls.png',
+        'crono'   : 'https://app.elogy.io/assets/img/carriers/crono.png',
       },
 
       newStatus: '',
@@ -866,10 +935,6 @@ export default {
         let p = products[i]
         this.products.push(this.mapProduct(p))
       }
-    },
-    addProduct() {
-      this.order.products.push('')
-      this.refreshOrderReviewTotal()
     },
     removeProduct(index) {
       this.order.products.splice(index, 1)
@@ -1273,6 +1338,7 @@ export default {
         price: price,
         quantity: 1,
         total: total,
+        upsell: false,
       })
       this.refreshOrderReviewTotal()
     },
@@ -1339,6 +1405,10 @@ export default {
 .items_popover {
   z-index: 999999 !important;
   position: fixed !important;
+}
+
+.carrier-icon {
+  width: 24px !important;
 }
 
 </style>
