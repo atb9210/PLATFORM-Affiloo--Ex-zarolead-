@@ -250,6 +250,22 @@ class Warehouse {
     return object
   }
 
+  async getDelivery(lead_id) {
+    let delivery = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/warehouse/leads/' + lead_id + '/delivery', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        delivery = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return delivery
+  }
+
   async createDelivery(lead_id, params) {
     let delivery = null
 
@@ -270,12 +286,16 @@ class Warehouse {
     return delivery
   }
 
-  async getDelivery(lead_id) {
+  async updateDelivery(lead_id, params) {
     let delivery = null
 
     try {
       let headers = this.getHeaders()
-      const response = await this.$http.get('/api/3rd/warehouse/leads/' + lead_id + '/delivery', { headers })
+      let paramsData = {
+        lead_id: lead_id,
+        params: JSON.stringify(params),
+      }
+      const response = await this.$http.put('/api/3rd/warehouse/delivery', paramsData, { headers })
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
         delivery = response.data.data
       }

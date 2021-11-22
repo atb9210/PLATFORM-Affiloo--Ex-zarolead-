@@ -201,5 +201,7 @@ Route::get('/warehouse/leads/{lead_id}/delivery', 'api\third\WarehouseController
     ->name('warehouse.delivery.get');
 Route::post('/warehouse/delivery', 'api\third\WarehouseController@createDelivery')->middleware('auth:api')
     ->name('warehouse.delivery.create');
+Route::put('/warehouse/delivery', 'api\third\WarehouseController@updateDelivery')->middleware('auth:api')
+    ->name('warehouse.delivery.update');
 Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
     ->name('warehouse.products.index');

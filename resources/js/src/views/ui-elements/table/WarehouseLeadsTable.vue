@@ -281,7 +281,7 @@
                                     <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Info" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showleadinfo(item)" />
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
@@ -1265,7 +1265,7 @@ export default {
         products: products,
       }
 
-      await this.warehouse.createDelivery(o.lead_id, params)
+      await this.warehouse.updateDelivery(o.lead_id, params)
 
       this.$vs.loading.close()
 
@@ -1284,9 +1284,6 @@ export default {
       let email = lead.email
       let products = []
       let accessories = [...this.accessories]
-
-      // TODO: to delete
-      console.log("accessories", accessories)
 
       let street_address = ''
       let city = ''

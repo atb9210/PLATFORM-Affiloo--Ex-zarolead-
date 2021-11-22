@@ -9,6 +9,7 @@ use App\third\WarehouseLead;
 
 class WarehouseController extends Controller
 {
+    private $table = 'third_warehouse_leads';
     private $statusValidation = 'in:confirmed,no answer,cancelled,fake,duplicate,to recall,to do,waiting payment';
 
     /**
@@ -306,6 +307,64 @@ class WarehouseController extends Controller
     }
 
     /**
+     * Get delivery (elogy).
+     *
+     * @urlParam lead_id string Lead's id
+     *
+     * @response {
+     *  "data": [delivery],
+     * }
+     */
+    public function getDelivery($lead_id, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = WarehouseLead::findOrFail($lead_id);
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        $delivery = null;
+        if (isset($info['delivery']) && isset($info['delivery']['order_number'])) {
+            $elogy = new \Driverfury\Elogy\Elogy(
+                env('ELOGY_API_TOKEN'),
+                env('ELOGY_EMAIL'),
+                env('ELOGY_PASSWORD'));
+            $delivery = $elogy->getOrderByNumber($info['delivery']['order_number']);
+            $info['delivery'] = $delivery;
+        }
+
+        if (!isset($info['delivery'])) {
+            $info['delivery'] = [];
+        }
+
+        if (!isset($info['delivery']['ip']) && isset($info['ip'])) {
+            $info['delivery']['ip'] = $info['ip'];
+        }
+        if (!isset($info['delivery']['user_agent']) && isset($info['user_agent'])) {
+            $info['delivery']['user_agent'] = $info['user_agent'];
+        }
+        if (!isset($info['delivery']['source_url']) && isset($info['source_url'])) {
+            $info['delivery']['source_url'] = $info['source_url'];
+        }
+        if (!isset($info['delivery']['affiliate_id']) && isset($info['affiliate_id'])) {
+            $info['delivery']['affiliate_id'] = $info['affiliate_id'];
+        }
+        if (!isset($info['delivery']['traffic_source']) && isset($info['traffic_source'])) {
+            $info['delivery']['traffic_source'] = $info['traffic_source'];
+        }
+
+        $lead->info = $info;
+        $lead->save();
+
+        return response([
+            'data' => $info['delivery'],
+        ]);
+    }
+
+    /**
      * Create delivery (elogy).
      *
      * @bodyParam lead_id string Lead's id
@@ -371,60 +430,51 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Get delivery (elogy).
+     * Update delivery (elogy).
      *
-     * @urlParam lead_id string Lead's id
+     * @bodyParam lead_id string Lead's id
+     * @bodyParam params json required Delivery's params
      *
      * @response {
-     *  "data": [delivery],
+     *  "message": "Delivery updated",
      * }
      */
-    public function getDelivery($lead_id, Request $request)
+    public function updateDelivery(Request $request)
     {
         // TODO: Authorization
 
-        $lead = WarehouseLead::findOrFail($lead_id);
+        // Param validation
+        $params = $request->validate([
+            'lead_id' => 'required|exists:' . $table . ',id',
+            'params'  => 'json|required',
+        ]);
+
+        $lead = WarehouseLead::findOrFail($params['lead_id']);
+        $deliveryParams = json_decode($params['params'], true);
 
         $info = $lead->info;
-        if ($info === null) {
-            $info = [];
-        }
-
-        $delivery = null;
-        if (isset($info['delivery']) && isset($info['delivery']['order_number'])) {
+        if (info !== null && isset($info['delivery']['order_number'])) {
+            $orderNumber = strval($info['delivery']['order_number']);
             $elogy = new \Driverfury\Elogy\Elogy(
                 env('ELOGY_API_TOKEN'),
                 env('ELOGY_EMAIL'),
                 env('ELOGY_PASSWORD'));
-            $delivery = $elogy->getOrderByNumber($info['delivery']['order_number']);
-            $info['delivery'] = $delivery;
+            $elogyOrder = $elogy->getOrderByNumber($orderNumber);
+            if ($elogyOrder !== null) {
+                $orderId = $elogyOrder['id'];
+                if ($elogy->updateOrder(strval($orderId), $deliveryParams)) {
+                    $delivery = $elogy->getOrderByNumber($orderNumber);
+                    if ($delivery !== null) {
+                        $info['delivery'] = $delivery;
+                        $lead->info = $info;
+                        $lead->save();
+                    }
+                }
+            }
         }
-
-        if (!isset($info['delivery'])) {
-            $info['delivery'] = [];
-        }
-
-        if (!isset($info['delivery']['ip']) && isset($info['ip'])) {
-            $info['delivery']['ip'] = $info['ip'];
-        }
-        if (!isset($info['delivery']['user_agent']) && isset($info['user_agent'])) {
-            $info['delivery']['user_agent'] = $info['user_agent'];
-        }
-        if (!isset($info['delivery']['source_url']) && isset($info['source_url'])) {
-            $info['delivery']['source_url'] = $info['source_url'];
-        }
-        if (!isset($info['delivery']['affiliate_id']) && isset($info['affiliate_id'])) {
-            $info['delivery']['affiliate_id'] = $info['affiliate_id'];
-        }
-        if (!isset($info['delivery']['traffic_source']) && isset($info['traffic_source'])) {
-            $info['delivery']['traffic_source'] = $info['traffic_source'];
-        }
-
-        $lead->info = $info;
-        $lead->save();
 
         return response([
-            'data' => $info['delivery'],
+            'message' => 'Delivery updated',
         ]);
     }
 }

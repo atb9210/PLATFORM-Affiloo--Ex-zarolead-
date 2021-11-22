@@ -25,7 +25,12 @@ class TestController extends Controller
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),
             env('ELOGY_PASSWORD'));
-        dd($elogy->getOrders());
+        dd($elogy->updateOrder(
+            'ea4a4d90-4bb3-11ec-b1ad-1d67bdec4079',
+            [
+                'gateway' => 'cashondelivery',
+            ],
+        ));
     }
 
     public function test2(Request $request)

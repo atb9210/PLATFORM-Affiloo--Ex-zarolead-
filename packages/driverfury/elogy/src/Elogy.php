@@ -123,6 +123,43 @@ class Elogy
         return $output;
     }
 
+    protected function putRequest(
+        string $path,
+        array $urlParams = [],
+        array $bodyParams = []): array
+    {
+        $output = [];
+
+        if (strlen($path) === 0) {
+            return $output;
+        }
+        if ($path[0] !== '/') {
+            $path = '/' . $path;
+        }
+
+        $headers = [
+            'Authorization: ' . $this->accessToken,
+            'Content-Type: application/json',
+        ];
+
+        $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch); 
+
+        if ($response !== null) {
+            $output = json_decode($response, true);
+        }
+
+        return $output;
+    }
+
     /*
     protected function refreshToken(): string
     {
@@ -240,6 +277,15 @@ class Elogy
             return null;
         }
         return null;
+    }
+
+    public function updateOrder(string $orderId, array $params): bool
+    {
+        $response = $this->putRequest('/orders/' . $orderId, $params, $params);
+        if ($response !== null && isset($response['success']) && $response['success'] == true) {
+            return true;
+        }
+        return false;
     }
 
     public function getProducts(): array
