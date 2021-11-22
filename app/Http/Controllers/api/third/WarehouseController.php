@@ -117,19 +117,19 @@ class WarehouseController extends Controller
             $params['info']['product_name'] = $params['product_name'];
         }
 
-        $price = 0.0
+        $price = 0.0;
         if (isset($params['price'])) {
             $params['info']['price'] = $params['price'];
             $price = $params['price'];
         }
 
-        $total = 0.0
+        $total = 0.0;
         if (isset($params['total'])) {
             $params['info']['total'] = $params['total'];
             $total = $params['total'];
         }
 
-        $quantity = 0.0
+        $quantity = 0.0;
         if (isset($params['quantity'])) {
             $params['info']['quantity'] = $params['quantity'];
             $quantity = $params['quantity'];
