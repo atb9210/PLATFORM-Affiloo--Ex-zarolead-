@@ -275,7 +275,7 @@
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Edit" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" :disabled="item.delivery_status === 'sent'" />
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
                                 </vx-tooltip>
                                 <vx-tooltip text="Create delivery" position="top">
                                     <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
@@ -1272,7 +1272,7 @@ export default {
       this.changeView('leads')
     },
     async fastCreateDelivery(lead) {
-      if (lead.delivery_status === 'sent') return
+      //if (lead.delivery_status === 'sent') return
       if (!this.canCreateDelivery(lead.info)) return
       this.loadOrderInfo(lead)
       await this.createDelivery()
