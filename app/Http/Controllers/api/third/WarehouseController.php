@@ -193,7 +193,7 @@ class WarehouseController extends Controller
                 [
                     'sku' => $sku,
                     'quantity' => $quantity,
-                    'subtotal' => $pice,
+                    'subtotal' => $price,
                 ],
             ],
         ];
