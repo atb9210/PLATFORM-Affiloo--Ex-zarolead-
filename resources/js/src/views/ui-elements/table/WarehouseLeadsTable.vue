@@ -290,6 +290,27 @@
                         </vs-td>
                         
                     </vs-tr>
+
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding">€ {{totalStats.price.toFixed(2)}}</vs-td>
+                    <vs-td class="column-no-padding">{{totalStats.quantity}}</vs-td>
+                    <vs-td class="column-no-padding">€ {{totalStats.total.toFixed(2)}}</vs-td>
+                    <vs-td class="column-no-padding">{{totalStats.items}} items</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding"></vs-td>
+
                 </template>
             </vs-table>
 
@@ -507,7 +528,7 @@
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createDelivery" :disabled="!canCreateDelivery(order)">Create Order</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="updateLeadInfoAndCreateDelivery()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
                 </div>
 
             </div>
@@ -725,6 +746,13 @@ export default {
         { name: 'Gift',          quantity: 1, price: 4.99, total: 4.99, enabled: false },
       ],
 
+      totalStats: {
+        price: 0.0,
+        quantity: 0,
+        total: 0.0,
+        items: 0,
+      },
+
       newStatus: '',
       newValue: '',
     }
@@ -792,6 +820,7 @@ export default {
       if (view == 'leads') {
         this.$vs.loading()
         this.leads = await this.warehouse.fetchLeads(this.filters)
+        this.calculateStats()
         this.view = view
         this.$vs.loading.close()
       } else if (view == 'order_builder') {
@@ -875,6 +904,30 @@ export default {
       
       let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
       return formattedDate
+    },
+    calculateStats() {
+      let price = 0.0
+      let quantity = 0
+      let total = 0.0
+      let items = 0
+
+      for (let i = 0; i < this.leads.length; i++) {
+        let lead = this.leads[i]
+        price += lead.price
+        quantity += lead.quantity
+        total += lead.total
+        if (lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null) {
+          items += lead.info.products.length
+        }
+      }
+
+      // Average price
+      price = price / this.leads.length
+
+      this.totalStats.price = price
+      this.totalStats.quantity = quantity
+      this.totalStats.total = total
+      this.totalStats.items = items
     },
     openNewTab(url) {
       window.open(url, '_blank').focus()
@@ -1152,6 +1205,8 @@ export default {
       }
       await this.warehouse.updateLead(lead.id, params)
     },
+    // TODO: Old code
+    /*
     async updateLeadInfo(leadInfo) {
       this.$vs.loading()
 
@@ -1167,46 +1222,13 @@ export default {
 
       this.$vs.loading.close()
     },
-    async createDelivery() {
+    */
+    async updateLeadInfo(leadInfo) {
       this.$vs.loading()
 
       await this.updateLeadInfoNoLoading(this.order)
 
       let o = this.order
-
-      // TODO: to delete
-      // TODO: Old code
-      /*
-      let productsCount = {}
-      for (let i = 0; i < o.products.length; i++) {
-        let pId = '_' + o.products[i]
-        if (productsCount.hasOwnProperty(pId)) {
-          productsCount[pId] += 1
-        } else {
-          productsCount[pId] = 1
-        }
-      }
-
-      let productsTotal = 0.0
-      let products = []
-      for (const [key, value] of Object.entries(productsCount)) {
-        let pId = key.substring(1)
-        let p = this.getProductById(pId)
-        if (p === null) {
-          continue
-        }
-
-        let quantity = parseInt(value)
-        let price = parseFloat(p.price)
-        let subtotal = quantity*price
-        productsTotal += subtotal
-        products.push({
-          sku: p.sku,
-          quantity: quantity,
-          subtotal: subtotal.toFixed(2),
-        })
-      }
-      */
 
       let productsTotal = 0.0
       let products = []
@@ -1261,15 +1283,46 @@ export default {
         shipping_email:         shippingEmail,
         shipping_notes:         o.shipping.notes,
         created_at: this.formatDateTime(new Date()),
-        completed_at: '',
         products: products,
       }
 
       await this.warehouse.updateDelivery(o.lead_id, params)
 
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+    },
+    async createDelivery() {
+      this.$vs.loading()
+
+      let o = this.order
+
+      let params = {
+        completed_at: this.formatDateTime(new Date()),
+      }
+      await this.warehouse.updateDelivery(o.lead_id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Delivery created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
       this.$vs.loading.close()
 
       this.changeView('leads')
+    },
+    async updateLeadInfoAndCreateDelivery() {
+      await this.updateLeadInfo(this.order)
+      await this.createDelivery()
     },
     async fastCreateDelivery(lead) {
       //if (lead.delivery_status === 'sent') return
