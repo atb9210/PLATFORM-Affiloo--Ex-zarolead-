@@ -445,7 +445,7 @@ class WarehouseController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'lead_id' => 'required|exists:' . $table . ',id',
+            'lead_id' => 'required|exists:' . $this->table . ',id',
             'params'  => 'json|required',
         ]);
 
