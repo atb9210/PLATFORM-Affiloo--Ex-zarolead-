@@ -133,10 +133,10 @@
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <!--<vs-th sort-key="sku">SKU</vs-th>-->
-                    <vs-th sort-key="product_name">Product Name</vs-th>
-                    <!--<vs-th sort-key="delivery.gateway">Gateway</vs-th>-->
+                    <vs-th sort-key="product_name">Product</vs-th>
+                    <!--<vs-th sort-key="delivery.gateway">Payment</vs-th>-->
                     <vs-th sort-key="price">Price</vs-th>
-                    <vs-th sort-key="quantity">Quantity</vs-th>
+                    <vs-th sort-key="quantity">Q.ty</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
@@ -241,6 +241,7 @@
 
                         <vs-td class="column-no-padding" :data="item.status">
                             <fast-editable-value-select
+                                class="font-bold"
                                 :options="leadStatuses"
                                 v-model="newStatus"
                                 @onEdit="newStatus = data[indextr].status"
@@ -297,7 +298,25 @@
         <!-- Order builder -->
         <div v-if="view == 'order_builder'">
             <div class="w-full pr-2 pl-2">
-                <h2>Contact data</h2>
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <h2>Contact data</h2>
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/4 w-full">
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/4 w-full">
+                        <fast-editable-value-select
+                            class="font-bold"
+                            :options="leadStatuses"
+                            v-model="newStatus"
+                            @onEdit="newStatus = order.status"
+                            @onUpdate="updateStatusOrderBuilder()">
+                              <vs-chip :color="leadStatusColor[order.status]">
+                                  {{order.status}}
+                              </vs-chip>
+                        </fast-editable-value-select>
+                    </div>
+                </div>
                 <div class="vx-row w-full">
                     <div class="vx-col mb-3 md:w-1/2 w-full">
                         <vs-input class="w-full" type="text" v-model="order.first_name" placeholder="First Name" />
@@ -357,9 +376,23 @@
 
                 <hr class="mt-3 mb-3">
 
+                <h2>Payment method</h2>
+                <div class="vx-row w-full mb-3 font-bold">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-select class="w-full" v-model="order.gateway">
+                            <vs-select-item :key="gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <hr class="mt-3 mb-3">
+
                 <h2>Products</h2>
                 <div class="vx-row w-full mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/6">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
                         Name
                     </div>
                     <div class="vx-col w-full md:w-1/6">
@@ -371,15 +404,16 @@
                     <div class="vx-col w-full md:w-1/6">
                         Total Price
                     </div>
-                    <div class="vx-col w-full md:w-1/6">
+                    <div class="vx-col w-full md:w-1/12">
                         Upsell
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
                     </div>
                 </div>
 
                 <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="pIndex">
-                    <div class="vx-col w-full md:w-1/6">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
                         {{product.name}}
                     </div>
                     <div class="vx-col w-full md:w-1/6">
@@ -395,14 +429,36 @@
                     <div class="vx-col w-full md:w-1/6">
                         € {{(product.total).toFixed(2)}}
                     </div>
-                    <div class="vx-col w-full md:w-1/6">
+                    <div class="vx-col w-full md:w-1/12">
                         <vs-checkbox v-model="order.products[pIndex].upsell" />
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
                     </div>
                 </div>
 
+                <div class="vx-row w-full mb-3" v-for="(acc, aIndex) in order.accessories" :key="aIndex">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-checkbox v-model="order.accessories[aIndex].enabled" @change="refreshOrderReviewTotal()" />
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
+                        {{acc.name}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.accessories[aIndex].quantity" @onUpdate="refreshOrderReviewTotal()">
+                            x{{order.accessories[aIndex].quantity}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.accessories[aIndex].price" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.accessories[aIndex].price.toFixed(2)}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        € {{order.accessories[aIndex].total.toFixed(2)}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/12">
+                    </div>
+                </div>
+
+                <!--
                 <div class="vx-row w-full mb-3">
                     <div class="vx-col w-full md:w-1/6">
                         Insurance
@@ -425,10 +481,12 @@
                     <div class="vx-col w-full md:w-1/6">
                     </div>
                 </div>
+                -->
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/6">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
+                    <div class="vx-col w-full md:w-1/12">
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
                     </div>
                     <div class="vx-col w-full md:w-1/6">
                     </div>
@@ -443,9 +501,7 @@
                               € {{order.total}}
                         </fast-editable-value>
                     </div>
-                    <div class="vx-col w-full md:w-1/6">
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
+                    <div class="vx-col w-full md:w-1/12">
                     </div>
                 </div>
 
@@ -578,6 +634,8 @@ export default {
       selectedLeads: [],
       lead: {},
       order: {
+        id: '',
+        status: '',
         lead_id: '',
         first_name: '',
         last_name: '',
@@ -599,8 +657,9 @@ export default {
           notes: '',
         },
         location: {},
+        gateway: '',
         products: [],
-        insurance: '0.0',
+        accessories: [],
         review: {
           products: [],
         },
@@ -622,10 +681,10 @@ export default {
       ],
       leadStatusColor: {
         'confirmed'      : 'success',
-        'no answer'      : 'warning',
+        'no answer'      : '#555555',
         'cancelled'      : 'danger',
-        'fake'           : 'danger',
-        'duplicate'      : 'danger',
+        'fake'           : '#cc8877',
+        'duplicate'      : 'warning',
         'to recall'      : 'primary',
         'to do'          : '',
         'waiting payment': 'primary',
@@ -654,6 +713,17 @@ export default {
         'gls'     : 'https://app.elogy.io/assets/img/carriers/gls.png',
         'crono'   : 'https://app.elogy.io/assets/img/carriers/crono.png',
       },
+
+      gateways: [
+        'cashondelivery',
+        'online',
+      ],
+
+      accessories: [
+        { name: 'Insurance',     quantity: 1, price: 1.90, total: 1.90, enabled: false },
+        { name: 'Fast delivery', quantity: 1, price: 2.50, total: 2.50, enabled: false },
+        { name: 'Gift',          quantity: 1, price: 4.99, total: 4.99, enabled: false },
+      ],
 
       newStatus: '',
       newValue: '',
@@ -840,6 +910,25 @@ export default {
 
       this.applyFilters()
     },
+    async updateStatusOrderBuilder() {
+      this.$vs.loading()
+
+      this.order.status = this.newStatus
+      let params = {
+        status: this.newStatus,
+      }
+      await this.warehouse.updateLead(this.order.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead\'s status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
+    },
     showNotes(lead) {
       this.lead = lead
       this.showPopup['notes'] = true
@@ -997,20 +1086,34 @@ export default {
       }
       */
 
-      let total = 0.0
+      let totalProducts = 0.0
       for (let i = 0; i < this.order.products.length; i++) {
-        let subtotal = 0.0
         let p = this.order.products[i]
+        let subtotal = 0.0
         let price = getCurrencyValue(p.price)
         let quantity = parseInt(p.quantity)
         subtotal = price*quantity
         this.order.products[i].total = subtotal
-        total += subtotal
+        totalProducts += subtotal
       }
 
-      let insurance = getCurrencyValue(this.order.insurance)
+      let totalAccessories = 0.0
+      for (let i = 0; i < this.order.accessories.length; i++) {
+        let a = this.order.accessories[i]
+        let subtotal = 0.0
+        let price = getCurrencyValue(a.price)
+        let quantity = parseInt(a.quantity)
+        subtotal = price*quantity
+        this.order.accessories[i].total = subtotal
+        if (a.enabled) {
+          totalAccessories += subtotal
+        }
+      }
 
-      total = total + insurance
+      // TODO: old code
+      //let insurance = getCurrencyValue(this.order.insurance)
+
+      let total = totalProducts + totalAccessories
 
       this.order.total = total.toFixed(2)
     },
@@ -1034,8 +1137,11 @@ export default {
       }
 
       info.products = o.products
-      info.insurance = o.insurance
+      info.accessories = o.accessories
+      // TODO: old code
+      //info.insurance = o.insurance
       info.total = o.total
+      info.gateway = o.gateway
 
       let params = {
         first_name: o.first_name,
@@ -1139,7 +1245,7 @@ export default {
         shipping_price: shippingPrice.toFixed(2),
         total_tax: taxTotal.toFixed(2),
         tax_included: 1,
-        gateway: 'cashondelivery',
+        gateway: o.gateway,
         currency: 'EUR',
         customer_first_name:    o.first_name,
         customer_last_name:     o.last_name,
@@ -1177,7 +1283,11 @@ export default {
       let phone = lead.phone
       let email = lead.email
       let products = []
-      let insurance = 0.0
+      let accessories = [...this.accessories]
+
+      // TODO: to delete
+      console.log("accessories", accessories)
+
       let street_address = ''
       let city = ''
       let province = ''
@@ -1186,13 +1296,14 @@ export default {
       let postcode = ''
       let address = ''
       let notes = ''
+      let gateway = 'cashondelivery'
 
       if (lead.info !== null) {
         if (lead.info.hasOwnProperty('products')) {
           products = lead.info.products
         }
-        if (lead.info.hasOwnProperty('insurance')) {
-          insurance = lead.info.insurance
+        if (lead.info.hasOwnProperty('accessories')) {
+          accessories = lead.info.accessories
         }
 
         if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
@@ -1233,9 +1344,19 @@ export default {
             notes = lead.info.shipping.notes
           }
         }
+
+        if (lead.info.hasOwnProperty('gateway') && lead.info.gateway != '') {
+          gateway = lead.info.gateway
+        } else if (lead.info.hasOwnProperty('delivery') && lead.info.delivery !== null) {
+          if (lead.info.delivery.hasOwnProperty('gateway') && lead.info.delivery.gateway != '') {
+            gateway = lead.info.delivery.gateway
+          }
+        }
       }
 
       this.order = {
+        id: lead.id,
+        status: lead.status,
         lead_id: lead.id,
         first_name: lead.first_name,
         last_name: lead.last_name,
@@ -1257,8 +1378,9 @@ export default {
           notes: notes,
         },
         location: {},
+        gateway: gateway,
         products: products,
-        insurance: insurance,
+        accessories: accessories,
         review: {
           products: [],
         },

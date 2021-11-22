@@ -87,7 +87,7 @@ class WarehouseController extends Controller
             'phone'      => 'required|string|min:7',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|' . $this->statusValidation,
+            'status'     => 'nullable|string|' . $this->statusValidation,
 
             'order_id'     => 'numeric',
             'sku'          => 'string',
@@ -116,14 +116,23 @@ class WarehouseController extends Controller
         if (isset($params['product_name'])) {
             $params['info']['product_name'] = $params['product_name'];
         }
+
+        $price = 0.0
         if (isset($params['price'])) {
             $params['info']['price'] = $params['price'];
+            $price = $params['price'];
         }
+
+        $total = 0.0
         if (isset($params['total'])) {
             $params['info']['total'] = $params['total'];
+            $total = $params['total'];
         }
+
+        $quantity = 0.0
         if (isset($params['quantity'])) {
             $params['info']['quantity'] = $params['quantity'];
+            $quantity = $params['quantity'];
         }
 
         if (isset($params['ip'])) {
@@ -162,6 +171,47 @@ class WarehouseController extends Controller
             }
         }
 
+        // TODO: By default create the lead on elogy too
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD'));
+        $deliveryParams = [
+            'country' => 'IT',
+            'total_price' => $total,
+            'subtotal_price' => $total,
+            'shipping_price' => 0.0,
+            'total_tax' => 0.0,
+            'tax_included' => 1,
+            'gateway' => 'cashondelivery',
+            'currency' => 'EUR',
+            'customer_first_name' => $params['first_name'],
+            'customer_last_name' => $params['last_name'],
+            'created_at' => date('YYYY-mm-dd hh:ii'),
+            'products' => [
+                [
+                    'sku' => $sku,
+                    'quantity' => $quantity,
+                    'subtotal' => $pice,
+                ],
+            ],
+        ];
+        $elogyOrder = $elogy->createOrder($deliveryParams);
+        if ($elogyOrder !== null) {
+            $orderNumber = strval($elogyOrder['order_number']);
+            $info = $lead->info;
+            $elogyOrder = $elogy->getOrderByNumber($orderNumber);
+            if($elogyOrder !== null) {
+                $info['delivery'] = $elogyOrder;
+            } else {
+                $info['delivery'] = [
+                    'order_number' => $orderNumber,
+                ];
+            }
+            $lead->info = $info;
+            $lead->save();
+        }
+
         return response([
             'status' => 'success',
             'data' => $lead,
@@ -196,7 +246,7 @@ class WarehouseController extends Controller
             'email'      => 'nullable|string|min:4',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'string|in:confirmed,no answer,cancelled,fake,duplicate,to recall',
+            'status'     => 'nullable|string|' . $this->statusValidation,
         ]);
 
         if (isset($params['info'])) {

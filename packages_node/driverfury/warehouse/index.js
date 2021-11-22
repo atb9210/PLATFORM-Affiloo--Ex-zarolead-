@@ -112,7 +112,7 @@ class Warehouse {
           let p = await this.getProductBySku(obj.sku, products)
           if (p !== null) {
             let price = getCurrencyValue(p.min_price)
-            let quantity = 3
+            let quantity = obj.quantity
             let total = price*quantity
             obj.info.products.push({
               id: p.id,
