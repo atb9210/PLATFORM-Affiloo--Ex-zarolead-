@@ -453,7 +453,7 @@ class WarehouseController extends Controller
         $deliveryParams = json_decode($params['params'], true);
 
         $info = $lead->info;
-        if (info !== null && isset($info['delivery']['order_number'])) {
+        if ($info !== null && isset($info['delivery']['order_number'])) {
             $orderNumber = strval($info['delivery']['order_number']);
             $elogy = new \Driverfury\Elogy\Elogy(
                 env('ELOGY_API_TOKEN'),
