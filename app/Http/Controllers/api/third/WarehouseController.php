@@ -188,6 +188,7 @@ class WarehouseController extends Controller
             'customer_first_name' => $params['first_name'],
             'customer_last_name' => $params['last_name'],
             'created_at' => date('YYYY-mm-dd hh:ii'),
+            'status' => 'lead',
             'products' => [
                 [
                     'sku' => $sku,
