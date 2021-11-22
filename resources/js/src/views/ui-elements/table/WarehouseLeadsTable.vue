@@ -132,18 +132,18 @@
                     <!--<vs-th sort-key="delivery.completed_at">Completed</vs-th>-->
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
-                    <vs-th sort-key="sku">SKU</vs-th>
+                    <!--<vs-th sort-key="sku">SKU</vs-th>-->
                     <vs-th sort-key="product_name">Product Name</vs-th>
-                    <vs-th sort-key="delivery.gateway">Gateway</vs-th>
+                    <!--<vs-th sort-key="delivery.gateway">Gateway</vs-th>-->
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Quantity</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
-                    <vs-th sort-key="order_status">Order Status</vs-th>
-                    <vs-th sort-key="carrier">Carrier</vs-th>
-                    <vs-th sort-key="notes">Notes</vs-th>
+                    <!--<vs-th sort-key="order_status">Order Status</vs-th>-->
+                    <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
+                    <vs-th sort-key="notes">Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -181,9 +181,11 @@
                             </vs-chip>
                         </vs-td>
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.sku">
                             {{item.sku}}
                         </vs-td>
+                        -->
 
                         <vs-td class="column-no-padding" :data="item.product_name">
                             <vs-chip>
@@ -191,9 +193,11 @@
                             </vs-chip>
                         </vs-td>
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.delivery.gateway">
                             {{item.delivery.gateway}}
                         </vs-td>
+                        -->
 
                         <vs-td class="column-no-padding" :data="item.price">
                             <fast-editable-value
@@ -247,10 +251,13 @@
                             </fast-editable-value-select>
                         </vs-td>
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.order_status">
                             <span>{{item.order_status}}</span>
                         </vs-td>
+                        -->
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.carrier">
                             <div v-if="item.carrier != ''" class="w-full">
                                 <img class="carrier-icon" v-if="carrierIcon.hasOwnProperty(item.carrier)" :src="carrierIcon[item.carrier]" />
@@ -259,13 +266,13 @@
                                 </span>
                             </div>
                         </vs-td>
+                        -->
 
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vx-tooltip :text="item.notes" position="top">
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
-                                <!--
                                 <vx-tooltip text="Edit" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" :disabled="item.delivery_status === 'sent'" />
                                 </vx-tooltip>
@@ -278,7 +285,6 @@
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                                 </vx-tooltip>
-                                -->
                             </div>
                         </vs-td>
                         
@@ -621,7 +627,7 @@ export default {
         'fake'           : 'danger',
         'duplicate'      : 'danger',
         'to recall'      : 'primary',
-        'to do'          : 'primary',
+        'to do'          : '',
         'waiting payment': 'primary',
       },
 
