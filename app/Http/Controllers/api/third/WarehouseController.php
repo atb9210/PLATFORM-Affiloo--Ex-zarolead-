@@ -107,9 +107,6 @@ class WarehouseController extends Controller
 
         // When we have the full name in the first_name field we need to split
         // into first name and last name
-        // TODO: What's wrong with this code? I only get the first_name
-        // DEBUG TODO: remove the if
-        if ($first_name == 'Test Test' || $first_name === 'test test') {
         $first_name = $params['first_name'];
         $last_name = $params['last_name'];
         if ($last_name === '.' || trim($last_name) === '') {
@@ -117,7 +114,7 @@ class WarehouseController extends Controller
             if (count($tmp) > 0) {
                 $first_name = $tmp[0];
                 $last_name = '';
-                for ($j = 0; $j > count($tmp); $j += 1) {
+                for ($j = 0; $j < count($tmp); $j += 1) {
                     $last_name .= ' ' . $tmp[$j];
                 }
                 $last_name = trim($last_name);
@@ -125,7 +122,6 @@ class WarehouseController extends Controller
         }
         $params['first_name'] = $first_name;
         $params['last_name'] = $last_name;
-        }
 
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], true);
