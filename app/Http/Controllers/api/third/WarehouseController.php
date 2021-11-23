@@ -210,6 +210,7 @@ class WarehouseController extends Controller
             'currency' => 'EUR',
             'customer_first_name' => $params['first_name'],
             'customer_last_name' => $params['last_name'],
+            'customer_phone' => $params['phone'],
             'created_at' => date('YYYY-mm-dd hh:ii'),
             'status' => 'lead',
             'products' => [
