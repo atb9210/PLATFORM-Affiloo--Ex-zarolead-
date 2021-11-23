@@ -184,8 +184,8 @@ class WarehouseController extends Controller
         if ($sku !== '') {
             $phone = $params['phone'];
             $checkLead = WarehouseLead::where('phone', $phone)
-                ->where('created_at', '>=', date('YYYY-mm-dd', strtotime('-7 day')) . " 00:00:00");
-                ->where('created_at', '<=', date('YYYY-mm-dd') . " 23:59:59");
+                ->where('created_at', '>=', date('YYYY-mm-dd', strtotime('-7 day')) . " 00:00:00")
+                ->where('created_at', '<=', date('YYYY-mm-dd') . " 23:59:59")
                 ->get();
             foreach ($checkLead as $l) {
                 if ($l !== null) {
