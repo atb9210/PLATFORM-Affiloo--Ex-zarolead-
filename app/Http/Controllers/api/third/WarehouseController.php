@@ -114,7 +114,7 @@ class WarehouseController extends Controller
             if (count($tmp) > 0) {
                 $first_name = $tmp[0];
                 $last_name = '';
-                for ($j = 0; $j < count($tmp); $j += 1) {
+                for ($j = 1; $j < count($tmp); $j += 1) {
                     $last_name .= ' ' . $tmp[$j];
                 }
                 $last_name = trim($last_name);
