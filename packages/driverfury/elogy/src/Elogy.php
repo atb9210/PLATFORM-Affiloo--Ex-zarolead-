@@ -283,6 +283,19 @@ class Elogy
     {
         $response = $this->putRequest('/orders/' . $orderId, $params, $params);
         if ($response !== null && isset($response['success']) && $response['success'] == true) {
+            if (isset($params['customer'])) {
+                return $this->updateCustomer($orderId, $params['customer']);
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function updateCustomer(string $orderId, array $params): bool
+    {
+        $response = $this->putRequest('/customers/' . $orderId, $params, $params);
+        if ($response !== null && isset($response['success']) && $response['success'] == true) {
             return true;
         }
         return false;

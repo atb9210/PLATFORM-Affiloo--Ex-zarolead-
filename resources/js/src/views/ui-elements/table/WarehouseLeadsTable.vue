@@ -527,7 +527,7 @@
                 </div>
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)">Save</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="updateLeadInfoAndCreateDelivery()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
                 </div>
 
@@ -1251,12 +1251,12 @@ export default {
       }
       let subtotalPrice = totalPrice // TODO: What about this?
 
-      let shippingPhone = ''
-      let shippingEmail = ''
-      if (o.shipping.hasOwnProperty('phone') && o.shipping.phone !== null) {
+      let shippingPhone = o.phone
+      let shippingEmail = o.email
+      if (o.shipping.hasOwnProperty('phone') && o.shipping.phone !== null && o.shipping.phone !== '') {
         shippingPhone = o.shipping.phone
       }
-      if (o.shipping.hasOwnProperty('email') && o.shipping.email !== null) {
+      if (o.shipping.hasOwnProperty('email') && o.shipping.email !== null && o.shipping.email !== '') {
         shippingEmail = o.shipping.email
       }
 
@@ -1269,10 +1269,12 @@ export default {
         tax_included: 1,
         gateway: o.gateway,
         currency: 'EUR',
-        customer_first_name:    o.first_name,
-        customer_last_name:     o.last_name,
-        customer_phone:         o.phone,
-        customer_email:         o.email,
+        customer: {
+          first_name: o.first_name,
+          last_name:  o.last_name,
+          phone:      o.phone,
+          email:      o.email,
+        },
         shipping_first_name:    o.shipping.first_name,
         shipping_last_name:     o.shipping.last_name,
         shipping_address1:      o.shipping.street_address,
@@ -1284,7 +1286,6 @@ export default {
         shipping_phone:         shippingPhone,
         shipping_email:         shippingEmail,
         shipping_notes:         o.shipping.notes,
-        created_at: this.formatDateTime(new Date()),
         products: products,
       }
 
@@ -1551,6 +1552,34 @@ export default {
           leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
           leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
           leadInfo.shipping.street_address !== '') {
+        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
+      } else {
+        canCreate = false
+      }
+
+      return canCreate
+    },
+    canUpdateLeadInfo(leadInfo) {
+      let canCreate = true
+
+      // Check shipping contact
+      if (leadInfo !== null &&
+          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
+          leadInfo.shipping.first_name != '' && leadInfo.shipping.last_name != '' &&
+          leadInfo.shipping.phone != '') {
+        canCreate = canCreate && true
+      } else {
+        canCreate = false
+      }
+
+      // Check if street address has number
+      if (leadInfo !== null &&
+          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
+          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
+          leadInfo.shipping.street_address != '' && leadInfo.shipping.city != '' &&
+          leadInfo.shipping.province != '' && leadInfo.shipping.postcode != '' &&
+          leadInfo.shipping.state != '' && leadInfo.shipping.country != ''
+      ) {
         canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
       } else {
         canCreate = false
