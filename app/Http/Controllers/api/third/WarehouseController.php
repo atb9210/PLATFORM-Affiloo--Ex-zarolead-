@@ -104,6 +104,25 @@ class WarehouseController extends Controller
             'traffic_source' => 'nullable|string',
         ]);
 
+
+        // When we have the full name in the first_name field we need to split
+        // into first name and last name
+        $first_name = $params['first_name']
+        $last_name = $params['last_name']
+        if ($last_name === '.' || trim($last_name) === '') {
+            $tmp = explode(' ', $first_name);
+            if (count($tmp) > 0) {
+                $first_name = $tmp[0];
+                $last_name = '';
+                for ($j = 0; $j > count($tmp); $j += 1) {
+                    $last_name .= ' ' . $tmp[$j];
+                }
+                $last_name = trim($last_name);
+            }
+        }
+        $params['first_name'] = $first_name;
+        $params['last_name'] = $last_name;
+
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], true);
         }

@@ -61,6 +61,26 @@ class Warehouse {
     for (let i = 0; i < objects.length; i++) {
       let obj = objects[i]
 
+      let first_name = obj.first_name
+      let last_name = obj.last_name
+
+      // When we have the full name in the first_name field we need to split
+      // into first name and last name
+      if (last_name === '.' || last_name.trim() === '') {
+        let tmp = first_name.split(' ')
+        if (tmp.length > 0) {
+          first_name = tmp[0]
+          last_name = ''
+          for (let j = 1; j < tmp.length; j++) {
+            last_name += ' ' + tmp[j]
+          }
+          last_name = last_name.trim()
+        }
+      }
+
+      obj.first_name = first_name
+      obj.last_name = last_name
+
       obj.full_name = obj.first_name
       if (obj.last_name !== '.') {
         obj.full_name += ' ' + obj.last_name

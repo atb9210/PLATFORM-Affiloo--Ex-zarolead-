@@ -1271,6 +1271,8 @@ export default {
         currency: 'EUR',
         customer_first_name:    o.first_name,
         customer_last_name:     o.last_name,
+        customer_phone:         o.phone,
+        customer_email:         o.email,
         shipping_first_name:    o.shipping.first_name,
         shipping_last_name:     o.shipping.last_name,
         shipping_address1:      o.shipping.street_address,
