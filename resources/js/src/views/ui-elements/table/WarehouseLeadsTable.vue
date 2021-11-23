@@ -778,38 +778,6 @@ export default {
     objects() {
       return this.leads
     },
-    // TODO: Old code
-    /*
-    orderReviewProducts() {
-      let revProducts = []
-
-      for (let i = 0; i < this.order.products.length; i++) {
-        let pId = this.order.products[i]
-
-        if (pId === '') {
-          continue
-        }
-
-        if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getProductById(pId)
-          revProducts[pId] = {
-            name: p.name,
-            quantity: 1,
-            unit_price: p.price,
-          }
-        } else {
-          revProducts[pId].quantity += 1
-        }
-      }
-
-      let toReturn = []
-      for (const [key, value] of Object.entries(revProducts)) {
-        toReturn.push(value)
-      }
-
-      return toReturn
-    },
-    */
   },
   methods: {
     // Frontend functions

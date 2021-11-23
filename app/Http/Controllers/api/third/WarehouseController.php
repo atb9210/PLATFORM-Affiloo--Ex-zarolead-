@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use App\third\WarehouseLead;
 
+// TODO: Add logs?
+
 class WarehouseController extends Controller
 {
     private $table = 'third_warehouse_leads';
