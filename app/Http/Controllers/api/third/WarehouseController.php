@@ -175,13 +175,18 @@ class WarehouseController extends Controller
 
         $lead = WarehouseLead::create($params);
 
+        // Check if it's already present a lead with same SKU and phone number
+        // in the last 7 days
         $sku = '';
         if (isset($params['sku'])) {
             $sku = $params['sku'];
         }
         if ($sku !== '') {
             $phone = $params['phone'];
-            $checkLead = WarehouseLead::where('phone', $phone)->get();
+            $checkLead = WarehouseLead::where('phone', $phone)
+                ->where('created_at', '>=', date('YYYY-mm-dd', strtotime('-7 day')) . " 00:00:00");
+                ->where('created_at', '<=', date('YYYY-mm-dd') . " 23:59:59");
+                ->get();
             foreach ($checkLead as $l) {
                 if ($l !== null) {
                     if ($l->id != $lead->id && $l->info !== null && isset($l->info['sku']) &&
@@ -194,46 +199,48 @@ class WarehouseController extends Controller
         }
 
         // TODO: By default create the lead on elogy too
-        $elogy = new \Driverfury\Elogy\Elogy(
-            env('ELOGY_API_TOKEN'),
-            env('ELOGY_EMAIL'),
-            env('ELOGY_PASSWORD'));
-        $deliveryParams = [
-            'country' => 'IT',
-            'total_price' => $total,
-            'subtotal_price' => $total,
-            'shipping_price' => 0.0,
-            'total_tax' => 0.0,
-            'tax_included' => 1,
-            'gateway' => 'cashondelivery',
-            'currency' => 'EUR',
-            'customer_first_name' => $params['first_name'],
-            'customer_last_name' => $params['last_name'],
-            'shipping_phone' => $params['phone'],
-            'created_at' => date('YYYY-mm-dd hh:ii'),
-            'status' => 'lead',
-            'products' => [
-                [
-                    'sku' => $sku,
-                    'quantity' => $quantity,
-                    'subtotal' => $price,
+        if ($lead->status !== 'duplicate') {
+            $elogy = new \Driverfury\Elogy\Elogy(
+                env('ELOGY_API_TOKEN'),
+                env('ELOGY_EMAIL'),
+                env('ELOGY_PASSWORD'));
+            $deliveryParams = [
+                'country' => 'IT',
+                'total_price' => $total,
+                'subtotal_price' => $total,
+                'shipping_price' => 0.0,
+                'total_tax' => 0.0,
+                'tax_included' => 1,
+                'gateway' => 'cashondelivery',
+                'currency' => 'EUR',
+                'customer_first_name' => $params['first_name'],
+                'customer_last_name' => $params['last_name'],
+                'shipping_phone' => $params['phone'],
+                'created_at' => date('YYYY-mm-dd hh:ii'),
+                'status' => 'lead',
+                'products' => [
+                    [
+                        'sku' => $sku,
+                        'quantity' => $quantity,
+                        'subtotal' => $price,
+                    ],
                 ],
-            ],
-        ];
-        $elogyOrder = $elogy->createOrder($deliveryParams);
-        if ($elogyOrder !== null) {
-            $orderNumber = strval($elogyOrder['order_number']);
-            $info = $lead->info;
-            $elogyOrder = $elogy->getOrderByNumber($orderNumber);
-            if($elogyOrder !== null) {
-                $info['delivery'] = $elogyOrder;
-            } else {
-                $info['delivery'] = [
-                    'order_number' => $orderNumber,
-                ];
+            ];
+            $elogyOrder = $elogy->createOrder($deliveryParams);
+            if ($elogyOrder !== null) {
+                $orderNumber = strval($elogyOrder['order_number']);
+                $info = $lead->info;
+                $elogyOrder = $elogy->getOrderByNumber($orderNumber);
+                if($elogyOrder !== null) {
+                    $info['delivery'] = $elogyOrder;
+                } else {
+                    $info['delivery'] = [
+                        'order_number' => $orderNumber,
+                    ];
+                }
+                $lead->info = $info;
+                $lead->save();
             }
-            $lead->info = $info;
-            $lead->save();
         }
 
         return response([
