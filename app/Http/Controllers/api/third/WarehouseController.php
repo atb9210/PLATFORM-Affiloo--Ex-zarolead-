@@ -105,8 +105,10 @@ class WarehouseController extends Controller
         ]);
 
 
+        // TODO: What's wrong with this code? I only get the first_name
         // When we have the full name in the first_name field we need to split
         // into first name and last name
+        /*
         $first_name = $params['first_name'];
         $last_name = $params['last_name'];
         if ($last_name === '.' || trim($last_name) === '') {
@@ -122,6 +124,7 @@ class WarehouseController extends Controller
         }
         $params['first_name'] = $first_name;
         $params['last_name'] = $last_name;
+        */
 
         if (isset($params['info'])) {
             $params['info'] = json_decode($params['info'], true);
