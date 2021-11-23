@@ -107,8 +107,8 @@ class WarehouseController extends Controller
 
         // When we have the full name in the first_name field we need to split
         // into first name and last name
-        $first_name = $params['first_name']
-        $last_name = $params['last_name']
+        $first_name = $params['first_name'];
+        $last_name = $params['last_name'];
         if ($last_name === '.' || trim($last_name) === '') {
             $tmp = explode(' ', $first_name);
             if (count($tmp) > 0) {
