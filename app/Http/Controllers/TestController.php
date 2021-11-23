@@ -26,6 +26,7 @@ class TestController extends Controller
             env('ELOGY_EMAIL'),
             env('ELOGY_PASSWORD'));
         $orderId = '2d171010-4c7a-11ec-96a3-df3a0a5f3bff';
+        dd($elogy->getOrder($orderId));
         dd($elogy->updateOrder(
             $orderId,
             [

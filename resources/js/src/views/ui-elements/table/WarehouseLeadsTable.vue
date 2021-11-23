@@ -528,7 +528,7 @@
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="updateLeadInfoAndCreateDelivery()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateDeliveryPopup()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
                 </div>
 
             </div>
@@ -596,6 +596,22 @@
             </div>
         </vs-popup>
 
+        <!-- Create delivery popup -->
+        <vs-popup title="Lead info" :active.sync="showPopup['create_delivery']">
+            <div class="vx-row mb-3">
+                <div class="vx-col md:w-1/2 w-full">
+                    Completed date
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="order.completed_at" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateLeadInfoAndCreateDelivery()" color="primary" type="filled">Create Delivery</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -649,6 +665,7 @@ export default {
         'notes': false,
         'add_product': false,
         'lead_info': false,
+        'create_delivery': false,
       },
 
       leads: [],
@@ -686,6 +703,8 @@ export default {
         },
         total: '0.0',
         newTotal: '0.0',
+
+        completed_at: '',
       },
 
       products: [],
@@ -871,6 +890,12 @@ export default {
       let ii = String(dateObj.getMinutes()).padStart(2, '0')
       
       let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+
+      return formattedDate
+    },
+    formatDateTimeT(dateObj) {
+      let formattedDate = this.formatDateTime(dateObj)
+      formattedDate = formattedDate.replace(' ', 'T')
       return formattedDate
     },
     calculateStats() {
@@ -1269,13 +1294,17 @@ export default {
 
       this.$vs.loading.close()
     },
+    showCreateDeliveryPopup() {
+      this.order.completed_at = this.formatDateTimeT(new Date())
+      this.showPopup['create_delivery'] = true
+    },
     async createDelivery() {
       this.$vs.loading()
 
       let o = this.order
 
       let params = {
-        completed_at: this.formatDateTime(new Date()),
+        completed_at: this.formatDateTimeT(new Date(this.order.completed_at)),
       }
       await this.warehouse.updateDelivery(o.lead_id, params)
 
@@ -1292,14 +1321,20 @@ export default {
       this.changeView('leads')
     },
     async updateLeadInfoAndCreateDelivery() {
-      await this.updateLeadInfo(this.order)
+      let updateLeadInfoFlag = false
+      if (this.view === 'order_builder') {
+        updateLeadInfoFlag = true
+      }
+      if (updateLeadInfoFlag) {
+        await this.updateLeadInfo(this.order)
+      }
       await this.createDelivery()
     },
     async fastCreateDelivery(lead) {
       //if (lead.delivery_status === 'sent') return
       if (!this.canCreateDelivery(lead.info)) return
       this.loadOrderInfo(lead)
-      await this.createDelivery()
+      this.showCreateDeliveryPopup()
     },
     loadOrderInfo(lead) {
       let first_name = lead.first_name
@@ -1407,6 +1442,8 @@ export default {
         },
         total: '0.0',
         newTotal: '0.0',
+
+        completed_at: '',
       }
 
       if (lead.info !== null && lead.info.hasOwnProperty('total') &&

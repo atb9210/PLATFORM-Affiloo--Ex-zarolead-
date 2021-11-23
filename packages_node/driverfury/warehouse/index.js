@@ -96,6 +96,7 @@ class Warehouse {
       obj.quantity = 0
       obj.total = 0.0
       obj.contact = false
+      obj.order_number = ''
       obj.carrier = ''
       obj.order_status = ''
       obj.delivery_status = 'not sent'
@@ -121,6 +122,7 @@ class Warehouse {
 
         if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
           if (obj.info.delivery.hasOwnProperty('order_number') && obj.info.delivery.order_number !== null) {
+            obj.order_number = obj.info.delivery.order_number
             obj.delivery_status = 'sent'
           } else {
             obj.delivery_status = 'error'
