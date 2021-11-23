@@ -261,6 +261,19 @@ class Elogy
         return $object;
     }
 
+    public function getOrder(string $orderId): array|null
+    {
+        $object = null;
+
+        $response = $this->getRequest('/orders/' . $orderId, []);
+        if (isset($response['success']) && $response['success'] == true &&
+            isset($response['data'])) {
+            $object = $response['data'];
+        }
+
+        return $object;
+    }
+
     public function createOrder(array $params): ?array
     {
         $response = $this->postRequest('/orders', $params, $params);
@@ -284,17 +297,20 @@ class Elogy
         $response = $this->putRequest('/orders/' . $orderId, $params, $params);
         if ($response !== null && isset($response['success']) && $response['success'] == true) {
             if (isset($params['customer'])) {
-                return $this->updateCustomer($orderId, $params['customer']);
-            } else {
-                return true;
+                $order = $this->getOrder($orderId);
+                if ($order !== null && isset($order['customer_id']) && $order['customer_id'] !== null) {
+                    $customerId = strval($order['customer_id']);
+                    return $this->updateCustomer($customerId, $params['customer']);
+                }
             }
+            return true;
         }
         return false;
     }
 
-    public function updateCustomer(string $orderId, array $params): bool
+    public function updateCustomer(string $customerId, array $params): bool
     {
-        $response = $this->putRequest('/customers/' . $orderId, $params, $params);
+        $response = $this->putRequest('/customers/' . $customerId, $params, $params);
         if ($response !== null && isset($response['success']) && $response['success'] == true) {
             return true;
         }

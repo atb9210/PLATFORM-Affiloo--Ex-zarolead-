@@ -25,12 +25,15 @@ class TestController extends Controller
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),
             env('ELOGY_PASSWORD'));
+        $orderId = '2d171010-4c7a-11ec-96a3-df3a0a5f3bff';
         dd($elogy->updateOrder(
-            '124a8240-4c6a-11ec-96a3-df3a0a5f3bff',
+            $orderId,
             [
                 'customer' => [
                     'first_name' => 'testFirstName',
                     'last_name' => 'testLastName',
+                    'phone' => '+(39)1234567890',
+                    'mail' => 'test@zarolead.com',
                 ],
             ],
         ));
