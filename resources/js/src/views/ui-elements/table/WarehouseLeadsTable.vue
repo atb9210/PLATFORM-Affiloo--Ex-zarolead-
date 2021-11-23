@@ -127,7 +127,8 @@
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <vs-th sort-key="id">ID</vs-th>
+                    <!--<vs-th sort-key="id">ID</vs-th>-->
+                    <vs-th sort-key="order_number">Order Num</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
                     <!--<vs-th sort-key="delivery.completed_at">Completed</vs-th>-->
                     <vs-th sort-key="full_name">Name</vs-th>
@@ -149,8 +150,16 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
+                        </vs-td>
+                        -->
+
+                        <vs-td class="column-no-padding" :data="item.order_number">
+                            <span v-if="item.order_number != ''" @click="showLeadInfo(item)">
+                                <u>{{item.order_number}}</u>
+                            </span>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.created_at">
@@ -293,6 +302,7 @@
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
