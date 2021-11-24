@@ -26,16 +26,21 @@ class TestController extends Controller
             env('ELOGY_EMAIL'),
             env('ELOGY_PASSWORD'));
         $orderId = '2d171010-4c7a-11ec-96a3-df3a0a5f3bff';
+        $objDateTime = new \DateTime('NOW');
         dd($elogy->getOrder($orderId));
-        dd($elogy->updateOrder(
+        //dd($elogy->updateOrder(
             $orderId,
             [
+                /*
                 'customer' => [
                     'first_name' => 'testFirstName',
                     'last_name' => 'testLastName',
                     'phone' => '+(39)1234567890',
                     'mail' => 'test@zarolead.com',
                 ],
+                */
+                'completed_at' => $objDateTime->format(\DateTime::ISO8601),
+                'transform_to_order' => 1,
             ],
         ));
     }

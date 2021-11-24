@@ -295,6 +295,7 @@ class Elogy
     public function updateOrder(string $orderId, array $params): bool
     {
         $response = $this->putRequest('/orders/' . $orderId, $params, $params);
+        dd($response);
         if ($response !== null && isset($response['success']) && $response['success'] == true) {
             if (isset($params['customer'])) {
                 $order = $this->getOrder($orderId);

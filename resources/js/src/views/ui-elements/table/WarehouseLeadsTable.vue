@@ -903,10 +903,8 @@ export default {
 
       return formattedDate
     },
-    formatDateTimeT(dateObj) {
-      let formattedDate = this.formatDateTime(dateObj)
-      formattedDate = formattedDate.replace(' ', 'T')
-      return formattedDate
+    formatDateTimeISO8601(dateObj) {
+      return dateObj.toISOString()
     },
     calculateStats() {
       let price = 0.0
@@ -1305,7 +1303,7 @@ export default {
       this.$vs.loading.close()
     },
     showCreateDeliveryPopup() {
-      this.order.completed_at = this.formatDateTimeT(new Date())
+      this.order.completed_at = this.formatDateTimeISO8601(new Date())
       this.showPopup['create_delivery'] = true
     },
     async createDelivery() {
@@ -1314,7 +1312,8 @@ export default {
       let o = this.order
 
       let params = {
-        completed_at: this.formatDateTimeT(new Date(this.order.completed_at)),
+        completed_at: this.formatDateTimeISO8601(new Date(this.order.completed_at)),
+        transform_to_order: 1,
       }
       await this.warehouse.updateDelivery(o.lead_id, params)
 
