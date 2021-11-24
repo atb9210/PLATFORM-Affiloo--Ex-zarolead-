@@ -19,6 +19,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 */
 
+/* Settings routes */
+Route::get('settings', 'api\v1\SettingsController@index')->middleware('auth:api')
+    ->name('settings.index');
+Route::get('settings/{key}', 'api\v1\SettingsController@show')->middleware('auth:api')
+    ->name('settings.show');
+Route::put('settings', 'api\v1\SettingsController@update')->middleware('auth:api')
+    ->name('settings.update');
+
 /* Auth routes */
 Route::post('/login', 'api\v1\Auth\LoginController@login')->name('login')->name('auth.login');
 Route::post('/refresh-token', 'api\v1\Auth\LoginController@refreshToken')->name('auth.refresh-token');

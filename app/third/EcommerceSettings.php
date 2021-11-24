@@ -39,6 +39,7 @@ class EcommerceSettings extends Model
         $obj = EcommerceSettings::getInstance();
         $obj->settings = $newSettings;
         $obj->save();
+        return $obj->settings;
     }
 
     public static function getK($key)
