@@ -506,4 +506,130 @@ class WarehouseController extends Controller
             'message' => 'Delivery updated',
         ]);
     }
+
+    /**
+     * Lead checkout (online payment via Stripe).
+     *
+     * @urlParam lead_id required int Lead's id
+     *
+     * @bodyParam success_url required string Success URL (Thank you page)
+     * @bodyParam cancel_url required string Cancel URL
+     */
+    public function checkout($lead_id, Request $request)
+    {
+        $lead = WarehouseLead::findOrFail($lead_id);
+        $info = $lead->info;
+
+        // Param validation
+        $params = $request->validate([
+            'success_url' => 'required|string|url',
+            'cancel_url'  => 'required|string|url',
+        ]);
+
+        $cancelUrl = url()->previous();
+        if (isset($params['cancel_url']) && $params['cancel_url'] != '') {
+            $cancelUrl = $params['cancel_url'];
+        }
+        $successUrl = url()->previous();
+        if (isset($params['success_url']) && $params['success_url'] != '') {
+            $successUrl = $params['success_url'];
+        }
+
+        $handlerParams = [
+            'success_url' => $successUrl,
+            'cancel_url' => $cancelUrl,
+        ];
+        $handlerUrl = url('/leads/' . strval($lead_id) . '/checkout_completed?session_id={CHECKOUT_SESSION_ID}&' . http_build_query($handlerParams));
+
+        $line_items = [];
+        $products = [];
+        if ($info !== null && isset($info['products']) && $info['products'] !== null) {
+            $products = $info['products'];
+        }
+        foreach ($products as $p) {
+            $name = $p['name'];
+            $price = intval(floatval($p['price'])*100);
+            $quantity = intval($p['quantity']);
+            $line_items[] = [
+                'price_data' => [
+                    'currency' => 'eur',
+                    'unit_amount' => $price,
+                    'product_data' => [
+                        'name' => $name,
+                    ],
+                ],
+                'quantity' => $quantity,
+            ];
+        }
+
+        $apiKey = env('STRIPE_API_SECRET');
+        $stripe = new \Stripe\StripeClient($apiKey);
+        $session = $stripe->checkout->sessions->create([
+            'line_items' => $line_items,
+            'mode' => 'payment',
+            'success_url' => $handlerUrl,
+            'cancel_url' => $cancelUrl,
+            'metadata' => [
+                'lead_id' => $lead->id,
+            ],
+        ]);
+        return redirect($session->url);
+    }
+
+    /**
+     * Completed checkout (online payment via Stripe).
+     *
+     * @urlParam lead_id required int Lead's id
+     *
+     * @bodyParam session_id required string Stripe session id
+     * @bodyParam success_url required string Success URL (Thank you page)
+     * @bodyParam cancel_url required string Cancel URL
+     */
+    public function checkoutCompleted($lead_id, Request $request)
+    {
+        $lead = WarehouseLead::findOrFail($lead_id);
+        $info = $lead->info;
+
+        // Param validation
+        $params = $request->validate([
+            'session_id'  => 'required|string',
+            'success_url' => 'required|string|url',
+            'cancel_url'  => 'required|string|url',
+        ]);
+
+        $sessionId = $params['session_id'];
+        $cancelUrl = url()->previous();
+        if (isset($params['cancel_url']) && $params['cancel_url'] != '') {
+            $cancelUrl = $params['cancel_url'];
+        }
+        $successUrl = url()->previous();
+        if (isset($params['success_url']) && $params['success_url'] != '') {
+            $successUrl = $params['success_url'];
+        }
+
+        $redirectUrl = $cancelUrl;
+        $session = null;
+        try {
+            $apiKey = env('STRIPE_API_SECRET');
+            $stripe = new \Stripe\StripeClient($apiKey);
+            $session = $stripe->checkout->sessions->retrieve($sessionId, []);
+            if ($session->status === 'complete' && $session->payment_status === 'paid') {
+                $redirectUrl = $successUrl;
+                $info['paid'] = true;
+            }
+        } catch (Exception $e) {
+            $session = null;
+        }
+        if ($session !== null) {
+            $info['stripe'] = [
+                'session_id' => $session->id,
+                'customer_id' => $session->customer,
+                'payment_intent_id' => $session->payment_intent,
+            ];
+        }
+        $lead->info = $info;
+        $lead->save();
+
+        return redirect($redirectUrl);
+    }
 }

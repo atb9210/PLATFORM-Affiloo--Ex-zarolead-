@@ -21,6 +21,42 @@ class TestController extends Controller
 {
     public function test()
     {
+        $apiKey = env('STRIPE_API_SECRET');
+        $sessionId = 's_test_a1apgXW2I61KXYjfpkorRMpn3mtuuazwuMYQisy45Wmg6kTFXRdFMIh7XX';
+        $stripe = new \Stripe\StripeClient($apiKey);
+        dd($stripe->checkout->sessions->retrieve($sessionId, []));
+        /*
+        $apiKey = env('STRIPE_API_SECRET');
+        $sessionId = 'cs_test_a1apgXW2I61KXYjfpkorRMpn3mtuuazwuMYQisy45Wmg6kTFXRdFMIh7XX';
+        $stripe = new \Stripe\StripeClient($apiKey);
+        dd($stripe->checkout->sessions->retrieve($sessionId, []));
+        $session = $stripe->checkout->sessions->retrieve($sessionId, []);
+        dd($session);
+        exit();
+        */
+
+        $apiKey = env('STRIPE_API_SECRET');
+        \Stripe\Stripe::setApiKey($apiKey);
+        $session = \Stripe\Checkout\Session::create([
+            'line_items' => [
+                [
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => 'T-Shirt',
+                        ],
+                        'unit_amount' => 1999,
+                    ],
+                    'quantity' => 2,
+                ],
+            ],
+            'mode' => 'payment',
+            'success_url' => 'https://zarolead.localhost/test2?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => 'https://bing.com',
+        ]);
+        return redirect($session->url);
+        exit();
+
         $elogy = new \Driverfury\Elogy\Elogy(
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),
@@ -28,7 +64,7 @@ class TestController extends Controller
         $orderId = '2d171010-4c7a-11ec-96a3-df3a0a5f3bff';
         $objDateTime = new \DateTime('NOW');
         dd($elogy->getOrder($orderId));
-        //dd($elogy->updateOrder(
+        dd($elogy->updateOrder(
             $orderId,
             [
                 /*

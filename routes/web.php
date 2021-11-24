@@ -221,6 +221,12 @@ Route::get('/facebook/login', 'api\third\FacebookController@login')
 Route::get('/facebook/callback', 'api\third\FacebookController@callback')
     ->name('facebook.callback');
 
+/* Warehouse lead checkout */
+Route::get('/leads/{lead_id}/checkout', 'api\third\WarehouseController@checkout')
+    ->name('warehouse.leads.checkout');
+Route::get('/leads/{lead_id}/checkout_completed', 'api\third\WarehouseController@checkoutCompleted')
+    ->name('warehouse.leads.checkout_completed');
+
 Route::get('/{any}', function() {
     return view('application');
 })->where('any', '.*');

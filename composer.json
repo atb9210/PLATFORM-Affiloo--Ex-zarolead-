@@ -29,7 +29,8 @@
         "naturalbuild/namecheap-sdk": "^1.0",
         "smalot/pdfparser": "^0.14.0",
         "spatie/flysystem-dropbox": "^1.2",
-        "spatie/ssh": "^1.6"
+        "spatie/ssh": "^1.6",
+        "stripe/stripe-php": "^7.103"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

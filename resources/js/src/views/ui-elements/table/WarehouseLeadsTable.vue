@@ -142,6 +142,7 @@
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="paid">Paid</vs-th>
                     <!--<vs-th sort-key="order_status">Order Status</vs-th>-->
                     <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
                     <vs-th sort-key="notes">Actions</vs-th>
@@ -261,6 +262,11 @@
                             </fast-editable-value-select>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="item.paid">
+                            <span v-if="item.paid">Yes</span>
+                            <span v-else>No</span>
+                        </vs-td>
+
                         <!--
                         <vs-td class="column-no-padding" :data="item.order_status">
                             <span>{{item.order_status}}</span>
@@ -292,6 +298,9 @@
                                 <vx-tooltip text="Info" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
                                 </vx-tooltip>
+                                <vx-tooltip text="Payment link" position="top">
+                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-dollar-sign" @click="showPaymentLink(item)" />
+                                </vx-tooltip>
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                                 </vx-tooltip>
@@ -315,6 +324,7 @@
                     <vs-td class="column-no-padding">{{totalStats.quantity}}</vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.total.toFixed(2)}}</vs-td>
                     <vs-td class="column-no-padding">{{totalStats.items}} items</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
@@ -622,6 +632,36 @@
             </div>
         </vs-popup>
 
+        <!-- Payment link popup -->
+        <vs-popup title="Payment link" :active.sync="showPopup['payment_link']">
+            <div class="vx-row mb-3">
+                <div class="vx-col md:w-1/2 w-full">
+                    Thank you page
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-check-circle" icon-no-border v-model="paymentSuccessUrl" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-3">
+                <div class="vx-col md:w-1/2 w-full">
+                    Cancel payment page
+                </div>
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-x-circle" icon-no-border v-model="paymentCancelUrl" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-3">
+                <div class="vx-col w-full">
+                    <vs-input :disabled="true" class="w-full" icon-pack="feather" icon="icon-link" icon-no-border :value="paymentLink" />
+                </div>
+                <div class="vx-col w-full">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="paymentLink" v-clipboard:success="onCodeCopied">Copy to clipboard</vs-button>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -676,6 +716,7 @@ export default {
         'add_product': false,
         'lead_info': false,
         'create_delivery': false,
+        'payment_link': false,
       },
 
       leads: [],
@@ -784,6 +825,9 @@ export default {
 
       newStatus: '',
       newValue: '',
+
+      paymentSuccessUrl: '',
+      paymentCancelUrl: '',
     }
   },
   computed: {
@@ -806,6 +850,17 @@ export default {
     },
     objects() {
       return this.leads
+    },
+    paymentLink() {
+      if (this.lead === null) {
+        return ''
+      }
+
+      let url = 'https://' + window.location.hostname + '/leads/' + this.lead.id + '/checkout'
+      url += '?success_url=' + this.paymentSuccessUrl
+      url += '&cancel_url=' + this.paymentCancelUrl
+
+      return url
     },
   },
   methods: {
@@ -1338,6 +1393,8 @@ export default {
         await this.updateLeadInfo(this.order)
       }
       await this.createDelivery()
+
+      this.showPopup['create_delivery'] = false
     },
     async fastCreateDelivery(lead) {
       //if (lead.delivery_status === 'sent') return
@@ -1600,6 +1657,24 @@ export default {
       }
 
       return canCreate
+    },
+    showPaymentLink(lead) {
+      this.lead = lead
+      this.showPopup['payment_link'] = true
+    },
+    onCodeCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Copied to the clipboard',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
+
+    // TODO: to delete
+    testFoo() {
+      console.log("AYOOOO")
     },
   },
   async created() {
