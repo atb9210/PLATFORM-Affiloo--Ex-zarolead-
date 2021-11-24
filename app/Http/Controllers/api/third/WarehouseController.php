@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\third\WarehouseLead;
 
-// TODO: Add logs?
+use App\Settings;
 
 class WarehouseController extends Controller
 {
@@ -507,6 +507,17 @@ class WarehouseController extends Controller
         ]);
     }
 
+    private function getStripeClient()
+    {
+        $settings = Settings::get();
+        $apiKey = env('STRIPE_API_SECRET', '');
+        if (isset($settings['stripe']['api_secret_key'])) {
+            $apiKey = $settings['stripe']['api_secret_key'];
+        }
+        $stripe = new \Stripe\StripeClient($apiKey);
+        return $stripe;
+    }
+
     /**
      * Lead checkout (online payment via Stripe).
      *
@@ -562,8 +573,7 @@ class WarehouseController extends Controller
             ];
         }
 
-        $apiKey = env('STRIPE_API_SECRET');
-        $stripe = new \Stripe\StripeClient($apiKey);
+        $stripe = $this->getStripeClient();
         $session = $stripe->checkout->sessions->create([
             'line_items' => $line_items,
             'mode' => 'payment',
@@ -610,8 +620,7 @@ class WarehouseController extends Controller
         $redirectUrl = $cancelUrl;
         $session = null;
         try {
-            $apiKey = env('STRIPE_API_SECRET');
-            $stripe = new \Stripe\StripeClient($apiKey);
+            $stripe = $this->getStripeClient();
             $session = $stripe->checkout->sessions->retrieve($sessionId, []);
             if ($session->status === 'complete' && $session->payment_status === 'paid') {
                 $redirectUrl = $successUrl;
