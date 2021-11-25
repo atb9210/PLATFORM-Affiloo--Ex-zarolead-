@@ -141,8 +141,8 @@
 
                     <vs-td class="column-no-padding">
                         <div class="flex items-center">
-                            <!--<vs-button @click="showInfo(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-alert-circle"></vs-button>-->
-                            <vs-avatar color="primary" size="24px" @click="showInfo(data[indextr].id)" icon-pack="feather" icon="icon-alert-circle" />
+                            <!--<vs-button @click="showInfo(data[indextr].id)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-info"></vs-button>-->
+                            <vs-avatar color="primary" size="24px" @click="showInfo(data[indextr].id)" icon-pack="feather" icon="icon-info" />
                         </div>
                     </vs-td>
 

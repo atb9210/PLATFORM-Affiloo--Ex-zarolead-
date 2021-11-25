@@ -137,15 +137,17 @@
                     <vs-th sort-key="product_name">Product</vs-th>
                     <!--<vs-th sort-key="delivery.gateway">Payment</vs-th>-->
                     <vs-th sort-key="price">Price</vs-th>
-                    <vs-th sort-key="quantity">Q.ty</vs-th>
+                    <vs-th sort-key="quantity">Qty</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
+                    <vs-th sort-key="delivery_status">Dlvry</vs-th>
                     <!--<vs-th sort-key="order_status">Order Status</vs-th>-->
                     <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
-                    <vs-th sort-key="notes">Actions</vs-th>
+                    <vs-th sort-key="notes">Notes</vs-th>
+                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -256,7 +258,7 @@
                                 v-model="newStatus"
                                 @onEdit="newStatus = data[indextr].status"
                                 @onUpdate="updateStatus(data[indextr])">
-                                  <vs-chip :color="leadStatusColor[item.status]">
+                                  <vs-chip :color="leadStatusColor[data[indextr].status]">
                                       {{item.status}}
                                   </vs-chip>
                             </fast-editable-value-select>
@@ -265,6 +267,10 @@
                         <vs-td class="column-no-padding" :data="item.paid">
                             <span v-if="item.paid">Yes</span>
                             <span v-else>No</span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.delivery_status">
+                            <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-package" />
                         </vs-td>
 
                         <!--
@@ -284,8 +290,52 @@
                         </vs-td>
                         -->
 
+                        <vs-td class="column-no-padding" :data="item.notes">
+                            <vx-tooltip :text="item.notes" position="top">
+                                <vs-avatar :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-message-square" />
+                            </vx-tooltip>
+                        </vs-td>
+
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
+                                <vs-dropdown class="mr-2 dropdown font-bold">
+                                    <!--
+                                    <vs-button class="btn-drop" type="filled" icon="expand_more">Actions</vs-button>
+                                    -->
+                                    <vs-chip color="primary">
+                                        Actions
+                                        <vs-icon icon-pack="feather" icon="icon-chevron-down"></vs-icon>
+                                    </vs-chip>
+
+                                    <vs-dropdown-menu class="dropdown-menu">
+                                        <vs-dropdown-item @click="changeView('order_builder', item)">
+                                            <vs-icon icon-pack="feather" icon="icon-edit"></vs-icon>
+                                            Edit
+                                        </vs-dropdown-item>
+                                        <vs-dropdown-item @click="showNotes(item)">
+                                            <vs-icon icon-pack="feather" icon="icon-message-square"></vs-icon>
+                                            Show Notes
+                                        </vs-dropdown-item>
+                                        <vs-dropdown-item @click="fastCreateDelivery(item)">
+                                            <vs-icon icon-pack="feather" icon="icon-package"></vs-icon>
+                                            Create Delivery
+                                        </vs-dropdown-item>
+                                        <vs-dropdown-item @click="showLeadInfo(item)">
+                                            <vs-icon icon-pack="feather" icon="icon-info"></vs-icon>
+                                            Show Info
+                                        </vs-dropdown-item>
+                                        <vs-dropdown-item @click="showPaymentLink(item)">
+                                            <vs-icon icon-pack="feather" icon="icon-dollar-sign"></vs-icon>
+                                            Show Payment Link
+                                        </vs-dropdown-item>
+                                        <vs-dropdown-item @click="whatsappMessage(item)">
+                                            <vs-icon icon-pack="feather" icon="icon-message-circle"></vs-icon>
+                                            Send Whatsapp Message
+                                        </vs-dropdown-item>
+                                    </vs-dropdown-menu>
+                                </vs-dropdown>
+
+                                <!--
                                 <vx-tooltip :text="item.notes" position="top">
                                     <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
                                 </vx-tooltip>
@@ -304,6 +354,7 @@
                                 <vx-tooltip text="Send Whatsapp message" position="top">
                                     <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
                                 </vx-tooltip>
+                                -->
                             </div>
                         </vs-td>
                         
@@ -327,8 +378,10 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
                     <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
 
                 </template>
@@ -1707,6 +1760,14 @@ export default {
 
 .carrier-icon {
   width: 24px !important;
+}
+
+.dropdown {
+  font-family: "Montserrat", Helvetica, Arial, sans-serif;
+}
+
+.dropdown-menu {
+  min-width: 200px !important;
 }
 
 </style>
