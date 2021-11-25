@@ -127,7 +127,7 @@ class Warehouse {
         if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
           if (obj.info.delivery.hasOwnProperty('order_number') && obj.info.delivery.order_number !== null) {
             obj.order_number = obj.info.delivery.order_number
-            if (obj.info.delivery.completed_at != '') {
+            if (obj.info.delivery.completed_at !== null && obj.info.delivery.completed_at !== '') {
               obj.delivery_status = 'sent'
             }
           }
