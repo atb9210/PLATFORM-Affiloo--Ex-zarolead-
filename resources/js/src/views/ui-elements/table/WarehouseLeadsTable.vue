@@ -268,7 +268,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.delivery_status">
-                            <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-package" />
+                            <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" icon-pack="feather" icon="icon-package" />
                         </vs-td>
 
                         <!--
