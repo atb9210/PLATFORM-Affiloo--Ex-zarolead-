@@ -21,6 +21,8 @@ class TestController extends Controller
 {
     public function test()
     {
+        return view('checkout');
+
         $apiKey = env('STRIPE_API_SECRET');
         $sessionId = 's_test_a1apgXW2I61KXYjfpkorRMpn3mtuuazwuMYQisy45Wmg6kTFXRdFMIh7XX';
         $stripe = new \Stripe\StripeClient($apiKey);
@@ -85,6 +87,13 @@ class TestController extends Controller
     {
         dd($request->all());
     }
+    
+    // DEBUG TODO: to delete
+    public function testCheckout()
+    {
+        return view('checkout');
+    }
+
 
     public function post(Request $request)
     {

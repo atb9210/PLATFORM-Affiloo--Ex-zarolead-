@@ -28,6 +28,8 @@ Route::get('/test2', 'TestController@test2')->name('test2');
 Route::get('/test_view', function () { return view('test'); });
 Route::post('/test', 'TestController@post')->name('test');
 Route::get('/psw-maker', 'TestController@hash')->name('psw-maker');
+// DEBUG TODO: to delete
+Route::get('/test_checkout', 'TestController@testCheckout')->name('test.checkout');
 
 /*
 Route::get('/mobile-form', function () {
