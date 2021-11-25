@@ -135,7 +135,7 @@
                     <vs-th sort-key="phone">Phone</vs-th>
                     <!--<vs-th sort-key="sku">SKU</vs-th>-->
                     <vs-th sort-key="product_name">Product</vs-th>
-                    <!--<vs-th sort-key="delivery.gateway">Payment</vs-th>-->
+                    <vs-th sort-key="delivery.gateway">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Qty</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
@@ -205,11 +205,9 @@
                             </vs-chip>
                         </vs-td>
 
-                        <!--
                         <vs-td class="column-no-padding" :data="item.delivery.gateway">
                             {{item.delivery.gateway}}
                         </vs-td>
-                        -->
 
                         <vs-td class="column-no-padding" :data="item.price">
                             <fast-editable-value
@@ -370,7 +368,7 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.price.toFixed(2)}}</vs-td>
                     <vs-td class="column-no-padding">{{totalStats.quantity}}</vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.total.toFixed(2)}}</vs-td>
@@ -687,6 +685,7 @@
 
         <!-- Payment link popup -->
         <vs-popup title="Payment link" :active.sync="showPopup['payment_link']">
+            <!--
             <div class="vx-row mb-3">
                 <div class="vx-col md:w-1/2 w-full">
                     Thank you page
@@ -704,6 +703,7 @@
                     <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-x-circle" icon-no-border v-model="paymentCancelUrl" />
                 </div>
             </div>
+            -->
 
             <div class="vx-row mb-3">
                 <div class="vx-col w-full">
@@ -881,6 +881,7 @@ export default {
 
       paymentSuccessUrl: '',
       paymentCancelUrl: '',
+      paymentLink: '',
     }
   },
   computed: {
@@ -904,6 +905,8 @@ export default {
     objects() {
       return this.leads
     },
+    // TODO: old code
+    /*
     paymentLink() {
       if (this.lead === null) {
         return ''
@@ -915,6 +918,7 @@ export default {
 
       return url
     },
+    */
   },
   methods: {
     // Frontend functions
@@ -1713,6 +1717,10 @@ export default {
     },
     showPaymentLink(lead) {
       this.lead = lead
+      let url = 'https://' + window.location.hostname + '/leads/' + this.lead.id + '/checkout'
+      url += '?success_url=' + this.paymentSuccessUrl
+      url += '&cancel_url=' + this.paymentCancelUrl
+      this.paymentLink = url
       this.showPopup['payment_link'] = true
     },
     onCodeCopied() {
