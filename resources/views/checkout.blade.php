@@ -198,7 +198,7 @@
 
             <div class="mb-3">
                 <label for="phone" class="form-label">Numero di telefono</label>
-                <input id="phone" class="form-control" type="text" placeholder="Numero di telefono" required minlength="8" value="+39 331 87 65 441" />
+                <input id="phone" class="form-control" type="text" placeholder="Numero di telefono" required minlength="8" value="+(39)" />
                 <div class="invalid-feedback">Numero di telefono non valido</div>
             </div>
 

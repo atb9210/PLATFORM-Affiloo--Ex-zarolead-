@@ -137,13 +137,39 @@ class ZaroLead
                 if (order !== null && order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
                     order = null;
                 } else if (order.hasOwnProperty('data')) {
-                    order = order.data;
+                    order = order['data'];
                 }
             } catch (error) {
                 order = null;
             }
         }
         return order;
+    }
+
+    createLead(params: object): object|null
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.createLead()', params);
+
+        var lead: object = null;
+        const response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
+
+        // DEBUG TODO:
+        console.log('response', response);
+
+        if (response !== null && response !== '') {
+            try {
+                lead = jsonDecode(response);
+                if (lead !== null && lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                    lead = null;
+                } else if (lead.hasOwnProperty('data')) {
+                    lead = lead['data'];
+                }
+            } catch (error) {
+                lead = null;
+            }
+        }
+        return lead;
     }
 }
 
@@ -258,6 +284,7 @@ function validate(params: object, rules: object): object|null
 var form: HTMLFormElement = null;
 let $http = new Http();
 let zarolead = new ZaroLead();
+var lead: object|null = null;
 
 declare var google: any;
 declare var autocomplete: any;
@@ -273,13 +300,13 @@ interface GmapLocation {
 }
 
 var currentLocation: GmapLocation = {
-    street_number: '',
-    route: '',
-    area3: '',
-    area2: '',
-    area1: '',
-    country: '',
-    postcode: '',
+    street_number: '', // numero civico
+    route: '',    // Nome via
+    area3: '',    // comune
+    area2: '',    // provincia
+    area1: '',    // regione
+    country: '',  // paese (IT)
+    postcode: '', // CAP
 }
 
 declare var Stripe: any;
@@ -382,7 +409,8 @@ function checkPhone(phone: string): boolean
     }
 
     for (var i: number = 0; i < phone.length; i++) {
-        if (!(phone[i] >= '0' && phone[i] <= '9') && phone[i] !== '+') {
+        if (!(phone[i] >= '0' && phone[i] <= '9') &&
+            phone[i] !== '+' && phone[i] !== '(' && phone[i] !== ')') {
             return false;
         }
     }
@@ -455,7 +483,7 @@ async function submit(form: HTMLFormElement)
     loadingStart();
 
     fullName = getInputValue('fullName');
-    phone = getInputValue('phone');
+    phone = forcePhoneFormat(getInputValue('phone'));
     phone = phone.split(' ').join('');
 
     console.log('fullName', fullName);
@@ -584,7 +612,7 @@ async function validateStep1()
     let isValid = true;
 
     fullName = getInputValue('fullName');
-    phone = getInputValue('phone');
+    phone = forcePhoneFormat(getInputValue('phone'));
     phone = phone.split(' ').join('');
 
     console.log('fullName', fullName);
@@ -608,21 +636,42 @@ async function validateStep1()
         isValid = false;
     }
 
-    let networkData = {
+    if (isValid) {
+        let firstName = '';
+        let lastName = '';
+
+        var tmp: Array<string> = fullName.split(' ');
+        if (tmp.length > 0) {
+            firstName = tmp[0];
+        }
+        for (let i = 1; i < tmp.length; i++) {
+            lastName += tmp[i]
+            if (i + 1 < tmp.length) {
+                lastName += ' '
+            }
+        }
+
         // TODO:
-    };
+        let sku = 'sku123';
+        let productName = 'my product';
+        let price = 19.99;
+        let total = 19.99;
+        let quantity = 1;
 
-    const order = zarolead.createOrder({
-        name: fullName,
-        phone: phone,
-        quantity: '1',
-        form_id: formId,
-        network_data: jsonEncode(networkData),
-        landing_id: 1,
-    });
+        lead = zarolead.createLead({
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone,
+            sku: sku,
+            product_name: productName,
+            price: price,
+            total: total,
+            quantity: quantity,
+        });
 
-    // DEBUG TODO: to delete
-    console.log('order', order);
+        // DEBUG TODO: to delete
+        console.log('lead', lead);
+    }
 
     // DEBUG TODO: to delete
     console.log('validateStep1', isValid);
@@ -835,6 +884,24 @@ async function nextStep()
     }
 }
 
+function forcePhoneFormat(val: string): string
+{
+    let phonePrefix = '+(39)';
+    let pos = val.indexOf(phonePrefix);
+    if (pos < 0) {
+        val = phonePrefix + val;
+    }
+
+    let newVal = phonePrefix;
+    for (let i = phonePrefix.length; i < val.length; i++) {
+        if ((val[i] >= '0' && val[i] <= '9') || val[i] === ' ') {
+            newVal += val[i];
+        }
+    }
+
+    return newVal;
+}
+
 async function onLoad()
 {
     loadingStart();
@@ -847,14 +914,23 @@ async function onLoad()
     if (form === null) {
         return;
     }
-
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
         event.stopPropagation();
         form.classList.add('was-validated');
         await nextStep();
-        //await submit(form);
     }, false);
+
+    // Force phone format
+    let phoneInput = document.getElementById('phone');
+    if (phoneInput !== null) {
+        phoneInput.addEventListener('keyup', function (event) {
+            let inputTarget = (<HTMLInputElement>(event.target));
+            var value: string = inputTarget.value;
+            value = forcePhoneFormat(value);
+            inputTarget.value = value;
+        });
+    }
 
     // Google maps (address field) initialization
     var addressInput: HTMLInputElement = <HTMLInputElement>document.getElementById('address');
@@ -909,6 +985,7 @@ async function onLoad()
     } else {
         // TODO: Abort??
     }
+    // TODO:
     const response: string|null = $http.get('/test');
     let obj = null;
     if (response !== null && response !== '') {
@@ -922,20 +999,5 @@ async function onLoad()
     // Start with first step
     await nextStep();
 
-    // DEBUG TODO: to delete
-    /*
-    let params = {
-        name: 'John Doe',
-        quantity: '1',
-    }
-    let rules = {
-        name: 'required|string|min:4',
-        quantity: 'required|number|min:1',
-    }
-    console.log('params', params);
-    console.log('rules ',  rules);
-    console.log('validt', validate(params, rules));
-    */
-
-   loadingEnd();
+    loadingEnd();
 }

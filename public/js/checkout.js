@@ -145,12 +145,38 @@ var ZaroLead = /** @class */ (function () {
                 if (order !== null && order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
                     order = null;
                 }
+                else if (order.hasOwnProperty('data')) {
+                    order = order['data'];
+                }
             }
             catch (error) {
                 order = null;
             }
         }
         return order;
+    };
+    ZaroLead.prototype.createLead = function (params) {
+        // DEBUG TODO:
+        console.log('ZaroLead.createLead()', params);
+        var lead = null;
+        var response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
+        // DEBUG TODO:
+        console.log('response', response);
+        if (response !== null && response !== '') {
+            try {
+                lead = jsonDecode(response);
+                if (lead !== null && lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                    lead = null;
+                }
+                else if (lead.hasOwnProperty('data')) {
+                    lead = lead['data'];
+                }
+            }
+            catch (error) {
+                lead = null;
+            }
+        }
+        return lead;
     };
     return ZaroLead;
 }());
@@ -258,6 +284,7 @@ function validate(params, rules) {
 var form = null;
 var $http = new Http();
 var zarolead = new ZaroLead();
+var lead = null;
 var currentLocation = {
     street_number: '',
     route: '',
@@ -342,7 +369,8 @@ function checkPhone(phone) {
         return false;
     }
     for (var i = 0; i < phone.length; i++) {
-        if (!(phone[i] >= '0' && phone[i] <= '9') && phone[i] !== '+') {
+        if (!(phone[i] >= '0' && phone[i] <= '9') &&
+            phone[i] !== '+' && phone[i] !== '(' && phone[i] !== ')') {
             return false;
         }
     }
@@ -409,7 +437,7 @@ function submit(form) {
                 case 0:
                     loadingStart();
                     fullName = getInputValue('fullName');
-                    phone = getInputValue('phone');
+                    phone = forcePhoneFormat(getInputValue('phone'));
                     phone = phone.split(' ').join('');
                     console.log('fullName', fullName);
                     console.log('phone', phone);
@@ -536,11 +564,11 @@ function fillInAddress() {
 }
 function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, networkData, order;
+        var isValid, firstName, lastName, tmp, i, sku, productName, price, total, quantity;
         return __generator(this, function (_a) {
             isValid = true;
             fullName = getInputValue('fullName');
-            phone = getInputValue('phone');
+            phone = forcePhoneFormat(getInputValue('phone'));
             phone = phone.split(' ').join('');
             console.log('fullName', fullName);
             console.log('phone', phone);
@@ -562,19 +590,37 @@ function validateStep1() {
                 setError(form, 'phone', 'Numero di telefono non valido');
                 isValid = false;
             }
-            networkData = {
-            // TODO:
-            };
-            order = zarolead.createOrder({
-                name: fullName,
-                phone: phone,
-                quantity: '1',
-                form_id: formId,
-                network_data: jsonEncode(networkData),
-                landing_id: 1
-            });
-            // DEBUG TODO: to delete
-            console.log('order', order);
+            if (isValid) {
+                firstName = '';
+                lastName = '';
+                tmp = fullName.split(' ');
+                if (tmp.length > 0) {
+                    firstName = tmp[0];
+                }
+                for (i = 1; i < tmp.length; i++) {
+                    lastName += tmp[i];
+                    if (i + 1 < tmp.length) {
+                        lastName += ' ';
+                    }
+                }
+                sku = 'sku123';
+                productName = 'my product';
+                price = 19.99;
+                total = 19.99;
+                quantity = 1;
+                lead = zarolead.createLead({
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone: phone,
+                    sku: sku,
+                    product_name: productName,
+                    price: price,
+                    total: total,
+                    quantity: quantity
+                });
+                // DEBUG TODO: to delete
+                console.log('lead', lead);
+            }
             // DEBUG TODO: to delete
             console.log('validateStep1', isValid);
             return [2 /*return*/, isValid];
@@ -780,9 +826,23 @@ function nextStep() {
         });
     });
 }
+function forcePhoneFormat(val) {
+    var phonePrefix = '+(39)';
+    var pos = val.indexOf(phonePrefix);
+    if (pos < 0) {
+        val = phonePrefix + val;
+    }
+    var newVal = phonePrefix;
+    for (var i = phonePrefix.length; i < val.length; i++) {
+        if ((val[i] >= '0' && val[i] <= '9') || val[i] === ' ') {
+            newVal += val[i];
+        }
+    }
+    return newVal;
+}
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var addressInput, elements, pluginListStr, response, obj;
+        var phoneInput, addressInput, elements, pluginListStr, response, obj;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -810,6 +870,15 @@ function onLoad() {
                             });
                         });
                     }, false);
+                    phoneInput = document.getElementById('phone');
+                    if (phoneInput !== null) {
+                        phoneInput.addEventListener('keyup', function (event) {
+                            var inputTarget = (event.target);
+                            var value = inputTarget.value;
+                            value = forcePhoneFormat(value);
+                            inputTarget.value = value;
+                        });
+                    }
                     addressInput = document.getElementById('address');
                     addressInput.addEventListener('change', function (event) {
                         resetCurrentLocation();
@@ -876,20 +945,6 @@ function onLoad() {
                 case 1:
                     // Start with first step
                     _a.sent();
-                    // DEBUG TODO: to delete
-                    /*
-                    let params = {
-                        name: 'John Doe',
-                        quantity: '1',
-                    }
-                    let rules = {
-                        name: 'required|string|min:4',
-                        quantity: 'required|number|min:1',
-                    }
-                    console.log('params', params);
-                    console.log('rules ',  rules);
-                    console.log('validt', validate(params, rules));
-                    */
                     loadingEnd();
                     return [2 /*return*/];
             }
