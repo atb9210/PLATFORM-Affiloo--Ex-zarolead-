@@ -158,6 +158,8 @@ class OrderController extends Controller
                     'errors' => $validator->messages(),
                 ], 422);
             }
+        } else {
+            $params['cross_sell'] = [];
         }
 
         $form = Form::findOrFail($params['form_id']);

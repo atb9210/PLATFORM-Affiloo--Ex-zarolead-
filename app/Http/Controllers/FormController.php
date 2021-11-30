@@ -42,7 +42,15 @@ class FormController extends Controller {
             }
         }
 
+        // TODO: Old code
+        /*
         return view('form_get')->with([
+            'form_id' => $form->id,
+            'plugins' => $plugins,
+        ]);
+        */
+
+        return view('checkout')->with([
             'form_id' => $form->id,
             'plugins' => $plugins,
         ]);
