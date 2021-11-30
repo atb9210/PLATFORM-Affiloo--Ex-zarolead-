@@ -280,7 +280,11 @@ class Elogy
         if ($response !== null && isset($response['success'])) {
             if (isset($response['data']['failedOrders']) &&
                 count($response['data']['failedOrders']) == 0) {
-                return $response['data']['successOrders'][0];
+                if (isset($response['data']['successOrders'][0]) {
+                    return $response['data']['successOrders'][0];
+                } else {
+                    Log::channel('elogy')->info('Invalid success order - RESPONSE: ' . json_encode($response));
+                }
             } else {
                 Log::channel('elogy')->info('Error while pushing the order - RESPONSE: ' . json_encode($response));
                 return null;
