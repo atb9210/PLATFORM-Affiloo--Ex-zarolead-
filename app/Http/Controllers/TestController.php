@@ -76,6 +76,8 @@ class TestController extends Controller
 
     public function test()
     {
+        dd("TEST");
+        exit();
         $leads = [
             ['Giovanna Cerbone        ','3387707954','EL17112021042748'],
             ['Alberto Esposito','3247789690','EL17112021042737'],
