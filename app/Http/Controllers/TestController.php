@@ -321,6 +321,7 @@ class TestController extends Controller
         $eOrders = $elogy->getOrders();
         $wLeads = \App\third\WarehouseLead::all();
         $created = [];
+        $alreadyExists = [];
         $justAdded = [];
         foreach ($leads as $lead) {
             $phone = $lead[1];
@@ -341,18 +342,9 @@ class TestController extends Controller
                 $total = $this->getCurrencyValue($info['total']);
             }
 
-            $firstName = '';
-            $lastName = '';
-            if (isset($info['first_name'])) {
-                $firstName = $info['first_name'];
-            }
-            if (isset($info['last_name'])) {
-                $lastName = $info['last_name'];
-            }
-            $infoPhone = $phone;
-            if (isset($info['phone'])) {
-                $infoPhone = $info['phone'];
-            }
+            $firstName = $lead->first_name;
+            $lastName = $lead->last_name;
+            $infoPhone = $lead->phone;
 
             $sku = '';
             if (isset($info['sku'])) {
@@ -392,10 +384,14 @@ class TestController extends Controller
                 ];
                 try {
                     $elogyOrder = $elogy->createOrder($deliveryParams);
-                    $orderNumber = strval($elogyOrder['order_number']);
-                    $info['delivery']['order_number'] = $orderNumber;
-                    $created[] = $lead[0];
-                } catch ($e) {
+                    if ($elogyOrder !== null) {
+                        $orderNumber = strval($elogyOrder['order_number']);
+                        $info['delivery']['order_number'] = $orderNumber;
+                        $created[] = $lead[0];
+                    } else {
+                        $alreadyExists[] = $lead[0];
+                    }
+                } catch (Exception $e) {
                     // Nothing
                 }
             } else {
@@ -408,6 +404,7 @@ class TestController extends Controller
         dd([
             'justAdded' => $justAdded,
             'created' => $created,
+            'alreadyExists' => $alreadyExists,
         ]);
         exit();
 
