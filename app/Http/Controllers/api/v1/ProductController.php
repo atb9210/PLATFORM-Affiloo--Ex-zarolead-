@@ -237,4 +237,42 @@ class ProductController extends Controller
             'message' => 'Product has been archived'
         ]);
     }
+
+    /**
+     * Get product's public informations.
+     *
+     * @urlParam id int required Product's id
+     *
+     * @response {
+     *  "data": product,
+     * }
+     */
+    public function info($id)
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->archived) {
+            return response([
+                "message" => "That product is archived"
+            ], 403);
+        }
+
+        $info = $product->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        $sku = null;
+        $quantity = $product->quantity;
+        if (isset($info['sku'])) {
+            $sku = $info['sku'];
+        }
+
+        return response([
+            'id' => strval($product->id),
+            'name' => $product->name,
+            'quantity' => $quantity,
+            'sku' => $sku,
+        ]);
+    }
 }

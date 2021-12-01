@@ -79,24 +79,36 @@ var Http = /** @class */ (function () {
         var result = null;
         try {
             var req = new XMLHttpRequest();
+            if (method.toLowerCase() === 'get') {
+                url += '?' + this.buildQuery(params);
+            }
             req.open(method, url, false);
             // Headers
             var fmtHeaders = {};
             for (var k in headers) {
-                var fmtKey = k.toLowerCase();
+                // TODO: Lower case is different header???
+                //let fmtKey = k.toLowerCase();
+                var fmtKey = k;
                 fmtHeaders[fmtKey] = headers[k];
                 req.setRequestHeader(fmtKey, fmtHeaders[fmtKey]);
             }
             headers = fmtHeaders;
             // Params query
-            var contentType = '';
-            if (headers.hasOwnProperty('content-type')) {
-                contentType = headers['content-type'];
+            var query = null;
+            if (method.toLowerCase() !== 'get') {
+                var contentType = '';
+                if (headers.hasOwnProperty('Content-Type')) {
+                    contentType = headers['Content-Type'];
+                }
+                if (contentType === 'application/json') {
+                    query = jsonEncode(params);
+                }
+                else {
+                    query = this.buildQuery(params);
+                }
             }
-            var query = this.buildQuery(params);
-            if (contentType === 'application/json') {
-                query = jsonEncode(params);
-            }
+            // DEBUG TODO: to delete
+            console.log('query', query);
             req.send(query);
             if (req.readyState === 4) {
                 result = req.response;
@@ -137,8 +149,6 @@ var ZaroLead = /** @class */ (function () {
         console.log('ZaroLead.createOrder()', params);
         var order = null;
         var response = this.$http.post(this.API_URL + 'orders', params, this.httpHeaders);
-        // DEBUG TODO:
-        console.log('response', response);
         if (response !== null && response !== '') {
             try {
                 order = jsonDecode(response);
@@ -160,8 +170,6 @@ var ZaroLead = /** @class */ (function () {
         console.log('ZaroLead.createLead()', params);
         var lead = null;
         var response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
-        // DEBUG TODO:
-        console.log('response', response);
         if (response !== null && response !== '') {
             try {
                 lead = jsonDecode(response);
@@ -177,6 +185,54 @@ var ZaroLead = /** @class */ (function () {
             }
         }
         return lead;
+    };
+    ZaroLead.prototype.getProduct = function (productId) {
+        // DEBUG TODO:
+        console.log('ZaroLead.getProduct()', productId);
+        var product = null;
+        var response = this.$http.get(this.API_URL + 'products/' + productId + '/info', {}, this.httpHeaders);
+        if (response !== null && response !== '') {
+            try {
+                product = jsonDecode(response);
+                if (product !== null && product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
+                    product = null;
+                }
+                else if (product.hasOwnProperty('data')) {
+                    product = product['data'];
+                }
+            }
+            catch (error) {
+                product = null;
+            }
+        }
+        return product;
+    };
+    ZaroLead.prototype.getPaymentIntent = function (productId, quantity) {
+        // DEBUG TODO:
+        console.log('ZaroLead.getPaymentIntent()', productId);
+        var paymentIntent = null;
+        var params = {
+            quantity: quantity
+        };
+        var httpHeaders = {
+            'Accept': 'application/json'
+        };
+        var response = this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', params, httpHeaders);
+        if (response !== null && response !== '') {
+            try {
+                paymentIntent = jsonDecode(response);
+                if (paymentIntent !== null && paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
+                    paymentIntent = null;
+                }
+                else if (paymentIntent.hasOwnProperty('data')) {
+                    paymentIntent = paymentIntent['data'];
+                }
+            }
+            catch (error) {
+                paymentIntent = null;
+            }
+        }
+        return paymentIntent;
     };
     return ZaroLead;
 }());
@@ -298,10 +354,14 @@ var stripe;
 var card;
 var stripeClientSecret = '';
 var thisScript = null;
-var formId = '';
+var productId = '';
+var product = null;
 var pluginsList = [];
 var fullName = '';
 var phone = '';
+var quantity = '';
+var price = 0.0;
+var total = 0.0;
 function loadingStart() {
     var loading = document.getElementById('loading');
     if (loading !== null) {
@@ -339,6 +399,17 @@ function getInputValue(inputId) {
         result = e.value;
     }
     return result;
+}
+function getCurrencyValue(s) {
+    var value = 0.0;
+    s = s.replace(',', '.');
+    if (!isNaN(Number(s))) {
+        value = parseFloat(s);
+    }
+    return value;
+}
+function formatCurrency(n) {
+    return n.toFixed(2).replace('.', ',');
 }
 function checkFullName(fullName) {
     fullName = fullName.trim();
@@ -470,6 +541,8 @@ function submit(form) {
                         loadingEnd();
                         return [2 /*return*/];
                     }
+                    // DEBUG TODO: to delete
+                    console.log('currentLocation', currentLocation);
                     return [4 /*yield*/, stripe.confirmCardPayment(stripeClientSecret, {
                             payment_method: {
                                 card: card,
@@ -562,9 +635,21 @@ function fillInAddress() {
     setError(form, 'city', '');
     setError(form, 'province', '');
 }
+function initStep4() {
+    return __awaiter(this, void 0, void 0, function () {
+        var paymentIntent;
+        return __generator(this, function (_a) {
+            paymentIntent = zarolead.getPaymentIntent(productId, quantity);
+            if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
+                stripeClientSecret = paymentIntent['client_secret'];
+            }
+            return [2 /*return*/];
+        });
+    });
+}
 function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, firstName, lastName, tmp, i, sku, productName, price, total, quantity;
+        var isValid, firstName, lastName, tmp, i;
         return __generator(this, function (_a) {
             isValid = true;
             fullName = getInputValue('fullName');
@@ -590,6 +675,7 @@ function validateStep1() {
                 setError(form, 'phone', 'Numero di telefono non valido');
                 isValid = false;
             }
+            isValid = isValid && (product !== null);
             if (isValid) {
                 firstName = '';
                 lastName = '';
@@ -603,19 +689,14 @@ function validateStep1() {
                         lastName += ' ';
                     }
                 }
-                sku = 'sku123';
-                productName = 'my product';
-                price = 19.99;
-                total = 19.99;
-                quantity = 1;
                 lead = zarolead.createLead({
                     first_name: firstName,
                     last_name: lastName,
                     phone: phone,
-                    sku: sku,
-                    product_name: productName,
-                    price: price,
-                    total: total,
+                    sku: product['sku'],
+                    product_name: product['name'],
+                    price: price.toFixed(2),
+                    total: total.toFixed(2),
                     quantity: quantity
                 });
                 // DEBUG TODO: to delete
@@ -629,9 +710,21 @@ function validateStep1() {
 }
 function validateStep2() {
     return __awaiter(this, void 0, void 0, function () {
+        var isValid;
         return __generator(this, function (_a) {
-            // TODO
-            return [2 /*return*/, false];
+            isValid = true;
+            if (quantity === '') {
+                isValid = false;
+            }
+            if (price === 0.0) {
+                isValid = false;
+            }
+            if (total === 0.0) {
+                isValid = false;
+            }
+            // DEBUG TODO: to delete
+            console.log("validateStep2", isValid);
+            return [2 /*return*/, isValid];
         });
     });
 }
@@ -740,27 +833,37 @@ var steps = [
     {
         id: 'step1',
         enabled: true,
-        validate: validateStep1
+        init: null,
+        validate: validateStep1,
+        buttonText: 'Continua'
     },
     {
         id: 'step2',
-        enabled: false,
-        validate: validateStep2
+        enabled: true,
+        init: null,
+        validate: validateStep2,
+        buttonText: 'Continua'
     },
     {
         id: 'step3',
         enabled: true,
-        validate: validateStep3
+        init: null,
+        validate: validateStep3,
+        buttonText: 'Continua'
     },
     {
         id: 'step4',
         enabled: true,
-        validate: validateStep4
+        init: initStep4,
+        validate: validateStep4,
+        buttonText: 'Continua'
     },
     {
         id: 'step5',
         enabled: true,
-        validate: null
+        init: null,
+        validate: null,
+        buttonText: 'Continua'
     },
 ];
 var currentStep = -1;
@@ -784,9 +887,39 @@ function hideSteps() {
 function showStep(stepId) {
     showElement(stepId);
 }
+function getStepIndexById(stepId) {
+    for (var i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return i;
+        }
+    }
+    return -1;
+}
+function getStepById(stepId) {
+    for (var i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return steps[i];
+        }
+    }
+    return null;
+}
+function initSteps() {
+    // TODO: searching for step4 (payment step) is not general
+    var stepIndex = getStepIndexById('step4');
+    if (stepIndex >= 0) {
+        if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+            product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null &&
+            Object.entries(product['quantity']['options']).length > 1) {
+            steps[stepIndex].enabled = true;
+        }
+        else {
+            steps[stepIndex].enabled = false;
+        }
+    }
+}
 function nextStep() {
     return __awaiter(this, void 0, void 0, function () {
-        var goToNextStep, res, i;
+        var goToNextStep, res, i, step, btn;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -805,23 +938,41 @@ function nextStep() {
                     loadingEnd();
                     _a.label = 3;
                 case 3:
-                    if (goToNextStep) {
-                        hideSteps();
-                        clearErrors(form);
-                        currentStep += 1;
-                        for (i = currentStep; i < steps.length; i++) {
-                            if (!steps[i].enabled) {
-                                continue;
-                            }
-                            showStep(steps[i].id);
-                            if (steps[i].validate === null) {
-                                hideElement('nextStepButton');
-                            }
-                            currentStep = i;
-                            break;
-                        }
+                    if (!goToNextStep) return [3 /*break*/, 8];
+                    hideSteps();
+                    clearErrors(form);
+                    currentStep += 1;
+                    i = currentStep;
+                    _a.label = 4;
+                case 4:
+                    if (!(i < steps.length)) return [3 /*break*/, 8];
+                    step = steps[i];
+                    if (!step.enabled) {
+                        return [3 /*break*/, 7];
                     }
-                    return [2 /*return*/];
+                    showStep(step.id);
+                    if (!(step.init !== null)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, step.init()];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
+                    btn = document.getElementById('nextStepButton');
+                    if (btn !== null) {
+                        btn.innerText = step.buttonText;
+                    }
+                    if (step.validate === null) {
+                        hideElement('nextStepButton');
+                    }
+                    else {
+                        showElement('nextStepButton');
+                    }
+                    currentStep = i;
+                    return [3 /*break*/, 8];
+                case 7:
+                    i++;
+                    return [3 /*break*/, 4];
+                case 8: return [2 /*return*/];
             }
         });
     });
@@ -840,9 +991,94 @@ function forcePhoneFormat(val) {
     }
     return newVal;
 }
+var upSellOptions = [];
+function addUpSellOption(qty, discount, price, bestSeller) {
+    var eOptions = document.getElementById('upSellOptions');
+    if (eOptions === null) {
+        return;
+    }
+    var eOption = document.createElement('div');
+    eOption.classList.add('upSellOption');
+    if (bestSeller) {
+        var eBestSeller = document.createElement('div');
+        eBestSeller.classList.add('upSellOptionHeader');
+        eBestSeller.classList.add('w-100');
+        var eBestSellerContent = document.createElement('span');
+        eBestSellerContent.classList.add('upSellOptionHeaderBestSeller');
+        eBestSellerContent.innerText = 'il più venduto';
+        eBestSeller.appendChild(eBestSellerContent);
+        eOption.appendChild(eBestSeller);
+    }
+    var eContent = document.createElement('div');
+    eContent.classList.add('upSellOptionContent');
+    eContent.classList.add('row');
+    eContent.classList.add('w-100');
+    var eContentQty = document.createElement('div');
+    eContentQty.classList.add('col-5');
+    eContentQty.classList.add('ps-5');
+    eContentQty.classList.add('pt-2');
+    if (parseInt(qty) === 1) {
+        eContentQty.innerText = qty + ' pezzo';
+    }
+    else {
+        eContentQty.innerText = qty + ' pezzi';
+    }
+    var eContentSale = document.createElement('div');
+    eContentSale.classList.add('col-4');
+    eContentSale.classList.add('pt-2');
+    eContentSale.classList.add('pe-0');
+    eContentSale.classList.add('ps-0');
+    var eContentSaleSpan = document.createElement('span');
+    eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
+    eContentSaleSpan.innerText = 'RISPARMIA ' + String(discount) + '%';
+    eContentSale.appendChild(eContentSaleSpan);
+    var eContentPrice = document.createElement('div');
+    eContentPrice.classList.add('col-3');
+    var eContentPrice1 = document.createElement('div');
+    eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
+    eContentPrice1.classList.add('pt-2');
+    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice.appendChild(eContentPrice1);
+    var eContentPrice2 = document.createElement('div');
+    eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
+    eContentPrice2.classList.add('pb-1');
+    eContentPrice2.innerText = 'al pezzo';
+    eContentPrice.appendChild(eContentPrice2);
+    eContent.appendChild(eContentQty);
+    eContent.appendChild(eContentSale);
+    eContent.appendChild(eContentPrice);
+    eOption.appendChild(eContent);
+    eOptions.appendChild(eOption);
+    var result = {
+        quantity: qty,
+        element: eOption
+    };
+    upSellOptions.push(result);
+    return result;
+}
+function changeQuantity(qty) {
+    if (product['quantity']['options'].hasOwnProperty(qty)) {
+        price = getCurrencyValue(product['quantity']['options'][qty]['price']);
+        quantity = qty;
+    }
+    total = price;
+    price = price;
+    total = total;
+    var e = document.getElementById('upSellTotalAmount');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
+    }
+    for (var i = 0; i < upSellOptions.length; i++) {
+        var opt = upSellOptions[i];
+        opt.element.classList.remove('upSellOptionActive');
+        if (opt.quantity === qty) {
+            opt.element.classList.add('upSellOptionActive');
+        }
+    }
+}
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, elements, pluginListStr, response, obj;
+        var phoneInput, addressInput, elements, pluginListStr, counter, q, qty, discount, price_1, _loop_1, i, response, obj;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -917,16 +1153,46 @@ function onLoad() {
                     });
                     // TODO:
                     // Get form's info
-                    thisScript = document.getElementById('form-js');
+                    thisScript = document.getElementById('checkout-js');
                     if (thisScript !== null) {
-                        formId = getAttribute(thisScript, 'data-form-id');
+                        productId = getAttribute(thisScript, 'data-product-id');
                         pluginListStr = getAttribute(thisScript, 'data-plugins');
                         if (pluginListStr !== null && pluginListStr !== '') {
                             pluginsList = jsonDecode(pluginListStr);
                         }
-                        // DEBUG TODO: to delete
-                        console.log('formId', formId);
-                        console.log('pluginsList', pluginsList);
+                        product = zarolead.getProduct(productId);
+                        counter = 0;
+                        for (q in product['quantity']['options']) {
+                            console.log('q', q);
+                            qty = q;
+                            discount = 0;
+                            if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
+                                discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                            }
+                            else {
+                                discount = product['quantity']['options'][q]['discount'];
+                            }
+                            price_1 = 0;
+                            if (typeof (product['quantity']['options'][q]['price']) === 'string') {
+                                price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
+                            }
+                            else {
+                                price_1 = product['quantity']['options'][q]['price'];
+                            }
+                            addUpSellOption(qty, discount, price_1, (counter == 1));
+                            counter++;
+                        }
+                        changeQuantity(product['quantity']['default']);
+                        _loop_1 = function (i) {
+                            var opt = upSellOptions[i];
+                            var q_1 = opt.quantity;
+                            opt.element.addEventListener('click', function (event) {
+                                changeQuantity(q_1);
+                            });
+                        };
+                        for (i = 0; i < upSellOptions.length; i++) {
+                            _loop_1(i);
+                        }
                     }
                     else {
                         // TODO: Abort??
@@ -940,10 +1206,10 @@ function onLoad() {
                         obj.data.hasOwnProperty('client_secret')) {
                         stripeClientSecret = obj.data.client_secret;
                     }
-                    // Start with first step
+                    // Initialize steps and start with first step
+                    initSteps();
                     return [4 /*yield*/, nextStep()];
                 case 1:
-                    // Start with first step
                     _a.sent();
                     loadingEnd();
                     return [2 /*return*/];

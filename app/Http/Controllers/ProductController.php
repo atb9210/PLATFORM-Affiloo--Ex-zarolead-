@@ -179,4 +179,31 @@ class ProductController extends Controller {
             return $obj;
         }
     }
+
+    public function getCheckoutForm($id) {
+        $product = \App\Product::findOrFail($id);
+
+        // TODO
+        /*
+        $form_plugins = [];
+        if (isset($form->plugins)) {
+            $form_plugins = $form->plugins;
+        }
+        */
+
+        $plugins = [];
+        // TODO
+        /*
+        foreach($form_plugins as $key => $value) {
+            if ($value['enabled']) {
+                $plugins[$key] = $value;
+            }
+        }
+        */
+
+        return view('checkout')->with([
+            'product_id' => $product->id,
+            'plugins' => $plugins,
+        ]);
+    }
 }

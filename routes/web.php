@@ -215,8 +215,9 @@ Route::post('/admin/invoices', 'InvoiceController@adminIndex')->name('admin/invo
 
 */
 Route::get('/forms/{id}/get', 'FormController@getForm')->name('forms.get');
-Route::get('/checkout/{id}/get', 'FormController@getCheckoutForm')->name('forms.checkout.get');
 Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.get');
+
+Route::get('/products/{id}/checkout', 'ProductController@getCheckoutForm')->name('products.checkout.get');
 
 /* Facebook routes */
 Route::get('/facebook/login', 'api\third\FacebookController@login')

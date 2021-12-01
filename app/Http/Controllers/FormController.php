@@ -48,27 +48,6 @@ class FormController extends Controller {
         ]);
     }
 
-    public function getCheckoutForm($id) {
-        $form = Form::findOrFail($id);
-
-        $form_plugins = [];
-        if (isset($form->plugins)) {
-            $form_plugins = $form->plugins;
-        }
-
-        $plugins = [];
-        foreach($form_plugins as $key => $value) {
-            if ($value['enabled']) {
-                $plugins[$key] = $value;
-            }
-        }
-
-        return view('checkout')->with([
-            'form_id' => $form->id,
-            'plugins' => $plugins,
-        ]);
-    }
-
     public function getStyle($id) {
         $formsStyle = FormsStyle::findOrFail($id);
         return $formsStyle->code;

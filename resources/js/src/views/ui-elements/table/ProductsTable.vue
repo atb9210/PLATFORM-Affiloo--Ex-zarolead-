@@ -47,6 +47,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.context_menu.close();copyCheckoutLink(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Copy Checkout Link</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
@@ -1049,6 +1055,21 @@ export default {
       } else if (this.mode == 'edit') {
         this.editProductImagePreview = URL.createObjectURL(this.fileToUpload)
       }
+    },
+    async copyToClipboard(toCopy, notificationMessage = 'Copied to the clipboard') {
+      await await window.navigator.clipboard.writeText(toCopy)
+      this.$vs.notify({
+        title: 'Success',
+        text: notificationMessage,
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
+    async copyCheckoutLink(productId) {
+      let url = new URL(window.location)
+      let toCopy = url.origin + '/products/' + productId + '/checkout'
+      await this.copyToClipboard(toCopy, 'Checkout link copied')
     },
   },
   created() {

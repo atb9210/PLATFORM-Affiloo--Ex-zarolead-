@@ -60,6 +60,8 @@ Route::apiResource('products', 'api\v1\ProductController')->except([
 ])->middleware('auth:api');
 Route::post('products/{id}', 'api\v1\ProductController@update')->middleware('auth:api')
     ->name('products.update');
+Route::get('products/{id}/info', 'api\v1\ProductController@info')
+    ->name('products.info');
 
 /* Tags routes */
 Route::apiResource('tags', 'api\v1\TagController')->except([

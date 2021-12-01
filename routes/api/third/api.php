@@ -205,3 +205,8 @@ Route::put('/warehouse/delivery', 'api\third\WarehouseController@updateDelivery'
     ->name('warehouse.delivery.update');
 Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
     ->name('warehouse.products.index');
+
+// TODO: Move this somewhere else???
+// Also change public/js/checkout.ts
+Route::get('/warehouse/products/{product_id}/payment-intent', 'api\third\WarehouseController@getPaymentIntent')
+    ->name('warehouse.products.payment-intent');

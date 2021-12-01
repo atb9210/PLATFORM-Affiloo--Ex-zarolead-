@@ -641,4 +641,51 @@ class WarehouseController extends Controller
 
         return redirect($redirectUrl);
     }
+
+    // TODO: Move this somewhere else??
+    private function getCurrencyValue(string $s): float
+    {
+        $s = str_replace(',', '.', $s);
+        return floatval($s);
+    }
+
+    /**
+     * Get payment intend.
+     *
+     * @urlParam product_id required int Product's id
+     *
+     * @bodyParam quantity required string Quantity selected
+     */
+    public function getPaymentIntent($product_id, Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'quantity'  => 'required|string',
+        ]);
+
+        $product = \App\Product::findOrFail($product_id);
+        $quantity = strval($params['quantity']);
+
+        $qty = $product->quantity;
+        if ($qty === null) {
+            $qty = [];
+        }
+
+        $amount = 0.0;
+        if (isset($qty['options'][$quantity]['price'])) {
+            $amount = $this->getCurrencyValue($qty['options'][$quantity]['price']);
+        }
+
+        $stripe = $this->getStripeClient();
+        $intent = $stripe->paymentIntents->create([
+            'amount' => intval($amount*100),
+            'currency' => 'eur',
+        ]);
+
+        return response([
+            'data' => [
+                'client_secret' => $intent->client_secret,
+            ],
+        ]);
+    }
 }

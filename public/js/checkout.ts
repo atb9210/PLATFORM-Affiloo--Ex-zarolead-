@@ -54,26 +54,39 @@ class Http
 
         try {
             var req: XMLHttpRequest = new XMLHttpRequest();
+
+            if (method.toLowerCase() === 'get') {
+                url += '?' + this.buildQuery(params);
+            }
             req.open(method, url, false);
 
             // Headers
             let fmtHeaders = {};
             for (var k in headers) {
-                let fmtKey = k.toLowerCase();
+                // TODO: Lower case is different header???
+                //let fmtKey = k.toLowerCase();
+                let fmtKey = k;
                 fmtHeaders[fmtKey] = <string>headers[k];
                 req.setRequestHeader(fmtKey, <string>fmtHeaders[fmtKey]);
             }
             headers = fmtHeaders;
 
             // Params query
-            let contentType = '';
-            if (headers.hasOwnProperty('content-type')) {
-                contentType = headers['content-type'];
+            var query: string|null = null;
+            if (method.toLowerCase() !== 'get') {
+                let contentType = '';
+                if (headers.hasOwnProperty('Content-Type')) {
+                    contentType = headers['Content-Type'];
+                }
+                if (contentType === 'application/json') {
+                    query = <string>jsonEncode(params);
+                } else {
+                    query = this.buildQuery(params);
+                }
             }
-            var query: string = this.buildQuery(params);
-            if (contentType === 'application/json') {
-                query = <string>jsonEncode(params);
-            }
+
+            // DEBUG TODO: to delete
+            console.log('query', query);
 
             req.send(query);
             if (req.readyState === 4) {
@@ -128,9 +141,6 @@ class ZaroLead
         var order: object = null;
         const response = this.$http.post(this.API_URL + 'orders', params, this.httpHeaders);
 
-        // DEBUG TODO:
-        console.log('response', response);
-
         if (response !== null && response !== '') {
             try {
                 order = jsonDecode(response);
@@ -154,9 +164,6 @@ class ZaroLead
         var lead: object = null;
         const response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
 
-        // DEBUG TODO:
-        console.log('response', response);
-
         if (response !== null && response !== '') {
             try {
                 lead = jsonDecode(response);
@@ -170,6 +177,58 @@ class ZaroLead
             }
         }
         return lead;
+    }
+
+    getProduct(productId: string): object|null
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.getProduct()', productId);
+
+        var product: object = null;
+        const response = this.$http.get(this.API_URL + 'products/' + productId + '/info', {}, this.httpHeaders);
+
+        if (response !== null && response !== '') {
+            try {
+                product = jsonDecode(response);
+                if (product !== null && product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
+                    product = null;
+                } else if (product.hasOwnProperty('data')) {
+                    product = product['data'];
+                }
+            } catch (error) {
+                product = null;
+            }
+        }
+        return product;
+    }
+
+    getPaymentIntent(productId: string, quantity: string): object|null
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.getPaymentIntent()', productId);
+
+        var paymentIntent: object = null;
+        let params = {
+            quantity: quantity,
+        };
+        let httpHeaders = {
+            'Accept': 'application/json',
+        };
+        const response = this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', params, httpHeaders);
+
+        if (response !== null && response !== '') {
+            try {
+                paymentIntent = jsonDecode(response);
+                if (paymentIntent !== null && paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
+                    paymentIntent = null;
+                } else if (paymentIntent.hasOwnProperty('data')) {
+                    paymentIntent = paymentIntent['data'];
+                }
+            } catch (error) {
+                paymentIntent = null;
+            }
+        }
+        return paymentIntent;
     }
 }
 
@@ -315,11 +374,16 @@ var card: any;
 var stripeClientSecret: string = '';
 
 var thisScript: HTMLElement = null;
-var formId: string = '';
+var productId: string = '';
+var product: object|null = null;
 var pluginsList: Array<object> = [];
 
 var fullName: string = '';
 var phone: string = '';
+
+let quantity = '';
+let price = 0.0;
+let total = 0.0;
 
 function loadingStart()
 {
@@ -367,6 +431,21 @@ function getInputValue(inputId: string): string
         result = <string>e.value;
     }
     return result;
+}
+
+function getCurrencyValue(s: string): number
+{
+    let value = 0.0;
+    s = s.replace(',', '.');
+    if (!isNaN(Number(s))) {
+        value = <number>parseFloat(s);
+    }
+    return value;
+}
+
+function formatCurrency(n: number): string
+{
+    return n.toFixed(2).replace('.', ',');
 }
 
 function checkFullName(fullName: string): boolean
@@ -519,6 +598,9 @@ async function submit(form: HTMLFormElement)
         return;
     }
 
+    // DEBUG TODO: to delete
+    console.log('currentLocation', currentLocation);
+
     const stripeResult = await stripe.confirmCardPayment(stripeClientSecret, {
         payment_method: {
             card: card,
@@ -607,6 +689,15 @@ function fillInAddress(): void
     setError(form, 'province', '');
 }
 
+async function initStep4()
+{
+    // TODO: HERE
+    let paymentIntent = zarolead.getPaymentIntent(productId, quantity);
+    if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
+        stripeClientSecret = paymentIntent['client_secret'];
+    }
+}
+
 async function validateStep1()
 {
     let isValid = true;
@@ -636,6 +727,8 @@ async function validateStep1()
         isValid = false;
     }
 
+    isValid = isValid && (product !== null);
+
     if (isValid) {
         let firstName = '';
         let lastName = '';
@@ -651,21 +744,14 @@ async function validateStep1()
             }
         }
 
-        // TODO:
-        let sku = 'sku123';
-        let productName = 'my product';
-        let price = 19.99;
-        let total = 19.99;
-        let quantity = 1;
-
         lead = zarolead.createLead({
             first_name: firstName,
             last_name: lastName,
             phone: phone,
-            sku: sku,
-            product_name: productName,
-            price: price,
-            total: total,
+            sku: product['sku'],
+            product_name: product['name'],
+            price: price.toFixed(2),
+            total: total.toFixed(2),
             quantity: quantity,
         });
 
@@ -681,8 +767,24 @@ async function validateStep1()
 
 async function validateStep2()
 {
-    // TODO
-    return false;
+    let isValid = true;
+
+    if (quantity === '') {
+        isValid = false;
+    }
+
+    if (price === 0.0) {
+        isValid = false;
+    }
+
+    if (total === 0.0) {
+        isValid = false;
+    }
+
+    // DEBUG TODO: to delete
+    console.log("validateStep2", isValid);
+
+    return isValid;
 }
 
 async function validateStep3()
@@ -791,34 +893,46 @@ async function validateStep4()
 interface Step {
     id: string,
     enabled: boolean,
+    init: () => any,
     validate: () => any,
+    buttonText: string,
 }
 
 var steps: Array<Step> = [
     {
         id: 'step1',
         enabled: true,
+        init: null,
         validate: validateStep1,
+        buttonText: 'Continua',
     },
     {
         id: 'step2',
-        enabled: false,
+        enabled: true,
+        init: null,
         validate: validateStep2,
+        buttonText: 'Continua',
     },
     {
         id: 'step3',
         enabled: true,
+        init: null,
         validate: validateStep3,
+        buttonText: 'Continua',
     },
     {
         id: 'step4',
         enabled: true,
+        init: initStep4,
         validate: validateStep4,
+        buttonText: 'Continua',
     },
     {
         id: 'step5',
         enabled: true,
+        init: null,
         validate: null,
+        buttonText: 'Continua',
     },
 ];
 var currentStep = -1;
@@ -851,6 +965,42 @@ function showStep(stepId: string): void
     showElement(stepId);
 }
 
+function getStepIndexById(stepId: string): number
+{
+    for (let i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function getStepById(stepId: string): Step|null
+{
+    for (let i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return steps[i];
+        }
+    }
+    return null;
+}
+
+function initSteps(): void
+{
+    // TODO: searching for step4 (payment step) is not general
+    let stepIndex = getStepIndexById('step4');
+
+    if (stepIndex >= 0) {
+        if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+            product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null &&
+            Object.entries(product['quantity']['options']).length > 1) {
+            steps[stepIndex].enabled = true;
+        } else {
+            steps[stepIndex].enabled = false;
+        }
+    }
+}
+
 async function nextStep()
 {
     let goToNextStep = false;
@@ -871,12 +1021,24 @@ async function nextStep()
         clearErrors(form);
         currentStep += 1;
         for (let i = currentStep; i < steps.length; i++) {
-            if (!steps[i].enabled) {
+            let step = steps[i];
+
+            if (!step.enabled) {
                 continue;
             }
-            showStep(steps[i].id);
-            if (steps[i].validate === null) {
+            showStep(step.id);
+            if (step.init !== null) {
+                await step.init();
+            }
+
+            let btn = document.getElementById('nextStepButton');
+            if (btn !== null) {
+                btn.innerText = step.buttonText;
+            }
+            if (step.validate === null) {
                 hideElement('nextStepButton');
+            } else {
+                showElement('nextStepButton');
             }
             currentStep = i;
             break;
@@ -900,6 +1062,117 @@ function forcePhoneFormat(val: string): string
     }
 
     return newVal;
+}
+
+interface UpSellOption {
+    quantity: string;
+    element: HTMLElement;
+}
+
+var upSellOptions: Array<UpSellOption> = [];
+
+function addUpSellOption(
+    qty: string,
+    discount: number,
+    price: number,
+    bestSeller: boolean): UpSellOption
+{
+    let eOptions = document.getElementById('upSellOptions');
+    if (eOptions === null) {
+        return;
+    }
+
+    let eOption = document.createElement('div');
+    eOption.classList.add('upSellOption');
+
+    if (bestSeller) {
+        let eBestSeller = document.createElement('div');
+        eBestSeller.classList.add('upSellOptionHeader');
+        eBestSeller.classList.add('w-100');
+        let eBestSellerContent = document.createElement('span');
+        eBestSellerContent.classList.add('upSellOptionHeaderBestSeller');
+        eBestSellerContent.innerText = 'il più venduto';
+        eBestSeller.appendChild(eBestSellerContent);
+        eOption.appendChild(eBestSeller);
+    }
+
+    let eContent = document.createElement('div');
+    eContent.classList.add('upSellOptionContent');
+    eContent.classList.add('row');
+    eContent.classList.add('w-100');
+
+    let eContentQty = document.createElement('div');
+    eContentQty.classList.add('col-5');
+    eContentQty.classList.add('ps-5');
+    eContentQty.classList.add('pt-2');
+    if (parseInt(qty) === 1) {
+        eContentQty.innerText = qty + ' pezzo';
+    } else {
+        eContentQty.innerText = qty + ' pezzi';
+    }
+
+    let eContentSale = document.createElement('div');
+    eContentSale.classList.add('col-4');
+    eContentSale.classList.add('pt-2');
+    eContentSale.classList.add('pe-0');
+    eContentSale.classList.add('ps-0');
+    let eContentSaleSpan = document.createElement('span');
+    eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
+    eContentSaleSpan.innerText = 'RISPARMIA ' + <string>String(discount) + '%';
+    eContentSale.appendChild(eContentSaleSpan);
+
+    let eContentPrice = document.createElement('div');
+    eContentPrice.classList.add('col-3');
+    let eContentPrice1 = document.createElement('div');
+    eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
+    eContentPrice1.classList.add('pt-2');
+    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice.appendChild(eContentPrice1);
+    let eContentPrice2 = document.createElement('div');
+    eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
+    eContentPrice2.classList.add('pb-1');
+    eContentPrice2.innerText = 'al pezzo';
+    eContentPrice.appendChild(eContentPrice2);
+
+    eContent.appendChild(eContentQty);
+    eContent.appendChild(eContentSale);
+    eContent.appendChild(eContentPrice);
+
+    eOption.appendChild(eContent);
+    eOptions.appendChild(eOption);
+
+    var result: UpSellOption = {
+        quantity: qty,
+        element: <HTMLElement>eOption,
+    }
+
+    upSellOptions.push(result);
+
+    return result;
+}
+
+function changeQuantity(qty: string): void
+{
+    if (product['quantity']['options'].hasOwnProperty(qty)) {
+        price = getCurrencyValue(product['quantity']['options'][qty]['price']);
+        quantity = qty;
+    }
+    total = price;
+    price = price;
+    total = total;
+
+    let e = document.getElementById('upSellTotalAmount');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
+    }
+
+    for (let i = 0; i < upSellOptions.length; i++) {
+        let opt = upSellOptions[i];
+        opt.element.classList.remove('upSellOptionActive');
+        if (opt.quantity === qty) {
+            opt.element.classList.add('upSellOptionActive');
+        }
+    }
 }
 
 async function onLoad()
@@ -971,17 +1244,47 @@ async function onLoad()
 
     // TODO:
     // Get form's info
-    thisScript = document.getElementById('form-js');
+    thisScript = document.getElementById('checkout-js');
     if (thisScript !== null) {
-        formId = getAttribute(thisScript, 'data-form-id');
+        productId = getAttribute(thisScript, 'data-product-id');
         var pluginListStr: string|null = getAttribute(thisScript, 'data-plugins');
         if (pluginListStr !== null && pluginListStr !== '') {
             pluginsList = < Array<object> > jsonDecode(pluginListStr);
         }
 
-        // DEBUG TODO: to delete
-        console.log('formId', formId);
-        console.log('pluginsList', pluginsList);
+        product = zarolead.getProduct(productId);
+
+        let counter = 0;
+        for (var q in product['quantity']['options']) {
+            console.log('q', q);
+
+            let qty = q;
+            let discount = 0;
+            if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
+                discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+            } else {
+                discount = product['quantity']['options'][q]['discount'];
+            }
+            let price = 0;
+            if (typeof(product['quantity']['options'][q]['price']) === 'string') {
+                price = getCurrencyValue(product['quantity']['options'][q]['price']);
+            } else {
+                price = product['quantity']['options'][q]['price'];
+            }
+            addUpSellOption(qty, discount, price, (counter == 1));
+            counter++;
+        }
+
+        changeQuantity(product['quantity']['default']);
+
+        for (let i = 0; i < upSellOptions.length; i++) {
+            let opt = upSellOptions[i];
+            let q = opt.quantity;
+            opt.element.addEventListener('click', function (event) {
+                changeQuantity(q);
+            });
+        }
+
     } else {
         // TODO: Abort??
     }
@@ -996,7 +1299,8 @@ async function onLoad()
         stripeClientSecret = obj.data.client_secret;
     }
 
-    // Start with first step
+    // Initialize steps and start with first step
+    initSteps();
     await nextStep();
 
     loadingEnd();

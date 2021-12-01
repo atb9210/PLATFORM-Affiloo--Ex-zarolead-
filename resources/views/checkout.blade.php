@@ -41,6 +41,10 @@
     display: none;
 }
 
+.hidden {
+    display: none;
+}
+
 .bg-green-500 {
     background-color: #23a455;
 }
@@ -157,6 +161,148 @@
 }
 </style>
 
+<style>
+#upSellOptions {
+    transition: opacity .2s ease;
+    opacity: 1;
+    padding: 5px;
+}
+
+.upSellOption {
+    background: rgb(255, 255, 255);
+    box-shadow: 0 1px 1px rgba(0,0,0,.1), 0 9px 0 -5px #eee, 0 9px 1px -4px rgba(0,0,0,.1), 0 18px 0 -10px #eee, 0 18px 1px -9px rgba(0,0,0,.1);
+    transition: box-shadow .2s cubic-bezier(.4,0,1,1),transform .2s cubic-bezier(.4,0,1,1);
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+    position: relative;
+    margin-bottom: 20px;
+    padding: 10px 0px;
+}
+
+.upSellOptionActive {
+    background: rgb(255, 219, 99);
+    border: 3px solid #444444;
+    border-left-width: 10px;
+}
+
+.upSellOptionBestSeller {
+    border: 1px solid #444444;
+}
+
+.upSellOptionHeader {
+    padding: 0;
+    border: none;
+}
+
+.upSellOptionHeaderBestSeller {
+    background-color: #444444;
+    color: white;
+    text-transform: uppercase;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 10px;
+    padding-left: 5px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+}
+
+.upSellOptionContent {
+    padding: 0;
+    border: none;
+}
+
+.upSellOptionBodyDiscount {
+    font-weight: 600;
+    padding: 5px 8px;
+    margin: 3px 0;
+    display: inline-flex;
+    line-height: 1;
+    font-size: 12px;
+    max-height: 24px;
+    border: 1px solid #484848;
+    flex-shrink: 0!important;
+    color: #484848;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50px;
+    text-transform: uppercase;
+}
+
+.upSellOptionBodyPriceAmount {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.upSellOptionBodyPriceLabel {
+    color: #5f5f5f;
+    font-size: 11px;
+}
+
+.upSellTotalReview {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/********************/
+
+#upSellTable {
+    border-collapse: initial;
+    border-spacing: 10px 0px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+#upSellTable > tbody {
+    color: #333;
+}
+
+#upSellTable .BEST-SELLER {
+    font-size: 11px;
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: center;
+    background-color: #f3ca66;
+    color: #232f3e;
+    padding: 2px 0 0!important;
+}
+
+#upSellTable td {
+    text-align: center !important;
+    padding: 5px 0px !important;
+}
+
+#upSellTable .product_price_top {
+    border: 1.5px solid #f3ca66;
+    width: 33%;
+    box-shadow: 1px 1px 2px 0 rgba(0,0,0,.16);
+    background-color: #fff6e1;
+    cursor: pointer;
+}
+
+#upSellTable .product_price_basic {
+    border: 1px solid #bfbfbf;
+    width: 33%;
+    cursor: pointer;
+}
+
+#upSellTable .total_price_qty_btns {
+    background-color: #ccc;
+    border: 0;
+    height: 1px;
+    width: 70%;
+}
+
+#upSellTable .total_qty_price {
+    font-size: 15px;
+    color: #a9a9a9;
+    display: block;
+    line-height: 19px;
+    margin-top: 5px;
+}
+</style>
+
 </head>
 
 <body onload="onLoad();">
@@ -192,7 +338,7 @@
         <div id="step1" class="step">
             <div class="mb-3">
                 <label for="fullName" class="form-label">Nome e Cognome</label>
-                <input id="fullName" class="form-control" type="text" placeholder="Nome e Cognome" required minlength="5" value="Alberto Brambilla" />
+                <input id="fullName" class="form-control" type="text" placeholder="Nome e Cognome" required minlength="5" value="" />
                 <div class="invalid-feedback">Nome e Cognome non validi</div>
             </div>
 
@@ -207,7 +353,6 @@
                 <div class="col-3">
                     <i class="fas fa-lock"></i>
                 </div>
-                <!-- style="padding: 0.5rem 0.5rem; font-size: 0.7rem; display: flex; align-items: center;" -->
                 <div class="col-9 p-2">
                     <p class="trust-badge-paragraph">
                         I tuoi dati sono al sicuro.<br>
@@ -218,11 +363,67 @@
 
         </div>
 
+
+        <!-- TODO: HERE UPSELL STEP -->
+        <div id="step2" class="step">
+            <div class="bg-black p-2 mb-3">
+                <p class="text-light text-center fs-6">
+                    <span class="text-decoration-underline text-danger"><strong>ATTENZIONE!</strong></span> Solo per pochi minuti puoi ricevere 
+                    <span class="text-decoration-underline"><strong>un'offerta</strong></span> 
+                    ad un Prezzo Speciale!
+                </p>
+            </div>
+            <div id="upSellOptions">
+                <!--
+                <div class="upSellOption upSellOptionActive">
+                    <div class="upSellOptionHeader w-100">
+                        <span class="upSellOptionHeaderBestSeller">
+                            il più venduto
+                        </span>
+                    </div>
+                    <div class="upSellOptionContent row w-100">
+                        <div class="col-5 ps-5 pt-2">
+                            1 pezzo
+                        </div>
+                        <div class="col-4 pt-2 pe-0 ps-0">
+                            <span class="upSellOptionBodyDiscount">
+                                RISPARMIA 10%
+                            </span>
+                        </div>
+                        <div class="col-3">
+                            <div class="upSellOptionBodyPriceAmount pt-2">€17,99</div>
+                            <div class="upSellOptionBodyPriceLabel pb-1">al pezzo</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="upSellOption">
+                    <div class="upSellOptionContent row w-100">
+                        <div class="col-5 ps-5 pt-2">
+                            2 pezzi
+                        </div>
+                        <div class="col-4 pt-2 pe-0 ps-0">
+                            <span class="upSellOptionBodyDiscount">
+                                RISPARMIA 10%
+                            </span>
+                        </div>
+                        <div class="col-3">
+                            <div class="upSellOptionBodyPriceAmount pt-2">€17,99</div>
+                            <div class="upSellOptionBodyPriceLabel pb-1">al pezzo</div>
+                        </div>
+                    </div>
+                </div>
+                -->
+            </div>
+            <div class="upSellTotalReview w-100 text-center mb-3">
+                TOTALE €<span id="upSellTotalAmount"></span>
+            </div>
+        </div>
+
         <div id="step3" class="step">
 
             <div class="mb-3">
                 <label for="address" class="form-label">Trova indirizzo</label>
-                <input id="address" class="form-control" type="text" placeholder="Trova indirizzo" value="Via Verdi 1, " />
+                <input id="address" class="form-control" type="text" placeholder="Trova indirizzo" value="" />
                 <div class="invalid-feedback">Indirizzo non valido</div>
             </div>
 
@@ -405,7 +606,7 @@
         </div>
 
         <div class="mb-3 mt-3">
-            <button id="nextStepButton" class="btn btn-primary w-100" type="submit">Submit</button>
+            <button id="nextStepButton" class="hidden btn btn-primary w-100" type="submit">Submit</button>
         </div>
 
     </form>
@@ -426,7 +627,7 @@ $beta = env('APP_BETA', 'false') ? 'true' : 'false';
 ?>
 
 <!-- Form script -->
-<script id="form-js" src="{{ asset('js/checkout.js') }}" data-form-id="{{ $form_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
+<script id="checkout-js" src="{{ asset('js/checkout.js') }}" data-product-id="{{ $product_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
 
 </body>
 
