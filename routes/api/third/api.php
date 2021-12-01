@@ -205,6 +205,8 @@ Route::put('/warehouse/delivery', 'api\third\WarehouseController@updateDelivery'
     ->name('warehouse.delivery.update');
 Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
     ->name('warehouse.products.index');
+Route::post('/warehouse/leads/{lead_id}/address', 'api\third\WarehouseController@updateLeadAddress')
+    ->name('warehouse.delivery.address.update');
 
 // TODO: Move this somewhere else???
 // Also change public/js/checkout.ts

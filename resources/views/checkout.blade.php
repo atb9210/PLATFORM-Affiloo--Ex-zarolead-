@@ -578,6 +578,18 @@
 
         <div id="step4" class="step">
 
+            <div class="mb-3 text-center">
+                <p class="text-center fs-5 mb-0">
+                    <span id="reviewProductName"></span>
+                </p>
+                <p class="text-center fs-6 mb-0">
+                    <span class="text-gray">(Quantità: <span id="reviewQuantity"></span>)</span>
+                </p>
+                <p class="text-center fs-5">
+                    TOTALE: € <span id="reviewTotalAmount"></span>
+                </p>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label">Pagamento con Carta di Credito</label>
                 <div id="cardElement"></div>

@@ -186,6 +186,26 @@ var ZaroLead = /** @class */ (function () {
         }
         return lead;
     };
+    ZaroLead.prototype.updateLeadAddress = function (leadId, params) {
+        // DEBUG TODO:
+        console.log('ZaroLead.updateLeadAddress()', leadId, params);
+        var response = this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, this.httpHeaders);
+        if (response !== null && response !== '') {
+            try {
+                var respJson = jsonDecode(response);
+                if (respJson !== null && respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            catch (error) {
+                return false;
+            }
+        }
+        return false;
+    };
     ZaroLead.prototype.getProduct = function (productId) {
         // DEBUG TODO:
         console.log('ZaroLead.getProduct()', productId);
@@ -207,11 +227,12 @@ var ZaroLead = /** @class */ (function () {
         }
         return product;
     };
-    ZaroLead.prototype.getPaymentIntent = function (productId, quantity) {
+    ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
         // DEBUG TODO:
         console.log('ZaroLead.getPaymentIntent()', productId);
         var paymentIntent = null;
         var params = {
+            lead_id: leadId,
             quantity: quantity
         };
         var httpHeaders = {
@@ -500,85 +521,6 @@ function setStripeError(stripeErrorId, error) {
         displayError.style.display = 'none';
     }
 }
-function submit(form) {
-    return __awaiter(this, void 0, void 0, function () {
-        var stripeResult;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    loadingStart();
-                    fullName = getInputValue('fullName');
-                    phone = forcePhoneFormat(getInputValue('phone'));
-                    phone = phone.split(' ').join('');
-                    console.log('fullName', fullName);
-                    console.log('phone', phone);
-                    console.log('currentLocation', currentLocation);
-                    // Check full name
-                    console.log('checkFullName', fullName, checkFullName(fullName));
-                    if (!checkFullName(fullName)) {
-                        setError(form, 'fullName', 'Nome e Cognome non validi');
-                    }
-                    else {
-                        setError(form, 'fullName', '');
-                    }
-                    // Check phone
-                    console.log('checkPhone', phone, checkPhone(phone));
-                    if (!checkPhone(phone)) {
-                        setError(form, 'phone', 'Numero di telefono non valido');
-                    }
-                    else {
-                        setError(form, 'phone', '');
-                    }
-                    // Check address
-                    console.log('checkLocation', currentLocation, checkLocation(currentLocation));
-                    if (!checkLocation(currentLocation)) {
-                        setError(form, 'address', 'Indirizzo non valido');
-                    }
-                    else {
-                        setError(form, 'address', '');
-                    }
-                    if (!form.checkValidity()) {
-                        loadingEnd();
-                        return [2 /*return*/];
-                    }
-                    // DEBUG TODO: to delete
-                    console.log('currentLocation', currentLocation);
-                    return [4 /*yield*/, stripe.confirmCardPayment(stripeClientSecret, {
-                            payment_method: {
-                                card: card,
-                                billing_details: {
-                                    name: fullName,
-                                    address: {
-                                        country: currentLocation.country,
-                                        city: currentLocation.area3,
-                                        line1: currentLocation.route + ' ' + currentLocation.street_number,
-                                        line2: '',
-                                        postal_code: currentLocation.postcode,
-                                        state: currentLocation.area2
-                                    },
-                                    phone: phone
-                                }
-                            }
-                        })];
-                case 1:
-                    stripeResult = _a.sent();
-                    console.log('stripeResult', stripeResult);
-                    if (stripeResult.error) {
-                        setStripeError('cardErrors', stripeResult.error.message);
-                    }
-                    else {
-                        setStripeError('cardErrors', '');
-                        if (stripeResult.paymentIntent.status === 'succeeded') {
-                            // TODO: HERE
-                            console.log('COOL DONE FUCK YEAH!');
-                        }
-                    }
-                    loadingEnd();
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
 function fillInAddress() {
     resetCurrentLocation();
     var place = autocomplete.getPlace();
@@ -639,7 +581,7 @@ function initStep4() {
     return __awaiter(this, void 0, void 0, function () {
         var paymentIntent;
         return __generator(this, function (_a) {
-            paymentIntent = zarolead.getPaymentIntent(productId, quantity);
+            paymentIntent = zarolead.getPaymentIntent(productId, lead['id'], quantity);
             if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
                 stripeClientSecret = paymentIntent['client_secret'];
             }
@@ -651,6 +593,7 @@ function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
         var isValid, firstName, lastName, tmp, i;
         return __generator(this, function (_a) {
+            loadingStart();
             isValid = true;
             fullName = getInputValue('fullName');
             phone = forcePhoneFormat(getInputValue('phone'));
@@ -704,6 +647,7 @@ function validateStep1() {
             }
             // DEBUG TODO: to delete
             console.log('validateStep1', isValid);
+            loadingEnd();
             return [2 /*return*/, isValid];
         });
     });
@@ -730,7 +674,7 @@ function validateStep2() {
 }
 function validateStep3() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, streetAddress, streetNumber, cap, city, province;
+        var isValid, streetAddress, streetNumber, cap, city, province, addressUpdated;
         return __generator(this, function (_a) {
             isValid = true;
             streetAddress = getInputValue('streetAddress');
@@ -772,6 +716,20 @@ function validateStep3() {
             }
             else {
                 setError(form, 'province', '');
+            }
+            if (isValid) {
+                if (lead !== null) {
+                    addressUpdated = zarolead.updateLeadAddress(lead['id'], {
+                        street_address: streetAddress + ', ' + streetNumber,
+                        city: city,
+                        province: province,
+                        state: currentLocation.area1,
+                        country: 'IT',
+                        postcode: cap
+                    });
+                    // DEBUG TODO: to delete
+                    console.log('addressUpdated', addressUpdated);
+                }
             }
             // DEBUG TODO: to delete
             console.log('validateStep1', isValid);
@@ -952,9 +910,11 @@ function nextStep() {
                     }
                     showStep(step.id);
                     if (!(step.init !== null)) return [3 /*break*/, 6];
+                    loadingStart();
                     return [4 /*yield*/, step.init()];
                 case 5:
                     _a.sent();
+                    loadingEnd();
                     _a.label = 6;
                 case 6:
                     btn = document.getElementById('nextStepButton');
@@ -1064,9 +1024,22 @@ function changeQuantity(qty) {
     total = price;
     price = price;
     total = total;
-    var e = document.getElementById('upSellTotalAmount');
+    var e = null;
+    e = document.getElementById('upSellTotalAmount');
     if (e !== null) {
         e.innerText = total.toFixed(2);
+    }
+    e = document.getElementById('reviewTotalAmount');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
+    }
+    e = document.getElementById('reviewProductName');
+    if (e !== null) {
+        e.innerText = product['name'];
+    }
+    e = document.getElementById('reviewQuantity');
+    if (e !== null) {
+        e.innerText = quantity;
     }
     for (var i = 0; i < upSellOptions.length; i++) {
         var opt = upSellOptions[i];

@@ -293,6 +293,55 @@ class WarehouseController extends Controller
     }
 
     /**
+     * Update a lead.
+     *
+     * @urlParam id int required Lead's id
+     *
+     * @bodyParam street_address string required Street address
+     * @bodyParam city string required City
+     * @bodyParam province string required Province
+     * @bodyParam state string required State
+     * @bodyParam country string required Country
+     * @bodyParam postcode string required Postal code
+     *
+     * @response {
+     *  "status": "success",
+     *  "message": "Lead's address updated',
+     * }
+     */
+    public function updateLeadAddress($id, Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'street_address' => 'required|string',
+            'city'           => 'required|string',
+            'province'       => 'required|string',
+            'state'          => 'required|string',
+            'country'        => 'required|string',
+            'postcode'       => 'required|string',
+        ]);
+
+        $lead = WarehouseLead::findOrFail($id);
+
+        // TODO: Check time difference now() - lead.created_at
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+        if (!isset($info['shipping']) || $info['shipping'] === null || empty($info['shipping'])) {
+            $info['shipping'] = $params;
+            $lead->info = $info;
+            $lead->save();
+        }
+
+        return response([
+            'status' => 'success',
+            'message' => 'Lead\'s address updated',
+        ]);
+    }
+
+    /**
      * Delete a lead.
      *
      * @urlParam id int required Lead's id
@@ -654,14 +703,18 @@ class WarehouseController extends Controller
      *
      * @urlParam product_id required int Product's id
      *
+     * @bodyParam lead_id required numeric Lead's id
      * @bodyParam quantity required string Quantity selected
      */
     public function getPaymentIntent($product_id, Request $request)
     {
         // Param validation
         $params = $request->validate([
+            'lead_id'  => 'required|numeric',
             'quantity'  => 'required|string',
         ]);
+
+        $lead = WarehouseLead::findOrFail($params['lead_id']);
 
         $product = \App\Product::findOrFail($product_id);
         $quantity = strval($params['quantity']);
@@ -681,6 +734,16 @@ class WarehouseController extends Controller
             'amount' => intval($amount*100),
             'currency' => 'eur',
         ]);
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+        $info['price'] = $amount;
+        $info['total'] = $amount;
+        $info['quantity'] = $quantity;
+        $lead->info = $info;
+        $lead->save();
 
         return response([
             'data' => [

@@ -179,6 +179,28 @@ class ZaroLead
         return lead;
     }
 
+    updateLeadAddress(leadId: string, params: object): boolean
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.updateLeadAddress()', leadId, params);
+
+        const response = this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, this.httpHeaders);
+
+        if (response !== null && response !== '') {
+            try {
+                let respJson = jsonDecode(response);
+                if (respJson !== null && respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     getProduct(productId: string): object|null
     {
         // DEBUG TODO:
@@ -202,13 +224,14 @@ class ZaroLead
         return product;
     }
 
-    getPaymentIntent(productId: string, quantity: string): object|null
+    getPaymentIntent(productId: string, leadId: string, quantity: string): object|null
     {
         // DEBUG TODO:
         console.log('ZaroLead.getPaymentIntent()', productId);
 
         var paymentIntent: object = null;
         let params = {
+            lead_id: leadId,
             quantity: quantity,
         };
         let httpHeaders = {
@@ -557,82 +580,6 @@ function setStripeError(stripeErrorId: string, error: string) {
     }
 }
 
-async function submit(form: HTMLFormElement)
-{
-    loadingStart();
-
-    fullName = getInputValue('fullName');
-    phone = forcePhoneFormat(getInputValue('phone'));
-    phone = phone.split(' ').join('');
-
-    console.log('fullName', fullName);
-    console.log('phone', phone);
-    console.log('currentLocation', currentLocation);
-
-    // Check full name
-    console.log('checkFullName', fullName, checkFullName(fullName));
-    if (!checkFullName(fullName)) {
-        setError(form, 'fullName', 'Nome e Cognome non validi');
-    } else {
-        setError(form, 'fullName', '');
-    }
-
-    // Check phone
-    console.log('checkPhone', phone, checkPhone(phone));
-    if (!checkPhone(phone)) {
-        setError(form, 'phone', 'Numero di telefono non valido');
-    } else {
-        setError(form, 'phone', '');
-    }
-
-    // Check address
-    console.log('checkLocation', currentLocation, checkLocation(currentLocation));
-    if (!checkLocation(currentLocation)) {
-        setError(form, 'address', 'Indirizzo non valido');
-    } else {
-        setError(form, 'address', '');
-    }
-
-    if (!form.checkValidity()) {
-        loadingEnd();
-        return;
-    }
-
-    // DEBUG TODO: to delete
-    console.log('currentLocation', currentLocation);
-
-    const stripeResult = await stripe.confirmCardPayment(stripeClientSecret, {
-        payment_method: {
-            card: card,
-            billing_details: {
-                name: fullName,
-                address: {
-                    country: currentLocation.country,
-                    city: currentLocation.area3,
-                    line1: currentLocation.route + ' ' + currentLocation.street_number,
-                    line2: '',
-                    postal_code: currentLocation.postcode,
-                    state: currentLocation.area2,
-                },
-                phone: phone,
-            },
-        },
-    });
-    console.log('stripeResult', stripeResult);
-
-    if (stripeResult.error) {
-        setStripeError('cardErrors', stripeResult.error.message);
-    } else {
-        setStripeError('cardErrors', '');
-        if (stripeResult.paymentIntent.status === 'succeeded') {
-            // TODO: HERE
-            console.log('COOL DONE FUCK YEAH!');
-        }
-    }
-
-    loadingEnd();
-}
-
 function fillInAddress(): void
 {
     resetCurrentLocation()
@@ -691,8 +638,7 @@ function fillInAddress(): void
 
 async function initStep4()
 {
-    // TODO: HERE
-    let paymentIntent = zarolead.getPaymentIntent(productId, quantity);
+    let paymentIntent = zarolead.getPaymentIntent(productId, lead['id'], quantity);
     if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
         stripeClientSecret = paymentIntent['client_secret'];
     }
@@ -700,6 +646,8 @@ async function initStep4()
 
 async function validateStep1()
 {
+    loadingStart();
+
     let isValid = true;
 
     fullName = getInputValue('fullName');
@@ -761,6 +709,8 @@ async function validateStep1()
 
     // DEBUG TODO: to delete
     console.log('validateStep1', isValid);
+
+    loadingEnd();
 
     return isValid;
 }
@@ -836,6 +786,22 @@ async function validateStep3()
         isValid = false;
     } else {
         setError(form, 'province', '');
+    }
+
+    if (isValid) {
+        if (lead !== null) {
+            let addressUpdated = zarolead.updateLeadAddress(lead['id'], {
+                street_address: streetAddress + ', ' + streetNumber,
+                city          : city,
+                province      : province,
+                state         : currentLocation.area1,
+                country       : 'IT',
+                postcode      : cap,
+            });
+
+            // DEBUG TODO: to delete
+            console.log('addressUpdated', addressUpdated);
+        }
     }
 
     // DEBUG TODO: to delete
@@ -1028,7 +994,9 @@ async function nextStep()
             }
             showStep(step.id);
             if (step.init !== null) {
+                loadingStart();
                 await step.init();
+                loadingEnd();
             }
 
             let btn = document.getElementById('nextStepButton');
@@ -1161,9 +1129,25 @@ function changeQuantity(qty: string): void
     price = price;
     total = total;
 
-    let e = document.getElementById('upSellTotalAmount');
+    var e: HTMLElement|null = null;
+
+    e = document.getElementById('upSellTotalAmount');
     if (e !== null) {
         e.innerText = total.toFixed(2);
+    }
+
+    e = document.getElementById('reviewTotalAmount');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
+    }
+
+    e = document.getElementById('reviewProductName');
+    if (e !== null) {
+        e.innerText = product['name'];
+    }
+    e = document.getElementById('reviewQuantity');
+    if (e !== null) {
+        e.innerText = quantity;
     }
 
     for (let i = 0; i < upSellOptions.length; i++) {
