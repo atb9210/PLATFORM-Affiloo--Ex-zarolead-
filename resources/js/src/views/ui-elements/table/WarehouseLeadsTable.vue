@@ -2,8 +2,15 @@
     <vx-card title="Leads" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
+            <vx-tooltip text="Filters" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Copy phone numbers" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Back" position="top">
+                <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -1741,6 +1748,18 @@ export default {
         icon: 'icon-alert-circle',
         color: 'success'
       })
+    },
+    async copyPhoneNumbers() {
+      if (this.selectedLeads.length <= 0) {
+        return
+      }
+
+      let toCopy = ''
+      for (let i = 0; i < this.selectedLeads.length; i++) {
+        toCopy += this.selectedLeads[i].phone + '\n'
+      }
+
+      await this.copyToClipboard(toCopy)
     },
   },
   async created() {
