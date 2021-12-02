@@ -133,7 +133,7 @@ class Warehouse {
           }
         }
 
-        if (!obj.info.hasOwnProperty('products') || obj.info.products !== null || obj.info.products.length === 0) {
+        if (!obj.info.hasOwnProperty('products') || obj.info.products === null || obj.info.products.length === 0) {
           obj.info.products = []
           let p = await this.getProductBySku(obj.sku, products)
           if (p !== null) {

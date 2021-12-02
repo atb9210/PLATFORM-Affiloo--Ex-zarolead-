@@ -20,6 +20,12 @@ function jsonDecode(s: string): object|Array<any>|null
     return result;
 }
 
+/*
+ * TODO: Use axios as http library because this library is not async this means
+ * that loading does not work properly.
+ * ALTERNATIVE: Make this library asynchronous
+ */
+
 class Http
 {
     buildQuery(obj: object|null): string
