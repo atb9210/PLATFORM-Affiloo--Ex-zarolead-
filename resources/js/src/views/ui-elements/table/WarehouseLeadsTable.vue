@@ -187,7 +187,7 @@
 
                         <vs-td class="column-no-padding">
                             <vs-chip v-if="item.hasOwnProperty('phone') && item.phone != ''">
-                                <span @dblclick="whatsappMessage(item)">
+                                <span @click="copyToClipboard(item.phone)" @dblclick="whatsappMessage(item)">
                                     {{item.phone}}
                                 </span>
                             </vs-chip>
@@ -1732,10 +1732,15 @@ export default {
         color: 'success'
       })
     },
-
-    // TODO: to delete
-    testFoo() {
-      console.log("AYOOOO")
+    async copyToClipboard(toCopy, notificationMessage = 'Copied to the clipboard') {
+      await await window.navigator.clipboard.writeText(toCopy)
+      this.$vs.notify({
+        title: 'Success',
+        text: notificationMessage,
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
     },
   },
   async created() {

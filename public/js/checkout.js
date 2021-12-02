@@ -34,6 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+function strval(o) {
+    return String(o);
+}
 function jsonEncode(o) {
     var result = null;
     try {
@@ -54,6 +57,25 @@ function jsonDecode(s) {
     }
     return result;
 }
+function hideElement(elementId) {
+    var e = document.getElementById(elementId);
+    if (e !== null) {
+        e.style.display = 'none';
+    }
+}
+function showElement(elementId) {
+    var e = document.getElementById(elementId);
+    if (e !== null) {
+        e.style.display = 'block';
+    }
+}
+/*
+ * TODO: Use axios as http library because this library is not async this means
+ * that loading does not work properly.
+ * ALTERNATIVE: Make this library asynchronous
+ */
+var axios;
+var $http;
 var Http = /** @class */ (function () {
     function Http() {
     }
@@ -138,122 +160,212 @@ var ZaroLead = /** @class */ (function () {
         var tmpUrl = new URL(window.location.href);
         this.API_URL = tmpUrl.origin + '/api/v1/';
         this.API_URL_3RD = tmpUrl.origin + '/api/3rd/';
+        /*
         this.$http = new Http();
         this.httpHeaders = {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         };
+        */
+        this.$http = axios;
     }
     ZaroLead.prototype.createOrder = function (params) {
-        // DEBUG TODO:
-        console.log('ZaroLead.createOrder()', params);
-        var order = null;
-        var response = this.$http.post(this.API_URL + 'orders', params, this.httpHeaders);
-        if (response !== null && response !== '') {
-            try {
-                order = jsonDecode(response);
-                if (order !== null && order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
-                    order = null;
+        return __awaiter(this, void 0, void 0, function () {
+            var order, response, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.createOrder()', params);
+                        order = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.post(this.API_URL + 'orders', params, { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            //order = jsonDecode(response);
+                            if (response.hasOwnProperty('data')) {
+                                order = response['data'];
+                            }
+                            if (order === null || order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
+                                order = null;
+                            }
+                            else if (order.hasOwnProperty('data')) {
+                                order = order['data'];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _a.sent();
+                        order = null;
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, order];
                 }
-                else if (order.hasOwnProperty('data')) {
-                    order = order['data'];
-                }
-            }
-            catch (error) {
-                order = null;
-            }
-        }
-        return order;
+            });
+        });
     };
     ZaroLead.prototype.createLead = function (params) {
-        // DEBUG TODO:
-        console.log('ZaroLead.createLead()', params);
-        var lead = null;
-        var response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
-        if (response !== null && response !== '') {
-            try {
-                lead = jsonDecode(response);
-                if (lead !== null && lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
-                    lead = null;
+        return __awaiter(this, void 0, void 0, function () {
+            var lead, response, error_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.createLead()', params);
+                        lead = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            //lead = jsonDecode(response);
+                            if (response.hasOwnProperty('data')) {
+                                lead = response['data'];
+                            }
+                            // DEBUG TODO: to delete
+                            console.log('response', response);
+                            console.log('response.hasOwnProperty(\'data\')', response.hasOwnProperty('data'));
+                            console.log('response.[\'data\']', response['data']);
+                            if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                                // DEBUG TODO: to delete
+                                console.log('has not data', lead['data']);
+                                lead = null;
+                            }
+                            else if (lead.hasOwnProperty('data')) {
+                                // DEBUG TODO: to delete
+                                console.log('has data', lead['data']);
+                                lead = lead['data'];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        lead = null;
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, lead];
                 }
-                else if (lead.hasOwnProperty('data')) {
-                    lead = lead['data'];
-                }
-            }
-            catch (error) {
-                lead = null;
-            }
-        }
-        return lead;
+            });
+        });
     };
     ZaroLead.prototype.updateLeadAddress = function (leadId, params) {
-        // DEBUG TODO:
-        console.log('ZaroLead.updateLeadAddress()', leadId, params);
-        var response = this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, this.httpHeaders);
-        if (response !== null && response !== '') {
-            try {
-                var respJson = jsonDecode(response);
-                if (respJson !== null && respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
-                    return true;
+        return __awaiter(this, void 0, void 0, function () {
+            var response, respJson, respJson_1, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.updateLeadAddress()', leadId, params);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            respJson = null;
+                            if (response.hasOwnProperty('data')) {
+                                respJson_1 = response['data'];
+                            }
+                            if (respJson === null || respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+                                return [2 /*return*/, true];
+                            }
+                            else {
+                                return [2 /*return*/, false];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_3 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 4: return [2 /*return*/, false];
                 }
-                else {
-                    return false;
-                }
-            }
-            catch (error) {
-                return false;
-            }
-        }
-        return false;
+            });
+        });
     };
     ZaroLead.prototype.getProduct = function (productId) {
-        // DEBUG TODO:
-        console.log('ZaroLead.getProduct()', productId);
-        var product = null;
-        var response = this.$http.get(this.API_URL + 'products/' + productId + '/info', {}, this.httpHeaders);
-        if (response !== null && response !== '') {
-            try {
-                product = jsonDecode(response);
-                if (product !== null && product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
-                    product = null;
+        return __awaiter(this, void 0, void 0, function () {
+            var product, response, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.getProduct()', productId);
+                        product = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.get(this.API_URL + 'products/' + productId + '/info', { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            //product = jsonDecode(response);
+                            if (response.hasOwnProperty('data')) {
+                                product = response['data'];
+                            }
+                            if (product === null || product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
+                                product = null;
+                            }
+                            else if (product.hasOwnProperty('data')) {
+                                product = product['data'];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_4 = _a.sent();
+                        product = null;
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, product];
                 }
-                else if (product.hasOwnProperty('data')) {
-                    product = product['data'];
-                }
-            }
-            catch (error) {
-                product = null;
-            }
-        }
-        return product;
+            });
+        });
     };
     ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
-        // DEBUG TODO:
-        console.log('ZaroLead.getPaymentIntent()', productId);
-        var paymentIntent = null;
-        var params = {
-            lead_id: leadId,
-            quantity: quantity
-        };
-        var httpHeaders = {
-            'Accept': 'application/json'
-        };
-        var response = this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', params, httpHeaders);
-        if (response !== null && response !== '') {
-            try {
-                paymentIntent = jsonDecode(response);
-                if (paymentIntent !== null && paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
-                    paymentIntent = null;
+        return __awaiter(this, void 0, void 0, function () {
+            var paymentIntent, params, httpHeaders, response, error_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.getPaymentIntent()', productId, leadId, quantity);
+                        paymentIntent = null;
+                        params = {
+                            lead_id: leadId,
+                            quantity: quantity
+                        };
+                        httpHeaders = {
+                            'Accept': 'application/json'
+                        };
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            //paymentIntent = jsonDecode(response);
+                            if (response.hasOwnProperty('data')) {
+                                paymentIntent = response['data'];
+                            }
+                            if (paymentIntent === null || paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
+                                paymentIntent = null;
+                            }
+                            else if (paymentIntent.hasOwnProperty('data')) {
+                                paymentIntent = paymentIntent['data'];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_5 = _a.sent();
+                        paymentIntent = null;
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, paymentIntent];
                 }
-                else if (paymentIntent.hasOwnProperty('data')) {
-                    paymentIntent = paymentIntent['data'];
-                }
-            }
-            catch (error) {
-                paymentIntent = null;
-            }
-        }
-        return paymentIntent;
+            });
+        });
     };
     return ZaroLead;
 }());
@@ -359,7 +471,6 @@ function validate(params, rules) {
     return result;
 }
 var form = null;
-var $http = new Http();
 var zarolead = new ZaroLead();
 var lead = null;
 var currentLocation = {
@@ -577,15 +688,72 @@ function fillInAddress() {
     setError(form, 'city', '');
     setError(form, 'province', '');
 }
+var paymentMethods = [
+    {
+        id: 'paymentMethodCod'
+    },
+    {
+        id: 'paymentMethodOnline'
+    },
+];
+var paymentMethod = '';
+function initPaymentMethods() {
+    return __awaiter(this, void 0, void 0, function () {
+        var e, i, paymentIntent;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    e = document.getElementsByClassName('paymentMethodInputRadio');
+                    if (e !== null) {
+                        for (i = 0; i < e.length; i++) {
+                            // TODO: HERE
+                            e[i].addEventListener('change', function (event) {
+                                return __awaiter(this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        if (event !== null) {
+                                            changePaymentMethod(event.target['value']);
+                                        }
+                                        return [2 /*return*/];
+                                    });
+                                });
+                            }, false);
+                        }
+                    }
+                    if (!(lead !== null && lead.hasOwnProperty('id'))) return [3 /*break*/, 2];
+                    return [4 /*yield*/, zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity)];
+                case 1:
+                    paymentIntent = _a.sent();
+                    if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
+                        stripeClientSecret = paymentIntent['client_secret'];
+                    }
+                    _a.label = 2;
+                case 2: return [2 /*return*/];
+            }
+        });
+    });
+}
+function changePaymentMethod(pmId) {
+    // DEBUG TODO: to delete
+    console.log('changePaymentMethod', pmId);
+    for (var i = 0; i < paymentMethods.length; i++) {
+        var pm = paymentMethods[i];
+        hideElement(pm.id);
+    }
+    showElement(pmId);
+    paymentMethod = pmId;
+}
 function initStep4() {
     return __awaiter(this, void 0, void 0, function () {
-        var paymentIntent;
         return __generator(this, function (_a) {
-            paymentIntent = zarolead.getPaymentIntent(productId, lead['id'], quantity);
-            if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
-                stripeClientSecret = paymentIntent['client_secret'];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, initPaymentMethods()];
+                case 1:
+                    _a.sent();
+                    if (paymentMethods.length > 0) {
+                        changePaymentMethod(paymentMethods[0].id);
+                    }
+                    return [2 /*return*/];
             }
-            return [2 /*return*/];
         });
     });
 }
@@ -593,62 +761,68 @@ function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
         var isValid, firstName, lastName, tmp, i;
         return __generator(this, function (_a) {
-            loadingStart();
-            isValid = true;
-            fullName = getInputValue('fullName');
-            phone = forcePhoneFormat(getInputValue('phone'));
-            phone = phone.split(' ').join('');
-            console.log('fullName', fullName);
-            console.log('phone', phone);
-            // Check full name
-            console.log('checkFullName', fullName, checkFullName(fullName));
-            if (checkFullName(fullName)) {
-                setError(form, 'fullName', '');
-            }
-            else {
-                setError(form, 'fullName', 'Nome e Cognome non validi');
-                isValid = false;
-            }
-            // Check phone
-            console.log('checkPhone', phone, checkPhone(phone));
-            if (checkPhone(phone)) {
-                setError(form, 'phone', '');
-            }
-            else {
-                setError(form, 'phone', 'Numero di telefono non valido');
-                isValid = false;
-            }
-            isValid = isValid && (product !== null);
-            if (isValid) {
-                firstName = '';
-                lastName = '';
-                tmp = fullName.split(' ');
-                if (tmp.length > 0) {
-                    firstName = tmp[0];
-                }
-                for (i = 1; i < tmp.length; i++) {
-                    lastName += tmp[i];
-                    if (i + 1 < tmp.length) {
-                        lastName += ' ';
+            switch (_a.label) {
+                case 0:
+                    loadingStart();
+                    isValid = true;
+                    fullName = getInputValue('fullName');
+                    phone = forcePhoneFormat(getInputValue('phone'));
+                    phone = phone.split(' ').join('');
+                    console.log('fullName', fullName);
+                    console.log('phone', phone);
+                    // Check full name
+                    console.log('checkFullName', fullName, checkFullName(fullName));
+                    if (checkFullName(fullName)) {
+                        setError(form, 'fullName', '');
                     }
-                }
-                lead = zarolead.createLead({
-                    first_name: firstName,
-                    last_name: lastName,
-                    phone: phone,
-                    sku: product['sku'],
-                    product_name: product['name'],
-                    price: price.toFixed(2),
-                    total: total.toFixed(2),
-                    quantity: quantity
-                });
-                // DEBUG TODO: to delete
-                console.log('lead', lead);
+                    else {
+                        setError(form, 'fullName', 'Nome e Cognome non validi');
+                        isValid = false;
+                    }
+                    // Check phone
+                    console.log('checkPhone', phone, checkPhone(phone));
+                    if (checkPhone(phone)) {
+                        setError(form, 'phone', '');
+                    }
+                    else {
+                        setError(form, 'phone', 'Numero di telefono non valido');
+                        isValid = false;
+                    }
+                    isValid = isValid && (product !== null);
+                    if (!isValid) return [3 /*break*/, 2];
+                    firstName = '';
+                    lastName = '';
+                    tmp = fullName.split(' ');
+                    if (tmp.length > 0) {
+                        firstName = tmp[0];
+                    }
+                    for (i = 1; i < tmp.length; i++) {
+                        lastName += tmp[i];
+                        if (i + 1 < tmp.length) {
+                            lastName += ' ';
+                        }
+                    }
+                    return [4 /*yield*/, zarolead.createLead({
+                            first_name: firstName,
+                            last_name: lastName,
+                            phone: phone,
+                            sku: product['sku'],
+                            product_name: product['name'],
+                            price: price.toFixed(2),
+                            total: total.toFixed(2),
+                            quantity: quantity
+                        })];
+                case 1:
+                    lead = _a.sent();
+                    // DEBUG TODO: to delete
+                    console.log('lead', lead);
+                    _a.label = 2;
+                case 2:
+                    // DEBUG TODO: to delete
+                    console.log('validateStep1', isValid);
+                    loadingEnd();
+                    return [2 /*return*/, isValid];
             }
-            // DEBUG TODO: to delete
-            console.log('validateStep1', isValid);
-            loadingEnd();
-            return [2 /*return*/, isValid];
         });
     });
 }
@@ -676,64 +850,69 @@ function validateStep3() {
     return __awaiter(this, void 0, void 0, function () {
         var isValid, streetAddress, streetNumber, cap, city, province, addressUpdated;
         return __generator(this, function (_a) {
-            isValid = true;
-            streetAddress = getInputValue('streetAddress');
-            streetNumber = getInputValue('streetNumber');
-            cap = getInputValue('cap');
-            city = getInputValue('city');
-            province = getInputValue('province');
-            if (streetAddress == '') {
-                setError(form, 'streetAddress', 'Indirizzo non valido');
-                isValid = false;
-            }
-            else {
-                setError(form, 'streetAddress', '');
-            }
-            if (streetNumber == '') {
-                setError(form, 'streetNumber', 'Indirizzo non valido');
-                isValid = false;
-            }
-            else {
-                setError(form, 'streetNumber', '');
-            }
-            if (cap == '') {
-                setError(form, 'cap', 'Indirizzo non valido');
-                isValid = false;
-            }
-            else {
-                setError(form, 'cap', '');
-            }
-            if (city == '') {
-                setError(form, 'city', 'Indirizzo non valido');
-                isValid = false;
-            }
-            else {
-                setError(form, 'city', '');
-            }
-            if (province == '') {
-                setError(form, 'province', 'Indirizzo non valido');
-                isValid = false;
-            }
-            else {
-                setError(form, 'province', '');
-            }
-            if (isValid) {
-                if (lead !== null) {
-                    addressUpdated = zarolead.updateLeadAddress(lead['id'], {
-                        street_address: streetAddress + ', ' + streetNumber,
-                        city: city,
-                        province: province,
-                        state: currentLocation.area1,
-                        country: 'IT',
-                        postcode: cap
-                    });
+            switch (_a.label) {
+                case 0:
+                    isValid = true;
+                    streetAddress = getInputValue('streetAddress');
+                    streetNumber = getInputValue('streetNumber');
+                    cap = getInputValue('cap');
+                    city = getInputValue('city');
+                    province = getInputValue('province');
+                    if (streetAddress == '') {
+                        setError(form, 'streetAddress', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'streetAddress', '');
+                    }
+                    if (streetNumber == '') {
+                        setError(form, 'streetNumber', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'streetNumber', '');
+                    }
+                    if (cap == '') {
+                        setError(form, 'cap', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'cap', '');
+                    }
+                    if (city == '') {
+                        setError(form, 'city', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'city', '');
+                    }
+                    if (province == '') {
+                        setError(form, 'province', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'province', '');
+                    }
+                    if (!isValid) return [3 /*break*/, 2];
+                    if (!(lead !== null)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['id'], {
+                            street_address: streetAddress + ', ' + streetNumber,
+                            city: city,
+                            province: province,
+                            state: currentLocation.area1,
+                            country: 'IT',
+                            postcode: cap
+                        })];
+                case 1:
+                    addressUpdated = _a.sent();
                     // DEBUG TODO: to delete
                     console.log('addressUpdated', addressUpdated);
-                }
+                    _a.label = 2;
+                case 2:
+                    // DEBUG TODO: to delete
+                    console.log('validateStep1', isValid);
+                    return [2 /*return*/, isValid];
             }
-            // DEBUG TODO: to delete
-            console.log('validateStep1', isValid);
-            return [2 /*return*/, isValid];
         });
     });
 }
@@ -746,6 +925,11 @@ function validateStep4() {
                     // DEBUT TODO: to delete
                     console.log("validateStep4()");
                     isValid = false;
+                    if (!(paymentMethod === 'paymentMethodCod')) return [3 /*break*/, 1];
+                    isValid = true;
+                    return [3 /*break*/, 3];
+                case 1:
+                    if (!(paymentMethod === 'paymentMethodOnline')) return [3 /*break*/, 3];
                     return [4 /*yield*/, stripe.confirmCardPayment(stripeClientSecret, {
                             payment_method: {
                                 card: card,
@@ -765,7 +949,7 @@ function validateStep4() {
                         })
                         // DEBUG TODO: to delete
                     ];
-                case 1:
+                case 2:
                     stripeResult = _a.sent();
                     // DEBUG TODO: to delete
                     console.log('stripeResult', stripeResult);
@@ -780,6 +964,8 @@ function validateStep4() {
                             isValid = true;
                         }
                     }
+                    _a.label = 3;
+                case 3:
                     // DEBUG TODO: to delete
                     console.log("validateStep4 => ", isValid);
                     return [2 /*return*/, isValid];
@@ -793,50 +979,38 @@ var steps = [
         enabled: true,
         init: null,
         validate: validateStep1,
-        buttonText: 'Continua'
+        buttonText: 'CONTINUA'
     },
     {
         id: 'step2',
         enabled: true,
         init: null,
         validate: validateStep2,
-        buttonText: 'Continua'
+        buttonText: 'CONTINUA'
     },
     {
         id: 'step3',
         enabled: true,
         init: null,
         validate: validateStep3,
-        buttonText: 'Continua'
+        buttonText: 'CONTINUA'
     },
     {
         id: 'step4',
         enabled: true,
         init: initStep4,
         validate: validateStep4,
-        buttonText: 'Continua'
+        buttonText: 'CONTINUA'
     },
     {
         id: 'step5',
         enabled: true,
         init: null,
         validate: null,
-        buttonText: 'Continua'
+        buttonText: 'CONTINUA'
     },
 ];
 var currentStep = -1;
-function hideElement(elementId) {
-    var e = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'none';
-    }
-}
-function showElement(elementId) {
-    var e = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'block';
-    }
-}
 function hideSteps() {
     for (var i = 0; i < steps.length; i++) {
         hideElement(steps[i].id);
@@ -1051,10 +1225,13 @@ function changeQuantity(qty) {
 }
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, elements, pluginListStr, counter, q, qty, discount, price_1, _loop_1, i, response, obj;
+        var phoneInput, addressInput, elements, pluginListStr, counter, q, qty, discount, price_1, _loop_1, i;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    // DEBUG TODO: to delete
+                    console.log('axios', axios);
+                    console.log('axios.get', axios.get);
                     loadingStart();
                     // Steps initialization
                     hideSteps();
@@ -1105,7 +1282,7 @@ function onLoad() {
                     elements = stripe.elements();
                     card = elements.create('card', {
                         classes: {
-                            base: 'form-control'
+                            base: 'form-control py-2'
                         },
                         hidePostalCode: true
                     });
@@ -1127,62 +1304,55 @@ function onLoad() {
                     // TODO:
                     // Get form's info
                     thisScript = document.getElementById('checkout-js');
-                    if (thisScript !== null) {
-                        productId = getAttribute(thisScript, 'data-product-id');
-                        pluginListStr = getAttribute(thisScript, 'data-plugins');
-                        if (pluginListStr !== null && pluginListStr !== '') {
-                            pluginsList = jsonDecode(pluginListStr);
+                    if (!(thisScript !== null)) return [3 /*break*/, 2];
+                    productId = getAttribute(thisScript, 'data-product-id');
+                    pluginListStr = getAttribute(thisScript, 'data-plugins');
+                    if (pluginListStr !== null && pluginListStr !== '') {
+                        pluginsList = jsonDecode(pluginListStr);
+                    }
+                    return [4 /*yield*/, zarolead.getProduct(productId)];
+                case 1:
+                    product = _a.sent();
+                    // DEBUG TODO: to delete
+                    console.log('product', product);
+                    counter = 0;
+                    for (q in product['quantity']['options']) {
+                        console.log('q', q);
+                        qty = q;
+                        discount = 0;
+                        if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
+                            discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
                         }
-                        product = zarolead.getProduct(productId);
-                        counter = 0;
-                        for (q in product['quantity']['options']) {
-                            console.log('q', q);
-                            qty = q;
-                            discount = 0;
-                            if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
-                                discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
-                            }
-                            else {
-                                discount = product['quantity']['options'][q]['discount'];
-                            }
-                            price_1 = 0;
-                            if (typeof (product['quantity']['options'][q]['price']) === 'string') {
-                                price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
-                            }
-                            else {
-                                price_1 = product['quantity']['options'][q]['price'];
-                            }
-                            addUpSellOption(qty, discount, price_1, (counter == 1));
-                            counter++;
+                        else {
+                            discount = product['quantity']['options'][q]['discount'];
                         }
-                        changeQuantity(product['quantity']['default']);
-                        _loop_1 = function (i) {
-                            var opt = upSellOptions[i];
-                            var q_1 = opt.quantity;
-                            opt.element.addEventListener('click', function (event) {
-                                changeQuantity(q_1);
-                            });
-                        };
-                        for (i = 0; i < upSellOptions.length; i++) {
-                            _loop_1(i);
+                        price_1 = 0;
+                        if (typeof (product['quantity']['options'][q]['price']) === 'string') {
+                            price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
                         }
+                        else {
+                            price_1 = product['quantity']['options'][q]['price'];
+                        }
+                        addUpSellOption(qty, discount, price_1, (counter == 1));
+                        counter++;
                     }
-                    else {
-                        // TODO: Abort??
+                    changeQuantity(product['quantity']['default']);
+                    _loop_1 = function (i) {
+                        var opt = upSellOptions[i];
+                        var q_1 = opt.quantity;
+                        opt.element.addEventListener('click', function (event) {
+                            changeQuantity(q_1);
+                        });
+                    };
+                    for (i = 0; i < upSellOptions.length; i++) {
+                        _loop_1(i);
                     }
-                    response = $http.get('/test');
-                    obj = null;
-                    if (response !== null && response !== '') {
-                        obj = jsonDecode(response);
-                    }
-                    if (obj !== null && obj.hasOwnProperty('data') && obj.data !== null &&
-                        obj.data.hasOwnProperty('client_secret')) {
-                        stripeClientSecret = obj.data.client_secret;
-                    }
+                    return [3 /*break*/, 2];
+                case 2:
                     // Initialize steps and start with first step
                     initSteps();
                     return [4 /*yield*/, nextStep()];
-                case 1:
+                case 3:
                     _a.sent();
                     loadingEnd();
                     return [2 /*return*/];

@@ -1,3 +1,8 @@
+function strval(o: any): string
+{
+    return <string>String(o);
+}
+
 function jsonEncode(o: object): string|null
 {
     var result: string|null = null;
@@ -20,11 +25,30 @@ function jsonDecode(s: string): object|Array<any>|null
     return result;
 }
 
+function hideElement(elementId: string): void
+{
+    var e: HTMLElement = document.getElementById(elementId);
+    if (e !== null) {
+        e.style.display = 'none';
+    }
+}
+
+function showElement(elementId: string): void
+{
+    var e: HTMLElement = document.getElementById(elementId);
+    if (e !== null) {
+        e.style.display = 'block';
+    }
+}
+
 /*
  * TODO: Use axios as http library because this library is not async this means
  * that loading does not work properly.
  * ALTERNATIVE: Make this library asynchronous
  */
+
+var axios: any;
+var $http: any;
 
 class Http
 {
@@ -123,7 +147,7 @@ class ZaroLead
     API_URL: string;
     API_URL_3RD: string;
 
-    $http: Http;
+    $http: any;
     httpHeaders: object;
 
     constructor()
@@ -132,108 +156,133 @@ class ZaroLead
         this.API_URL = tmpUrl.origin + '/api/v1/'
         this.API_URL_3RD = tmpUrl.origin + '/api/3rd/'
 
+        /*
         this.$http = new Http();
         this.httpHeaders = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         };
+        */
+
+        this.$http = axios;
     }
 
-    createOrder(params: object): object|null
+    async createOrder(params: object)
     {
         // DEBUG TODO:
         console.log('ZaroLead.createOrder()', params);
 
         var order: object = null;
-        const response = this.$http.post(this.API_URL + 'orders', params, this.httpHeaders);
-
-        if (response !== null && response !== '') {
-            try {
-                order = jsonDecode(response);
-                if (order !== null && order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
+        try {
+            const response = await this.$http.post(this.API_URL + 'orders', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //order = jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    order = response['data'];
+                }
+                if (order === null || order.hasOwnProperty('error') || order.hasOwnProperty('errors')) {
                     order = null;
                 } else if (order.hasOwnProperty('data')) {
                     order = order['data'];
                 }
-            } catch (error) {
-                order = null;
             }
+        } catch (error) {
+            order = null;
         }
         return order;
     }
 
-    createLead(params: object): object|null
+    async createLead(params: object)
     {
         // DEBUG TODO:
         console.log('ZaroLead.createLead()', params);
 
         var lead: object = null;
-        const response = this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, this.httpHeaders);
+        try {
+            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //lead = jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    lead = response['data'];
+                }
 
-        if (response !== null && response !== '') {
-            try {
-                lead = jsonDecode(response);
-                if (lead !== null && lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                // DEBUG TODO: to delete
+                console.log('response', response);
+                console.log('response.hasOwnProperty(\'data\')', response.hasOwnProperty('data'));
+                console.log('response.[\'data\']', response['data']);
+
+                if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                    // DEBUG TODO: to delete
+                    console.log('has not data', lead['data']);
+
                     lead = null;
                 } else if (lead.hasOwnProperty('data')) {
+                    // DEBUG TODO: to delete
+                    console.log('has data', lead['data']);
+
                     lead = lead['data'];
                 }
-            } catch (error) {
-                lead = null;
             }
+        } catch (error) {
+            lead = null;
         }
         return lead;
     }
 
-    updateLeadAddress(leadId: string, params: object): boolean
+    async updateLeadAddress(leadId: string, params: object)
     {
         // DEBUG TODO:
         console.log('ZaroLead.updateLeadAddress()', leadId, params);
 
-        const response = this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, this.httpHeaders);
-
-        if (response !== null && response !== '') {
-            try {
-                let respJson = jsonDecode(response);
-                if (respJson !== null && respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+        try {
+            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //let respJson = jsonDecode(response);
+                let respJson = null;
+                if (response.hasOwnProperty('data')) {
+                    let respJson = response['data'];
+                }
+                if (respJson === null || respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
                     return true;
                 } else {
                     return false;
                 }
-            } catch (error) {
-                return false;
             }
+        } catch (error) {
+            return false;
         }
         return false;
     }
 
-    getProduct(productId: string): object|null
+    async getProduct(productId: string)
     {
         // DEBUG TODO:
         console.log('ZaroLead.getProduct()', productId);
 
         var product: object = null;
-        const response = this.$http.get(this.API_URL + 'products/' + productId + '/info', {}, this.httpHeaders);
-
-        if (response !== null && response !== '') {
-            try {
-                product = jsonDecode(response);
-                if (product !== null && product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
+        try {
+            const response = await this.$http.get(this.API_URL + 'products/' + productId + '/info', { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //product = jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    product = response['data'];
+                }
+                if (product === null || product.hasOwnProperty('error') || product.hasOwnProperty('errors')) {
                     product = null;
                 } else if (product.hasOwnProperty('data')) {
                     product = product['data'];
                 }
-            } catch (error) {
-                product = null;
             }
+        } catch (error) {
+            product = null;
         }
         return product;
     }
 
-    getPaymentIntent(productId: string, leadId: string, quantity: string): object|null
+    async getPaymentIntent(productId: string, leadId: string, quantity: string)
     {
         // DEBUG TODO:
-        console.log('ZaroLead.getPaymentIntent()', productId);
+        console.log('ZaroLead.getPaymentIntent()', productId, leadId, quantity);
 
         var paymentIntent: object = null;
         let params = {
@@ -243,19 +292,22 @@ class ZaroLead
         let httpHeaders = {
             'Accept': 'application/json',
         };
-        const response = this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', params, httpHeaders);
 
-        if (response !== null && response !== '') {
-            try {
-                paymentIntent = jsonDecode(response);
-                if (paymentIntent !== null && paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
+        try {
+            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
+            if (response !== null && response !== '') {
+                //paymentIntent = jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    paymentIntent = response['data'];
+                }
+                if (paymentIntent === null || paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
                     paymentIntent = null;
                 } else if (paymentIntent.hasOwnProperty('data')) {
                     paymentIntent = paymentIntent['data'];
                 }
-            } catch (error) {
-                paymentIntent = null;
             }
+        } catch (error) {
+            paymentIntent = null;
         }
         return paymentIntent;
     }
@@ -370,14 +422,14 @@ function validate(params: object, rules: object): object|null
 }
 
 var form: HTMLFormElement = null;
-let $http = new Http();
 let zarolead = new ZaroLead();
 var lead: object|null = null;
 
 declare var google: any;
 declare var autocomplete: any;
 
-interface GmapLocation {
+interface GmapLocation
+{
     street_number: string,
     route: string,
     area3: string,   // comune
@@ -642,11 +694,61 @@ function fillInAddress(): void
     setError(form, 'province', '');
 }
 
+interface PaymentMethod
+{
+    id: string,
+}
+
+var paymentMethods: Array<PaymentMethod> = [
+    {
+        id: 'paymentMethodCod',
+    },
+    {
+        id: 'paymentMethodOnline',
+    },
+];
+var paymentMethod: string = '';
+
+async function initPaymentMethods()
+{
+    let e = document.getElementsByClassName('paymentMethodInputRadio');
+    if (e !== null) {
+        for (let i = 0; i < e.length; i++) {
+            // TODO: HERE
+            e[i].addEventListener('change', async function (event) {
+                if (event !== null) {
+                    changePaymentMethod(event.target['value']);
+                }
+            }, false);
+        }
+    }
+
+    if (lead !== null && lead.hasOwnProperty('id')) {
+        let paymentIntent = await zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity);
+        if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
+            stripeClientSecret = paymentIntent['client_secret'];
+        }
+    }
+}
+
+function changePaymentMethod(pmId: string): void
+{
+    // DEBUG TODO: to delete
+    console.log('changePaymentMethod', pmId);
+
+    for (let i = 0; i < paymentMethods.length; i++) {
+        let pm = paymentMethods[i];
+        hideElement(pm.id);
+    }
+    showElement(pmId);
+    paymentMethod = pmId;
+}
+
 async function initStep4()
 {
-    let paymentIntent = zarolead.getPaymentIntent(productId, lead['id'], quantity);
-    if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
-        stripeClientSecret = paymentIntent['client_secret'];
+    await initPaymentMethods();
+    if (paymentMethods.length > 0) {
+        changePaymentMethod(paymentMethods[0].id);
     }
 }
 
@@ -698,7 +800,7 @@ async function validateStep1()
             }
         }
 
-        lead = zarolead.createLead({
+        lead = await zarolead.createLead({
             first_name: firstName,
             last_name: lastName,
             phone: phone,
@@ -796,7 +898,7 @@ async function validateStep3()
 
     if (isValid) {
         if (lead !== null) {
-            let addressUpdated = zarolead.updateLeadAddress(lead['id'], {
+            let addressUpdated = await zarolead.updateLeadAddress(lead['id'], {
                 street_address: streetAddress + ', ' + streetNumber,
                 city          : city,
                 province      : province,
@@ -823,36 +925,40 @@ async function validateStep4()
 
     let isValid = false;
 
-    const stripeResult = await stripe.confirmCardPayment(stripeClientSecret, {
-        payment_method: {
-            card: card,
-            billing_details: {
-                name: fullName,
-                address: {
-                    country: currentLocation.country,
-                    city: currentLocation.area3,
-                    line1: currentLocation.route + ' ' + currentLocation.street_number,
-                    line2: '',
-                    postal_code: currentLocation.postcode,
-                    state: currentLocation.area2,
+    if (paymentMethod === 'paymentMethodCod') {
+        isValid = true;
+    } else if (paymentMethod === 'paymentMethodOnline') {
+        const stripeResult = await stripe.confirmCardPayment(stripeClientSecret, {
+            payment_method: {
+                card: card,
+                billing_details: {
+                    name: fullName,
+                    address: {
+                        country: currentLocation.country,
+                        city: currentLocation.area3,
+                        line1: currentLocation.route + ' ' + currentLocation.street_number,
+                        line2: '',
+                        postal_code: currentLocation.postcode,
+                        state: currentLocation.area2,
+                    },
+                    phone: phone,
                 },
-                phone: phone,
             },
-        },
-    })
+        })
 
-    // DEBUG TODO: to delete
-    console.log('stripeResult', stripeResult);
-
-    if (stripeResult.error) {
         // DEBUG TODO: to delete
-        console.log("stripeResult.error", stripeResult.error);
+        console.log('stripeResult', stripeResult);
 
-        setStripeError('cardErrors', stripeResult.error.message);
-    } else {
-        setStripeError('cardErrors', '');
-        if (stripeResult.paymentIntent.status === 'succeeded') {
-            isValid = true;
+        if (stripeResult.error) {
+            // DEBUG TODO: to delete
+            console.log("stripeResult.error", stripeResult.error);
+
+            setStripeError('cardErrors', stripeResult.error.message);
+        } else {
+            setStripeError('cardErrors', '');
+            if (stripeResult.paymentIntent.status === 'succeeded') {
+                isValid = true;
+            }
         }
     }
 
@@ -862,7 +968,8 @@ async function validateStep4()
     return isValid;
 }
 
-interface Step {
+interface Step
+{
     id: string,
     enabled: boolean,
     init: () => any,
@@ -876,54 +983,38 @@ var steps: Array<Step> = [
         enabled: true,
         init: null,
         validate: validateStep1,
-        buttonText: 'Continua',
+        buttonText: 'CONTINUA',
     },
     {
         id: 'step2',
         enabled: true,
         init: null,
         validate: validateStep2,
-        buttonText: 'Continua',
+        buttonText: 'CONTINUA',
     },
     {
         id: 'step3',
         enabled: true,
         init: null,
         validate: validateStep3,
-        buttonText: 'Continua',
+        buttonText: 'CONTINUA',
     },
     {
         id: 'step4',
         enabled: true,
         init: initStep4,
         validate: validateStep4,
-        buttonText: 'Continua',
+        buttonText: 'CONTINUA',
     },
     {
         id: 'step5',
         enabled: true,
         init: null,
         validate: null,
-        buttonText: 'Continua',
+        buttonText: 'CONTINUA',
     },
 ];
 var currentStep = -1;
-
-function hideElement(elementId: string): void
-{
-    var e: HTMLElement = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'none';
-    }
-}
-
-function showElement(elementId: string): void
-{
-    var e: HTMLElement = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'block';
-    }
-}
 
 function hideSteps(): void
 {
@@ -1038,7 +1129,8 @@ function forcePhoneFormat(val: string): string
     return newVal;
 }
 
-interface UpSellOption {
+interface UpSellOption
+{
     quantity: string;
     element: HTMLElement;
 }
@@ -1167,6 +1259,10 @@ function changeQuantity(qty: string): void
 
 async function onLoad()
 {
+    // DEBUG TODO: to delete
+    console.log('axios', axios);
+    console.log('axios.get', axios.get);
+
     loadingStart();
 
     // Steps initialization
@@ -1214,7 +1310,7 @@ async function onLoad()
     let elements = stripe.elements();
     card = elements.create('card', {
         classes: {
-            base: 'form-control',
+            base: 'form-control py-2',
         },
         hidePostalCode: true,
     });
@@ -1242,7 +1338,10 @@ async function onLoad()
             pluginsList = < Array<object> > jsonDecode(pluginListStr);
         }
 
-        product = zarolead.getProduct(productId);
+        product = await zarolead.getProduct(productId);
+
+        // DEBUG TODO: to delete
+        console.log('product', product);
 
         let counter = 0;
         for (var q in product['quantity']['options']) {
@@ -1277,16 +1376,6 @@ async function onLoad()
 
     } else {
         // TODO: Abort??
-    }
-    // TODO:
-    const response: string|null = $http.get('/test');
-    let obj = null;
-    if (response !== null && response !== '') {
-        obj = jsonDecode(response);
-    }
-    if (obj !== null && obj.hasOwnProperty('data') && obj.data !== null &&
-        obj.data.hasOwnProperty('client_secret')) {
-        stripeClientSecret = obj.data.client_secret;
     }
 
     // Initialize steps and start with first step

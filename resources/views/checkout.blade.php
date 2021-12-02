@@ -16,6 +16,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" integrity="sha512-RXf+QSDCUQs5uwRKaDoXt55jygZZm2V++WUZduaU/Ui/9EGp3f/2KZVahFZBKGH0s774sd3HmrhUy+SgOFQLVQ==" crossorigin="anonymous"></script>
 
+<!-- axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 <!-- Google maps API (Places) -->
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXvXzU_AAxACrNdbHiWTLeY5l63jArjTM&libraries=places"></script>
 
@@ -45,8 +48,20 @@
     display: none;
 }
 
+.bg-white {
+    background-color: #ffffff;
+}
+
+.bg-gray {
+    background-color: #cccccc;
+}
+
 .bg-green-500 {
     background-color: #23a455;
+}
+
+.paymentMethodDescription {
+    display: none;
 }
 
 /* CSS rule created by me to fix the height of the stripe card element */
@@ -62,7 +77,7 @@
     width: 100%;
     padding: 0.2rem;
     font-size: 3.5rem;
-    /*display: none;*/
+    display: none;
     grid-template-columns: auto auto auto;
     font-weight: bold;
 }
@@ -88,7 +103,7 @@
 }
 
 .people-viewing {
-    /*display: none;*/
+    display: none;
     width: 100%;
     padding: 0.2rem;
     text-align: center;
@@ -104,7 +119,7 @@
 }
 
 .available-quantity {
-    /*display: none;*/
+    display: none;
     width: 100%;
     padding: 0.2rem;
 }
@@ -152,7 +167,7 @@
     padding: 0.2rem;
     font-size: 3.5rem;
     margin-bottom: 1rem;
-    /*display: none;*/
+    display: none;
     grid-template-columns: auto auto auto;
 }
 
@@ -336,15 +351,18 @@
     <form id="mainForm" class="p-3" action="#" novalidate>
 
         <div id="step1" class="step">
+            <h2 class="mb-3 text-center">
+                INFORMAZIONI CONTATTO
+            </h2>
             <div class="mb-3">
-                <label for="fullName" class="form-label">Nome e Cognome</label>
-                <input id="fullName" class="form-control" type="text" placeholder="Nome e Cognome" required minlength="5" value="" />
+                <!--<label for="fullName" class="form-label">Nome e Cognome</label>-->
+                <input id="fullName" class="form-control py-2" type="text" placeholder="NOME E COGNOME" required minlength="5" value="" />
                 <div class="invalid-feedback">Nome e Cognome non validi</div>
             </div>
 
             <div class="mb-3">
-                <label for="phone" class="form-label">Numero di telefono</label>
-                <input id="phone" class="form-control" type="text" placeholder="Numero di telefono" required minlength="8" value="+(39)" />
+                <!--<label for="phone" class="form-label">Numero di telefono</label>-->
+                <input id="phone" class="form-control py-2" type="text" placeholder="TELEFONO O CELLULARE" required minlength="8" value="" />
                 <div class="invalid-feedback">Numero di telefono non valido</div>
             </div>
 
@@ -363,8 +381,6 @@
 
         </div>
 
-
-        <!-- TODO: HERE UPSELL STEP -->
         <div id="step2" class="step">
             <div class="bg-black p-2 mb-3">
                 <p class="text-light text-center fs-6">
@@ -421,45 +437,49 @@
 
         <div id="step3" class="step">
 
+            <h2 class="mb-3 text-center">
+                INDIRIZZO SPEDIZIONE
+            </h2>
+
             <div class="mb-3">
-                <label for="address" class="form-label">Trova indirizzo</label>
-                <input id="address" class="form-control" type="text" placeholder="Trova indirizzo" value="" />
+                <!--<label for="address" class="form-label">Trova indirizzo</label>-->
+                <input id="address" class="form-control py-2" type="text" placeholder="TROVA INDIRIZZO" value="" />
                 <div class="invalid-feedback">Indirizzo non valido</div>
             </div>
 
             <div class="row">
                 <div class="col-8">
                     <div class="mb-3">
-                        <label for="streetAddress" class="form-label">Nome via</label>
-                        <input id="streetAddress" class="form-control" type="text" placeholder="Esempio: Via Montenapoleone" required />
+                        <!--<label for="streetAddress" class="form-label">Nome via</label>-->
+                        <input id="streetAddress" class="form-control py-2" type="text" placeholder="INDIRIZZO (STRADA)" required />
                         <div class="invalid-feedback">Nome via non valido</div>
                     </div>
                 </div>
-                <div class="col-4 pe-0">
+                <div class="col-4 ps-0">
                     <div class="mb-3">
-                        <label for="streetNumber" class="form-label">Num Civico</label>
-                        <input id="streetNumber" class="form-control" type="text" placeholder="Esempio: 22" required />
+                        <!--<label for="streetNumber" class="form-label">Num Civico</label>-->
+                        <input id="streetNumber" class="form-control py-2" type="text" placeholder="NR. CIVICO" required />
                         <div class="invalid-feedback">Non valido</div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="cap" class="form-label">CAP (Codice Postale)</label>
-                <input id="cap" class="form-control" type="text" placeholder="Esempio: 20019" required />
+                <!--<label for="cap" class="form-label">CAP (Codice Postale)</label>-->
+                <input id="cap" class="form-control py-2" type="text" placeholder="CAP (CODICE POSTALE)" required />
                 <div class="invalid-feedback">CAP non valido</div>
             </div>
 
             <div class="mb-3">
-                <label for="city" class="form-label">Comune/Città</label>
-                <input id="city" class="form-control" type="text" placeholder="Esempio: Milano" required minlength="4" />
+                <!--<label for="city" class="form-label">Comune/Città</label>-->
+                <input id="city" class="form-control py-2" type="text" placeholder="CITTÀ/COMUNE" required minlength="4" />
                 <div class="invalid-feedback">Comune non valido</div>
             </div>
 
             <div class="mb-3">
-                <label for="province" class="form-label">Provincia</label>
-                <select id="province" class="form-select" required>
-                    <option value="" selected="selected">Seleziona Provincia</option>
+                <!--<label for="province" class="form-label">Provincia</label>-->
+                <select id="province" class="form-select py-2" placeholder="PROVINCIA" required>
+                    <option value="" selected="selected">SELEZIONA PROVINCIA</option>
                     <option value="AG">Agrigento</option>
                     <option value="AL">Alessandria</option>
                     <option value="AN">Ancona</option>
@@ -578,6 +598,10 @@
 
         <div id="step4" class="step">
 
+            <h2 class="mb-3 text-center">
+                RIEPILOGO
+            </h2>
+
             <div class="mb-3 text-center">
                 <p class="text-center fs-5 mb-0">
                     <span id="reviewProductName"></span>
@@ -590,10 +614,33 @@
                 </p>
             </div>
 
+            <hr />
+
+            <h2 class="mb-3 text-center">
+                METODO DI PAGAMENTO
+            </h2>
+
             <div class="mb-3">
-                <label class="form-label">Pagamento con Carta di Credito</label>
-                <div id="cardElement"></div>
-                <div id="cardErrors" role="alert" class="invalid-feedback"></div>
+                <div class="m-0 p-0 bg-gray border border-2">
+                    <p class="m-0 p-4">
+                        <input id="pmInputRadioCod" name="paymentMethod" type="radio" value="paymentMethodCod" class="paymentMethodInputRadio" checked="checked">
+                        <label for="pmInputRadioCod">Alla consegna (commissione +1.95€)</label>
+                    </p>
+                    <div class="m-0 p-4 bg-white paymentMethodDescription" id="paymentMethodCod">
+                         Selezionando l'opzione pagamento alla consegna, il corriere aggiungerà una commissione che si dovrà pagare insieme all'ordine. Di seguito, puoi vedere altri metodi di pagamento più economici (con carta di credito o PayPal).
+                    </div>
+                </div>
+                <div class="m-0 p-0 bg-gray border border-2">
+                    <p class="m-0 p-4">
+                        <input id="pmInputRadioOnline" name="paymentMethod" type="radio" value="paymentMethodOnline" class="paymentMethodInputRadio">
+                        <label for="pmInputRadioOnline">Carta di credito</label>
+                    </p>
+                    <div class="m-0 p-4 bg-white paymentMethodDescription" id="paymentMethodOnline">
+                        <label class="form-label">Carta di credito</label>
+                        <div id="cardElement"></div>
+                        <div id="cardErrors" role="alert" class="invalid-feedback"></div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -618,7 +665,7 @@
         </div>
 
         <div class="mb-3 mt-3">
-            <button id="nextStepButton" class="hidden btn btn-primary w-100" type="submit">Submit</button>
+            <button id="nextStepButton" class="hidden btn btn-primary w-100 p-2 fs-4" type="submit">Submit</button>
         </div>
 
     </form>
