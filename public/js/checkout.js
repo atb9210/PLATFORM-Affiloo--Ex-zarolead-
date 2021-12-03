@@ -270,7 +270,7 @@ var ZaroLead = /** @class */ (function () {
                             if (response.hasOwnProperty('data')) {
                                 respJson_1 = response['data'];
                             }
-                            if (respJson === null || respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
                                 return [2 /*return*/, true];
                             }
                             else {
@@ -286,9 +286,48 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
+    ZaroLead.prototype.completeLead = function (leadId, status, total) {
+        return __awaiter(this, void 0, void 0, function () {
+            var params, response, respJson, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.completeLead()', leadId, status, total);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        params = {
+                            status: status,
+                            total: total
+                        };
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            respJson = null;
+                            if (response.hasOwnProperty('data')) {
+                                respJson = response['data'];
+                            }
+                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                                return [2 /*return*/, true];
+                            }
+                            else {
+                                return [2 /*return*/, false];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_4 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 4: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
     ZaroLead.prototype.getProduct = function (productId) {
         return __awaiter(this, void 0, void 0, function () {
-            var product, response, error_4;
+            var product, response, error_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -315,7 +354,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_4 = _a.sent();
+                        error_5 = _a.sent();
                         product = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, product];
@@ -325,7 +364,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
         return __awaiter(this, void 0, void 0, function () {
-            var paymentIntent, params, httpHeaders, response, error_5;
+            var paymentIntent, params, httpHeaders, response, error_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -359,7 +398,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_5 = _a.sent();
+                        error_6 = _a.sent();
                         paymentIntent = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, paymentIntent];
@@ -690,10 +729,12 @@ function fillInAddress() {
 }
 var paymentMethods = [
     {
-        id: 'paymentMethodCod'
+        id: 'paymentMethodCod',
+        fee: 1.95
     },
     {
-        id: 'paymentMethodOnline'
+        id: 'paymentMethodOnline',
+        fee: 0.0
     },
 ];
 var paymentMethod = '';
@@ -706,7 +747,6 @@ function initPaymentMethods() {
                     e = document.getElementsByClassName('paymentMethodInputRadio');
                     if (e !== null) {
                         for (i = 0; i < e.length; i++) {
-                            // TODO: HERE
                             e[i].addEventListener('change', function (event) {
                                 return __awaiter(this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
@@ -738,9 +778,24 @@ function changePaymentMethod(pmId) {
     for (var i = 0; i < paymentMethods.length; i++) {
         var pm = paymentMethods[i];
         hideElement(pm.id);
+        if (pm.id === pmId) {
+            var e = document.getElementById('reviewTotalAmount');
+            if (e !== null) {
+                e.innerText = (total + pm.fee).toFixed(2);
+            }
+        }
     }
     showElement(pmId);
     paymentMethod = pmId;
+}
+function getPaymentMethod(pmId) {
+    for (var i = 0; i < paymentMethods.length; i++) {
+        var pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return pm;
+        }
+    }
+    return null;
 }
 function initStep4() {
     return __awaiter(this, void 0, void 0, function () {
@@ -918,7 +973,7 @@ function validateStep3() {
 }
 function validateStep4() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, stripeResult;
+        var isValid, stripeResult, fee, pm, i, pm_1, leadUpdated;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -966,6 +1021,24 @@ function validateStep4() {
                     }
                     _a.label = 3;
                 case 3:
+                    if (!isValid) return [3 /*break*/, 5];
+                    fee = 0.0;
+                    pm = getPaymentMethod(paymentMethod);
+                    if (pm !== null) {
+                        fee = pm.fee;
+                    }
+                    for (i = 0; i < paymentMethods.length; i++) {
+                        pm_1 = paymentMethods[i];
+                        if (pm_1.id === paymentMethod) {
+                            fee = pm_1.fee;
+                        }
+                    }
+                    return [4 /*yield*/, zarolead.completeLead(lead['id'], 'confirmed', total + fee)];
+                case 4:
+                    leadUpdated = _a.sent();
+                    isValid = leadUpdated && isValid;
+                    _a.label = 5;
+                case 5:
                     // DEBUG TODO: to delete
                     console.log("validateStep4 => ", isValid);
                     return [2 /*return*/, isValid];

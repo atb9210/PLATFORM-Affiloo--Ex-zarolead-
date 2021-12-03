@@ -293,7 +293,7 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Update a lead.
+     * Update a lead's address.
      *
      * @urlParam id int required Lead's id
      *
@@ -338,6 +338,46 @@ class WarehouseController extends Controller
         return response([
             'status' => 'success',
             'message' => 'Lead\'s address updated',
+        ]);
+    }
+
+    /**
+     * Update a lead's status and total.
+     *
+     * @urlParam id int required Lead's id
+     *
+     * @bodyParam status string required Status
+     * @bodyParam total string required Total
+     *
+     * @response {
+     *  "status": "success",
+     *  "message": "Lead updated',
+     * }
+     */
+    public function completeLead($id, Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'status' => 'required|string|' . $this->statusValidation,
+            'total'  => 'required|numeric|min:0',
+        ]);
+
+        $lead = WarehouseLead::findOrFail($id);
+
+        // TODO: Check time difference now() - lead.created_at
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+        $info['total'] = $params['total'];
+        $lead->info = $info;
+        $lead->status = $params['status'];
+        $lead->save();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Lead updated',
         ]);
     }
 

@@ -26,6 +26,12 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <style>
+.btn {
+    background-color: #2b4369;
+    color: #ffffff;
+    border-color: #1a1158;
+}
+
 #loading {
     position: fixed;
     display: none;
@@ -37,6 +43,17 @@
     opacity: 0.7;
     background-color: #555555;
     z-index: 99;
+}
+
+#loader {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url('//upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Phi_fenomeni.gif/50px-Phi_fenomeni.gif') 
+        50% 50% no-repeat rgb(249,249,249);
 }
 
 .step {
@@ -323,6 +340,7 @@
 <body onload="onLoad();">
 
 <div id="loading">
+    <div id="loader"></div>
 </div>
 
 <div id="app">
@@ -666,6 +684,35 @@
 
         <div class="mb-3 mt-3">
             <button id="nextStepButton" class="hidden btn btn-primary w-100 p-2 fs-4" type="submit">Submit</button>
+        </div>
+
+        <div class="mb-3 mt-5 row fs-6">
+
+            <div class="col-3">
+                <img class="w-100" src="/images/checkout/icon1.png">
+                <p class="w-100 m-0 p-0">
+                    100% acquisto sicuro
+                </p>
+            </div>
+            <div class="col-3">
+                <img class="w-100" src="/images/checkout/icon2.png">
+                <p class="w-100 m-0 p-0">
+                    Garanzia 100% soddisfatti
+                </p>
+            </div>
+            <div class="col-3">
+                <img class="w-100" src="/images/checkout/icon3.png">
+                <p class="w-100 m-0 p-0">
+                    Consegna veloce
+                </p>
+            </div>
+            <div class="col-3">
+                <img class="w-100" src="/images/checkout/icon4.png">
+                <p class="w-100 m-0 p-0">
+                    Paga in modo semplice e sicuro
+                </p>
+            </div>
+            
         </div>
 
     </form>

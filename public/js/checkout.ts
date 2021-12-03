@@ -242,7 +242,36 @@ class ZaroLead
                 if (response.hasOwnProperty('data')) {
                     let respJson = response['data'];
                 }
-                if (respJson === null || respJson.hasOwnProperty('status') || respJson['status'] === 'success') {
+                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
+    async completeLead(leadId: string, status: string, total: number)
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.completeLead()', leadId, status, total);
+
+        try {
+            let params = {
+                status: status,
+                total: total,
+            };
+            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //let respJson = jsonDecode(response);
+                let respJson = null;
+                if (response.hasOwnProperty('data')) {
+                    respJson = response['data'];
+                }
+                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
                     return true;
                 } else {
                     return false;
@@ -697,14 +726,17 @@ function fillInAddress(): void
 interface PaymentMethod
 {
     id: string,
+    fee: number,
 }
 
 var paymentMethods: Array<PaymentMethod> = [
     {
         id: 'paymentMethodCod',
+        fee: 1.95,
     },
     {
         id: 'paymentMethodOnline',
+        fee: 0.0,
     },
 ];
 var paymentMethod: string = '';
@@ -714,7 +746,6 @@ async function initPaymentMethods()
     let e = document.getElementsByClassName('paymentMethodInputRadio');
     if (e !== null) {
         for (let i = 0; i < e.length; i++) {
-            // TODO: HERE
             e[i].addEventListener('change', async function (event) {
                 if (event !== null) {
                     changePaymentMethod(event.target['value']);
@@ -739,9 +770,27 @@ function changePaymentMethod(pmId: string): void
     for (let i = 0; i < paymentMethods.length; i++) {
         let pm = paymentMethods[i];
         hideElement(pm.id);
+
+        if (pm.id === pmId) {
+            let e = document.getElementById('reviewTotalAmount');
+            if (e !== null) {
+                e.innerText = (total + pm.fee).toFixed(2);
+            }
+        }
     }
     showElement(pmId);
     paymentMethod = pmId;
+}
+
+function getPaymentMethod(pmId: string): PaymentMethod|null
+{
+    for (let i = 0; i < paymentMethods.length; i++) {
+        let pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return pm;
+        }
+    }
+    return null;
 }
 
 async function initStep4()
@@ -960,6 +1009,23 @@ async function validateStep4()
                 isValid = true;
             }
         }
+    }
+
+    if (isValid) {
+        // Update total and status
+        let fee = 0.0;
+        let pm = getPaymentMethod(paymentMethod);
+        if (pm !== null) {
+            fee = pm.fee;
+        }
+        for (let i = 0; i < paymentMethods.length; i++) {
+            let pm = paymentMethods[i];
+            if (pm.id === paymentMethod) {
+                fee = pm.fee;
+            }
+        }
+        let leadUpdated = await zarolead.completeLead(lead['id'], 'confirmed', total + fee);
+        isValid = leadUpdated && isValid;
     }
 
     // DEBUG TODO: to delete
