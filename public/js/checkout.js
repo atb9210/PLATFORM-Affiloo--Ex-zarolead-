@@ -730,11 +730,13 @@ function fillInAddress() {
 var paymentMethods = [
     {
         id: 'paymentMethodCod',
-        fee: 1.95
+        fee: 1.95,
+        name: 'Alla consegna'
     },
     {
         id: 'paymentMethodOnline',
-        fee: 0.0
+        fee: 0.0,
+        name: 'Online'
     },
 ];
 var paymentMethod = '';
@@ -809,6 +811,58 @@ function initStep4() {
                     }
                     return [2 /*return*/];
             }
+        });
+    });
+}
+function initStep5() {
+    return __awaiter(this, void 0, void 0, function () {
+        var fee, pm, e, dateOptions, s;
+        return __generator(this, function (_a) {
+            fee = 0.0;
+            pm = getPaymentMethod(paymentMethod);
+            if (pm !== null) {
+                fee = pm.fee;
+                e = null;
+                e = document.getElementById('orderNumber');
+                if (e !== null) {
+                    e.innerText = lead['id'];
+                }
+                e = document.getElementById('orderDate');
+                if (e !== null) {
+                    dateOptions = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    };
+                    e.innerText = (new Date()).toLocaleDateString('it-IT', dateOptions);
+                }
+                e = document.getElementById('orderTotal');
+                if (e !== null) {
+                    e.innerText = (total + fee).toFixed(2);
+                }
+                e = document.getElementById('orderPaymentMethod');
+                if (e !== null) {
+                    s = pm.name;
+                    if (fee > 0) {
+                        s += ' (+' + fee.toFixed(2) + '€)';
+                    }
+                    e.innerText = s;
+                }
+                e = document.getElementById('orderDetailsPaymentMethod');
+                if (e !== null) {
+                    e.innerText = pm.name;
+                }
+                e = document.getElementById('orderDetailsPaymentMethodFee');
+                if (e !== null) {
+                    e.innerText = fee.toFixed(2);
+                }
+                e = document.getElementById('orderDetailsTotal');
+                if (e !== null) {
+                    e.innerText = (total + fee).toFixed(2);
+                }
+                // TODO: HERE
+            }
+            return [2 /*return*/];
         });
     });
 }
@@ -973,7 +1027,7 @@ function validateStep3() {
 }
 function validateStep4() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, stripeResult, fee, pm, i, pm_1, leadUpdated;
+        var isValid, stripeResult, fee, pm, leadUpdated;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1027,12 +1081,6 @@ function validateStep4() {
                     if (pm !== null) {
                         fee = pm.fee;
                     }
-                    for (i = 0; i < paymentMethods.length; i++) {
-                        pm_1 = paymentMethods[i];
-                        if (pm_1.id === paymentMethod) {
-                            fee = pm_1.fee;
-                        }
-                    }
                     return [4 /*yield*/, zarolead.completeLead(lead['id'], 'confirmed', total + fee)];
                 case 4:
                     leadUpdated = _a.sent();
@@ -1078,7 +1126,7 @@ var steps = [
     {
         id: 'step5',
         enabled: true,
-        init: null,
+        init: initStep5,
         validate: null,
         buttonText: 'CONTINUA'
     },
@@ -1115,7 +1163,7 @@ function initSteps() {
         if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
             product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null &&
             Object.entries(product['quantity']['options']).length > 1) {
-            steps[stepIndex].enabled = true;
+            steps[stepIndex].enabled = true && steps[stepIndex].enabled;
         }
         else {
             steps[stepIndex].enabled = false;
@@ -1152,9 +1200,16 @@ function nextStep() {
                 case 4:
                     if (!(i < steps.length)) return [3 /*break*/, 8];
                     step = steps[i];
+                    // DEBUG TODO: to delete
+                    console.log('steps[' + i + ']', steps[i]);
+                    console.log('enabled', steps[i].enabled);
                     if (!step.enabled) {
+                        // DEBUG TODO: to delete
+                        console.log('continue');
                         return [3 /*break*/, 7];
                     }
+                    // DEBUG TODO: to delete
+                    console.log('show it');
                     showStep(step.id);
                     if (!(step.init !== null)) return [3 /*break*/, 6];
                     loadingStart();
@@ -1294,6 +1349,18 @@ function changeQuantity(qty) {
         if (opt.quantity === qty) {
             opt.element.classList.add('upSellOptionActive');
         }
+    }
+    e = document.getElementById('orderDetailsProduct');
+    if (e !== null) {
+        e.innerText = product['name'];
+    }
+    e = document.getElementById('orderDetailsQuantity');
+    if (e !== null) {
+        e.innerText = quantity;
+    }
+    e = document.getElementById('orderDetailsProductSubtotal');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
     }
 }
 function onLoad() {

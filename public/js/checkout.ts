@@ -727,16 +727,19 @@ interface PaymentMethod
 {
     id: string,
     fee: number,
+    name: string,
 }
 
 var paymentMethods: Array<PaymentMethod> = [
     {
         id: 'paymentMethodCod',
         fee: 1.95,
+        name: 'Alla consegna',
     },
     {
         id: 'paymentMethodOnline',
         fee: 0.0,
+        name: 'Online',
     },
 ];
 var paymentMethod: string = '';
@@ -798,6 +801,58 @@ async function initStep4()
     await initPaymentMethods();
     if (paymentMethods.length > 0) {
         changePaymentMethod(paymentMethods[0].id);
+    }
+}
+
+async function initStep5()
+{
+    let fee = 0.0;
+    let pm = getPaymentMethod(paymentMethod);
+    if (pm !== null) {
+        fee = pm.fee;
+
+        var e: HTMLElement|null = null;
+
+        e = document.getElementById('orderNumber');
+        if (e !== null) {
+            e.innerText = lead['id'];
+        }
+        e = document.getElementById('orderDate');
+        if (e !== null) {
+            var dateOptions = {
+                year: <"numeric"|"2-digit">'numeric',
+                month: <"long"|"short"|"narrow"|"numeric"|"2-digit">'long',
+                day: <"numeric"|"2-digit">'numeric',
+            }
+            e.innerText = (new Date()).toLocaleDateString('it-IT', dateOptions);
+        }
+        e = document.getElementById('orderTotal');
+        if (e !== null) {
+            e.innerText = (total + fee).toFixed(2);
+        }
+        e = document.getElementById('orderPaymentMethod');
+        if (e !== null) {
+            let s = pm.name;
+            if (fee > 0) {
+                s += ' (+' + fee.toFixed(2) + '€)';
+            }
+            e.innerText = s;
+        }
+
+        e = document.getElementById('orderDetailsPaymentMethod');
+        if (e !== null) {
+            e.innerText = pm.name;
+        }
+        e = document.getElementById('orderDetailsPaymentMethodFee');
+        if (e !== null) {
+            e.innerText = fee.toFixed(2);
+        }
+        e = document.getElementById('orderDetailsTotal');
+        if (e !== null) {
+            e.innerText = (total + fee).toFixed(2);
+        }
+
+        // TODO: HERE
     }
 }
 
@@ -1011,18 +1066,12 @@ async function validateStep4()
         }
     }
 
+    // Update total and status
     if (isValid) {
-        // Update total and status
         let fee = 0.0;
         let pm = getPaymentMethod(paymentMethod);
         if (pm !== null) {
             fee = pm.fee;
-        }
-        for (let i = 0; i < paymentMethods.length; i++) {
-            let pm = paymentMethods[i];
-            if (pm.id === paymentMethod) {
-                fee = pm.fee;
-            }
         }
         let leadUpdated = await zarolead.completeLead(lead['id'], 'confirmed', total + fee);
         isValid = leadUpdated && isValid;
@@ -1075,7 +1124,7 @@ var steps: Array<Step> = [
     {
         id: 'step5',
         enabled: true,
-        init: null,
+        init: initStep5,
         validate: null,
         buttonText: 'CONTINUA',
     },
@@ -1123,7 +1172,7 @@ function initSteps(): void
         if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
             product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null &&
             Object.entries(product['quantity']['options']).length > 1) {
-            steps[stepIndex].enabled = true;
+            steps[stepIndex].enabled = true && steps[stepIndex].enabled;
         } else {
             steps[stepIndex].enabled = false;
         }
@@ -1152,9 +1201,20 @@ async function nextStep()
         for (let i = currentStep; i < steps.length; i++) {
             let step = steps[i];
 
+            // DEBUG TODO: to delete
+            console.log('steps[' + i + ']', steps[i]);
+            console.log('enabled', steps[i].enabled);
+
             if (!step.enabled) {
+                // DEBUG TODO: to delete
+                console.log('continue');
+
                 continue;
             }
+
+            // DEBUG TODO: to delete
+            console.log('show it');
+
             showStep(step.id);
             if (step.init !== null) {
                 loadingStart();
@@ -1320,6 +1380,19 @@ function changeQuantity(qty: string): void
         if (opt.quantity === qty) {
             opt.element.classList.add('upSellOptionActive');
         }
+    }
+
+    e = document.getElementById('orderDetailsProduct');
+    if (e !== null) {
+        e.innerText = product['name'];
+    }
+    e = document.getElementById('orderDetailsQuantity');
+    if (e !== null) {
+        e.innerText = quantity;
+    }
+    e = document.getElementById('orderDetailsProductSubtotal');
+    if (e !== null) {
+        e.innerText = total.toFixed(2);
     }
 }
 

@@ -26,6 +26,10 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <style>
+.fs-7 {
+    font-size: 0.75rem !important;
+}
+
 .btn {
     background-color: #2b4369;
     color: #ffffff;
@@ -70,11 +74,15 @@
 }
 
 .bg-gray {
-    background-color: #cccccc;
+    background-color: #eeeeee;
 }
 
 .bg-green-500 {
     background-color: #23a455;
+}
+
+.text-green {
+    color: green;
 }
 
 .paymentMethodDescription {
@@ -666,6 +674,71 @@
 
         <div id="step5" class="step">
 
+            <h2 class="mb-3 text-center">
+                ORDINE COMPLETATO
+            </h2>
+
+            <div class="bg-gray p-3 border border-black shadow-sm mb-3">
+                <strong class="text-green">Grazie. Il tuo ordine è stato ricevuto</strong>
+                <ul>
+                    <li>Numero ordine: <strong id="orderNumber">0000</strong></li>
+                    <li>Data: <strong id="orderDate">0 gennaio 1999</strong></li>
+                    <li>Totale: <strong>€ <span id="orderTotal">0.00</span></strong></li>
+                    <li>Metodo di pagamento: <strong id="orderPaymentMethod">Pagamento alla consegna</strong></li>
+                </ul>
+            </div>
+
+            <h2>Dettagli ordine</h2>
+            <div class="row fs-7">
+
+                <div class="col-6 text-start">
+                    <strong>PRODOTTO</strong>
+                </div>
+                <div class="col-6 text-end">
+                    <strong>TOTALE</strong>
+                </div>
+
+                <hr class="my-0">
+
+                <div class="col-6 text-start">
+                    <span id="orderDetailsProduct">Product name</span>
+                    x<span id="orderDetailsQuantity">0</span>
+                </div>
+                <div class="col-6 text-end">
+                    <span id="orderDetailsProductSubtotal">0.00</span> €
+                </div>
+
+                <div class="col-6 text-start">
+                    Spedizione
+                </div>
+                <div class="col-6 text-end">
+                    Standard 0.00 €
+                </div>
+
+                <div class="col-6 text-start">
+                    Metodo di pagamento
+                </div>
+                <div class="col-6 text-end">
+                    <span id="orderDetailsPaymentMethod">Invalid</span>
+                    +<span id="orderDetailsPaymentMethodFee">0.00</span> €
+                </div>
+
+                <hr class="my-0">
+
+                <div class="col-6 text-start">
+                    <strong>Totale</strong>
+                </div>
+                <div class="col-6 text-end">
+                    <strong>
+                        <span id="orderDetailsTotal">0.00</span> €
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <!-- TODO: old code -->
+            <!--
             <div class="text-center mb-3">
                 <img class="w-50" src="{{ asset('images/order-confirmed.jpg') }}">
             </div>
@@ -679,6 +752,7 @@
                     <strong>Il Tuo Ordine è Stato Inviato Correttamente</strong>
                 </p>
             </div>
+            -->
 
         </div>
 
