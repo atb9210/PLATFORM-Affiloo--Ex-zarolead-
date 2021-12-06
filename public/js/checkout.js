@@ -105,7 +105,10 @@ function getInputValue(inputId) {
 function getCurrencyValue(s) {
     var value = 0.0;
     s = s.replace(',', '.');
-    if (!isNaN(Number(s))) {
+    if (s === '') {
+        value = 0.0;
+    }
+    else if (!isNaN(Number(s))) {
         value = parseFloat(s);
     }
     return value;

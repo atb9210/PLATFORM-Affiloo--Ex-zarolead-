@@ -87,7 +87,9 @@ function getCurrencyValue(s: string): number
 {
     let value = 0.0;
     s = s.replace(',', '.');
-    if (!isNaN(Number(s))) {
+    if (s === '') {
+        value = 0.0;
+    } else if (!isNaN(Number(s))) {
         value = <number>parseFloat(s);
     }
     return value;
