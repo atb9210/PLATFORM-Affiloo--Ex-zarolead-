@@ -1766,8 +1766,8 @@ function onLoad() {
                         checkout = product['checkout'];
                         if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
                             plugins = checkout['plugins'];
-                            initPlugins();
                         }
+                        initPlugins();
                     }
                     changeQuantity(product['quantity']['default']);
                     _loop_1 = function (i) {
