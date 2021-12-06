@@ -1812,8 +1812,8 @@ async function onLoad()
             let checkout = product['checkout'];
             if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
                 plugins = <object>checkout['plugins'];
-                initPlugins();
             }
+            initPlugins();
         }
 
         changeQuantity(product['quantity']['default']);
