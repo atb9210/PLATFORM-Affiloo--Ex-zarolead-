@@ -15,7 +15,7 @@
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather"
                 :icon="(mode == 'view') ? 'icon-plus' : 'icon-arrow-left'"
                 @click="(mode == 'view') ? beginCreation() : (mode = 'view')"></vs-button>
-            <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-settings" @click="showSettings()"></vs-button>
+            <vs-button v-if="canCreateAndEdit && mode == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-settings" @click="showSettings()"></vs-button>
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
