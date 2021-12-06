@@ -87,6 +87,32 @@ function showElement(elementId) {
         e.style.display = 'block';
     }
 }
+function getAttribute(e, name) {
+    var result = null;
+    if (e !== null && e.attributes.hasOwnProperty(name)) {
+        result = e.attributes[name].value;
+    }
+    return result;
+}
+function getInputValue(inputId) {
+    var result = '';
+    var e = document.getElementById(inputId);
+    if (e !== null) {
+        result = e.value;
+    }
+    return result;
+}
+function getCurrencyValue(s) {
+    var value = 0.0;
+    s = s.replace(',', '.');
+    if (!isNaN(Number(s))) {
+        value = parseFloat(s);
+    }
+    return value;
+}
+function formatCurrency(n) {
+    return n.toFixed(2).replace('.', ',');
+}
 function loadingStart() {
     var loading = document.getElementById('loading');
     if (loading !== null) {
@@ -698,32 +724,6 @@ function resetCurrentLocation() {
         country: '',
         postcode: ''
     };
-}
-function getAttribute(e, name) {
-    var result = null;
-    if (e !== null && e.attributes.hasOwnProperty(name)) {
-        result = e.attributes[name].value;
-    }
-    return result;
-}
-function getInputValue(inputId) {
-    var result = '';
-    var e = document.getElementById(inputId);
-    if (e !== null) {
-        result = e.value;
-    }
-    return result;
-}
-function getCurrencyValue(s) {
-    var value = 0.0;
-    s = s.replace(',', '.');
-    if (!isNaN(Number(s))) {
-        value = parseFloat(s);
-    }
-    return value;
-}
-function formatCurrency(n) {
-    return n.toFixed(2).replace('.', ',');
 }
 function checkFullName(fullName) {
     fullName = fullName.trim();
@@ -1616,6 +1616,9 @@ function initPlugins() {
                     var discount = 0;
                     if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
                         discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                    }
+                    else if (product['quantity']['options'][q]['discount'] == '') {
+                        discount = 0;
                     }
                     else {
                         discount = product['quantity']['options'][q]['discount'];

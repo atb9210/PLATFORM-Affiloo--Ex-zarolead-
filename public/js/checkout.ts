@@ -64,6 +64,40 @@ function showElement(elementId: string): void
     }
 }
 
+function getAttribute(e: HTMLElement, name: string): string|null
+{
+    var result: string|null = null;
+    if (e !== null && e.attributes.hasOwnProperty(name)) {
+        result = <string>e.attributes[name].value;
+    }
+    return result;
+}
+
+function getInputValue(inputId: string): string
+{
+    var result: string = '';
+    const e: HTMLInputElement = <HTMLInputElement>document.getElementById(inputId);
+    if (e !== null) {
+        result = <string>e.value;
+    }
+    return result;
+}
+
+function getCurrencyValue(s: string): number
+{
+    let value = 0.0;
+    s = s.replace(',', '.');
+    if (!isNaN(Number(s))) {
+        value = <number>parseFloat(s);
+    }
+    return value;
+}
+
+function formatCurrency(n: number): string
+{
+    return n.toFixed(2).replace('.', ',');
+}
+
 function loadingStart()
 {
     var loading: HTMLElement = document.getElementById('loading');
@@ -664,40 +698,6 @@ function resetCurrentLocation(): void
         country: '',
         postcode: '',
     }
-}
-
-function getAttribute(e: HTMLElement, name: string): string|null
-{
-    var result: string|null = null;
-    if (e !== null && e.attributes.hasOwnProperty(name)) {
-        result = <string>e.attributes[name].value;
-    }
-    return result;
-}
-
-function getInputValue(inputId: string): string
-{
-    var result: string = '';
-    const e: HTMLInputElement = <HTMLInputElement>document.getElementById(inputId);
-    if (e !== null) {
-        result = <string>e.value;
-    }
-    return result;
-}
-
-function getCurrencyValue(s: string): number
-{
-    let value = 0.0;
-    s = s.replace(',', '.');
-    if (!isNaN(Number(s))) {
-        value = <number>parseFloat(s);
-    }
-    return value;
-}
-
-function formatCurrency(n: number): string
-{
-    return n.toFixed(2).replace('.', ',');
 }
 
 function checkFullName(fullName: string): boolean
@@ -1664,6 +1664,8 @@ function initPlugins()
                     let discount = 0;
                     if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
                         discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                    } else if (product['quantity']['options'][q]['discount'] == '') {
+                        discount = 0;
                     } else {
                         discount = product['quantity']['options'][q]['discount'];
                     }
