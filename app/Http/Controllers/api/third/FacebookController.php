@@ -97,6 +97,7 @@ class FacebookController extends Controller
      * @bodyParam custom_data json Custom data
      *
      * @response {
+     *  "status": "success",
      *  "message": "Event has been sent",
      * }
      */
@@ -161,6 +162,7 @@ class FacebookController extends Controller
         $fb->sendEventTest($pixel, $testCode, $event, $userData, $eventSourceUrl, $customData);
 
         return response([
+            'status' => 'success',
             'message' => 'Event has been sent',
         ]);
     }

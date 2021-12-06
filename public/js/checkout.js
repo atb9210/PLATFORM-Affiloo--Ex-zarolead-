@@ -1,3 +1,6 @@
+/******************************************************************************/
+/**                                   UTILS                                  **/
+/******************************************************************************/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -57,6 +60,21 @@ function jsonDecode(s) {
     }
     return result;
 }
+function getUrlParam(param) {
+    var url = new URL(window.location.href);
+    return url.searchParams.get(param);
+}
+function getHostname() {
+    var tmpUrl = new URL(window.location.href);
+    return tmpUrl.origin;
+}
+function getCookie(key) {
+    var cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+    if (cookiesMatch)
+        return cookiesMatch[2];
+    else
+        return null;
+}
 function hideElement(elementId) {
     var e = document.getElementById(elementId);
     if (e !== null) {
@@ -69,6 +87,18 @@ function showElement(elementId) {
         e.style.display = 'block';
     }
 }
+function loadingStart() {
+    var loading = document.getElementById('loading');
+    if (loading !== null) {
+        loading.style.display = 'block';
+    }
+}
+function loadingEnd() {
+    var loading = document.getElementById('loading');
+    if (loading !== null) {
+        loading.style.display = 'none';
+    }
+}
 /*
  * TODO: Use axios as http library because this library is not async this means
  * that loading does not work properly.
@@ -76,6 +106,9 @@ function showElement(elementId) {
  */
 var axios;
 var $http;
+/******************************************************************************/
+/**                              MY HTTP LIBRARY                             **/
+/******************************************************************************/
 var Http = /** @class */ (function () {
     function Http() {
     }
@@ -155,11 +188,14 @@ var Http = /** @class */ (function () {
     };
     return Http;
 }());
+/******************************************************************************/
+/**                             ZAROLEAD LIBRARY                             **/
+/******************************************************************************/
 var ZaroLead = /** @class */ (function () {
     function ZaroLead() {
-        var tmpUrl = new URL(window.location.href);
-        this.API_URL = tmpUrl.origin + '/api/v1/';
-        this.API_URL_3RD = tmpUrl.origin + '/api/3rd/';
+        var hostname = getHostname();
+        this.API_URL = hostname + '/api/v1/';
+        this.API_URL_3RD = hostname + '/api/3rd/';
         /*
         this.$http = new Http();
         this.httpHeaders = {
@@ -286,7 +322,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.completeLead = function (leadId, status, total) {
+    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod) {
         return __awaiter(this, void 0, void 0, function () {
             var params, response, respJson, error_4;
             return __generator(this, function (_a) {
@@ -299,7 +335,8 @@ var ZaroLead = /** @class */ (function () {
                         _a.trys.push([1, 3, , 4]);
                         params = {
                             status: status,
-                            total: total
+                            total: total,
+                            payment_method: paymentMethod
                         };
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
                     case 2:
@@ -406,8 +443,120 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
+    ZaroLead.prototype.facebookEvent = function (params) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, error_7;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // DEBUG TODO:
+                        console.log('ZaroLead.facebookEvent()', params);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'facebook/events', params, { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '' &&
+                            response.hasOwnProperty('status') && response['status'] === 'success') {
+                            return [2 /*return*/, true];
+                        }
+                        else {
+                            return [2 /*return*/, false];
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_7 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 4: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
     return ZaroLead;
 }());
+/******************************************************************************/
+/**                             FACEBOOK LIBRARY                             **/
+/******************************************************************************/
+var Facebook = /** @class */ (function () {
+    function Facebook(pixel, accessToken, eventName, eventValue, eventCurrency, testCode) {
+        if (testCode === void 0) { testCode = null; }
+        this.pixel = pixel;
+        this.accessToken = accessToken;
+        this.eventValue = eventValue;
+        this.eventCurrency = eventCurrency;
+        this.testCode = testCode;
+        this.zarolead = new ZaroLead();
+    }
+    Facebook.prototype.getClickId = function () {
+        var clickId = '';
+        clickId = getCookie('_fbc');
+        var urlParamClickId = getUrlParam('fbclid');
+        if (urlParamClickId !== null && urlParamClickId !== '') {
+            clickId = getUrlParam('fbclid');
+        }
+        if (clickId === null) {
+            clickId = '';
+        }
+        return clickId;
+    };
+    Facebook.prototype.triggerEvent = function (eventName, customData, testCode) {
+        if (customData === void 0) { customData = {}; }
+        if (testCode === void 0) { testCode = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var params, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        params = {
+                            access_token: this.accessToken,
+                            pixel: this.pixel,
+                            event: eventName,
+                            fbc: this.getClickId(),
+                            custom_data: JSON.stringify(customData)
+                        };
+                        if (testCode !== null) {
+                            params['test_code'] = testCode;
+                        }
+                        return [4 /*yield*/, this.zarolead.facebookEvent(params)];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result];
+                }
+            });
+        });
+    };
+    Facebook.prototype.finalize = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.triggerEvent('Purchase', {
+                            value: this.eventValue,
+                            currency: this.eventCurrency
+                        }, this.testCode)];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result];
+                }
+            });
+        });
+    };
+    return Facebook;
+}());
+/******************************************************************************/
+/**                              TIKTOK LIBRARY                              **/
+/******************************************************************************/
+var TikTok = /** @class */ (function () {
+    function TikTok() {
+    }
+    return TikTok;
+}());
+/******************************************************************************/
+/**                            VALIDATION LIBRARY                            **/
+/******************************************************************************/
+// TODO: We do not use it
+// TODO: Delete it???????????
 /*
 
 Example:
@@ -509,6 +658,9 @@ function validate(params, rules) {
     }
     return result;
 }
+/******************************************************************************/
+/**                             GLOBAL VARIABLES                             **/
+/******************************************************************************/
 var form = null;
 var zarolead = new ZaroLead();
 var lead = null;
@@ -533,18 +685,9 @@ var phone = '';
 var quantity = '';
 var price = 0.0;
 var total = 0.0;
-function loadingStart() {
-    var loading = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'block';
-    }
-}
-function loadingEnd() {
-    var loading = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'none';
-    }
-}
+/******************************************************************************/
+/**                              STEP VALIDATION                             **/
+/******************************************************************************/
 function resetCurrentLocation() {
     currentLocation = {
         street_number: '',
@@ -730,19 +873,39 @@ function fillInAddress() {
 var paymentMethods = [
     {
         id: 'paymentMethodCod',
-        fee: 1.95,
-        name: 'Alla consegna'
+        fee: 0.0,
+        name: 'Alla consegna',
+        enabled: false
     },
     {
         id: 'paymentMethodOnline',
         fee: 0.0,
-        name: 'Online'
+        name: 'Online',
+        enabled: false
     },
 ];
 var paymentMethod = '';
+function getPaymentMethod(pmId) {
+    for (var i = 0; i < paymentMethods.length; i++) {
+        var pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return pm;
+        }
+    }
+    return null;
+}
+function getPaymentMethodIndex(pmId) {
+    for (var i = 0; i < paymentMethods.length; i++) {
+        var pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return i;
+        }
+    }
+    return -1;
+}
 function initPaymentMethods() {
     return __awaiter(this, void 0, void 0, function () {
-        var e, i, paymentIntent;
+        var e, i, paymentIntent, checkout, pms, pm, pmIndex, i, pm, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -769,7 +932,40 @@ function initPaymentMethods() {
                         stripeClientSecret = paymentIntent['client_secret'];
                     }
                     _a.label = 2;
-                case 2: return [2 /*return*/];
+                case 2:
+                    if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
+                        checkout = product['checkout'];
+                        if (checkout.hasOwnProperty('payment_methods') && checkout['payment_methods'] !== null) {
+                            pms = checkout['payment_methods'];
+                            for (pm in pms) {
+                                pmIndex = getPaymentMethodIndex(pm);
+                                if (pmIndex < 0) {
+                                    continue;
+                                }
+                                if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
+                                    paymentMethods[pmIndex].enabled = true;
+                                    if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
+                                        paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
+                                    }
+                                    if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
+                                        paymentMethods[pmIndex].name = strval(pms[pm]['name']);
+                                    }
+                                }
+                                else {
+                                    paymentMethods[pmIndex].enabled = false;
+                                    hideElement(pm + 'Div');
+                                }
+                            }
+                        }
+                    }
+                    for (i = 0; i < paymentMethods.length; i++) {
+                        pm = paymentMethods[i];
+                        e_1 = document.getElementById(pm.id + 'Fee');
+                        if (e_1 !== null) {
+                            e_1.innerText = pm.fee.toFixed(2);
+                        }
+                    }
+                    return [2 /*return*/];
             }
         });
     });
@@ -790,15 +986,9 @@ function changePaymentMethod(pmId) {
     showElement(pmId);
     paymentMethod = pmId;
 }
-function getPaymentMethod(pmId) {
-    for (var i = 0; i < paymentMethods.length; i++) {
-        var pm = paymentMethods[i];
-        if (pm.id === pmId) {
-            return pm;
-        }
-    }
-    return null;
-}
+/******************************************************************************/
+/**                                   STEPS                                  **/
+/******************************************************************************/
 function initStep4() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -860,7 +1050,6 @@ function initStep5() {
                 if (e !== null) {
                     e.innerText = (total + fee).toFixed(2);
                 }
-                // TODO: HERE
             }
             return [2 /*return*/];
         });
@@ -868,7 +1057,7 @@ function initStep5() {
 }
 function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, firstName, lastName, tmp, i;
+        var isValid, termsAndConditions, termsAndConditionsInput, firstName, lastName, tmp, i, fbResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -897,8 +1086,20 @@ function validateStep1() {
                         setError(form, 'phone', 'Numero di telefono non valido');
                         isValid = false;
                     }
+                    termsAndConditions = false;
+                    termsAndConditionsInput = document.getElementById('termsAndConditions');
+                    if (termsAndConditionsInput !== null) {
+                        termsAndConditions = (termsAndConditionsInput.checked == true);
+                    }
+                    if (termsAndConditions) {
+                        setError(form, 'termsAndConditions', '');
+                    }
+                    else {
+                        setError(form, 'termsAndConditions', 'Devi accettare i termini e condizioni');
+                        isValid = false;
+                    }
                     isValid = isValid && (product !== null);
-                    if (!isValid) return [3 /*break*/, 2];
+                    if (!isValid) return [3 /*break*/, 4];
                     firstName = '';
                     lastName = '';
                     tmp = fullName.split(' ');
@@ -923,10 +1124,19 @@ function validateStep1() {
                         })];
                 case 1:
                     lead = _a.sent();
+                    fbResult = false;
+                    if (!(facebook !== null)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, facebook.finalize()];
+                case 2:
+                    fbResult = _a.sent();
+                    // DEBUG TODO: to delete
+                    console.log('facebook.finalize()', fbResult);
+                    _a.label = 3;
+                case 3:
                     // DEBUG TODO: to delete
                     console.log('lead', lead);
-                    _a.label = 2;
-                case 2:
+                    _a.label = 4;
+                case 4:
                     // DEBUG TODO: to delete
                     console.log('validateStep1', isValid);
                     loadingEnd();
@@ -1027,18 +1237,21 @@ function validateStep3() {
 }
 function validateStep4() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, stripeResult, fee, pm, leadUpdated;
+        var isValid, pMethod, stripeResult, fee, pm, leadUpdated;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     // DEBUT TODO: to delete
                     console.log("validateStep4()");
                     isValid = false;
+                    pMethod = '';
                     if (!(paymentMethod === 'paymentMethodCod')) return [3 /*break*/, 1];
+                    pMethod = 'cashondelivery';
                     isValid = true;
                     return [3 /*break*/, 3];
                 case 1:
                     if (!(paymentMethod === 'paymentMethodOnline')) return [3 /*break*/, 3];
+                    pMethod = 'online';
                     return [4 /*yield*/, stripe.confirmCardPayment(stripeClientSecret, {
                             payment_method: {
                                 card: card,
@@ -1081,7 +1294,7 @@ function validateStep4() {
                     if (pm !== null) {
                         fee = pm.fee;
                     }
-                    return [4 /*yield*/, zarolead.completeLead(lead['id'], 'confirmed', total + fee)];
+                    return [4 /*yield*/, zarolead.completeLead(lead['id'], 'confirmed', total + fee, pMethod)];
                 case 4:
                     leadUpdated = _a.sent();
                     isValid = leadUpdated && isValid;
@@ -1363,9 +1576,99 @@ function changeQuantity(qty) {
         e.innerText = total.toFixed(2);
     }
 }
+/******************************************************************************/
+/**                                  PLUGINS                                 **/
+/******************************************************************************/
+var plugins = null;
+var facebook = null;
+var tiktok = null;
+function initPlugins() {
+    // Privacy Policy (Terms and conditions)
+    hideElement('termsAndConditionsDiv');
+    if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
+        var p = plugins['privacy_policy'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            showElement('termsAndConditionsDiv');
+        }
+        if (p.hasOwnProperty('url') && p['url']) {
+            var tcUrl = document.getElementById('termsAndConditionsUrl');
+            if (tcUrl !== null) {
+                tcUrl.href = p['url'];
+            }
+            var tcInput = document.getElementById('termsAndConditions');
+            if (tcInput !== null) {
+                tcInput.checked = false;
+            }
+        }
+    }
+    // Upsell
+    // TODO: id step2 is not general??
+    var upsellStepIndex = getStepIndexById('step2');
+    if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
+        var p = plugins['upsell'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            steps[upsellStepIndex].enabled = true;
+            if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+                product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
+                var counter = 0;
+                for (var q in product['quantity']['options']) {
+                    var qty = q;
+                    var discount = 0;
+                    if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
+                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                    }
+                    else {
+                        discount = product['quantity']['options'][q]['discount'];
+                    }
+                    var price_1 = 0;
+                    if (typeof (product['quantity']['options'][q]['price']) === 'string') {
+                        price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
+                    }
+                    else {
+                        price_1 = product['quantity']['options'][q]['price'];
+                    }
+                    var bestSeller = false;
+                    if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
+                        product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
+                        bestSeller = (q === p['best_seller']);
+                    }
+                    else {
+                        bestSeller = (counter === 1);
+                    }
+                    addUpSellOption(qty, discount, price_1, bestSeller);
+                    counter++;
+                }
+            }
+        }
+        else {
+            steps[upsellStepIndex].enabled = false;
+        }
+    }
+    // Facebook
+    if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
+        var p = plugins['facebook'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
+                p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
+                p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
+                p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
+                var testCode = null;
+                if (p.hasOwnProperty('test_code')) {
+                    testCode = p['test_code'];
+                }
+                facebook = new Facebook(p['pixel'], p['access_token'], p['eventValue'], p['eventCurrency'], testCode);
+            }
+        }
+    }
+    // TikTok
+    // TODO: HERE
+}
+/******************************************************************************/
+/**                                  ONLOAD                                  **/
+/******************************************************************************/
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, elements, pluginListStr, counter, q, qty, discount, price_1, _loop_1, i;
+        var phoneInput, addressInput, elements, pluginListStr, checkout, _loop_1, i;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1455,33 +1758,19 @@ function onLoad() {
                     product = _a.sent();
                     // DEBUG TODO: to delete
                     console.log('product', product);
-                    counter = 0;
-                    for (q in product['quantity']['options']) {
-                        console.log('q', q);
-                        qty = q;
-                        discount = 0;
-                        if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
-                            discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                    if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
+                        checkout = product['checkout'];
+                        if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
+                            plugins = checkout['plugins'];
+                            initPlugins();
                         }
-                        else {
-                            discount = product['quantity']['options'][q]['discount'];
-                        }
-                        price_1 = 0;
-                        if (typeof (product['quantity']['options'][q]['price']) === 'string') {
-                            price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
-                        }
-                        else {
-                            price_1 = product['quantity']['options'][q]['price'];
-                        }
-                        addUpSellOption(qty, discount, price_1, (counter == 1));
-                        counter++;
                     }
                     changeQuantity(product['quantity']['default']);
                     _loop_1 = function (i) {
                         var opt = upSellOptions[i];
-                        var q_1 = opt.quantity;
+                        var q = opt.quantity;
                         opt.element.addEventListener('click', function (event) {
-                            changeQuantity(q_1);
+                            changeQuantity(q);
                         });
                     };
                     for (i = 0; i < upSellOptions.length; i++) {

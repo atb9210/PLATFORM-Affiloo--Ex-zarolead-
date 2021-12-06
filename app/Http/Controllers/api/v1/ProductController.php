@@ -268,11 +268,17 @@ class ProductController extends Controller
             $sku = $info['sku'];
         }
 
+        $checkout = [];
+        if (isset($info['checkout']) && $info['checkout'] !== null) {
+            $checkout = $info['checkout'];
+        }
+
         return response([
             'id' => strval($product->id),
             'name' => $product->name,
             'quantity' => $quantity,
             'sku' => $sku,
+            'checkout' => $checkout,
         ]);
     }
 }

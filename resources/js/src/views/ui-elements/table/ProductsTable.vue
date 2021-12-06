@@ -15,6 +15,7 @@
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather"
                 :icon="(mode == 'view') ? 'icon-plus' : 'icon-arrow-left'"
                 @click="(mode == 'view') ? beginCreation() : (mode = 'view')"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-settings" @click="showSettings()"></vs-button>
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
@@ -464,6 +465,163 @@
             </div>
         </vs-popup>
 
+
+        <!-- Checkout settings popup -->
+        <vs-popup title="Checkout form settings" :active.sync="showPopup['checkout_settings']">
+
+            <!-- Privacy policy -->
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">Privacy policy</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="plugins['privacy_policy'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-unlock" icon-no-border
+                        v-model="plugins['privacy_policy'].url"
+                        placeholder="Privacy Policy URL"
+                    />
+                </vx-input-group>
+            </div>
+
+            <!-- Upsell plugin -->
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">Upsell</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="plugins['upsell'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-select v-model="plugins['upsell'].best_seller" class="w-full">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item,index) in upSellOptions" class="w-full" />
+                    </vs-select>
+                </vx-input-group>
+            </div>
+
+            <!-- Facebook conversion API plugin -->
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">Facebook Conversions API</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="plugins['facebook'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-facebook" icon-no-border
+                        v-model="plugins['facebook'].pixel"
+                        placeholder="Facebook pixel"
+                    />
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-facebook" icon-no-border
+                        v-model="plugins['facebook'].access_token"
+                        placeholder="Access token"
+                    />
+                    <!-- TODO: This is only for testing -->
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-facebook" icon-no-border
+                        v-model="plugins['facebook'].test_code"
+                        placeholder="Test code (e.g. TEST2331)"
+                    />
+                    <vs-input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        class="w-full"
+                        icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                        v-model="plugins['facebook'].eventValue"
+                        name="fb_event_value" placeholder="Conversion event value"
+                    />
+                    <vs-select v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
+                    </vs-select>
+                </vx-input-group>
+            </div>
+
+            <!-- TikTok pixel plugin -->
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">TikTok Pixel</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="plugins['tiktok'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-music" icon-no-border
+                        v-model="plugins['tiktok'].pixel"
+                        placeholder="TikTok pixel"
+                    />
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-music" icon-no-border
+                        v-model="plugins['tiktok'].token"
+                        placeholder="TikTok pixel token API"
+                    />
+                    <vs-select v-model="plugins['tiktok'].eventName" class="w-full select-large">
+                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
+                    </vs-select>
+                </vx-input-group>
+            </div>
+
+            <hr class="mb-2 mt-2">
+
+            <!-- Payment methods -->
+            <h2 class="mb-2">Payment methods</h2>
+
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">Cash on delivery</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="paymentMethods['paymentMethodCod'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                        v-model="paymentMethods['paymentMethodCod'].fee"
+                        placeholder="Fee"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                    />
+                </vx-input-group>
+            </div>
+
+            <div class="vx-col w-full mt-5">
+                <div class="mb-2">Online (credit card)</div>
+                <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                    <template slot="prepend">
+                        <div class="prepend-text">
+                            <vs-checkbox v-model="paymentMethods['paymentMethodOnline'].enabled"></vs-checkbox>
+                        </div>
+                    </template>
+                    <vs-input
+                        class="w-full"
+                        icon-pack="feather" icon="icon-dollar-sign" icon-no-border
+                        v-model="paymentMethods['paymentMethodOnline'].fee"
+                        placeholder="Fee"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                    />
+                </vx-input-group>
+            </div>
+            
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="saveSettings" color="primary" type="filled" :disabled="!isValidForm('checkout_settings')">Save settings</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -491,6 +649,7 @@ export default {
       showPopup: {
         'create_qty': false,
         'edit_qty': false,
+        'checkout_settings': false,
       },
       newObject: {
         'create': {
@@ -562,6 +721,48 @@ export default {
 
       createProductImagePreview: '',
       editProductImagePreview: '',
+
+      plugins: {
+        'privacy_policy': {
+          enabled: false,
+          url: '',
+        },
+        'upsell': {
+          enabled: false,
+          best_seller: '',
+        },
+        'facebook': {
+          enabled: false,
+          pixel: '',
+          access_token: '',
+          test_code: '',
+          eventValue: '',
+          eventCurrency: 'EUR',
+        },
+        'tiktok': {
+          enabled: false,
+          pixel: '',
+          token: '',
+          eventName: 'SubmitForm',
+        },
+      },
+
+      paymentMethods: {
+        'paymentMethodCod': {
+          enabled: false,
+          fee: '0',
+          name: 'Alla consegna',
+        },
+        'paymentMethodOnline': {
+          enabled: false,
+          fee: '0',
+          name: 'Online',
+        },
+      },
+
+      upSellOptions: [],
+      facebookEventCurrencyOptions: ['EUR', 'USD'],
+      tiktokEventNameOptions: ['SubmitForm', 'ClickButton'],
     }
   },
   computed: {
@@ -746,6 +947,8 @@ export default {
           && obj.price != '' && obj.price >= 0
           && obj.commission != '' && obj.commission >= 0
           && obj.sub_commission != '' && obj.sub_commission >= 0)
+      } else if (type == 'checkout_settings') {
+        return true
       } else {
         return (obj.name.length > 0
           && obj.tag != '' && obj.tag >= 1
@@ -1070,6 +1273,160 @@ export default {
       let url = new URL(window.location)
       let toCopy = url.origin + '/products/' + productId + '/checkout'
       await this.copyToClipboard(toCopy, 'Checkout link copied')
+    },
+    resetPlugins() {
+      this.plugins = {
+        'privacy_policy': {
+          enabled: false,
+          url: '',
+        },
+        'upsell': {
+          enabled: false,
+          best_seller: '',
+        },
+        'facebook': {
+          enabled: false,
+          pixel: '',
+          access_token: '',
+          test_code: '',
+          eventValue: '',
+          eventCurrency: 'EUR',
+        },
+        'tiktok': {
+          enabled: false,
+          pixel: '',
+          token: '',
+          eventName: 'SubmitForm',
+        },
+      }
+    },
+    resetPaymentMethods() {
+      this.paymentMethods = {
+        'paymentMethodCod': {
+          enabled: false,
+          fee: '0',
+          name: 'Alla consegna',
+        },
+        'paymentMethodOnline': {
+          enabled: false,
+          fee: '0',
+          name: 'Online',
+        },
+      }
+    },
+    showSettings(product = null) {
+      if (product === null) {
+        let index = this.getObjectIndexById(this.editingObject)
+        if (index >= 0) {
+          product = this.objects[index]
+        }
+      }
+
+      if (product === null) {
+        return
+      }
+
+      let quantity = product.quantity
+      if (quantity === null) {
+        quantity = {
+          default: null,
+          options: [],
+        }
+      }
+      this.upSellOptions = []
+      for (let q in quantity.options) {
+        this.upSellOptions.push(q)
+      }
+
+      let info = product.info
+      if (info === null) {
+        info = {}
+      }
+
+      if (info.hasOwnProperty('checkout') && info.checkout !== null) {
+        let checkout = info.checkout
+
+        this.resetPlugins()
+        if (checkout.hasOwnProperty('plugins') && checkout.plugins !== null) {
+          let plugins = checkout.plugins
+          for (let k in this.plugins) {
+            if (plugins.hasOwnProperty(k)) {
+              this.plugins[k] = plugins[k]
+            }
+          }
+        }
+
+        this.resetPaymentMethods()
+        if (checkout.hasOwnProperty('payment_methods') && checkout.payment_methods !== null) {
+          let paymentMethods = checkout.payment_methods
+          for (let k in this.paymentMethods) {
+            if (paymentMethods.hasOwnProperty(k)) {
+              this.paymentMethods[k] = paymentMethods[k]
+            }
+          }
+        }
+      }
+
+      this.showPopup['checkout_settings'] = true
+    },
+    async saveSettings() {
+      let product = null
+      let index = this.getObjectIndexById(this.editingObject)
+      if (index >= 0) {
+        product = this.objects[index]
+      } else {
+        return
+      }
+
+      this.$vs.loading()
+
+      let info = product.info
+      if (info === null) {
+        info = {}
+      }
+
+      info.checkout = {
+        plugins: this.plugins,
+        payment_methods: this.paymentMethods,
+      }
+      let params = {
+        info: info,
+      }
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Update product
+      let updated = false
+      try {
+        let data = new FormData()
+        data.append('info', JSON.stringify(info))
+        const response = await this.$http.post('/api/v1/products/' + this.editingObject, data, { headers })
+        updated = true
+      } catch (error) {
+        updated = false
+      }
+
+      if (updated) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the product',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.showPopup['checkout_settings'] = false
+      this.$vs.loading.close()
     },
   },
   created() {

@@ -348,6 +348,7 @@ class WarehouseController extends Controller
      *
      * @bodyParam status string required Status
      * @bodyParam total string required Total
+     * @bodyParam payment_method string required Payment method
      *
      * @response {
      *  "status": "success",
@@ -358,8 +359,9 @@ class WarehouseController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'status' => 'required|string|' . $this->statusValidation,
-            'total'  => 'required|numeric|min:0',
+            'status'         => 'required|string|' . $this->statusValidation,
+            'total'          => 'required|numeric|min:0',
+            'payment_method' => 'required|string',
         ]);
 
         $lead = WarehouseLead::findOrFail($id);
@@ -371,9 +373,33 @@ class WarehouseController extends Controller
             $info = [];
         }
         $info['total'] = $params['total'];
+        $info['payment_method'] = $params['payment_method'];
         $lead->info = $info;
         $lead->status = $params['status'];
         $lead->save();
+
+        if (isset($info['delivery']['order_number'])) {
+            $orderNumber = strval($info['delivery']['order_number']);
+            $elogy = new \Driverfury\Elogy\Elogy(
+                env('ELOGY_API_TOKEN'),
+                env('ELOGY_EMAIL'),
+                env('ELOGY_PASSWORD'));
+            $elogyOrder = $elogy->getOrderByNumber($orderNumber);
+            if ($elogyOrder !== null) {
+                $orderId = $elogyOrder['id'];
+                $deliveryParams = [
+                    'gateway' => $params['payment_method'],
+                ];
+                if ($elogy->updateOrder(strval($orderId), $deliveryParams)) {
+                    $delivery = $elogy->getOrderByNumber($orderNumber);
+                    if ($delivery !== null) {
+                        $info['delivery'] = $delivery;
+                        $lead->info = $info;
+                        $lead->save();
+                    }
+                }
+            }
+        }
 
         return response([
             'status' => 'success',

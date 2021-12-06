@@ -392,6 +392,12 @@
                 <div class="invalid-feedback">Numero di telefono non valido</div>
             </div>
 
+            <div class="mb-3" id="termsAndConditionsDiv">
+                <input id="termsAndConditions" type="checkbox" checked="checked" />
+                <label for="termsAndConditions" class="form-label">Ho letto e accetto i <a target="_blank" href="" id="termsAndConditionsUrl">termini e condizioni</a>.</label>
+                <div class="invalid-feedback">Devi accettare i termini e le condizioni</div>
+            </div>
+
             <!-- Trust badge -->
             <div class="trust-badge row">
                 <div class="col-3">
@@ -647,19 +653,19 @@
             </h2>
 
             <div class="mb-3">
-                <div class="m-0 p-0 bg-gray border border-2">
+                <div class="m-0 p-0 bg-gray border border-2" id="paymentMethodCodDiv">
                     <p class="m-0 p-4">
                         <input id="pmInputRadioCod" name="paymentMethod" type="radio" value="paymentMethodCod" class="paymentMethodInputRadio" checked="checked">
-                        <label for="pmInputRadioCod">Alla consegna (commissione +1.95€)</label>
+                        <label for="pmInputRadioCod">Alla consegna (commissione +<span id="paymentMethodCodFee">0.00</span>€)</label>
                     </p>
                     <div class="m-0 p-4 bg-white paymentMethodDescription" id="paymentMethodCod">
                          Selezionando l'opzione pagamento alla consegna, il corriere aggiungerà una commissione che si dovrà pagare insieme all'ordine. Di seguito, puoi vedere altri metodi di pagamento più economici (con carta di credito o PayPal).
                     </div>
                 </div>
-                <div class="m-0 p-0 bg-gray border border-2">
+                <div class="m-0 p-0 bg-gray border border-2" id="paymentMethodOnlineDiv">
                     <p class="m-0 p-4">
                         <input id="pmInputRadioOnline" name="paymentMethod" type="radio" value="paymentMethodOnline" class="paymentMethodInputRadio">
-                        <label for="pmInputRadioOnline">Carta di credito</label>
+                        <label for="pmInputRadioOnline">Carta di credito (commissione +<span id="paymentMethodOnlineFee">0.00</span>€)</label>
                     </p>
                     <div class="m-0 p-4 bg-white paymentMethodDescription" id="paymentMethodOnline">
                         <label class="form-label">Carta di credito</label>

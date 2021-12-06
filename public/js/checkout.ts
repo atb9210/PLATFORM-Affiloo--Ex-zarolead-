@@ -1,3 +1,7 @@
+/******************************************************************************/
+/**                                   UTILS                                  **/
+/******************************************************************************/
+
 function strval(o: any): string
 {
     return <string>String(o);
@@ -25,6 +29,25 @@ function jsonDecode(s: string): object|Array<any>|null
     return result;
 }
 
+function getUrlParam(param: string): string|null
+{
+    let url = new URL(window.location.href);
+    return url.searchParams.get(param);
+}
+
+function getHostname(): string
+{
+    let tmpUrl = new URL(window.location.href);
+    return tmpUrl.origin
+}
+
+function getCookie(key: string): string|null
+{
+    let cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+    if (cookiesMatch) return cookiesMatch[2];
+    else return null;
+}
+
 function hideElement(elementId: string): void
 {
     var e: HTMLElement = document.getElementById(elementId);
@@ -41,6 +64,22 @@ function showElement(elementId: string): void
     }
 }
 
+function loadingStart()
+{
+    var loading: HTMLElement = document.getElementById('loading');
+    if (loading !== null) {
+        loading.style.display = 'block';
+    }
+}
+
+function loadingEnd()
+{
+    var loading: HTMLElement = document.getElementById('loading');
+    if (loading !== null) {
+        loading.style.display = 'none';
+    }
+}
+
 /*
  * TODO: Use axios as http library because this library is not async this means
  * that loading does not work properly.
@@ -49,6 +88,10 @@ function showElement(elementId: string): void
 
 var axios: any;
 var $http: any;
+
+/******************************************************************************/
+/**                              MY HTTP LIBRARY                             **/
+/******************************************************************************/
 
 class Http
 {
@@ -142,6 +185,10 @@ class Http
     }
 }
 
+/******************************************************************************/
+/**                             ZAROLEAD LIBRARY                             **/
+/******************************************************************************/
+
 class ZaroLead
 {
     API_URL: string;
@@ -152,9 +199,9 @@ class ZaroLead
 
     constructor()
     {
-        let tmpUrl = new URL(window.location.href);
-        this.API_URL = tmpUrl.origin + '/api/v1/'
-        this.API_URL_3RD = tmpUrl.origin + '/api/3rd/'
+        let hostname = getHostname();
+        this.API_URL = hostname + '/api/v1/'
+        this.API_URL_3RD = hostname + '/api/3rd/'
 
         /*
         this.$http = new Http();
@@ -254,7 +301,7 @@ class ZaroLead
         return false;
     }
 
-    async completeLead(leadId: string, status: string, total: number)
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string)
     {
         // DEBUG TODO:
         console.log('ZaroLead.completeLead()', leadId, status, total);
@@ -263,6 +310,7 @@ class ZaroLead
             let params = {
                 status: status,
                 total: total,
+                payment_method: paymentMethod,
             };
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
@@ -340,7 +388,109 @@ class ZaroLead
         }
         return paymentIntent;
     }
+
+    async facebookEvent(params: object)
+    {
+        // DEBUG TODO:
+        console.log('ZaroLead.facebookEvent()', params);
+
+        try {
+            const response = await this.$http.post(this.API_URL_3RD + 'facebook/events', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '' &&
+                response.hasOwnProperty('status') && response['status'] === 'success') {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
 }
+
+/******************************************************************************/
+/**                             FACEBOOK LIBRARY                             **/
+/******************************************************************************/
+
+class Facebook
+{
+    pixel: string;
+    accessToken: string;
+    eventValue: string;
+    eventCurrency: string;
+    testCode: string|null;
+
+    zarolead: ZaroLead;
+
+    constructor(pixel: string, accessToken: string,
+                eventName: string, eventValue: string, eventCurrency: string,
+                testCode: string|null = null)
+    {
+        this.pixel = pixel;
+        this.accessToken = accessToken;
+        this.eventValue = eventValue;
+        this.eventCurrency = eventCurrency;
+        this.testCode = testCode;
+
+        this.zarolead = new ZaroLead();
+    }
+
+    getClickId(): string
+    {
+        let clickId = '';
+        clickId = getCookie('_fbc');
+        let urlParamClickId = getUrlParam('fbclid');
+        if (urlParamClickId !== null && urlParamClickId !== '') {
+            clickId = getUrlParam('fbclid');
+        }
+        if (clickId === null) {
+            clickId = '';
+        }
+        return clickId;
+    }
+
+    async triggerEvent(eventName: string, customData: object = {}, testCode: string|null = null)
+    {
+        let params = {
+            access_token: this.accessToken,
+            pixel: this.pixel,
+            event: eventName,
+            fbc: this.getClickId(),
+            custom_data: JSON.stringify(customData),
+        };
+        if (testCode !== null) {
+            params['test_code'] = testCode;
+        }
+        const result = await this.zarolead.facebookEvent(params);
+        return result;
+    }
+
+    async finalize()
+    {
+        const result = await this.triggerEvent('Purchase', {
+            value: this.eventValue,
+            currency: this.eventCurrency
+        }, this.testCode);
+        return result;
+    }
+}
+
+/******************************************************************************/
+/**                              TIKTOK LIBRARY                              **/
+/******************************************************************************/
+
+class TikTok
+{
+    // TODO: HERE
+}
+
+/******************************************************************************/
+/**                            VALIDATION LIBRARY                            **/
+/******************************************************************************/
+
+// TODO: We do not use it
+// TODO: Delete it???????????
 
 /*
 
@@ -450,6 +600,10 @@ function validate(params: object, rules: object): object|null
     return result;
 }
 
+/******************************************************************************/
+/**                             GLOBAL VARIABLES                             **/
+/******************************************************************************/
+
 var form: HTMLFormElement = null;
 let zarolead = new ZaroLead();
 var lead: object|null = null;
@@ -495,21 +649,9 @@ let quantity = '';
 let price = 0.0;
 let total = 0.0;
 
-function loadingStart()
-{
-    var loading: HTMLElement = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'block';
-    }
-}
-
-function loadingEnd()
-{
-    var loading: HTMLElement = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'none';
-    }
-}
+/******************************************************************************/
+/**                              STEP VALIDATION                             **/
+/******************************************************************************/
 
 function resetCurrentLocation(): void
 {
@@ -723,26 +865,55 @@ function fillInAddress(): void
     setError(form, 'province', '');
 }
 
+/******************************************************************************/
+/**                              PAYMENT METHODS                             **/
+/******************************************************************************/
+
 interface PaymentMethod
 {
     id: string,
     fee: number,
     name: string,
+    enabled: boolean,
 }
 
 var paymentMethods: Array<PaymentMethod> = [
     {
         id: 'paymentMethodCod',
-        fee: 1.95,
+        fee: 0.0,
         name: 'Alla consegna',
+        enabled: false,
     },
     {
         id: 'paymentMethodOnline',
         fee: 0.0,
         name: 'Online',
+        enabled: false,
     },
 ];
 var paymentMethod: string = '';
+
+function getPaymentMethod(pmId: string): PaymentMethod|null
+{
+    for (let i = 0; i < paymentMethods.length; i++) {
+        let pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return pm;
+        }
+    }
+    return null;
+}
+
+function getPaymentMethodIndex(pmId: string): number
+{
+    for (let i = 0; i < paymentMethods.length; i++) {
+        let pm = paymentMethods[i];
+        if (pm.id === pmId) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 async function initPaymentMethods()
 {
@@ -761,6 +932,39 @@ async function initPaymentMethods()
         let paymentIntent = await zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity);
         if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
             stripeClientSecret = paymentIntent['client_secret'];
+        }
+    }
+
+    if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
+        let checkout = product['checkout'];
+        if (checkout.hasOwnProperty('payment_methods') && checkout['payment_methods'] !== null) {
+            let pms = checkout['payment_methods'];
+            for (let pm in pms) {
+                let pmIndex = getPaymentMethodIndex(pm);
+                if (pmIndex < 0) {
+                    continue;
+                }
+                if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
+                    paymentMethods[pmIndex].enabled = true;
+                    if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
+                        paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
+                    }
+                    if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
+                        paymentMethods[pmIndex].name = strval(pms[pm]['name']);
+                    }
+                } else {
+                    paymentMethods[pmIndex].enabled = false;
+                    hideElement(pm + 'Div');
+                }
+            }
+        }
+    }
+
+    for (let i = 0; i < paymentMethods.length; i++) {
+        let pm = paymentMethods[i];
+        let e = document.getElementById(pm.id + 'Fee');
+        if (e !== null) {
+            e.innerText = pm.fee.toFixed(2);
         }
     }
 }
@@ -785,16 +989,9 @@ function changePaymentMethod(pmId: string): void
     paymentMethod = pmId;
 }
 
-function getPaymentMethod(pmId: string): PaymentMethod|null
-{
-    for (let i = 0; i < paymentMethods.length; i++) {
-        let pm = paymentMethods[i];
-        if (pm.id === pmId) {
-            return pm;
-        }
-    }
-    return null;
-}
+/******************************************************************************/
+/**                                   STEPS                                  **/
+/******************************************************************************/
 
 async function initStep4()
 {
@@ -851,8 +1048,6 @@ async function initStep5()
         if (e !== null) {
             e.innerText = (total + fee).toFixed(2);
         }
-
-        // TODO: HERE
     }
 }
 
@@ -887,6 +1082,19 @@ async function validateStep1()
         isValid = false;
     }
 
+    // Check terms and conditions
+    let termsAndConditions = false;
+    let termsAndConditionsInput = <HTMLInputElement>document.getElementById('termsAndConditions');
+    if (termsAndConditionsInput !== null) {
+        termsAndConditions = (termsAndConditionsInput.checked == true);
+    }
+    if (termsAndConditions) {
+        setError(form, 'termsAndConditions', '');
+    } else {
+        setError(form, 'termsAndConditions', 'Devi accettare i termini e condizioni');
+        isValid = false;
+    }
+
     isValid = isValid && (product !== null);
 
     if (isValid) {
@@ -914,6 +1122,14 @@ async function validateStep1()
             total: total.toFixed(2),
             quantity: quantity,
         });
+
+        let fbResult = false;
+        if (facebook !== null) {
+            fbResult = await facebook.finalize();
+
+            // DEBUG TODO: to delete
+            console.log('facebook.finalize()', fbResult);
+        }
 
         // DEBUG TODO: to delete
         console.log('lead', lead);
@@ -1029,9 +1245,12 @@ async function validateStep4()
 
     let isValid = false;
 
+    let pMethod = '';
     if (paymentMethod === 'paymentMethodCod') {
+        pMethod = 'cashondelivery';
         isValid = true;
     } else if (paymentMethod === 'paymentMethodOnline') {
+        pMethod = 'online';
         const stripeResult = await stripe.confirmCardPayment(stripeClientSecret, {
             payment_method: {
                 card: card,
@@ -1073,7 +1292,7 @@ async function validateStep4()
         if (pm !== null) {
             fee = pm.fee;
         }
-        let leadUpdated = await zarolead.completeLead(lead['id'], 'confirmed', total + fee);
+        let leadUpdated = await zarolead.completeLead(lead['id'], 'confirmed', total + fee, pMethod);
         isValid = leadUpdated && isValid;
     }
 
@@ -1255,6 +1474,10 @@ function forcePhoneFormat(val: string): string
     return newVal;
 }
 
+/******************************************************************************/
+/**                                  UPSELL                                  **/
+/******************************************************************************/
+
 interface UpSellOption
 {
     quantity: string;
@@ -1396,6 +1619,104 @@ function changeQuantity(qty: string): void
     }
 }
 
+/******************************************************************************/
+/**                                  PLUGINS                                 **/
+/******************************************************************************/
+
+var plugins: object|null = null;
+var facebook: Facebook|null = null;
+var tiktok: TikTok|null = null;
+
+function initPlugins()
+{
+    // Privacy Policy (Terms and conditions)
+    hideElement('termsAndConditionsDiv');
+    if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
+        let p = plugins['privacy_policy'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            showElement('termsAndConditionsDiv');
+        }
+        if (p.hasOwnProperty('url') && p['url']) {
+            let tcUrl = <HTMLAnchorElement>document.getElementById('termsAndConditionsUrl');
+            if (tcUrl !== null) {
+                tcUrl.href = p['url'];
+            }
+            let tcInput = <HTMLInputElement>document.getElementById('termsAndConditions');
+            if (tcInput !== null) {
+                tcInput.checked = false;
+            }
+        }
+    }
+
+    // Upsell
+    // TODO: id step2 is not general??
+    let upsellStepIndex = getStepIndexById('step2');
+    if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
+        let p = plugins['upsell'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            steps[upsellStepIndex].enabled = true;
+
+            if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+                product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
+                let counter = 0;
+                for (var q in product['quantity']['options']) {
+                    let qty = q;
+                    let discount = 0;
+                    if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
+                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                    } else {
+                        discount = product['quantity']['options'][q]['discount'];
+                    }
+                    let price = 0;
+                    if (typeof(product['quantity']['options'][q]['price']) === 'string') {
+                        price = getCurrencyValue(product['quantity']['options'][q]['price']);
+                    } else {
+                        price = product['quantity']['options'][q]['price'];
+                    }
+                    let bestSeller = false;
+                    if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
+                        product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
+                        bestSeller = (q === p['best_seller']);
+                    } else {
+                        bestSeller = (counter === 1);
+                    }
+                    addUpSellOption(qty, discount, price, bestSeller);
+                    counter++;
+                }
+            }
+        } else {
+            steps[upsellStepIndex].enabled = false;
+        }
+    }
+
+    // Facebook
+    if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
+        let p = plugins['facebook'];
+        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+            if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
+                p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
+                p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
+                p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
+                var testCode: string|null = null;
+                if (p.hasOwnProperty('test_code')) {
+                    testCode = p['test_code'];
+                }
+                facebook = new Facebook(p['pixel'], p['access_token'],
+                                        p['eventValue'], p['eventCurrency'],
+                                        testCode);
+            }
+        }
+    }
+
+    // TikTok
+    // TODO: HERE
+}
+
+/******************************************************************************/
+/**                                  ONLOAD                                  **/
+/******************************************************************************/
+
+
 async function onLoad()
 {
     // DEBUG TODO: to delete
@@ -1482,25 +1803,12 @@ async function onLoad()
         // DEBUG TODO: to delete
         console.log('product', product);
 
-        let counter = 0;
-        for (var q in product['quantity']['options']) {
-            console.log('q', q);
-
-            let qty = q;
-            let discount = 0;
-            if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
-                discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
-            } else {
-                discount = product['quantity']['options'][q]['discount'];
+        if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
+            let checkout = product['checkout'];
+            if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
+                plugins = <object>checkout['plugins'];
+                initPlugins();
             }
-            let price = 0;
-            if (typeof(product['quantity']['options'][q]['price']) === 'string') {
-                price = getCurrencyValue(product['quantity']['options'][q]['price']);
-            } else {
-                price = product['quantity']['options'][q]['price'];
-            }
-            addUpSellOption(qty, discount, price, (counter == 1));
-            counter++;
         }
 
         changeQuantity(product['quantity']['default']);
