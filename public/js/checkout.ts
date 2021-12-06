@@ -1664,9 +1664,7 @@ function initPlugins()
                     let discount = 0;
                     if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
                         discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
-                    } else if (product['quantity']['options'][q]['discount'] == '') {
-                        discount = 0;
-                    } else {
+                    } else if (product['quantity']['options'][q]['discount'] !== '') {
                         discount = product['quantity']['options'][q]['discount'];
                     }
                     let price = 0;
