@@ -1321,7 +1321,7 @@ var steps: Array<Step> = [
     },
     {
         id: 'step2',
-        enabled: true,
+        enabled: false,
         init: null,
         validate: validateStep2,
         buttonText: 'CONTINUA',
