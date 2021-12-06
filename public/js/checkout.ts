@@ -1497,7 +1497,7 @@ function addUpSellOption(
     qty: string,
     discount: number,
     price: number,
-    total: number,
+    unitPrice: number,
     bestSeller: boolean): UpSellOption
 {
     let eOptions = document.getElementById('upSellOptions');
@@ -1551,12 +1551,12 @@ function addUpSellOption(
     let eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(total);
+    eContentPrice1.innerText = '€' + formatCurrency(price);
     eContentPrice.appendChild(eContentPrice1);
     let eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = '€' + formatCurrency(price) + ' al pezzo';
+    eContentPrice2.innerText = '€' + formatCurrency(unitPrice) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
 
     eContent.appendChild(eContentQty);
@@ -1694,8 +1694,8 @@ function initPlugins()
                         } else {
                             bestSeller = (counter === 1);
                         }
-                        let subtotal = intval(qty)*price;
-                        addUpSellOption(qty, discount, price, subtotal, bestSeller);
+                        let unitPrice = price/intval(qty);
+                        addUpSellOption(qty, discount, price, unitPrice, bestSeller);
                         counter++;
                     }
                 }

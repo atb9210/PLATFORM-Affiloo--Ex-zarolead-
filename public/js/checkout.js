@@ -1473,7 +1473,7 @@ function forcePhoneFormat(val) {
     return newVal;
 }
 var upSellOptions = [];
-function addUpSellOption(qty, discount, price, total, bestSeller) {
+function addUpSellOption(qty, discount, price, unitPrice, bestSeller) {
     var eOptions = document.getElementById('upSellOptions');
     if (eOptions === null) {
         return;
@@ -1520,12 +1520,12 @@ function addUpSellOption(qty, discount, price, total, bestSeller) {
     var eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(total);
+    eContentPrice1.innerText = '€' + formatCurrency(price);
     eContentPrice.appendChild(eContentPrice1);
     var eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = '€' + formatCurrency(price) + ' al pezzo';
+    eContentPrice2.innerText = '€' + formatCurrency(unitPrice) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
     eContent.appendChild(eContentQty);
     eContent.appendChild(eContentSale);
@@ -1646,8 +1646,8 @@ function initPlugins() {
                         else {
                             bestSeller = (counter === 1);
                         }
-                        var subtotal = intval(qty) * price_1;
-                        addUpSellOption(qty, discount, price_1, subtotal, bestSeller);
+                        var unitPrice = price_1 / intval(qty);
+                        addUpSellOption(qty, discount, price_1, unitPrice, bestSeller);
                         counter++;
                     }
                 }
