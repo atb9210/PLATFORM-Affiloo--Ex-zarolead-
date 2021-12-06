@@ -1535,7 +1535,7 @@ function addUpSellOption(
     }
 
     let eContentSale = document.createElement('div');
-    eContentSale.classList.add('col-4');
+    eContentSale.classList.add('col-2');
     eContentSale.classList.add('pt-2');
     eContentSale.classList.add('pe-0');
     eContentSale.classList.add('ps-0');
@@ -1545,7 +1545,7 @@ function addUpSellOption(
     eContentSale.appendChild(eContentSaleSpan);
 
     let eContentPrice = document.createElement('div');
-    eContentPrice.classList.add('col-3');
+    eContentPrice.classList.add('col-5');
     let eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');

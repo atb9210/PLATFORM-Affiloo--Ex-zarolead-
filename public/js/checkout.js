@@ -1505,7 +1505,7 @@ function addUpSellOption(qty, discount, price, total, bestSeller) {
         eContentQty.innerText = qty + ' pezzi';
     }
     var eContentSale = document.createElement('div');
-    eContentSale.classList.add('col-4');
+    eContentSale.classList.add('col-2');
     eContentSale.classList.add('pt-2');
     eContentSale.classList.add('pe-0');
     eContentSale.classList.add('ps-0');
@@ -1514,7 +1514,7 @@ function addUpSellOption(qty, discount, price, total, bestSeller) {
     eContentSaleSpan.innerText = '-' + String(discount) + '%';
     eContentSale.appendChild(eContentSaleSpan);
     var eContentPrice = document.createElement('div');
-    eContentPrice.classList.add('col-3');
+    eContentPrice.classList.add('col-5');
     var eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
