@@ -1539,10 +1539,12 @@ function addUpSellOption(
     eContentSale.classList.add('pt-2');
     eContentSale.classList.add('pe-0');
     eContentSale.classList.add('ps-0');
-    let eContentSaleSpan = document.createElement('span');
-    eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
-    eContentSaleSpan.innerText = '-' + <string>String(discount) + '%';
-    eContentSale.appendChild(eContentSaleSpan);
+    if (discount > 0) {
+        let eContentSaleSpan = document.createElement('span');
+        eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
+        eContentSaleSpan.innerText = '-' + <string>String(discount) + '%';
+        eContentSale.appendChild(eContentSaleSpan);
+    }
 
     let eContentPrice = document.createElement('div');
     eContentPrice.classList.add('col-5');

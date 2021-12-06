@@ -1509,10 +1509,12 @@ function addUpSellOption(qty, discount, price, total, bestSeller) {
     eContentSale.classList.add('pt-2');
     eContentSale.classList.add('pe-0');
     eContentSale.classList.add('ps-0');
-    var eContentSaleSpan = document.createElement('span');
-    eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
-    eContentSaleSpan.innerText = '-' + String(discount) + '%';
-    eContentSale.appendChild(eContentSaleSpan);
+    if (discount > 0) {
+        var eContentSaleSpan = document.createElement('span');
+        eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
+        eContentSaleSpan.innerText = '-' + String(discount) + '%';
+        eContentSale.appendChild(eContentSaleSpan);
+    }
     var eContentPrice = document.createElement('div');
     eContentPrice.classList.add('col-5');
     var eContentPrice1 = document.createElement('div');
