@@ -40,6 +40,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 function strval(o) {
     return String(o);
 }
+function intval(o) {
+    return parseInt(o);
+}
 function jsonEncode(o) {
     var result = null;
     try {
@@ -1470,7 +1473,7 @@ function forcePhoneFormat(val) {
     return newVal;
 }
 var upSellOptions = [];
-function addUpSellOption(qty, discount, price, bestSeller) {
+function addUpSellOption(qty, discount, price, total, bestSeller) {
     var eOptions = document.getElementById('upSellOptions');
     if (eOptions === null) {
         return;
@@ -1515,12 +1518,12 @@ function addUpSellOption(qty, discount, price, bestSeller) {
     var eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice1.innerText = '€' + formatCurrency(total);
     eContentPrice.appendChild(eContentPrice1);
     var eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = 'al pezzo';
+    eContentPrice2.innerText = '€' + formatCurrency(price) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
     eContent.appendChild(eContentQty);
     eContent.appendChild(eContentSale);
@@ -1641,7 +1644,8 @@ function initPlugins() {
                         else {
                             bestSeller = (counter === 1);
                         }
-                        addUpSellOption(qty, discount, price_1, bestSeller);
+                        var subtotal = intval(qty) * price_1;
+                        addUpSellOption(qty, discount, price_1, subtotal, bestSeller);
                         counter++;
                     }
                 }

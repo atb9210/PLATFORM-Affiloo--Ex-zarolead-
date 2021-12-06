@@ -7,6 +7,11 @@ function strval(o: any): string
     return <string>String(o);
 }
 
+function intval(o: any): number
+{
+    return parseInt(o);
+}
+
 function jsonEncode(o: object): string|null
 {
     var result: string|null = null;
@@ -1492,6 +1497,7 @@ function addUpSellOption(
     qty: string,
     discount: number,
     price: number,
+    total: number,
     bestSeller: boolean): UpSellOption
 {
     let eOptions = document.getElementById('upSellOptions');
@@ -1543,12 +1549,12 @@ function addUpSellOption(
     let eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice1.innerText = '€' + formatCurrency(total);
     eContentPrice.appendChild(eContentPrice1);
     let eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = 'al pezzo';
+    eContentPrice2.innerText = '€' + formatCurrency(price) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
 
     eContent.appendChild(eContentQty);
@@ -1686,7 +1692,8 @@ function initPlugins()
                         } else {
                             bestSeller = (counter === 1);
                         }
-                        addUpSellOption(qty, discount, price, bestSeller);
+                        let subtotal = intval(qty)*price;
+                        addUpSellOption(qty, discount, price, subtotal, bestSeller);
                         counter++;
                     }
                 }
