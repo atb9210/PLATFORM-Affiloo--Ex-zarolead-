@@ -1583,6 +1583,8 @@ var plugins = null;
 var facebook = null;
 var tiktok = null;
 function initPlugins() {
+    // DEBUG TODO: to delete
+    console.log('initPlugins()');
     if (plugins !== null) {
         // Privacy Policy (Terms and conditions)
         hideElement('termsAndConditionsDiv');
@@ -1767,8 +1769,8 @@ function onLoad() {
                         if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
                             plugins = checkout['plugins'];
                         }
-                        initPlugins();
                     }
+                    initPlugins();
                     changeQuantity(product['quantity']['default']);
                     _loop_1 = function (i) {
                         var opt = upSellOptions[i];

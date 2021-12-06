@@ -1629,6 +1629,9 @@ var tiktok: TikTok|null = null;
 
 function initPlugins()
 {
+    // DEBUG TODO: to delete
+    console.log('initPlugins()');
+
     if (plugins !== null) {
         // Privacy Policy (Terms and conditions)
         hideElement('termsAndConditionsDiv');
@@ -1813,8 +1816,8 @@ async function onLoad()
             if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
                 plugins = <object>checkout['plugins'];
             }
-            initPlugins();
         }
+        initPlugins();
 
         changeQuantity(product['quantity']['default']);
 
