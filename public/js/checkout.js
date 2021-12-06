@@ -1511,7 +1511,7 @@ function addUpSellOption(qty, discount, price, total, bestSeller) {
     eContentSale.classList.add('ps-0');
     var eContentSaleSpan = document.createElement('span');
     eContentSaleSpan.classList.add('upSellOptionBodyDiscount');
-    eContentSaleSpan.innerText = 'RISPARMIA ' + String(discount) + '%';
+    eContentSaleSpan.innerText = '-' + String(discount) + '%';
     eContentSale.appendChild(eContentSaleSpan);
     var eContentPrice = document.createElement('div');
     eContentPrice.classList.add('col-3');
