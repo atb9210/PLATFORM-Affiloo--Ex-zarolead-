@@ -1629,87 +1629,92 @@ var tiktok: TikTok|null = null;
 
 function initPlugins()
 {
-    // Privacy Policy (Terms and conditions)
-    hideElement('termsAndConditionsDiv');
-    if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
-        let p = plugins['privacy_policy'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            showElement('termsAndConditionsDiv');
-        }
-        if (p.hasOwnProperty('url') && p['url']) {
-            let tcUrl = <HTMLAnchorElement>document.getElementById('termsAndConditionsUrl');
-            if (tcUrl !== null) {
-                tcUrl.href = p['url'];
+    if (plugins !== null) {
+        // Privacy Policy (Terms and conditions)
+        hideElement('termsAndConditionsDiv');
+        if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
+            let p = plugins['privacy_policy'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                showElement('termsAndConditionsDiv');
             }
-            let tcInput = <HTMLInputElement>document.getElementById('termsAndConditions');
-            if (tcInput !== null) {
-                tcInput.checked = false;
-            }
-        }
-    }
-
-    // Upsell
-    // TODO: id step2 is not general??
-    let upsellStepIndex = getStepIndexById('step2');
-    if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
-        let p = plugins['upsell'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            steps[upsellStepIndex].enabled = true;
-
-            if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
-                product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
-                let counter = 0;
-                for (var q in product['quantity']['options']) {
-                    let qty = q;
-                    let discount = 0;
-                    if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
-                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
-                    } else if (product['quantity']['options'][q]['discount'] !== '') {
-                        discount = product['quantity']['options'][q]['discount'];
-                    }
-                    let price = 0;
-                    if (typeof(product['quantity']['options'][q]['price']) === 'string') {
-                        price = getCurrencyValue(product['quantity']['options'][q]['price']);
-                    } else {
-                        price = product['quantity']['options'][q]['price'];
-                    }
-                    let bestSeller = false;
-                    if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
-                        product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
-                        bestSeller = (q === p['best_seller']);
-                    } else {
-                        bestSeller = (counter === 1);
-                    }
-                    addUpSellOption(qty, discount, price, bestSeller);
-                    counter++;
+            if (p.hasOwnProperty('url') && p['url']) {
+                let tcUrl = <HTMLAnchorElement>document.getElementById('termsAndConditionsUrl');
+                if (tcUrl !== null) {
+                    tcUrl.href = p['url'];
+                }
+                let tcInput = <HTMLInputElement>document.getElementById('termsAndConditions');
+                if (tcInput !== null) {
+                    tcInput.checked = false;
                 }
             }
-        } else {
-            steps[upsellStepIndex].enabled = false;
         }
-    }
 
-    // Facebook
-    if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
-        let p = plugins['facebook'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
-                p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
-                p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
-                p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
-                var testCode: string|null = null;
-                if (p.hasOwnProperty('test_code')) {
-                    testCode = p['test_code'];
+        // Upsell
+        // TODO: id step2 is not general??
+        let upsellStepIndex = getStepIndexById('step2');
+        if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
+            let p = plugins['upsell'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                steps[upsellStepIndex].enabled = true;
+
+                if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+                    product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
+                    let counter = 0;
+                    for (var q in product['quantity']['options']) {
+                        let qty = q;
+                        let discount = 0;
+                        if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
+                            discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                        } else if (product['quantity']['options'][q]['discount'] !== '') {
+                            discount = product['quantity']['options'][q]['discount'];
+                        }
+                        let price = 0;
+                        if (typeof(product['quantity']['options'][q]['price']) === 'string') {
+                            price = getCurrencyValue(product['quantity']['options'][q]['price']);
+                        } else {
+                            price = product['quantity']['options'][q]['price'];
+                        }
+                        let bestSeller = false;
+                        if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
+                            product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
+                            bestSeller = (q === p['best_seller']);
+                        } else {
+                            bestSeller = (counter === 1);
+                        }
+                        addUpSellOption(qty, discount, price, bestSeller);
+                        counter++;
+                    }
                 }
-                facebook = new Facebook(p['pixel'], p['access_token'],
-                                        p['eventValue'], p['eventCurrency'],
-                                        testCode);
+            } else {
+                steps[upsellStepIndex].enabled = false;
             }
         }
-    }
 
-    // TikTok
-    // TODO: HERE
+        // DEBUG TODO: to delete
+        console.log('step2 (upsell)', steps[1]);
+
+        // Facebook
+        if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
+            let p = plugins['facebook'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
+                    p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
+                    p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
+                    p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
+                    var testCode: string|null = null;
+                    if (p.hasOwnProperty('test_code')) {
+                        testCode = p['test_code'];
+                    }
+                    facebook = new Facebook(p['pixel'], p['access_token'],
+                                            p['eventValue'], p['eventCurrency'],
+                                            testCode);
+                }
+            }
+        }
+
+        // TikTok
+        // TODO: HERE
+    }
 }
 
 /******************************************************************************/

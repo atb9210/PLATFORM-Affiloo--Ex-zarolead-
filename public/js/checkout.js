@@ -1583,85 +1583,89 @@ var plugins = null;
 var facebook = null;
 var tiktok = null;
 function initPlugins() {
-    // Privacy Policy (Terms and conditions)
-    hideElement('termsAndConditionsDiv');
-    if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
-        var p = plugins['privacy_policy'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            showElement('termsAndConditionsDiv');
-        }
-        if (p.hasOwnProperty('url') && p['url']) {
-            var tcUrl = document.getElementById('termsAndConditionsUrl');
-            if (tcUrl !== null) {
-                tcUrl.href = p['url'];
+    if (plugins !== null) {
+        // Privacy Policy (Terms and conditions)
+        hideElement('termsAndConditionsDiv');
+        if (plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
+            var p = plugins['privacy_policy'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                showElement('termsAndConditionsDiv');
             }
-            var tcInput = document.getElementById('termsAndConditions');
-            if (tcInput !== null) {
-                tcInput.checked = false;
-            }
-        }
-    }
-    // Upsell
-    // TODO: id step2 is not general??
-    var upsellStepIndex = getStepIndexById('step2');
-    if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
-        var p = plugins['upsell'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            steps[upsellStepIndex].enabled = true;
-            if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
-                product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
-                var counter = 0;
-                for (var q in product['quantity']['options']) {
-                    var qty = q;
-                    var discount = 0;
-                    if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
-                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
-                    }
-                    else if (product['quantity']['options'][q]['discount'] !== '') {
-                        discount = product['quantity']['options'][q]['discount'];
-                    }
-                    var price_1 = 0;
-                    if (typeof (product['quantity']['options'][q]['price']) === 'string') {
-                        price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
-                    }
-                    else {
-                        price_1 = product['quantity']['options'][q]['price'];
-                    }
-                    var bestSeller = false;
-                    if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
-                        product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
-                        bestSeller = (q === p['best_seller']);
-                    }
-                    else {
-                        bestSeller = (counter === 1);
-                    }
-                    addUpSellOption(qty, discount, price_1, bestSeller);
-                    counter++;
+            if (p.hasOwnProperty('url') && p['url']) {
+                var tcUrl = document.getElementById('termsAndConditionsUrl');
+                if (tcUrl !== null) {
+                    tcUrl.href = p['url'];
+                }
+                var tcInput = document.getElementById('termsAndConditions');
+                if (tcInput !== null) {
+                    tcInput.checked = false;
                 }
             }
         }
-        else {
-            steps[upsellStepIndex].enabled = false;
-        }
-    }
-    // Facebook
-    if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
-        var p = plugins['facebook'];
-        if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
-                p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
-                p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
-                p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
-                var testCode = null;
-                if (p.hasOwnProperty('test_code')) {
-                    testCode = p['test_code'];
+        // Upsell
+        // TODO: id step2 is not general??
+        var upsellStepIndex = getStepIndexById('step2');
+        if (upsellStepIndex >= 0 && plugins.hasOwnProperty('upsell') && plugins['upsell'] !== null) {
+            var p = plugins['upsell'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                steps[upsellStepIndex].enabled = true;
+                if (product.hasOwnProperty('quantity') && product['quantity'] !== null &&
+                    product['quantity'].hasOwnProperty('options') && product['quantity']['options'] !== null) {
+                    var counter = 0;
+                    for (var q in product['quantity']['options']) {
+                        var qty = q;
+                        var discount = 0;
+                        if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
+                            discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                        }
+                        else if (product['quantity']['options'][q]['discount'] !== '') {
+                            discount = product['quantity']['options'][q]['discount'];
+                        }
+                        var price_1 = 0;
+                        if (typeof (product['quantity']['options'][q]['price']) === 'string') {
+                            price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
+                        }
+                        else {
+                            price_1 = product['quantity']['options'][q]['price'];
+                        }
+                        var bestSeller = false;
+                        if (p.hasOwnProperty('best_seller') && p['best_seller'] !== null &&
+                            product['quantity']['options'].hasOwnProperty(p['best_seller'])) {
+                            bestSeller = (q === p['best_seller']);
+                        }
+                        else {
+                            bestSeller = (counter === 1);
+                        }
+                        addUpSellOption(qty, discount, price_1, bestSeller);
+                        counter++;
+                    }
                 }
-                facebook = new Facebook(p['pixel'], p['access_token'], p['eventValue'], p['eventCurrency'], testCode);
+            }
+            else {
+                steps[upsellStepIndex].enabled = false;
             }
         }
+        // DEBUG TODO: to delete
+        console.log('step2 (upsell)', steps[1]);
+        // Facebook
+        if (plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
+            var p = plugins['facebook'];
+            if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
+                if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
+                    p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
+                    p.hasOwnProperty('eventValue') && p['eventValue'] !== null && p['eventValue'] !== '' &&
+                    p.hasOwnProperty('eventCurrency') && p['eventCurrency'] !== null && p['eventCurrency'] !== '') {
+                    var testCode = null;
+                    if (p.hasOwnProperty('test_code')) {
+                        testCode = p['test_code'];
+                    }
+                    facebook = new Facebook(p['pixel'], p['access_token'], p['eventValue'], p['eventCurrency'], testCode);
+                }
+            }
+        }
+        // TikTok
+        // TODO: HERE
     }
-    // TikTok
-    // TODO: HERE
 }
 /******************************************************************************/
 /**                                  ONLOAD                                  **/
