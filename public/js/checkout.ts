@@ -475,6 +475,10 @@ class Facebook
         this.testCode = testCode;
 
         this.zarolead = new ZaroLead();
+
+        // DEBUG TODO: to delete
+        console.log('Facebook.constructor()');
+        console.log('this.testCode', this.testCode);
     }
 
     getClickId(): string
@@ -494,21 +498,35 @@ class Facebook
     async triggerEvent(eventName: string, customData: object = {}, testCode: string|null = null)
     {
         let params = {
-            access_token: this.accessToken,
-            pixel: this.pixel,
-            event: eventName,
-            fbc: this.getClickId(),
-            custom_data: JSON.stringify(customData),
+            'access_token': this.accessToken,
+            'pixel': this.pixel,
+            'event': eventName,
+            'fbc': this.getClickId(),
+            'custom_data': JSON.stringify(customData),
+            'test_code': testCode,
         };
+        // BUG TODO: It does not work with this code (commented). Why?
+        /*
         if (testCode !== null) {
             params['test_code'] = testCode;
         }
+        */
+
+        // DEBUG TODO: to delete
+        console.log('Facebook.triggerEvent()');
+        console.log('this.testCode', this.testCode);
+        console.log('params', params);
+
         const result = await this.zarolead.facebookEvent(params);
         return result;
     }
 
     async finalize()
     {
+        // DEBUG TODO: to delete
+        console.log('Facebook.finalize()');
+        console.log('this.testCode', this.testCode);
+
         const result = await this.triggerEvent('Purchase', {
             value: this.eventValue,
             currency: this.eventCurrency
