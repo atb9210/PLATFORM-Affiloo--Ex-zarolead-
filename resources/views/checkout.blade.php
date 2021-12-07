@@ -393,7 +393,7 @@
             </div>
 
             <div class="mb-3" id="termsAndConditionsDiv">
-                <input id="termsAndConditions" type="checkbox" checked="checked" />
+                <input id="termsAndConditions" type="checkbox" />
                 <label for="termsAndConditions" class="form-label">Ho letto e accetto i <a target="_blank" href="" id="termsAndConditionsUrl">termini e condizioni</a>.</label>
                 <div class="invalid-feedback">Devi accettare i termini e le condizioni</div>
             </div>
