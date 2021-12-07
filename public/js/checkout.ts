@@ -1724,6 +1724,12 @@ function initPlugins()
                 if (p.hasOwnProperty('test_code')) {
                     testCode = p['test_code'];
                 }
+
+                // DEBUG TODO: to delete
+                console.log('plugins[facebook]', plugins['facebook']);
+                console.log('plugins[facebook][test_code]', plugins['facebook']['test_code']);
+                console.log('testCode', testCode);
+
                 facebook = new Facebook(p['pixel'], p['access_token'],
                                         p['eventValue'], p['eventCurrency'],
                                         testCode);
