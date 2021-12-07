@@ -519,6 +519,9 @@ var Facebook = /** @class */ (function () {
         this.eventCurrency = eventCurrency;
         this.testCode = testCode;
         this.zarolead = new ZaroLead();
+        // DEBUG TODO: to delete
+        console.log('Facebook.constructor()');
+        console.log('this.testCode', this.testCode);
     }
     Facebook.prototype.getClickId = function () {
         var clickId = '';
@@ -541,15 +544,23 @@ var Facebook = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         params = {
-                            access_token: this.accessToken,
-                            pixel: this.pixel,
-                            event: eventName,
-                            fbc: this.getClickId(),
-                            custom_data: JSON.stringify(customData)
+                            'access_token': this.accessToken,
+                            'pixel': this.pixel,
+                            'event': eventName,
+                            'fbc': this.getClickId(),
+                            'custom_data': JSON.stringify(customData),
+                            'test_code': testCode
                         };
+                        // BUG TODO: It does not work with this code (commented). Why?
+                        /*
                         if (testCode !== null) {
                             params['test_code'] = testCode;
                         }
+                        */
+                        // DEBUG TODO: to delete
+                        console.log('Facebook.triggerEvent()');
+                        console.log('this.testCode', this.testCode);
+                        console.log('params', params);
                         return [4 /*yield*/, this.zarolead.facebookEvent(params)];
                     case 1:
                         result = _a.sent();
@@ -563,10 +574,14 @@ var Facebook = /** @class */ (function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.triggerEvent('Purchase', {
-                            value: this.eventValue,
-                            currency: this.eventCurrency
-                        }, this.testCode)];
+                    case 0:
+                        // DEBUG TODO: to delete
+                        console.log('Facebook.finalize()');
+                        console.log('this.testCode', this.testCode);
+                        return [4 /*yield*/, this.triggerEvent('Purchase', {
+                                value: this.eventValue,
+                                currency: this.eventCurrency
+                            }, this.testCode)];
                     case 1:
                         result = _a.sent();
                         return [2 /*return*/, result];
