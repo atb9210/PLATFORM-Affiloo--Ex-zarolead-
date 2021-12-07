@@ -155,15 +155,6 @@ class Http
 
     request(method: string, url: string, params: object = {}, headers: object = {}): string|null
     {
-        // DEBUG TODO:
-        console.log(
-            'ZaroLead.request()',
-            method,
-            url,
-            params,
-            headers
-        );
-
         var result: string|null = null;
 
         try {
@@ -199,9 +190,6 @@ class Http
                 }
             }
 
-            // DEBUG TODO: to delete
-            console.log('query', query);
-
             req.send(query);
             if (req.readyState === 4) {
                 result = req.response;
@@ -219,9 +207,6 @@ class Http
 
     post(url: string, params: object = {}, headers: object = {}): string|null
     {
-        // DEBUG TODO: to delete
-        console.log('Http.post()');
-
         return this.request('POST', url, params, headers);
     }
 }
@@ -257,9 +242,6 @@ class ZaroLead
 
     async createOrder(params: object)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.createOrder()', params);
-
         var order: object = null;
         try {
             const response = await this.$http.post(this.API_URL + 'orders', params, { headers: this.httpHeaders });
@@ -282,9 +264,6 @@ class ZaroLead
 
     async createLead(params: object)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.createLead()', params);
-
         var lead: object = null;
         try {
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders });
@@ -294,20 +273,9 @@ class ZaroLead
                     lead = response['data'];
                 }
 
-                // DEBUG TODO: to delete
-                console.log('response', response);
-                console.log('response.hasOwnProperty(\'data\')', response.hasOwnProperty('data'));
-                console.log('response.[\'data\']', response['data']);
-
                 if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
-                    // DEBUG TODO: to delete
-                    console.log('has not data', lead['data']);
-
                     lead = null;
                 } else if (lead.hasOwnProperty('data')) {
-                    // DEBUG TODO: to delete
-                    console.log('has data', lead['data']);
-
                     lead = lead['data'];
                 }
             }
@@ -319,9 +287,6 @@ class ZaroLead
 
     async updateLeadAddress(leadId: string, params: object)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.updateLeadAddress()', leadId, params);
-
         try {
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
@@ -344,9 +309,6 @@ class ZaroLead
 
     async completeLead(leadId: string, status: string, total: number, paymentMethod: string)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.completeLead()', leadId, status, total);
-
         try {
             let params = {
                 status: status,
@@ -374,9 +336,6 @@ class ZaroLead
 
     async getProduct(productId: string)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.getProduct()', productId);
-
         var product: object = null;
         try {
             const response = await this.$http.get(this.API_URL + 'products/' + productId + '/info', { headers: this.httpHeaders });
@@ -399,9 +358,6 @@ class ZaroLead
 
     async getPaymentIntent(productId: string, leadId: string, quantity: string)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.getPaymentIntent()', productId, leadId, quantity);
-
         var paymentIntent: object = null;
         let params = {
             lead_id: leadId,
@@ -432,9 +388,6 @@ class ZaroLead
 
     async facebookEvent(params: object)
     {
-        // DEBUG TODO:
-        console.log('ZaroLead.facebookEvent()', params);
-
         try {
             const response = await this.$http.post(this.API_URL_3RD + 'facebook/events', params, { headers: this.httpHeaders });
             if (response !== null && response !== '' &&
@@ -475,10 +428,6 @@ class Facebook
         this.testCode = testCode;
 
         this.zarolead = new ZaroLead();
-
-        // DEBUG TODO: to delete
-        console.log('Facebook.constructor()');
-        console.log('this.testCode', this.testCode);
     }
 
     getClickId(): string
@@ -512,21 +461,12 @@ class Facebook
         }
         */
 
-        // DEBUG TODO: to delete
-        console.log('Facebook.triggerEvent()');
-        console.log('this.testCode', this.testCode);
-        console.log('params', params);
-
         const result = await this.zarolead.facebookEvent(params);
         return result;
     }
 
     async finalize()
     {
-        // DEBUG TODO: to delete
-        console.log('Facebook.finalize()');
-        console.log('this.testCode', this.testCode);
-
         const result = await this.triggerEvent('Purchase', {
             value: this.eventValue,
             currency: this.eventCurrency
@@ -663,9 +603,7 @@ function validate(params: object, rules: object): object|null
 /**                             GLOBAL VARIABLES                             **/
 /******************************************************************************/
 
-var form: HTMLFormElement = null;
 let zarolead = new ZaroLead();
-var lead: object|null = null;
 
 declare var google: any;
 declare var autocomplete: any;
@@ -697,8 +635,12 @@ var card: any;
 var stripeClientSecret: string = '';
 
 var thisScript: HTMLElement = null;
+var form: HTMLFormElement = null;
+var lead: object|null = null;
 var productId: string = '';
 var product: object|null = null;
+var paymentIntent: object|null = null;
+
 var pluginsList: Array<object> = [];
 
 var fullName: string = '';
@@ -953,13 +895,6 @@ async function initPaymentMethods()
         }
     }
 
-    if (lead !== null && lead.hasOwnProperty('id')) {
-        let paymentIntent = await zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity);
-        if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
-            stripeClientSecret = paymentIntent['client_secret'];
-        }
-    }
-
     if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
         let checkout = product['checkout'];
         if (checkout.hasOwnProperty('payment_methods') && checkout['payment_methods'] !== null) {
@@ -996,9 +931,6 @@ async function initPaymentMethods()
 
 function changePaymentMethod(pmId: string): void
 {
-    // DEBUG TODO: to delete
-    console.log('changePaymentMethod', pmId);
-
     for (let i = 0; i < paymentMethods.length; i++) {
         let pm = paymentMethods[i];
         hideElement(pm.id);
@@ -1086,11 +1018,7 @@ async function validateStep1()
     phone = forcePhoneFormat(getInputValue('phone'));
     phone = phone.split(' ').join('');
 
-    console.log('fullName', fullName);
-    console.log('phone', phone);
-
     // Check full name
-    console.log('checkFullName', fullName, checkFullName(fullName));
     if (checkFullName(fullName)) {
         setError(form, 'fullName', '');
     } else {
@@ -1099,7 +1027,6 @@ async function validateStep1()
     }
 
     // Check phone
-    console.log('checkPhone', phone, checkPhone(phone));
     if (checkPhone(phone)) {
         setError(form, 'phone', '');
     } else {
@@ -1112,9 +1039,6 @@ async function validateStep1()
     let termsAndConditionsInput = <HTMLInputElement>document.getElementById('termsAndConditions');
     if (termsAndConditionsInput !== null) {
         termsAndConditions = (termsAndConditionsInput.checked === true);
-
-        // DEBUG TODO: to delet
-        console.log('termsAndConditionsInput.checked', termsAndConditionsInput.checked);
     }
     if (termsAndConditions) {
         setError(form, 'termsAndConditions', '');
@@ -1154,13 +1078,7 @@ async function validateStep1()
         let fbResult = false;
         if (facebook !== null) {
             fbResult = await facebook.finalize();
-
-            // DEBUG TODO: to delete
-            console.log('facebook.finalize()', fbResult);
         }
-
-        // DEBUG TODO: to delete
-        console.log('lead', lead);
     }
 
     // DEBUG TODO: to delete
@@ -1185,6 +1103,20 @@ async function validateStep2()
 
     if (total === 0.0) {
         isValid = false;
+    }
+
+    if (isValid) {
+        if (lead !== null && lead.hasOwnProperty('id')) {
+            let pIntent = await zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity);
+            if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
+                paymentIntent = pIntent;
+                stripeClientSecret = pIntent['client_secret'];
+            } else {
+                isValid = false;
+            }
+        } else {
+            isValid = false;
+        }
     }
 
     // DEBUG TODO: to delete
@@ -1254,23 +1186,17 @@ async function validateStep3()
                 country       : 'IT',
                 postcode      : cap,
             });
-
-            // DEBUG TODO: to delete
-            console.log('addressUpdated', addressUpdated);
         }
     }
 
     // DEBUG TODO: to delete
-    console.log('validateStep1', isValid);
+    console.log('validateStep3', isValid);
 
     return isValid;
 }
 
 async function validateStep4()
 {
-    // DEBUT TODO: to delete
-    console.log("validateStep4()");
-
     let isValid = false;
 
     let pMethod = '';
@@ -1297,13 +1223,7 @@ async function validateStep4()
             },
         })
 
-        // DEBUG TODO: to delete
-        console.log('stripeResult', stripeResult);
-
         if (stripeResult.error) {
-            // DEBUG TODO: to delete
-            console.log("stripeResult.error", stripeResult.error);
-
             setStripeError('cardErrors', stripeResult.error.message);
         } else {
             setStripeError('cardErrors', '');
@@ -1325,7 +1245,7 @@ async function validateStep4()
     }
 
     // DEBUG TODO: to delete
-    console.log("validateStep4 => ", isValid);
+    console.log("validateStep4", isValid);
 
     return isValid;
 }
@@ -1448,19 +1368,9 @@ async function nextStep()
         for (let i = currentStep; i < steps.length; i++) {
             let step = steps[i];
 
-            // DEBUG TODO: to delete
-            console.log('steps[' + i + ']', steps[i]);
-            console.log('enabled', steps[i].enabled);
-
             if (!step.enabled) {
-                // DEBUG TODO: to delete
-                console.log('continue');
-
                 continue;
             }
-
-            // DEBUG TODO: to delete
-            console.log('show it');
 
             showStep(step.id);
             if (step.init !== null) {
@@ -1660,9 +1570,6 @@ var tiktok: TikTok|null = null;
 
 function initPlugins()
 {
-    // DEBUG TODO: to delete
-    console.log('initPlugins()');
-
     // Privacy Policy (Terms and conditions)
     hideElement('termsAndConditionsDiv');
     let tcInput = <HTMLInputElement>document.getElementById('termsAndConditions');
@@ -1727,9 +1634,6 @@ function initPlugins()
         }
     }
 
-    // DEBUG TODO: to delete
-    console.log('step2 (upsell)', steps[1]);
-
     // Facebook
     if (plugins !== null && plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
         let p = plugins['facebook'];
@@ -1742,11 +1646,6 @@ function initPlugins()
                 if (p.hasOwnProperty('test_code')) {
                     testCode = p['test_code'];
                 }
-
-                // DEBUG TODO: to delete
-                console.log('plugins[facebook]', plugins['facebook']);
-                console.log('plugins[facebook][test_code]', plugins['facebook']['test_code']);
-                console.log('testCode', testCode);
 
                 facebook = new Facebook(p['pixel'], p['access_token'],
                                         p['eventValue'], p['eventCurrency'],
@@ -1766,10 +1665,6 @@ function initPlugins()
 
 async function onLoad()
 {
-    // DEBUG TODO: to delete
-    console.log('axios', axios);
-    console.log('axios.get', axios.get);
-
     loadingStart();
 
     // Steps initialization
@@ -1846,9 +1741,6 @@ async function onLoad()
         }
 
         product = await zarolead.getProduct(productId);
-
-        // DEBUG TODO: to delete
-        console.log('product', product);
 
         if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
             let checkout = product['checkout'];

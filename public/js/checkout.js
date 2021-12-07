@@ -161,8 +161,6 @@ var Http = /** @class */ (function () {
     Http.prototype.request = function (method, url, params, headers) {
         if (params === void 0) { params = {}; }
         if (headers === void 0) { headers = {}; }
-        // DEBUG TODO:
-        console.log('ZaroLead.request()', method, url, params, headers);
         var result = null;
         try {
             var req = new XMLHttpRequest();
@@ -194,8 +192,6 @@ var Http = /** @class */ (function () {
                     query = this.buildQuery(params);
                 }
             }
-            // DEBUG TODO: to delete
-            console.log('query', query);
             req.send(query);
             if (req.readyState === 4) {
                 result = req.response;
@@ -214,8 +210,6 @@ var Http = /** @class */ (function () {
     Http.prototype.post = function (url, params, headers) {
         if (params === void 0) { params = {}; }
         if (headers === void 0) { headers = {}; }
-        // DEBUG TODO: to delete
-        console.log('Http.post()');
         return this.request('POST', url, params, headers);
     };
     return Http;
@@ -243,8 +237,6 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.createOrder()', params);
                         order = null;
                         _a.label = 1;
                     case 1:
@@ -280,8 +272,6 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.createLead()', params);
                         lead = null;
                         _a.label = 1;
                     case 1:
@@ -294,18 +284,10 @@ var ZaroLead = /** @class */ (function () {
                             if (response.hasOwnProperty('data')) {
                                 lead = response['data'];
                             }
-                            // DEBUG TODO: to delete
-                            console.log('response', response);
-                            console.log('response.hasOwnProperty(\'data\')', response.hasOwnProperty('data'));
-                            console.log('response.[\'data\']', response['data']);
                             if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
-                                // DEBUG TODO: to delete
-                                console.log('has not data', lead['data']);
                                 lead = null;
                             }
                             else if (lead.hasOwnProperty('data')) {
-                                // DEBUG TODO: to delete
-                                console.log('has data', lead['data']);
                                 lead = lead['data'];
                             }
                         }
@@ -325,13 +307,9 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.updateLeadAddress()', leadId, params);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
-                    case 2:
+                    case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
                             respJson = null;
@@ -345,11 +323,11 @@ var ZaroLead = /** @class */ (function () {
                                 return [2 /*return*/, false];
                             }
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 3];
+                    case 2:
                         error_3 = _a.sent();
                         return [2 /*return*/, false];
-                    case 4: return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
                 }
             });
         });
@@ -360,18 +338,14 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.completeLead()', leadId, status, total);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([0, 2, , 3]);
                         params = {
                             status: status,
                             total: total,
                             payment_method: paymentMethod
                         };
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
-                    case 2:
+                    case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
                             respJson = null;
@@ -385,11 +359,11 @@ var ZaroLead = /** @class */ (function () {
                                 return [2 /*return*/, false];
                             }
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 3];
+                    case 2:
                         error_4 = _a.sent();
                         return [2 /*return*/, false];
-                    case 4: return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
                 }
             });
         });
@@ -400,8 +374,6 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.getProduct()', productId);
                         product = null;
                         _a.label = 1;
                     case 1:
@@ -437,8 +409,6 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.getPaymentIntent()', productId, leadId, quantity);
                         paymentIntent = null;
                         params = {
                             lead_id: leadId,
@@ -481,13 +451,9 @@ var ZaroLead = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // DEBUG TODO:
-                        console.log('ZaroLead.facebookEvent()', params);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'facebook/events', params, { headers: this.httpHeaders })];
-                    case 2:
+                    case 1:
                         response = _a.sent();
                         if (response !== null && response !== '' &&
                             response.hasOwnProperty('status') && response['status'] === 'success') {
@@ -496,11 +462,11 @@ var ZaroLead = /** @class */ (function () {
                         else {
                             return [2 /*return*/, false];
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 3];
+                    case 2:
                         error_7 = _a.sent();
                         return [2 /*return*/, false];
-                    case 4: return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
                 }
             });
         });
@@ -519,9 +485,6 @@ var Facebook = /** @class */ (function () {
         this.eventCurrency = eventCurrency;
         this.testCode = testCode;
         this.zarolead = new ZaroLead();
-        // DEBUG TODO: to delete
-        console.log('Facebook.constructor()');
-        console.log('this.testCode', this.testCode);
     }
     Facebook.prototype.getClickId = function () {
         var clickId = '';
@@ -551,16 +514,6 @@ var Facebook = /** @class */ (function () {
                             'custom_data': JSON.stringify(customData),
                             'test_code': testCode
                         };
-                        // BUG TODO: It does not work with this code (commented). Why?
-                        /*
-                        if (testCode !== null) {
-                            params['test_code'] = testCode;
-                        }
-                        */
-                        // DEBUG TODO: to delete
-                        console.log('Facebook.triggerEvent()');
-                        console.log('this.testCode', this.testCode);
-                        console.log('params', params);
                         return [4 /*yield*/, this.zarolead.facebookEvent(params)];
                     case 1:
                         result = _a.sent();
@@ -574,14 +527,10 @@ var Facebook = /** @class */ (function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        // DEBUG TODO: to delete
-                        console.log('Facebook.finalize()');
-                        console.log('this.testCode', this.testCode);
-                        return [4 /*yield*/, this.triggerEvent('Purchase', {
-                                value: this.eventValue,
-                                currency: this.eventCurrency
-                            }, this.testCode)];
+                    case 0: return [4 /*yield*/, this.triggerEvent('Purchase', {
+                            value: this.eventValue,
+                            currency: this.eventCurrency
+                        }, this.testCode)];
                     case 1:
                         result = _a.sent();
                         return [2 /*return*/, result];
@@ -708,9 +657,7 @@ function validate(params, rules) {
 /******************************************************************************/
 /**                             GLOBAL VARIABLES                             **/
 /******************************************************************************/
-var form = null;
 var zarolead = new ZaroLead();
-var lead = null;
 var currentLocation = {
     street_number: '',
     route: '',
@@ -724,8 +671,11 @@ var stripe;
 var card;
 var stripeClientSecret = '';
 var thisScript = null;
+var form = null;
+var lead = null;
 var productId = '';
 var product = null;
+var paymentIntent = null;
 var pluginsList = [];
 var fullName = '';
 var phone = '';
@@ -926,74 +876,60 @@ function getPaymentMethodIndex(pmId) {
 }
 function initPaymentMethods() {
     return __awaiter(this, void 0, void 0, function () {
-        var e, i, paymentIntent, checkout, pms, pm, pmIndex, i, pm, e_1;
+        var e, i, checkout, pms, pm, pmIndex, i, pm, e_1;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    e = document.getElementsByClassName('paymentMethodInputRadio');
-                    if (e !== null) {
-                        for (i = 0; i < e.length; i++) {
-                            e[i].addEventListener('change', function (event) {
-                                return __awaiter(this, void 0, void 0, function () {
-                                    return __generator(this, function (_a) {
-                                        if (event !== null) {
-                                            changePaymentMethod(event.target['value']);
-                                        }
-                                        return [2 /*return*/];
-                                    });
-                                });
-                            }, false);
+            e = document.getElementsByClassName('paymentMethodInputRadio');
+            if (e !== null) {
+                for (i = 0; i < e.length; i++) {
+                    e[i].addEventListener('change', function (event) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                if (event !== null) {
+                                    changePaymentMethod(event.target['value']);
+                                }
+                                return [2 /*return*/];
+                            });
+                        });
+                    }, false);
+                }
+            }
+            if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
+                checkout = product['checkout'];
+                if (checkout.hasOwnProperty('payment_methods') && checkout['payment_methods'] !== null) {
+                    pms = checkout['payment_methods'];
+                    for (pm in pms) {
+                        pmIndex = getPaymentMethodIndex(pm);
+                        if (pmIndex < 0) {
+                            continue;
                         }
-                    }
-                    if (!(lead !== null && lead.hasOwnProperty('id'))) return [3 /*break*/, 2];
-                    return [4 /*yield*/, zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity)];
-                case 1:
-                    paymentIntent = _a.sent();
-                    if (paymentIntent !== null && paymentIntent.hasOwnProperty('client_secret')) {
-                        stripeClientSecret = paymentIntent['client_secret'];
-                    }
-                    _a.label = 2;
-                case 2:
-                    if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
-                        checkout = product['checkout'];
-                        if (checkout.hasOwnProperty('payment_methods') && checkout['payment_methods'] !== null) {
-                            pms = checkout['payment_methods'];
-                            for (pm in pms) {
-                                pmIndex = getPaymentMethodIndex(pm);
-                                if (pmIndex < 0) {
-                                    continue;
-                                }
-                                if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
-                                    paymentMethods[pmIndex].enabled = true;
-                                    if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
-                                        paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
-                                    }
-                                    if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
-                                        paymentMethods[pmIndex].name = strval(pms[pm]['name']);
-                                    }
-                                }
-                                else {
-                                    paymentMethods[pmIndex].enabled = false;
-                                    hideElement(pm + 'Div');
-                                }
+                        if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
+                            paymentMethods[pmIndex].enabled = true;
+                            if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
+                                paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
+                            }
+                            if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
+                                paymentMethods[pmIndex].name = strval(pms[pm]['name']);
                             }
                         }
-                    }
-                    for (i = 0; i < paymentMethods.length; i++) {
-                        pm = paymentMethods[i];
-                        e_1 = document.getElementById(pm.id + 'Fee');
-                        if (e_1 !== null) {
-                            e_1.innerText = pm.fee.toFixed(2);
+                        else {
+                            paymentMethods[pmIndex].enabled = false;
+                            hideElement(pm + 'Div');
                         }
                     }
-                    return [2 /*return*/];
+                }
             }
+            for (i = 0; i < paymentMethods.length; i++) {
+                pm = paymentMethods[i];
+                e_1 = document.getElementById(pm.id + 'Fee');
+                if (e_1 !== null) {
+                    e_1.innerText = pm.fee.toFixed(2);
+                }
+            }
+            return [2 /*return*/];
         });
     });
 }
 function changePaymentMethod(pmId) {
-    // DEBUG TODO: to delete
-    console.log('changePaymentMethod', pmId);
     for (var i = 0; i < paymentMethods.length; i++) {
         var pm = paymentMethods[i];
         hideElement(pm.id);
@@ -1087,10 +1023,7 @@ function validateStep1() {
                     fullName = getInputValue('fullName');
                     phone = forcePhoneFormat(getInputValue('phone'));
                     phone = phone.split(' ').join('');
-                    console.log('fullName', fullName);
-                    console.log('phone', phone);
                     // Check full name
-                    console.log('checkFullName', fullName, checkFullName(fullName));
                     if (checkFullName(fullName)) {
                         setError(form, 'fullName', '');
                     }
@@ -1099,7 +1032,6 @@ function validateStep1() {
                         isValid = false;
                     }
                     // Check phone
-                    console.log('checkPhone', phone, checkPhone(phone));
                     if (checkPhone(phone)) {
                         setError(form, 'phone', '');
                     }
@@ -1111,8 +1043,6 @@ function validateStep1() {
                     termsAndConditionsInput = document.getElementById('termsAndConditions');
                     if (termsAndConditionsInput !== null) {
                         termsAndConditions = (termsAndConditionsInput.checked === true);
-                        // DEBUG TODO: to delet
-                        console.log('termsAndConditionsInput.checked', termsAndConditionsInput.checked);
                     }
                     if (termsAndConditions) {
                         setError(form, 'termsAndConditions', '');
@@ -1122,7 +1052,7 @@ function validateStep1() {
                         isValid = false;
                     }
                     isValid = isValid && (product !== null);
-                    if (!isValid) return [3 /*break*/, 4];
+                    if (!isValid) return [3 /*break*/, 3];
                     firstName = '';
                     lastName = '';
                     tmp = fullName.split(' ');
@@ -1152,14 +1082,8 @@ function validateStep1() {
                     return [4 /*yield*/, facebook.finalize()];
                 case 2:
                     fbResult = _a.sent();
-                    // DEBUG TODO: to delete
-                    console.log('facebook.finalize()', fbResult);
                     _a.label = 3;
                 case 3:
-                    // DEBUG TODO: to delete
-                    console.log('lead', lead);
-                    _a.label = 4;
-                case 4:
                     // DEBUG TODO: to delete
                     console.log('validateStep1', isValid);
                     loadingEnd();
@@ -1170,21 +1094,41 @@ function validateStep1() {
 }
 function validateStep2() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid;
+        var isValid, pIntent;
         return __generator(this, function (_a) {
-            isValid = true;
-            if (quantity === '') {
-                isValid = false;
+            switch (_a.label) {
+                case 0:
+                    isValid = true;
+                    if (quantity === '') {
+                        isValid = false;
+                    }
+                    if (price === 0.0) {
+                        isValid = false;
+                    }
+                    if (total === 0.0) {
+                        isValid = false;
+                    }
+                    if (!isValid) return [3 /*break*/, 3];
+                    if (!(lead !== null && lead.hasOwnProperty('id'))) return [3 /*break*/, 2];
+                    return [4 /*yield*/, zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity)];
+                case 1:
+                    pIntent = _a.sent();
+                    if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
+                        paymentIntent = pIntent;
+                        stripeClientSecret = pIntent['client_secret'];
+                    }
+                    else {
+                        isValid = false;
+                    }
+                    return [3 /*break*/, 3];
+                case 2:
+                    isValid = false;
+                    _a.label = 3;
+                case 3:
+                    // DEBUG TODO: to delete
+                    console.log("validateStep2", isValid);
+                    return [2 /*return*/, isValid];
             }
-            if (price === 0.0) {
-                isValid = false;
-            }
-            if (total === 0.0) {
-                isValid = false;
-            }
-            // DEBUG TODO: to delete
-            console.log("validateStep2", isValid);
-            return [2 /*return*/, isValid];
         });
     });
 }
@@ -1247,12 +1191,10 @@ function validateStep3() {
                         })];
                 case 1:
                     addressUpdated = _a.sent();
-                    // DEBUG TODO: to delete
-                    console.log('addressUpdated', addressUpdated);
                     _a.label = 2;
                 case 2:
                     // DEBUG TODO: to delete
-                    console.log('validateStep1', isValid);
+                    console.log('validateStep3', isValid);
                     return [2 /*return*/, isValid];
             }
         });
@@ -1264,8 +1206,6 @@ function validateStep4() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    // DEBUT TODO: to delete
-                    console.log("validateStep4()");
                     isValid = false;
                     pMethod = '';
                     if (!(paymentMethod === 'paymentMethodCod')) return [3 /*break*/, 1];
@@ -1291,16 +1231,10 @@ function validateStep4() {
                                     phone: phone
                                 }
                             }
-                        })
-                        // DEBUG TODO: to delete
-                    ];
+                        })];
                 case 2:
                     stripeResult = _a.sent();
-                    // DEBUG TODO: to delete
-                    console.log('stripeResult', stripeResult);
                     if (stripeResult.error) {
-                        // DEBUG TODO: to delete
-                        console.log("stripeResult.error", stripeResult.error);
                         setStripeError('cardErrors', stripeResult.error.message);
                     }
                     else {
@@ -1324,7 +1258,7 @@ function validateStep4() {
                     _a.label = 5;
                 case 5:
                     // DEBUG TODO: to delete
-                    console.log("validateStep4 => ", isValid);
+                    console.log("validateStep4", isValid);
                     return [2 /*return*/, isValid];
             }
         });
@@ -1436,16 +1370,9 @@ function nextStep() {
                 case 4:
                     if (!(i < steps.length)) return [3 /*break*/, 8];
                     step = steps[i];
-                    // DEBUG TODO: to delete
-                    console.log('steps[' + i + ']', steps[i]);
-                    console.log('enabled', steps[i].enabled);
                     if (!step.enabled) {
-                        // DEBUG TODO: to delete
-                        console.log('continue');
                         return [3 /*break*/, 7];
                     }
-                    // DEBUG TODO: to delete
-                    console.log('show it');
                     showStep(step.id);
                     if (!(step.init !== null)) return [3 /*break*/, 6];
                     loadingStart();
@@ -1608,8 +1535,6 @@ var plugins = null;
 var facebook = null;
 var tiktok = null;
 function initPlugins() {
-    // DEBUG TODO: to delete
-    console.log('initPlugins()');
     // Privacy Policy (Terms and conditions)
     hideElement('termsAndConditionsDiv');
     var tcInput = document.getElementById('termsAndConditions');
@@ -1675,8 +1600,6 @@ function initPlugins() {
             steps[upsellStepIndex].enabled = false;
         }
     }
-    // DEBUG TODO: to delete
-    console.log('step2 (upsell)', steps[1]);
     // Facebook
     if (plugins !== null && plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
         var p = plugins['facebook'];
@@ -1689,10 +1612,6 @@ function initPlugins() {
                 if (p.hasOwnProperty('test_code')) {
                     testCode = p['test_code'];
                 }
-                // DEBUG TODO: to delete
-                console.log('plugins[facebook]', plugins['facebook']);
-                console.log('plugins[facebook][test_code]', plugins['facebook']['test_code']);
-                console.log('testCode', testCode);
                 facebook = new Facebook(p['pixel'], p['access_token'], p['eventValue'], p['eventCurrency'], testCode);
             }
         }
@@ -1709,9 +1628,6 @@ function onLoad() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    // DEBUG TODO: to delete
-                    console.log('axios', axios);
-                    console.log('axios.get', axios.get);
                     loadingStart();
                     // Steps initialization
                     hideSteps();
@@ -1793,8 +1709,6 @@ function onLoad() {
                     return [4 /*yield*/, zarolead.getProduct(productId)];
                 case 1:
                     product = _a.sent();
-                    // DEBUG TODO: to delete
-                    console.log('product', product);
                     if (product.hasOwnProperty('checkout') && product['checkout'] !== null) {
                         checkout = product['checkout'];
                         if (checkout.hasOwnProperty('plugins') && checkout['plugins'] !== null) {
