@@ -1073,7 +1073,8 @@ function validateStep1() {
                             product_name: product['name'],
                             price: price.toFixed(2),
                             total: total.toFixed(2),
-                            quantity: quantity
+                            quantity: quantity,
+                            status: 'abandoned'
                         })];
                 case 1:
                     lead = _a.sent();

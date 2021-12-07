@@ -15,4 +15,16 @@ class WarehouseLead extends Model
     protected $casts = [
         'info' => 'array',
     ];
+
+    public static $statuses = [
+        'confirmed',
+        'no answer',
+        'cancelled',
+        'fake',
+        'duplicate',
+        'to recall',
+        'to do',
+        'waiting payment',
+        'abandoned',
+    ];
 }

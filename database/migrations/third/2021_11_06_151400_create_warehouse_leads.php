@@ -19,16 +19,7 @@ class CreateWarehouseLeads extends Migration
             $table->string('last_name');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
-            $table->enum('status', [
-                'confirmed',
-                'no answer',
-                'cancelled',
-                'fake',
-                'duplicate',
-                'to recall',
-                'to do',
-                'waiting payment'
-            ])->default('to do');
+            $table->enum('status', \App\third\WarehouseLead::$statuses)->default('to do');
             $table->json('info')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

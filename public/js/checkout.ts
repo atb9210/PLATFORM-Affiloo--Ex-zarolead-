@@ -1073,6 +1073,7 @@ async function validateStep1()
             price: price.toFixed(2),
             total: total.toFixed(2),
             quantity: quantity,
+            status: 'abandoned',
         });
 
         let fbResult = false;

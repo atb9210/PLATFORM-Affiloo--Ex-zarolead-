@@ -12,7 +12,7 @@ use App\Settings;
 class WarehouseController extends Controller
 {
     private $table = 'third_warehouse_leads';
-    private $statusValidation = 'in:confirmed,no answer,cancelled,fake,duplicate,to recall,to do,waiting payment';
+    private $statusValidation = 'in:' . implode(WarehouseLead::$statuses, ',');;
 
     /**
      * Get leads list.
