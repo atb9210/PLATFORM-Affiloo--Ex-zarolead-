@@ -12,7 +12,11 @@ use App\Settings;
 class WarehouseController extends Controller
 {
     private $table = 'third_warehouse_leads';
-    private $statusValidation = 'in:' . implode(WarehouseLead::$statuses, ',');;
+
+    private function statusValidation()
+    {
+        return 'in:' . implode(',', WarehouseLead::$statuses);
+    }
 
     /**
      * Get leads list.
@@ -34,7 +38,7 @@ class WarehouseController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to'   => 'nullable|date|date_format:Y-m-d',
-            'filter_status'    => 'nullable|string|' . $this->statusValidation,
+            'filter_status'    => 'nullable|string|' . $this->statusValidation(),
             'filter_product'   => 'nullable|string',
         ]);
 
@@ -90,7 +94,7 @@ class WarehouseController extends Controller
             'phone'      => 'required|string|min:7',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'nullable|string|' . $this->statusValidation,
+            'status'     => 'nullable|string|' . $this->statusValidation(),
 
             'order_id'     => 'numeric',
             'sku'          => 'string',
@@ -277,7 +281,7 @@ class WarehouseController extends Controller
             'email'      => 'nullable|string|min:4',
             'notes'      => 'string',
             'info'       => 'json',
-            'status'     => 'nullable|string|' . $this->statusValidation,
+            'status'     => 'nullable|string|' . $this->statusValidation(),
         ]);
 
         if (isset($params['info'])) {
@@ -359,7 +363,7 @@ class WarehouseController extends Controller
     {
         // Param validation
         $params = $request->validate([
-            'status'         => 'required|string|' . $this->statusValidation,
+            'status'         => 'required|string|' . $this->statusValidation(),
             'total'          => 'required|numeric|min:0',
             'payment_method' => 'required|string',
         ]);
@@ -372,6 +376,7 @@ class WarehouseController extends Controller
         if ($info === null) {
             $info = [];
         }
+        $info['paid'] = true;
         $info['total'] = $params['total'];
         $info['payment_method'] = $params['payment_method'];
         $lead->info = $info;
