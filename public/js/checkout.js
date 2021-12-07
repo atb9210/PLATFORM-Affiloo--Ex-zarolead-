@@ -511,7 +511,7 @@ var ZaroLead = /** @class */ (function () {
 /**                             FACEBOOK LIBRARY                             **/
 /******************************************************************************/
 var Facebook = /** @class */ (function () {
-    function Facebook(pixel, accessToken, eventName, eventValue, eventCurrency, testCode) {
+    function Facebook(pixel, accessToken, eventValue, eventCurrency, testCode) {
         if (testCode === void 0) { testCode = null; }
         this.pixel = pixel;
         this.accessToken = accessToken;

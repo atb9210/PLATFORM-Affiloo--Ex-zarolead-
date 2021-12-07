@@ -465,7 +465,7 @@ class Facebook
     zarolead: ZaroLead;
 
     constructor(pixel: string, accessToken: string,
-                eventName: string, eventValue: string, eventCurrency: string,
+                eventValue: string, eventCurrency: string,
                 testCode: string|null = null)
     {
         this.pixel = pixel;
