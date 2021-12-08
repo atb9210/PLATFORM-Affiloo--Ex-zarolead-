@@ -1070,6 +1070,7 @@ async function validateStep1()
             phone: phone,
             sku: product['sku'],
             product_name: product['name'],
+            product_id: intval(productId),
             price: price.toFixed(2),
             total: total.toFixed(2),
             quantity: quantity,

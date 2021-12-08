@@ -40,6 +40,31 @@
 
     </vs-row>
 
+    <!-- ChatAPI popup -->
+    <vs-popup title="Chat API" :active.sync="showPopup['chatapi']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Instance</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input v-if="hasSetting('chatapi') && settings.chatapi.hasOwnProperty('api_instance')" class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="settings.chatapi.api_instance" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Token</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input v-if="hasSetting('chatapi') && settings.chatapi.hasOwnProperty('api_token')" class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="settings.chatapi.api_token" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateChatAPISettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
     <!-- Stripe popup -->
     <vs-popup title="Stripe" :active.sync="showPopup['stripe']">
       <div class="vx-row mb-6">
@@ -47,7 +72,7 @@
           <span>API Public Key</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="settings.stripe.api_public_key" />
+          <vs-input v-if="hasSetting('stripe') && settings.stripe.hasOwnProperty('api_public_key')" class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="settings.stripe.api_public_key" />
         </div>
       </div>
 
@@ -56,7 +81,7 @@
           <span>API Secret Key</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="settings.stripe.api_secret_key" />
+          <vs-input v-if="hasSetting('stripe') && settings.stripe.hasOwnProperty('api_secret_key')" class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="settings.stripe.api_secret_key" />
         </div>
       </div>
 
@@ -75,10 +100,17 @@ export default{
       settings: {},
 
       showPopup: {
+        'chatapi': false,
         'stripe': false,
       },
 
       apps: [
+        {
+          name: 'Chat API',
+          image: '/images/3rd_party/chatapi.png',
+          description: 'In-App Messaging',
+          callback: this.showChatAPISettings,
+        },
         {
           name: 'Stripe',
           image: '/images/3rd_party/stripe.png',
@@ -225,6 +257,27 @@ export default{
       if (cb !== null) {
         cb()
       }
+    },
+    hasSetting(k) {
+      if (this.settings !== null && this.settings.hasOwnProperty(k) && this.settings[k] !== null) {
+        return true
+      }
+      return false
+    },
+
+    /* ChatAPI */
+    async showChatAPISettings() {
+      if (!this.settings.hasOwnProperty('chatapi')) {
+        this.settings['chatapi'] = {
+          api_instance: '',
+          api_token: '',
+        }
+      }
+      this.showPopup['chatapi'] = true
+    },
+    async updateChatAPISettings() {
+      await this.updateSettingsWithLoading()
+      this.showPopup['chatapi'] = false
     },
 
     /* Stripe */

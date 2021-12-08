@@ -72,6 +72,7 @@ class WarehouseController extends Controller
      * @bodyParam info string Lead's info
      * @bodyParam status string Lead's status
      * @bodyParam order_id string Lead's order id
+     * @bodyParam product_id string Lead's product id
      * @bodyParam sku string Lead's sku
      * @bodyParam product_name string Lead's product
      * @bodyParam price string Lead's price
@@ -97,6 +98,7 @@ class WarehouseController extends Controller
             'status'     => 'nullable|string|' . $this->statusValidation(),
 
             'order_id'     => 'numeric',
+            'product_id'   => 'numeric',
             'sku'          => 'string',
             'product_name' => 'string',
             'price'        => 'numeric',
@@ -135,6 +137,11 @@ class WarehouseController extends Controller
 
         if (isset($params['order_id'])) {
             $params['info']['order_id'] = $params['order_id'];
+        }
+        $product = null;
+        if (isset($params['product_id'])) {
+            $params['info']['product_id'] = $params['product_id'];
+            $product = \App\Product::find($params['product_id']);
         }
         if (isset($params['sku'])) {
             $params['info']['sku'] = $params['sku'];
@@ -244,6 +251,22 @@ class WarehouseController extends Controller
                 }
                 $lead->info = $info;
                 $lead->save();
+            }
+
+            if ($product !== null) {
+                $chatapi = $this->getChatAPIClient();
+                $message = null;
+                $productInfo = $product->info;
+                if ($productInfo === null) {
+                    $productInfo = [];
+                }
+                if (isset($productInfo['confirmation_message'])) {
+                    $message = $productInfo['confirmation_message'];
+                }
+                if ($message !== null && $message !== '') {
+                    // TODO: This should be delayed by 10 minutes
+                    $chatapi->sendMessage($params['phone'], $message);
+                }
             }
         }
 
@@ -636,6 +659,21 @@ class WarehouseController extends Controller
         }
         $stripe = new \Stripe\StripeClient($apiKey);
         return $stripe;
+    }
+
+    private function getChatAPIClient()
+    {
+        $settings = Settings::get();
+        $apiInstance = env('CHATAPI_INSTANCE', '');
+        $apiToken = env('CHATAPI_TOKEN', '');
+        if (isset($settings['chatapi']['api_instance'])) {
+            $apiInstance = $settings['chatapi']['api_instance'];
+        }
+        if (isset($settings['chatapi']['api_token'])) {
+            $apiToken = $settings['chatapi']['api_token'];
+        }
+        $chatapi = new \Driverfury\ChatAPI\ChatAPI($apiInstance, $apiToken);
+        return $chatapi;
     }
 
     /**

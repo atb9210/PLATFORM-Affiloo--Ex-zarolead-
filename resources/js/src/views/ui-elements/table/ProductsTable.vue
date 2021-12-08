@@ -16,6 +16,7 @@
                 :icon="(mode == 'view') ? 'icon-plus' : 'icon-arrow-left'"
                 @click="(mode == 'view') ? beginCreation() : (mode = 'view')"></vs-button>
             <vs-button v-if="canCreateAndEdit && mode == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-settings" @click="showSettings()"></vs-button>
+            <vs-button v-if="canCreateAndEdit && mode == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showConfirmationMessage()"></vs-button>
             <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
         </p>
 
@@ -622,6 +623,21 @@
             </div>
         </vs-popup>
 
+        <!-- Confirmation message popup -->
+        <vs-popup title="Notes" :active.sync="showPopup['confirmation_message']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <h3>Confirmation message</h3>
+                        <vs-textarea v-model="confirmationMessage" height="200px"></vs-textarea>
+                        <div class="flex" style="float: right;">
+                            <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="updateConfirmationMessage(confirmationMessage)"></vs-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -650,6 +666,7 @@ export default {
         'create_qty': false,
         'edit_qty': false,
         'checkout_settings': false,
+        'confirmation_message': false,
       },
       newObject: {
         'create': {
@@ -763,6 +780,8 @@ export default {
       upSellOptions: [],
       facebookEventCurrencyOptions: ['EUR', 'USD'],
       tiktokEventNameOptions: ['SubmitForm', 'ClickButton'],
+
+      confirmationMessage: '',
     }
   },
   computed: {
@@ -1426,6 +1445,81 @@ export default {
       }
 
       this.showPopup['checkout_settings'] = false
+      this.$vs.loading.close()
+    },
+
+    showConfirmationMessage() {
+      let product = null
+      let pIndex = this.getObjectIndexById(this.editingObject)
+      if (pIndex < 0) {
+        return
+      }
+      product = this.objects[pIndex]
+      if (product === null) {
+        return
+      }
+
+      this.confirmationMessage = ''
+      let info = product.info
+      if (info !== null && info.hasOwnProperty('confirmation_message') && info.confirmation_message !== null) {
+        this.confirmationMessage = info.confirmation_message
+      }
+      this.showPopup['confirmation_message'] = true
+    },
+    async updateConfirmationMessage(msg) {
+      let product = null
+      let index = this.getObjectIndexById(this.editingObject)
+      if (index >= 0) {
+        product = this.objects[index]
+      } else {
+        return
+      }
+
+      this.$vs.loading()
+
+      let info = product.info
+      if (info === null) {
+        info = {}
+      }
+
+      info.confirmation_message = msg
+      let params = {
+        info: info,
+      }
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Update product
+      let updated = false
+      try {
+        let data = new FormData()
+        data.append('info', JSON.stringify(info))
+        const response = await this.$http.post('/api/v1/products/' + this.editingObject, data, { headers })
+        updated = true
+      } catch (error) {
+        updated = false
+      }
+
+      if (updated) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the product',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.showPopup['confirmation_message'] = false
       this.$vs.loading.close()
     },
   },

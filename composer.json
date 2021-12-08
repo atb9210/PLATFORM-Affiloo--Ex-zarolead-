@@ -9,6 +9,7 @@
         "automattic/woocommerce": "^3.0",
         "cloudflare/sdk": "^1.1",
         "daverogers/serverpilot-php": "^1.0",
+        "driverfury/chatapi": "dev-master",
         "driverfury/cloudflare": "dev-master",
         "driverfury/elogy": "dev-master",
         "driverfury/facebook": "dev-master",
@@ -107,6 +108,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/elogy"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/chatapi"
         }
     ]
 }
