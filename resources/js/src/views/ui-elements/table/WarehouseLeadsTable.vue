@@ -122,6 +122,17 @@
                 </li>
             </vue-context>
 
+            <popover class="customer_popover" :name="'customer_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
+                <div><b>{{ lead.full_name }}</b></div>
+                <div v-if="lead.info !== null && lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null">
+                    <div v-if="lead.info.shipping.hasOwnProperty('street_address') && lead.info.shipping.hasOwnProperty('city') && lead.info.shipping.hasOwnProperty('province')">
+                        <div>{{ lead.info.shipping.street_address }}</div>
+                        <div>{{ lead.info.shipping.city }} ({{ lead.info.shipping.province }})</div>
+                    </div>
+                </div>
+                <div>{{ lead.phone }}</div>
+            </popover>
+
             <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
                 <ul v-if="lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null && lead.info.products.length > 0">
                     <li v-for="(item, pIndex) in lead.info.products" :key="pIndex">
@@ -186,7 +197,7 @@
 
                         <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
-                                <vs-chip>
+                                <vs-chip v-popover="{name:'customer_popover_' + item.id}">
                                     {{item.full_name}}
                                 </vs-chip>
                             </div>
@@ -1783,6 +1794,11 @@ export default {
   padding-bottom: 0px !important;
   font-size: 0.8em;
   white-space: nowrap;
+}
+
+.customer_popover {
+  z-index: 999999 !important;
+  position: fixed !important;
 }
 
 .items_popover {
