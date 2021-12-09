@@ -361,11 +361,18 @@ class Elogy
         return false;
     }
 
+    public function deleteOrders(array $orderIds): bool
+    {
+        $response = $this->postRequest('/deleteOrders', $orderIds, $orderIds);
+        if ($response !== null && isset($response['success']) && $response['success'] === true) {
+            return true;
+        }
+        return false;
+    }
+
     public function deleteOrder(string $orderId): bool
     {
-        // TODO: HERE
-        $response = $this->deleteRequest('/orders/' . $orderId);
-        dd($response);
+        return $this->deleteOrders([$orderId]);
     }
 
     public function updateCustomer(string $customerId, array $params): bool
