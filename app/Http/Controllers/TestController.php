@@ -350,12 +350,10 @@ class TestController extends Controller
             $wl->info = $info;
             $wl->save();
         }
-        foreach ($this->leadsNoNumber as $lead) {
-            $phone = $lead;
-
+        foreach ($this->leadsNoNumber as $phone) {
             $wl = $this->getLeadByPhone($wLeads, $phone);
             if ($wl === null) {
-                $dontExistInOurDb[] = $lead[0];
+                $dontExistInOurDb[] = $phone;
                 continue;
             }
 
@@ -369,9 +367,9 @@ class TestController extends Controller
                 $total = $this->getCurrencyValue($info['total']);
             }
 
-            $firstName = $lead->first_name;
-            $lastName = $lead->last_name;
-            $infoPhone = $lead->phone;
+            $firstName = $wl->first_name;
+            $lastName = $wl->last_name;
+            $infoPhone = $wl->phone;
 
             $sku = '';
             if (isset($info['sku'])) {
@@ -413,9 +411,9 @@ class TestController extends Controller
                 if ($elogyOrder !== null) {
                     $orderNumber = strval($elogyOrder['order_number']);
                     $info['delivery']['order_number'] = $orderNumber;
-                    $created[] = $lead[0];
+                    $created[] = $phone;
                 } else {
-                    $alreadyExists[] = $lead[0];
+                    $alreadyExists[] = $$phone;
                 }
             } catch (Exception $e) {
                 // Nothing
