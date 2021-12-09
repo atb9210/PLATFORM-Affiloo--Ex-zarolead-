@@ -9,7 +9,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Delete selected leads" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelectedLeads()"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Back" position="top">
                 <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
@@ -1673,12 +1673,22 @@ export default {
         await this.warehouse.deleteLead(leads[i].id)
       }
     },
-    async deleteSelectedLeads() {
+    async deleteSelected() {
       this.$vs.loading()
       await this.deleteLeads(this.selectedLeads)
       this.selectedLeads = []
       this.$vs.loading.close()
       this.changeView('leads')
+    },
+    confirmDeletePopup() {
+      if (this.selectedLeads.length == 0) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Archive confirmation',
+        text: 'Are you sure you want to archive ' + this.selectedLeads.length + ' object(s)?',
+        accept: this.deleteSelected
+      })
     },
     showAddProductPopup() {
       this.showPopup['add_product'] = true
