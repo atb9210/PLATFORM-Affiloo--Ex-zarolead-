@@ -1104,6 +1104,15 @@ export default {
       if (this.editingObject <= 0) return
 
       let id = this.editingObject
+      let product = null
+      let pIndex = this.getObjectIndexById(id)
+      if (pIndex >= 0) {
+        product = this.objects[pIndex]
+      }
+
+      if (product === null) {
+        return
+      }
 
       this.$vs.loading()
 
@@ -1116,7 +1125,12 @@ export default {
       data.append('tag_id', this.newObject['edit'].tag)
       data.append('advertiser_id', this.newObject['edit'].advertiser)
       data.append('country', this.newObject['edit'].country)
-      data.append('info', JSON.stringify(this.newObject['edit'].info))
+
+      let info = product.info
+      for (let k in this.newObject['edit'].info) {
+        info[k] = this.newObject['edit'].info[k]
+      }
+      data.append('info', JSON.stringify(info))
 
       let quantity = {
         options: {},
