@@ -351,7 +351,7 @@ class TestController extends Controller
             $wl->save();
         }
         foreach ($this->leadsNoNumber as $lead) {
-            $phone = $lead[0];
+            $phone = $lead;
 
             $wl = $this->getLeadByPhone($wLeads, $phone);
             if ($wl === null) {
