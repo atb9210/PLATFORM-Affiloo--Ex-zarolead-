@@ -413,7 +413,7 @@ class TestController extends Controller
                     $info['delivery']['order_number'] = $orderNumber;
                     $created[] = $phone;
                 } else {
-                    $alreadyExists[] = $$phone;
+                    $alreadyExists[] = $phone;
                 }
             } catch (Exception $e) {
                 // Nothing
