@@ -450,6 +450,7 @@ class WarehouseController extends Controller
 
         $lead = WarehouseLead::findOrFail($id);
 
+        $info = $lead->info;
         if ($info !== null && isset($info['delivery']) && $info['delivery'] !== null) {
             $orderId = null;
             $orderNumber = null;
