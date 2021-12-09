@@ -42,7 +42,7 @@ class WarehouseController extends Controller
             'filter_product'   => 'nullable|string',
         ]);
 
-        $q = WarehouseLead::query();
+        $q = WarehouseLead::where('archived', 0);;
         if (isset($params['filter_date_from'])) {
             $q = $q->where('created_at', '>=', $params['filter_date_from'] . " 00:00:00");
         }
@@ -194,7 +194,8 @@ class WarehouseController extends Controller
         }
         if ($sku !== '') {
             $phone = $params['phone'];
-            $checkLead = WarehouseLead::where('phone', $phone)
+            $checkLead = WarehouseLead::where('archived', 0)
+                ->where('phone', $phone)
                 ->where('created_at', '>=', date('Y-m-d', strtotime('-7 day')) . " 00:00:00")
                 ->where('created_at', '<=', date('Y-m-d') . " 23:59:59")
                 ->get();
@@ -479,7 +480,8 @@ class WarehouseController extends Controller
             }
         }
 
-        $lead->delete();
+        //$lead->delete();
+        $lead->archived = 1;
 
         return response([
             'message' => 'Lead successfully deleted',

@@ -316,6 +316,10 @@ class TestController extends Controller
 
     public function test()
     {
+        dd("TEST");
+        exit();
+
+        /*
         $elogy = new \Driverfury\Elogy\Elogy(
             env('ELOGY_API_TOKEN'),
             env('ELOGY_EMAIL'),
@@ -429,6 +433,8 @@ class TestController extends Controller
             'dontExistInOurDb' => $dontExistInOurDb,
         ]);
         exit();
+        */
+
         /*
         $leads = [
             ['Giovanna Cerbone        ','3387707954','EL17112021042748'],
