@@ -8,6 +8,9 @@
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Delete selected leads" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteSelectedLeads()"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Back" position="top">
                 <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
@@ -48,6 +51,12 @@
                     <label>Product</label>
                     <vs-select class="w-full" v-model="filters.product">
                         <vs-select-item :key="pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
+                    </vs-select>
+                </div>
+                <div class="vx-col w-1/2">
+                    <label>Order Status</label>
+                    <vs-select class="w-full" v-model="filters.order_status">
+                        <vs-select-item :key="osIndex" :value="oStatus.id" :text="oStatus.name" v-for="(oStatus, osIndex) in orderStatuses" />
                     </vs-select>
                 </div>
             </div>
@@ -161,8 +170,8 @@
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
-                    <vs-th sort-key="delivery_status">Dlvry</vs-th>
-                    <!--<vs-th sort-key="order_status">Order Status</vs-th>-->
+                    <!--<vs-th sort-key="delivery_status">Dlvry</vs-th>-->
+                    <vs-th sort-key="order_status">Order Status</vs-th>
                     <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
                     <vs-th sort-key="notes">Notes</vs-th>
                     <vs-th>Actions</vs-th>
@@ -285,15 +294,15 @@
                             <span v-else>No</span>
                         </vs-td>
 
+                        <!--
                         <vs-td class="column-no-padding" :data="item.delivery_status">
                             <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" icon-pack="feather" icon="icon-package" />
                         </vs-td>
+                        -->
 
-                        <!--
                         <vs-td class="column-no-padding" :data="item.order_status">
                             <span>{{item.order_status}}</span>
                         </vs-td>
-                        -->
 
                         <!--
                         <vs-td class="column-no-padding" :data="item.carrier">
@@ -394,8 +403,8 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
+                    <vs-td class="column-no-padding"></vs-td>
                     <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
@@ -780,6 +789,7 @@ export default {
         date_to: '',
         status: '',
         product: '',
+        order_status: '',
       },
 
       showPopup: {
@@ -862,6 +872,20 @@ export default {
         'error'   : 'danger',
         'sent'    : 'success',
       },
+
+      orderStatuses: [
+        { name: 'Unprocessed',         id: 'imported' },
+        { name: 'To prepare',          id: 'to_prepare' },
+        { name: 'Waiting for carrier', id: 'prepared_to_ship' },
+        { name: 'Assigned to carrier', id: 'waiting_carrier' },
+        { name: 'Shipped',             id: 'shipped' },
+        { name: 'Delivered',           id: 'delivered' },
+        { name: 'Return',              id: 'return' },
+        { name: 'Invalid',             id: 'invalid' },
+        { name: 'Out of stock',        id: 'out_of_stock' },
+        { name: 'Duplicate',           id: 'duplicate' },
+        { name: 'Lead',                id: 'lead' },
+      ],
 
       carriers: [
         'brt',
@@ -973,6 +997,7 @@ export default {
         date_to: '',
         status: '',
         product: '',
+        order_status: '',
       }
       await this.filterDatesShortcut('this_month')
     },
@@ -1640,6 +1665,18 @@ export default {
     async deleteLead(lead) {
       this.$vs.loading()
       await this.warehouse.deleteLead(lead.id)
+      this.$vs.loading.close()
+      this.changeView('leads')
+    },
+    async deleteLeads(leads) {
+      for (let i = 0; i < leads.length; i++) {
+        await this.warehouse.deleteLead(leads[i].id)
+      }
+    },
+    async deleteSelectedLeads() {
+      this.$vs.loading()
+      await this.deleteLeads(this.selectedLeads)
+      this.selectedLeads = []
       this.$vs.loading.close()
       this.changeView('leads')
     },

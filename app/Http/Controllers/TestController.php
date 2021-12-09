@@ -77,6 +77,18 @@ class TestController extends Controller
     public function test()
     {
         /*
+        $elogy = new \Driverfury\Elogy\Elogy(
+                env('ELOGY_API_TOKEN'),
+                env('ELOGY_EMAIL'),
+                env('ELOGY_PASSWORD'));
+        $orderNumber = 'EL02122021173703';
+        $order = $elogy->getOrderByNumber($orderNumber);
+        $orderId = $order['id'];
+        $elogy->deleteOrder($orderId);
+        exit();
+        */
+
+        /*
         $leads = [
             ['Giovanna Cerbone        ','3387707954','EL17112021042748'],
             ['Alberto Esposito','3247789690','EL17112021042737'],

@@ -18,6 +18,7 @@ class Elogy
         $headers = [
             'Authorization: ' . $apiKey,
             'Content-Type: application/json',
+            'Accept: application/json',
         ];
 
         $urlParams = [
@@ -64,6 +65,7 @@ class Elogy
         $headers = [
             'Authorization: ' . $this->accessToken,
             'Content-Type: application/json',
+            'Accept: application/json',
         ];
 
         foreach ($params as $key => $value) {
@@ -103,6 +105,7 @@ class Elogy
         $headers = [
             'Authorization: ' . $this->accessToken,
             'Content-Type: application/json',
+            'Accept: application/json',
         ];
 
         $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
@@ -140,6 +143,7 @@ class Elogy
         $headers = [
             'Authorization: ' . $this->accessToken,
             'Content-Type: application/json',
+            'Accept: application/json',
         ];
 
         $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
@@ -155,6 +159,51 @@ class Elogy
 
         if ($response !== null) {
             $output = json_decode($response, true);
+        }
+
+        return $output;
+    }
+
+    protected function deleteRequest(
+        string $path,
+        array $urlParams = [],
+        array $bodyParams = []): array
+    {
+        $output = [];
+
+        if (strlen($path) === 0) {
+            return $output;
+        }
+        if ($path[0] !== '/') {
+            $path = '/' . $path;
+        }
+
+        $headers = [
+            'Authorization: ' . $this->accessToken,
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ];
+
+        $url = self::$apiUrl . $path . '?' . http_build_query($urlParams);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch); 
+
+        // DEBUG TODO: to delete
+        dd($response);
+
+        if ($response !== null) {
+            try {
+                $output = json_decode($response, true);
+            } catch (\Exception $e) {
+                // Nothing
+            }
         }
 
         return $output;
@@ -310,6 +359,13 @@ class Elogy
             return true;
         }
         return false;
+    }
+
+    public function deleteOrder(string $orderId): bool
+    {
+        // TODO: HERE
+        $response = $this->deleteRequest('/orders/' . $orderId);
+        dd($response);
     }
 
     public function updateCustomer(string $customerId, array $params): bool
