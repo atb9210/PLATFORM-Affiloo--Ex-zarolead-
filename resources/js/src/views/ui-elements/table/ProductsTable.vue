@@ -1126,11 +1126,17 @@ export default {
       data.append('advertiser_id', this.newObject['edit'].advertiser)
       data.append('country', this.newObject['edit'].country)
 
-      let info = product.info
-      for (let k in this.newObject['edit'].info) {
+      let info = {}
+      if (product.info !== null) {
+        for (const [k, value] of Object.entries(product.info)) {
+          info[k] = value
+        }
+      }
+      for (const [k, value] of Object.entries(this.newObject['edit'].info)) {
         info[k] = this.newObject['edit'].info[k]
       }
-      data.append('info', JSON.stringify(info))
+      info = JSON.stringify(info)
+      data.append('info', info)
 
       let quantity = {
         options: {},
