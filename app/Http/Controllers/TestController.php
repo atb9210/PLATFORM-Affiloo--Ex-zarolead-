@@ -74,6 +74,7 @@ class TestController extends Controller
         return floatval($s);
     }
 
+    /*
     private $leadsWithNumber = [
         ['3387707954','EL17112021042748',],
         ['3247789690','EL17112021042737',],
@@ -313,6 +314,7 @@ class TestController extends Controller
         '3248822891',
         '3459208750',
     ];
+    */
 
     public function test()
     {

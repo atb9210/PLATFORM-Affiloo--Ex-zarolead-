@@ -18,6 +18,40 @@ class WarehouseController extends Controller
         return 'in:' . implode(',', WarehouseLead::$statuses);
     }
 
+    private function interpretConfirmationMessage(string $s, array $context): string
+    {
+        $result = '';
+
+        $len = strlen($s);
+        for ($i = 0; $i < $len; $i += 1) {
+            if ($s[$i] === '{' && $i < $len - 1 && $s[$i+1] === '{') {
+                $i += 2;
+                $var = '';
+                $flag = true;
+                while (!($s[$i] === '}' && $i < $len -1 && $s[$i+1] === '}')) {
+                    $var .= $s[$i];
+                    $i += 1;
+                    if ($i >= $len) {
+                        $result .= '{{' . $var;
+                        $flag = false;
+                        break;
+                    }
+                }
+                if ($flag) {
+                    $i += 1;
+                    $var = trim($var);
+                    if (isset($context[$var])) {
+                        $result .= strval($context[$var]);
+                    }
+                }
+            } else {
+                $result .= $s[$i];
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Get leads list.
      *
@@ -262,7 +296,19 @@ class WarehouseController extends Controller
                     $productInfo = [];
                 }
                 if (isset($productInfo['confirmation_message'])) {
-                    $message = $productInfo['confirmation_message'];
+                    $msgContext = [
+                        'product_name' => $product->name,
+                    ];
+                    $q = $product->quantity;
+                    if ($q === null) {
+                        $q = [];
+                    }
+                    if (isset($q['options']) && $q['options'] !== null) {
+                        foreach ($q['options'] as $key => $val) {
+                            $msgContext['price(' . $key . ')'] = $val;
+                        }
+                    }
+                    $message = $this->interpretConfirmationMessage($productInfo['confirmation_message'], $msgContext);
                 }
                 if ($message !== null && $message !== '') {
                     // TODO: This should be delayed by 10 minutes
