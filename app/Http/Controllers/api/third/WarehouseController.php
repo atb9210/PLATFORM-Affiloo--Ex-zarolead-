@@ -326,7 +326,11 @@ class WarehouseController extends Controller
                     }
                     if (isset($q['options']) && $q['options'] !== null) {
                         foreach ($q['options'] as $key => $val) {
-                            $msgContext['price(' . $key . ')'] = $val;
+                            $price = 0.0;
+                            if (isset($val['price']) && $val['price'] !== null) {
+                                $price = $val['price'];
+                            }
+                            $msgContext['price(' . $key . ')'] = $val['price'];
                         }
                     }
                     $message = $this->interpretConfirmationMessage($productInfo['confirmation_message'], $msgContext);
