@@ -18,6 +18,17 @@ class WarehouseController extends Controller
         return 'in:' . implode(',', WarehouseLead::$statuses);
     }
 
+    private function generateRandomString(int $length = 32): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
     private function interpretConfirmationMessage(string $s, array $context): string
     {
         $result = '';
@@ -218,6 +229,10 @@ class WarehouseController extends Controller
             $params['info']['traffic_source'] = $params['traffic_source'];
         }
 
+        $params['hash'] = $this->generateRandomString(64);
+
+        // TODO: Check if that hash already exists
+
         $lead = WarehouseLead::create($params);
 
         // Check if it's already present a lead with same SKU and phone number
@@ -296,8 +311,14 @@ class WarehouseController extends Controller
                     $productInfo = [];
                 }
                 if (isset($productInfo['confirmation_message'])) {
+                    // TODO: More general algorithm to compute confirm/cancel links
+                    $confirmLink = env('APP_URL') . '/products/' . $product->id . '/checkout?lid=' . $lead->hash;
+                    $cancelLink = env('APP_URL') . '/products/checkout/' . $lead->hash . '/cancel';
+
                     $msgContext = [
                         'product_name' => $product->name,
+                        'confirm_link' => $confirmLink,
+                        'cancel_link' => $cancelLink,
                     ];
                     $q = $product->quantity;
                     if ($q === null) {
@@ -316,6 +337,8 @@ class WarehouseController extends Controller
                 }
             }
         }
+
+        $lead['number'] = $lead->id;
 
         return response([
             'status' => 'success',
@@ -365,11 +388,76 @@ class WarehouseController extends Controller
             'data' => $lead,
         ]);
     }
+    
+    /**
+     * Get lead info.
+     *
+     * @urlParam hash int required Lead's hash
+     *
+     * @response {
+     *  "data": lead,
+     * }
+     */
+    public function getLeadInfo($hash, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        $shipping = [];
+        if (isset($info['shipping']) && $info['shipping'] !== null) {
+            foreach ($info['shipping'] as $key => $value) {
+                $shipping[$key] = $value;
+            }
+        }
+
+        $quantity = null;
+        if (isset($info['quantity'])) {
+            $quantity = $info['quantity'];
+        }
+
+        $total = 0;
+        if (isset($info['total'])) {
+            $total = $info['total'];
+        }
+
+        $productName = '';
+        if (isset($info['product_name'])) {
+            $productName = $info['product_name'];
+        }
+
+        return response([
+            'data' => [
+                'id' => $lead->hash,
+                'number' => $lead->id,
+                'first_name' => $lead->first_name,
+                'last_name' => $lead->last_name,
+                'phone' => $lead->phone,
+                'product_name' => $productName,
+                'quantity' => $quantity,
+                'total' => $total,
+                'shipping' => $shipping,
+                'created_at' => $lead->created_at,
+            ],
+        ]);
+    }
+    
 
     /**
      * Update a lead's address.
      *
-     * @urlParam id int required Lead's id
+     * @urlParam hash int required Lead's hash
      *
      * @bodyParam street_address string required Street address
      * @bodyParam city string required City
@@ -383,7 +471,7 @@ class WarehouseController extends Controller
      *  "message": "Lead's address updated',
      * }
      */
-    public function updateLeadAddress($id, Request $request)
+    public function updateLeadAddress($hash, Request $request)
     {
         // Param validation
         $params = $request->validate([
@@ -395,7 +483,13 @@ class WarehouseController extends Controller
             'postcode'       => 'required|string',
         ]);
 
-        $lead = WarehouseLead::findOrFail($id);
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
 
         // TODO: Check time difference now() - lead.created_at
 
@@ -418,7 +512,58 @@ class WarehouseController extends Controller
     /**
      * Update a lead's status and total.
      *
-     * @urlParam id int required Lead's id
+     * @urlParam hash int required Lead's hash
+     *
+     * @bodyParam first_name string First name
+     * @bodyParam last_name string Last
+     * @bodyParam phone string Phone number
+     *
+     * @response {
+     *  "status": "success",
+     *  "message": "Lead updated',
+     * }
+     */
+    public function publicUpdateLead($hash, Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'first_name' => 'nullable|string',
+            'last_name'  => 'nullable|string',
+            'phone'      => 'nullable|string',
+        ]);
+
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
+
+        // TODO: Check time difference now() - lead.created_at
+
+        if (isset($params['first_name']) && $params['first_name'] !== null) {
+            $lead->first_name = $params['first_name'];
+        }
+        if (isset($params['last_name']) && $params['last_name'] !== null) {
+            $lead->last_name = $params['last_name'];
+        }
+        if (isset($params['phone']) && $params['phone'] !== null) {
+            $lead->phone = $params['phone'];
+        }
+
+        $lead->save();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Lead updated',
+        ]);
+    }
+
+    /**
+     * Update a lead's status and total.
+     *
+     * @urlParam hash int required Lead's hash
      *
      * @bodyParam status string required Status
      * @bodyParam total string required Total
@@ -429,7 +574,7 @@ class WarehouseController extends Controller
      *  "message": "Lead updated',
      * }
      */
-    public function completeLead($id, Request $request)
+    public function completeLead($hash, Request $request)
     {
         // Param validation
         $params = $request->validate([
@@ -438,7 +583,13 @@ class WarehouseController extends Controller
             'payment_method' => 'required|string',
         ]);
 
-        $lead = WarehouseLead::findOrFail($id);
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
 
         // TODO: Check time difference now() - lead.created_at
 
@@ -479,6 +630,68 @@ class WarehouseController extends Controller
         return response([
             'status' => 'success',
             'message' => 'Lead updated',
+        ]);
+    }
+
+    /**
+     * Delete a lead.
+     *
+     * @urlParam hash int required Lead's public hash
+     *
+     * @response {
+     *  "status": "success",
+     *  "message": "Lead successfully deleted",
+     * }
+     */
+    public function publicDeleteLead($hash, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
+
+        $info = $lead->info;
+        if ($info !== null && isset($info['delivery']) && $info['delivery'] !== null) {
+            $orderId = null;
+            $orderNumber = null;
+
+            if (isset($info['delivery']['id'])) {
+                $orderId = $info['delivery']['id'];
+            }
+            if (isset($info['delivery']['order_number'])) {
+                $orderNumber = $info['delivery']['order_number'];
+            }
+
+            if (($orderId !== null && $orderId !== '') || ($orderNumber !== null && $orderNumber !== '')) {
+                $elogy = new \Driverfury\Elogy\Elogy(
+                    env('ELOGY_API_TOKEN'),
+                    env('ELOGY_EMAIL'),
+                    env('ELOGY_PASSWORD'));
+                if (($orderId === null || $orderId === '') && $orderNumber !== null && $orderNumber !== '') {
+                    $order = $elogy->getOrderByNumber($orderNumber);
+                    if ($order !== null && isset($order['id'])) {
+                        $orderId = $order['id'];
+                    }
+                }
+                if ($orderId !== null && $orderId !== '') {
+                    $elogy->deleteOrder($orderId);
+                }
+            }
+        }
+
+        //$lead->delete();
+        $lead->status = 'cancelled';
+        $lead->archived = 1;
+        $lead->save();
+
+        return response([
+            'status' => 'success',
+            'message' => 'Lead successfully deleted',
         ]);
     }
 
@@ -528,6 +741,7 @@ class WarehouseController extends Controller
 
         //$lead->delete();
         $lead->archived = 1;
+        $lead->save();
 
         return response([
             'message' => 'Lead successfully deleted',
@@ -890,18 +1104,24 @@ class WarehouseController extends Controller
      *
      * @urlParam product_id required int Product's id
      *
-     * @bodyParam lead_id required numeric Lead's id
+     * @bodyParam lead required numeric Lead's hash
      * @bodyParam quantity required string Quantity selected
      */
     public function getPaymentIntent($product_id, Request $request)
     {
         // Param validation
         $params = $request->validate([
-            'lead_id'  => 'required|numeric',
+            'lead'  => 'required|string',
             'quantity'  => 'required|string',
         ]);
 
-        $lead = WarehouseLead::findOrFail($params['lead_id']);
+        $lead = WarehouseLead::findByHash($params['lead']);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
 
         $product = \App\Product::findOrFail($product_id);
         $quantity = strval($params['quantity']);

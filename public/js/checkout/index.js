@@ -1,6 +1,3 @@
-/******************************************************************************/
-/**                                   UTILS                                  **/
-/******************************************************************************/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,189 +34,130 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-function strval(o) {
-    return String(o);
-}
-function intval(o) {
-    return parseInt(o);
-}
-function jsonEncode(o) {
-    var result = null;
-    try {
-        result = JSON.stringify(o);
-    }
-    catch (error) {
-        result = null;
-    }
-    return result;
-}
-function jsonDecode(s) {
-    var result = null;
-    try {
-        result = JSON.parse(s);
-    }
-    catch (error) {
-        result = null;
-    }
-    return result;
-}
-function getUrlParam(param) {
-    var url = new URL(window.location.href);
-    return url.searchParams.get(param);
-}
-function getHostname() {
-    var tmpUrl = new URL(window.location.href);
-    return tmpUrl.origin;
-}
-function getCookie(key) {
-    var cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-    if (cookiesMatch)
-        return cookiesMatch[2];
-    else
-        return null;
-}
-function hideElement(elementId) {
-    var e = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'none';
-    }
-}
-function showElement(elementId) {
-    var e = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'block';
-    }
-}
-function getAttribute(e, name) {
-    var result = null;
-    if (e !== null && e.attributes.hasOwnProperty(name)) {
-        result = e.attributes[name].value;
-    }
-    return result;
-}
-function getInputValue(inputId) {
-    var result = '';
-    var e = document.getElementById(inputId);
-    if (e !== null) {
-        result = e.value;
-    }
-    return result;
-}
-function getCurrencyValue(s) {
-    var value = 0.0;
-    s = s.replace(',', '.');
-    if (s === '') {
-        value = 0.0;
-    }
-    else if (!isNaN(Number(s))) {
-        value = parseFloat(s);
-    }
-    return value;
-}
-function formatCurrency(n) {
-    return n.toFixed(2).replace('.', ',');
-}
-function loadingStart() {
-    var loading = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'block';
-    }
-}
-function loadingEnd() {
-    var loading = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'none';
-    }
-}
+/******************************************************************************/
+/**                                   LIBS                                   **/
+/******************************************************************************/
 /*
- * TODO: Use axios as http library because this library is not async this means
- * that loading does not work properly.
- * ALTERNATIVE: Make this library asynchronous
- */
-var axios;
-var $http;
+import { utils } from "./utils";
+import { ZaroLead } from "./zarolead";
+import { Facebook } from "./facebook";
+import { TikTok } from "./tiktok";
+*/
 /******************************************************************************/
-/**                              MY HTTP LIBRARY                             **/
+/**                                   UTILS                                  **/
 /******************************************************************************/
-var Http = /** @class */ (function () {
-    function Http() {
+var Utils = /** @class */ (function () {
+    function Utils() {
     }
-    Http.prototype.buildQuery = function (obj) {
-        var result = '';
-        if (obj !== null) {
-            for (var _i = 0, _a = Object.entries(obj); _i < _a.length; _i++) {
-                var _b = _a[_i], key = _b[0], val = _b[1];
-                result += encodeURIComponent(key) + '=';
-                result += encodeURIComponent(val) + '&';
-            }
-        }
-        if (result.length > 0) {
-            result = result.substring(0, result.length - 1);
-        }
-        return result;
+    Utils.prototype.strval = function (o) {
+        return String(o);
     };
-    Http.prototype.request = function (method, url, params, headers) {
-        if (params === void 0) { params = {}; }
-        if (headers === void 0) { headers = {}; }
+    Utils.prototype.intval = function (o) {
+        return parseInt(o);
+    };
+    Utils.prototype.jsonEncode = function (o) {
         var result = null;
         try {
-            var req = new XMLHttpRequest();
-            if (method.toLowerCase() === 'get') {
-                url += '?' + this.buildQuery(params);
-            }
-            req.open(method, url, false);
-            // Headers
-            var fmtHeaders = {};
-            for (var k in headers) {
-                // TODO: Lower case is different header???
-                //let fmtKey = k.toLowerCase();
-                var fmtKey = k;
-                fmtHeaders[fmtKey] = headers[k];
-                req.setRequestHeader(fmtKey, fmtHeaders[fmtKey]);
-            }
-            headers = fmtHeaders;
-            // Params query
-            var query = null;
-            if (method.toLowerCase() !== 'get') {
-                var contentType = '';
-                if (headers.hasOwnProperty('Content-Type')) {
-                    contentType = headers['Content-Type'];
-                }
-                if (contentType === 'application/json') {
-                    query = jsonEncode(params);
-                }
-                else {
-                    query = this.buildQuery(params);
-                }
-            }
-            req.send(query);
-            if (req.readyState === 4) {
-                result = req.response;
-            }
+            result = JSON.stringify(o);
         }
-        catch (e) {
-            // Nothing
+        catch (error) {
+            result = null;
         }
         return result;
     };
-    Http.prototype.get = function (url, params, headers) {
-        if (params === void 0) { params = {}; }
-        if (headers === void 0) { headers = {}; }
-        return this.request('GET', url, params, headers);
+    Utils.prototype.jsonDecode = function (s) {
+        var result = null;
+        try {
+            result = JSON.parse(s);
+        }
+        catch (error) {
+            result = null;
+        }
+        return result;
     };
-    Http.prototype.post = function (url, params, headers) {
-        if (params === void 0) { params = {}; }
-        if (headers === void 0) { headers = {}; }
-        return this.request('POST', url, params, headers);
+    Utils.prototype.getUrlParam = function (param) {
+        var url = new URL(window.location.href);
+        return url.searchParams.get(param);
     };
-    return Http;
+    Utils.prototype.getHostname = function () {
+        var tmpUrl = new URL(window.location.href);
+        return tmpUrl.origin;
+    };
+    Utils.prototype.getCookie = function (key) {
+        var cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+        if (cookiesMatch)
+            return cookiesMatch[2];
+        else
+            return null;
+    };
+    Utils.prototype.hideElement = function (elementId) {
+        var e = document.getElementById(elementId);
+        if (e !== null) {
+            e.style.display = 'none';
+        }
+    };
+    Utils.prototype.showElement = function (elementId) {
+        var e = document.getElementById(elementId);
+        if (e !== null) {
+            e.style.display = 'block';
+        }
+    };
+    Utils.prototype.getAttribute = function (e, name) {
+        var result = null;
+        if (e !== null && e.attributes.hasOwnProperty(name)) {
+            result = e.attributes[name].value;
+        }
+        return result;
+    };
+    Utils.prototype.getInputValue = function (inputId) {
+        var result = '';
+        var e = document.getElementById(inputId);
+        if (e !== null) {
+            result = e.value;
+        }
+        return result;
+    };
+    Utils.prototype.setInputValue = function (inputId, value) {
+        var e = document.getElementById(inputId);
+        if (e !== null) {
+            e.value = value;
+        }
+    };
+    Utils.prototype.getCurrencyValue = function (s) {
+        var value = 0.0;
+        s = s.replace(',', '.');
+        if (s === '') {
+            value = 0.0;
+        }
+        else if (!isNaN(Number(s))) {
+            value = parseFloat(s);
+        }
+        return value;
+    };
+    Utils.prototype.formatCurrency = function (n) {
+        return n.toFixed(2).replace('.', ',');
+    };
+    Utils.prototype.loadingStart = function () {
+        var loading = document.getElementById('loading');
+        if (loading !== null) {
+            loading.style.display = 'block';
+        }
+    };
+    Utils.prototype.loadingEnd = function () {
+        var loading = document.getElementById('loading');
+        if (loading !== null) {
+            loading.style.display = 'none';
+        }
+    };
+    return Utils;
 }());
+var utils = new Utils();
 /******************************************************************************/
-/**                             ZAROLEAD LIBRARY                             **/
+/**                                 ZAROLEAD                                 **/
 /******************************************************************************/
 var ZaroLead = /** @class */ (function () {
     function ZaroLead() {
-        var hostname = getHostname();
+        var hostname = utils.getHostname();
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
         /*
@@ -245,7 +183,7 @@ var ZaroLead = /** @class */ (function () {
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
-                            //order = jsonDecode(response);
+                            //order = utils.jsonDecode(response);
                             if (response.hasOwnProperty('data')) {
                                 order = response['data'];
                             }
@@ -280,7 +218,7 @@ var ZaroLead = /** @class */ (function () {
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
-                            //lead = jsonDecode(response);
+                            //lead = utils.jsonDecode(response);
                             if (response.hasOwnProperty('data')) {
                                 lead = response['data'];
                             }
@@ -301,9 +239,75 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
+    ZaroLead.prototype.updateLead = function (leadId, params) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, respJson, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
+                    case 1:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            respJson = null;
+                            if (response.hasOwnProperty('data')) {
+                                respJson = response['data'];
+                            }
+                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                                return [2 /*return*/, true];
+                            }
+                            else {
+                                return [2 /*return*/, false];
+                            }
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_3 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
+    ZaroLead.prototype.getLeadInfo = function (leadId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var lead, response, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        lead = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders })];
+                    case 2:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            //lead = utils.jsonDecode(response);
+                            if (response.hasOwnProperty('data')) {
+                                lead = response['data'];
+                            }
+                            if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                                lead = null;
+                            }
+                            else if (lead.hasOwnProperty('data')) {
+                                lead = lead['data'];
+                            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_4 = _a.sent();
+                        lead = null;
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, lead];
+                }
+            });
+        });
+    };
     ZaroLead.prototype.updateLeadAddress = function (leadId, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, respJson, respJson_1, error_3;
+            var response, respJson, respJson_1, error_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -325,7 +329,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_3 = _a.sent();
+                        error_5 = _a.sent();
                         return [2 /*return*/, false];
                     case 3: return [2 /*return*/, false];
                 }
@@ -334,7 +338,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod) {
         return __awaiter(this, void 0, void 0, function () {
-            var params, response, respJson, error_4;
+            var params, response, respJson, error_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -361,7 +365,38 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_4 = _a.sent();
+                        error_6 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
+    ZaroLead.prototype.deleteLead = function (leadId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, respJson, error_7;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.$http["delete"](this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
+                    case 1:
+                        response = _a.sent();
+                        if (response !== null && response !== '') {
+                            respJson = null;
+                            if (response.hasOwnProperty('data')) {
+                                respJson = response['data'];
+                            }
+                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                                return [2 /*return*/, true];
+                            }
+                            else {
+                                return [2 /*return*/, false];
+                            }
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_7 = _a.sent();
                         return [2 /*return*/, false];
                     case 3: return [2 /*return*/, false];
                 }
@@ -370,7 +405,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.getProduct = function (productId) {
         return __awaiter(this, void 0, void 0, function () {
-            var product, response, error_5;
+            var product, response, error_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -382,7 +417,7 @@ var ZaroLead = /** @class */ (function () {
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
-                            //product = jsonDecode(response);
+                            //product = utils.jsonDecode(response);
                             if (response.hasOwnProperty('data')) {
                                 product = response['data'];
                             }
@@ -395,7 +430,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_5 = _a.sent();
+                        error_8 = _a.sent();
                         product = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, product];
@@ -405,13 +440,13 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
         return __awaiter(this, void 0, void 0, function () {
-            var paymentIntent, params, httpHeaders, response, error_6;
+            var paymentIntent, params, httpHeaders, response, error_9;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         paymentIntent = null;
                         params = {
-                            lead_id: leadId,
+                            lead: leadId,
                             quantity: quantity
                         };
                         httpHeaders = {
@@ -424,7 +459,7 @@ var ZaroLead = /** @class */ (function () {
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
-                            //paymentIntent = jsonDecode(response);
+                            //paymentIntent = utils.jsonDecode(response);
                             if (response.hasOwnProperty('data')) {
                                 paymentIntent = response['data'];
                             }
@@ -437,7 +472,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_6 = _a.sent();
+                        error_9 = _a.sent();
                         paymentIntent = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, paymentIntent];
@@ -447,7 +482,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.facebookEvent = function (params) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, error_7;
+            var response, error_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -464,7 +499,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_7 = _a.sent();
+                        error_10 = _a.sent();
                         return [2 /*return*/, false];
                     case 3: return [2 /*return*/, false];
                 }
@@ -474,7 +509,7 @@ var ZaroLead = /** @class */ (function () {
     return ZaroLead;
 }());
 /******************************************************************************/
-/**                             FACEBOOK LIBRARY                             **/
+/**                                 FACEBOOK                                 **/
 /******************************************************************************/
 var Facebook = /** @class */ (function () {
     function Facebook(pixel, accessToken, eventValue, eventCurrency, testCode) {
@@ -488,10 +523,10 @@ var Facebook = /** @class */ (function () {
     }
     Facebook.prototype.getClickId = function () {
         var clickId = '';
-        clickId = getCookie('_fbc');
-        var urlParamClickId = getUrlParam('fbclid');
+        clickId = utils.getCookie('_fbc');
+        var urlParamClickId = utils.getUrlParam('fbclid');
         if (urlParamClickId !== null && urlParamClickId !== '') {
-            clickId = getUrlParam('fbclid');
+            clickId = utils.getUrlParam('fbclid');
         }
         if (clickId === null) {
             clickId = '';
@@ -541,7 +576,7 @@ var Facebook = /** @class */ (function () {
     return Facebook;
 }());
 /******************************************************************************/
-/**                              TIKTOK LIBRARY                              **/
+/**                                  TIKTOK                                  **/
 /******************************************************************************/
 var TikTok = /** @class */ (function () {
     function TikTok() {
@@ -549,114 +584,10 @@ var TikTok = /** @class */ (function () {
     return TikTok;
 }());
 /******************************************************************************/
-/**                            VALIDATION LIBRARY                            **/
-/******************************************************************************/
-// TODO: We do not use it
-// TODO: Delete it???????????
-/*
-
-Example:
-
-let params = {
-    name: 'John Doe',
-    quantity: 1,
-}
-
-let rules = {
-    name: 'required|string|min:4',
-    quantity: 'required|number|min:1',
-}
-
-*/
-function validate(params, rules) {
-    var result = {};
-    for (var k in rules) {
-        var rule = '';
-        if (typeof (rules[k]) === 'string') {
-            rule = rules[k];
-        }
-        var r = rule.split('|');
-        var type = 'string';
-        if (r.includes('number')) {
-            type = 'number';
-        }
-        var required = false;
-        if (r.includes('required')) {
-            required = true;
-        }
-        if (required && !params.hasOwnProperty(k)) {
-            return null;
-        }
-        var value = '';
-        if (type === 'string') {
-            value = params[k];
-        }
-        else if (type === 'number') {
-            if (isNaN(params[k])) {
-                return null;
-            }
-            value = Number(params[k]);
-        }
-        for (var i = 0; i < r.length; i++) {
-            var currentRule = r[i];
-            var param = '';
-            if (currentRule === '' ||
-                currentRule === 'required' ||
-                currentRule === 'string' ||
-                currentRule === 'number') {
-                continue;
-            }
-            var tmp = currentRule.split(':');
-            if (tmp.length === 0) {
-                return null;
-            }
-            currentRule = tmp[0];
-            if (tmp.length > 1) {
-                param = tmp[1];
-            }
-            if (currentRule === 'min') {
-                if (isNaN(param)) {
-                    return null;
-                }
-                var m = Number(param);
-                if (type === 'string') {
-                    if (value.length < m) {
-                        return null;
-                    }
-                }
-                else if (type === 'number') {
-                    if (value < m) {
-                        return null;
-                    }
-                }
-            }
-            else if (currentRule === 'max') {
-                if (isNaN(param)) {
-                    return null;
-                }
-                var m = Number(param);
-                if (type === 'string') {
-                    if (value.length > m) {
-                        return null;
-                    }
-                }
-                else if (type === 'number') {
-                    if (value > m) {
-                        return null;
-                    }
-                }
-            }
-            else {
-                return null;
-            }
-            result[k] = value;
-        }
-    }
-    return result;
-}
-/******************************************************************************/
 /**                             GLOBAL VARIABLES                             **/
 /******************************************************************************/
+var axios;
+var $http;
 var zarolead = new ZaroLead();
 var currentLocation = {
     street_number: '',
@@ -785,61 +716,69 @@ function setStripeError(stripeErrorId, error) {
         displayError.style.display = 'none';
     }
 }
+function changeLocation(place) {
+    if (place === null) {
+        return;
+    }
+    if (place.hasOwnProperty('address_components') && place['address_components'] !== null) {
+        for (var _i = 0, _a = place['address_components']; _i < _a.length; _i++) {
+            var component = _a[_i];
+            var componentType = component.types[0];
+            if (componentType === 'street_number') {
+                currentLocation.street_number = component.long_name;
+            }
+            else if (componentType === 'route') {
+                currentLocation.route = component.long_name;
+            }
+            else if (componentType === 'administrative_area_level_3') {
+                currentLocation.area3 = component.long_name;
+            }
+            else if (componentType === 'administrative_area_level_2') {
+                currentLocation.area2 = component.short_name;
+            }
+            else if (componentType === 'administrative_area_level_1') {
+                currentLocation.area1 = component.short_name;
+            }
+            else if (componentType === 'country') {
+                currentLocation.country = component.short_name;
+            }
+            else if (componentType === 'postal_code') {
+                currentLocation.postcode = component.long_name;
+            }
+        }
+        var e = null;
+        e = document.getElementById('streetAddress');
+        if (e !== null) {
+            e.value = currentLocation.route;
+        }
+        e = document.getElementById('streetNumber');
+        if (e !== null) {
+            e.value = currentLocation.street_number;
+        }
+        e = document.getElementById('cap');
+        if (e !== null) {
+            e.value = currentLocation.postcode;
+        }
+        e = document.getElementById('city');
+        if (e !== null) {
+            e.value = currentLocation.area3;
+        }
+        e = document.getElementById('province');
+        if (e !== null) {
+            e.value = currentLocation.area2;
+        }
+        setError(form, 'address', '');
+        setError(form, 'streetAddress', '');
+        setError(form, 'streetNumber', '');
+        setError(form, 'cap', '');
+        setError(form, 'city', '');
+        setError(form, 'province', '');
+    }
+}
 function fillInAddress() {
     resetCurrentLocation();
     var place = autocomplete.getPlace();
-    for (var _i = 0, _a = place.address_components; _i < _a.length; _i++) {
-        var component = _a[_i];
-        var componentType = component.types[0];
-        if (componentType === 'street_number') {
-            currentLocation.street_number = component.long_name;
-        }
-        else if (componentType === 'route') {
-            currentLocation.route = component.long_name;
-        }
-        else if (componentType === 'administrative_area_level_3') {
-            currentLocation.area3 = component.long_name;
-        }
-        else if (componentType === 'administrative_area_level_2') {
-            currentLocation.area2 = component.short_name;
-        }
-        else if (componentType === 'administrative_area_level_1') {
-            currentLocation.area1 = component.short_name;
-        }
-        else if (componentType === 'country') {
-            currentLocation.country = component.short_name;
-        }
-        else if (componentType === 'postal_code') {
-            currentLocation.postcode = component.long_name;
-        }
-    }
-    var e = null;
-    e = document.getElementById('streetAddress');
-    if (e !== null) {
-        e.value = currentLocation.route;
-    }
-    e = document.getElementById('streetNumber');
-    if (e !== null) {
-        e.value = currentLocation.street_number;
-    }
-    e = document.getElementById('cap');
-    if (e !== null) {
-        e.value = currentLocation.postcode;
-    }
-    e = document.getElementById('city');
-    if (e !== null) {
-        e.value = currentLocation.area3;
-    }
-    e = document.getElementById('province');
-    if (e !== null) {
-        e.value = currentLocation.area2;
-    }
-    setError(form, 'address', '');
-    setError(form, 'streetAddress', '');
-    setError(form, 'streetNumber', '');
-    setError(form, 'cap', '');
-    setError(form, 'city', '');
-    setError(form, 'province', '');
+    changeLocation(place);
 }
 var paymentMethods = [
     {
@@ -905,15 +844,15 @@ function initPaymentMethods() {
                         if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
                             paymentMethods[pmIndex].enabled = true;
                             if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
-                                paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
+                                paymentMethods[pmIndex].fee = utils.getCurrencyValue(pms[pm]['fee']);
                             }
                             if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
-                                paymentMethods[pmIndex].name = strval(pms[pm]['name']);
+                                paymentMethods[pmIndex].name = utils.strval(pms[pm]['name']);
                             }
                         }
                         else {
                             paymentMethods[pmIndex].enabled = false;
-                            hideElement(pm + 'Div');
+                            utils.hideElement(pm + 'Div');
                         }
                     }
                 }
@@ -932,7 +871,7 @@ function initPaymentMethods() {
 function changePaymentMethod(pmId) {
     for (var i = 0; i < paymentMethods.length; i++) {
         var pm = paymentMethods[i];
-        hideElement(pm.id);
+        utils.hideElement(pm.id);
         if (pm.id === pmId) {
             var e = document.getElementById('reviewTotalAmount');
             if (e !== null) {
@@ -940,7 +879,7 @@ function changePaymentMethod(pmId) {
             }
         }
     }
-    showElement(pmId);
+    utils.showElement(pmId);
     paymentMethod = pmId;
 }
 /******************************************************************************/
@@ -972,7 +911,7 @@ function initStep5() {
                 e = null;
                 e = document.getElementById('orderNumber');
                 if (e !== null) {
-                    e.innerText = lead['id'];
+                    e.innerText = lead['number'];
                 }
                 e = document.getElementById('orderDate');
                 if (e !== null) {
@@ -1014,14 +953,14 @@ function initStep5() {
 }
 function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, termsAndConditions, termsAndConditionsInput, firstName, lastName, tmp, i, fbResult;
+        var isValid, termsAndConditions, termsAndConditionsInput, firstName, lastName, tmp, i, updateLeadResult, fbResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    loadingStart();
+                    utils.loadingStart();
                     isValid = true;
-                    fullName = getInputValue('fullName');
-                    phone = forcePhoneFormat(getInputValue('phone'));
+                    fullName = utils.getInputValue('fullName');
+                    phone = forcePhoneFormat(utils.getInputValue('phone'));
                     phone = phone.split(' ').join('');
                     // Check full name
                     if (checkFullName(fullName)) {
@@ -1052,7 +991,7 @@ function validateStep1() {
                         isValid = false;
                     }
                     isValid = isValid && (product !== null);
-                    if (!isValid) return [3 /*break*/, 3];
+                    if (!isValid) return [3 /*break*/, 6];
                     firstName = '';
                     lastName = '';
                     tmp = fullName.split(' ');
@@ -1065,13 +1004,14 @@ function validateStep1() {
                             lastName += ' ';
                         }
                     }
+                    if (!(lead === null)) return [3 /*break*/, 2];
                     return [4 /*yield*/, zarolead.createLead({
                             first_name: firstName,
                             last_name: lastName,
                             phone: phone,
                             sku: product['sku'],
                             product_name: product['name'],
-                            product_id: intval(productId),
+                            product_id: utils.intval(productId),
                             price: price.toFixed(2),
                             total: total.toFixed(2),
                             quantity: quantity,
@@ -1079,16 +1019,26 @@ function validateStep1() {
                         })];
                 case 1:
                     lead = _a.sent();
-                    fbResult = false;
-                    if (!(facebook !== null)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, facebook.finalize()];
-                case 2:
-                    fbResult = _a.sent();
-                    _a.label = 3;
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, zarolead.updateLead(utils.strval(lead['hash']), {
+                        first_name: firstName,
+                        last_name: lastName,
+                        phone: phone
+                    })];
                 case 3:
+                    updateLeadResult = _a.sent();
+                    _a.label = 4;
+                case 4:
+                    fbResult = false;
+                    if (!(facebook !== null)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, facebook.finalize()];
+                case 5:
+                    fbResult = _a.sent();
+                    _a.label = 6;
+                case 6:
                     // DEBUG TODO: to delete
                     console.log('validateStep1', isValid);
-                    loadingEnd();
+                    utils.loadingEnd();
                     return [2 /*return*/, isValid];
             }
         });
@@ -1112,7 +1062,7 @@ function validateStep2() {
                     }
                     if (!isValid) return [3 /*break*/, 3];
                     if (!(lead !== null && lead.hasOwnProperty('id'))) return [3 /*break*/, 2];
-                    return [4 /*yield*/, zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity)];
+                    return [4 /*yield*/, zarolead.getPaymentIntent(utils.strval(productId), utils.strval(lead['hash']), quantity)];
                 case 1:
                     pIntent = _a.sent();
                     if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
@@ -1141,11 +1091,11 @@ function validateStep3() {
             switch (_a.label) {
                 case 0:
                     isValid = true;
-                    streetAddress = getInputValue('streetAddress');
-                    streetNumber = getInputValue('streetNumber');
-                    cap = getInputValue('cap');
-                    city = getInputValue('city');
-                    province = getInputValue('province');
+                    streetAddress = utils.getInputValue('streetAddress');
+                    streetNumber = utils.getInputValue('streetNumber');
+                    cap = utils.getInputValue('cap');
+                    city = utils.getInputValue('city');
+                    province = utils.getInputValue('province');
                     if (streetAddress == '') {
                         setError(form, 'streetAddress', 'Indirizzo non valido');
                         isValid = false;
@@ -1183,7 +1133,7 @@ function validateStep3() {
                     }
                     if (!isValid) return [3 /*break*/, 2];
                     if (!(lead !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['id'], {
+                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], {
                             street_address: streetAddress + ', ' + streetNumber,
                             city: city,
                             province: province,
@@ -1253,7 +1203,7 @@ function validateStep4() {
                     if (pm !== null) {
                         fee = pm.fee;
                     }
-                    return [4 /*yield*/, zarolead.completeLead(lead['id'], 'confirmed', total + fee, pMethod)];
+                    return [4 /*yield*/, zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod)];
                 case 4:
                     leadUpdated = _a.sent();
                     isValid = leadUpdated && isValid;
@@ -1306,11 +1256,11 @@ var steps = [
 var currentStep = -1;
 function hideSteps() {
     for (var i = 0; i < steps.length; i++) {
-        hideElement(steps[i].id);
+        utils.hideElement(steps[i].id);
     }
 }
 function showStep(stepId) {
-    showElement(stepId);
+    utils.showElement(stepId);
 }
 function getStepIndexById(stepId) {
     for (var i = 0; i < steps.length; i++) {
@@ -1355,12 +1305,12 @@ function nextStep() {
                     return [3 /*break*/, 3];
                 case 1:
                     if (!(steps[currentStep].validate !== null)) return [3 /*break*/, 3];
-                    loadingStart();
+                    utils.loadingStart();
                     return [4 /*yield*/, steps[currentStep].validate()];
                 case 2:
                     res = _a.sent();
                     goToNextStep = (res === true);
-                    loadingEnd();
+                    utils.loadingEnd();
                     _a.label = 3;
                 case 3:
                     if (!goToNextStep) return [3 /*break*/, 8];
@@ -1377,11 +1327,11 @@ function nextStep() {
                     }
                     showStep(step.id);
                     if (!(step.init !== null)) return [3 /*break*/, 6];
-                    loadingStart();
+                    utils.loadingStart();
                     return [4 /*yield*/, step.init()];
                 case 5:
                     _a.sent();
-                    loadingEnd();
+                    utils.loadingEnd();
                     _a.label = 6;
                 case 6:
                     btn = document.getElementById('nextStepButton');
@@ -1389,10 +1339,10 @@ function nextStep() {
                         btn.innerText = step.buttonText;
                     }
                     if (step.validate === null) {
-                        hideElement('nextStepButton');
+                        utils.hideElement('nextStepButton');
                     }
                     else {
-                        showElement('nextStepButton');
+                        utils.showElement('nextStepButton');
                     }
                     currentStep = i;
                     return [3 /*break*/, 8];
@@ -1466,12 +1416,12 @@ function addUpSellOption(qty, discount, price, unitPrice, bestSeller) {
     var eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice1.innerText = '€' + utils.formatCurrency(price);
     eContentPrice.appendChild(eContentPrice1);
     var eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = '€' + formatCurrency(unitPrice) + ' al pezzo';
+    eContentPrice2.innerText = '€' + utils.formatCurrency(unitPrice) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
     eContent.appendChild(eContentQty);
     eContent.appendChild(eContentSale);
@@ -1487,7 +1437,7 @@ function addUpSellOption(qty, discount, price, unitPrice, bestSeller) {
 }
 function changeQuantity(qty) {
     if (product['quantity']['options'].hasOwnProperty(qty)) {
-        price = getCurrencyValue(product['quantity']['options'][qty]['price']);
+        price = utils.getCurrencyValue(product['quantity']['options'][qty]['price']);
         quantity = qty;
     }
     total = price;
@@ -1538,7 +1488,7 @@ var facebook = null;
 var tiktok = null;
 function initPlugins() {
     // Privacy Policy (Terms and conditions)
-    hideElement('termsAndConditionsDiv');
+    utils.hideElement('termsAndConditionsDiv');
     var tcInput = document.getElementById('termsAndConditions');
     if (tcInput !== null) {
         tcInput.checked = true;
@@ -1546,7 +1496,7 @@ function initPlugins() {
     if (plugins !== null && plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
         var p = plugins['privacy_policy'];
         if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            showElement('termsAndConditionsDiv');
+            utils.showElement('termsAndConditionsDiv');
             if (tcInput !== null) {
                 tcInput.checked = false;
             }
@@ -1572,14 +1522,14 @@ function initPlugins() {
                     var qty = q;
                     var discount = 0;
                     if (typeof (product['quantity']['options'][q]['discount']) === 'string') {
-                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                        discount = utils.getCurrencyValue(product['quantity']['options'][q]['discount']);
                     }
                     else if (product['quantity']['options'][q]['discount'] !== '') {
                         discount = product['quantity']['options'][q]['discount'];
                     }
                     var price_1 = 0;
                     if (typeof (product['quantity']['options'][q]['price']) === 'string') {
-                        price_1 = getCurrencyValue(product['quantity']['options'][q]['price']);
+                        price_1 = utils.getCurrencyValue(product['quantity']['options'][q]['price']);
                     }
                     else {
                         price_1 = product['quantity']['options'][q]['price'];
@@ -1592,7 +1542,7 @@ function initPlugins() {
                     else {
                         bestSeller = (counter === 1);
                     }
-                    var unitPrice = price_1 / intval(qty);
+                    var unitPrice = price_1 / utils.intval(qty);
                     addUpSellOption(qty, discount, price_1, unitPrice, bestSeller);
                     counter++;
                 }
@@ -1626,11 +1576,12 @@ function initPlugins() {
 /******************************************************************************/
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, elements, pluginListStr, checkout, _loop_1, i;
+        var phoneInput, addressInput, elements, pluginListStr, checkout, _loop_1, i, leadId, leadInfo, fullName_1, phone_1, shipping, address, acService, res, placeId, map, pService;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    loadingStart();
+                    utils.loadingStart();
+                    $http = axios;
                     // Steps initialization
                     hideSteps();
                     // Form initialization
@@ -1700,13 +1651,13 @@ function onLoad() {
                         }
                     });
                     // TODO:
-                    // Get form's info
+                    // Get checkout info
                     thisScript = document.getElementById('checkout-js');
                     if (!(thisScript !== null)) return [3 /*break*/, 2];
-                    productId = getAttribute(thisScript, 'data-product-id');
-                    pluginListStr = getAttribute(thisScript, 'data-plugins');
+                    productId = utils.getAttribute(thisScript, 'data-product-id');
+                    pluginListStr = utils.getAttribute(thisScript, 'data-plugins');
                     if (pluginListStr !== null && pluginListStr !== '') {
-                        pluginsList = jsonDecode(pluginListStr);
+                        pluginsList = utils.jsonDecode(pluginListStr);
                     }
                     return [4 /*yield*/, zarolead.getProduct(productId)];
                 case 1:
@@ -1731,12 +1682,71 @@ function onLoad() {
                     }
                     return [3 /*break*/, 2];
                 case 2:
+                    lead = null;
+                    leadId = utils.getUrlParam('lid');
+                    if (!(leadId !== null)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
+                case 3:
+                    leadInfo = _a.sent();
+                    if (!(leadInfo !== null)) return [3 /*break*/, 6];
+                    lead = leadInfo;
+                    fullName_1 = '';
+                    if (lead.hasOwnProperty('first_name') && lead['first_name'] !== null) {
+                        fullName_1 += lead['first_name'];
+                    }
+                    if (lead.hasOwnProperty('last_name') && lead['last_name'] !== null) {
+                        fullName_1 += ' ' + lead['last_name'];
+                    }
+                    utils.setInputValue('fullName', fullName_1);
+                    phone_1 = '';
+                    if (lead.hasOwnProperty('phone') && lead['phone'] !== null) {
+                        phone_1 = lead['phone'];
+                    }
+                    utils.setInputValue('phone', phone_1);
+                    // Prefill quantity
+                    if (lead.hasOwnProperty('quantity') && lead['quantity'] !== null) {
+                        changeQuantity(lead['quantity']);
+                    }
+                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 6];
+                    shipping = lead['shipping'];
+                    if (!(shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
+                        shipping.hasOwnProperty('city') && shipping['city'] !== null &&
+                        shipping.hasOwnProperty('province') && shipping['province'] !== null &&
+                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 6];
+                    address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
+                    utils.setInputValue('address', address);
+                    if (!(autocomplete !== null)) return [3 /*break*/, 6];
+                    autocomplete.set(address);
+                    acService = new google.maps.places.AutocompleteService();
+                    return [4 /*yield*/, acService.getPlacePredictions({ input: address })];
+                case 4:
+                    res = _a.sent();
+                    placeId = res['predictions'][0]['place_id'];
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        center: new google.maps.LatLng(-33.8665433, 151.1956316),
+                        zoom: 15
+                    });
+                    pService = new google.maps.places.PlacesService(map);
+                    return [4 /*yield*/, pService.getDetails({
+                            placeId: placeId,
+                            componentRestrictions: { country: ['it'] },
+                            fields: ['address_components'],
+                            types: ['address']
+                        }, function (place, status) {
+                            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                                changeLocation(place);
+                            }
+                        })];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
                     // Initialize steps and start with first step
                     initSteps();
                     return [4 /*yield*/, nextStep()];
-                case 3:
+                case 7:
                     _a.sent();
-                    loadingEnd();
+                    utils.loadingEnd();
                     return [2 /*return*/];
             }
         });

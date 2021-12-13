@@ -22,6 +22,7 @@ class CreateWarehouseLeads extends Migration
             $table->enum('status', \App\third\WarehouseLead::$statuses)->default('to do');
             $table->json('info')->nullable();
             $table->text('notes')->nullable();
+            $table->text('hash')->nullable();
             $table->boolean('archived')->default(0);
             $table->timestamps();
         });

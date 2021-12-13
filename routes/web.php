@@ -218,6 +218,7 @@ Route::get('/forms/{id}/get', 'FormController@getForm')->name('forms.get');
 Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.get');
 
 Route::get('/products/{id}/checkout', 'ProductController@getCheckoutForm')->name('products.checkout.get');
+Route::get('/products/checkout/{hash}/cancel', 'ProductController@getCheckoutCancel')->name('products.checkout.cancel');
 
 /* Facebook routes */
 Route::get('/facebook/login', 'api\third\FacebookController@login')

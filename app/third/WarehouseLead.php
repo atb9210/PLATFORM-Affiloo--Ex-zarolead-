@@ -9,7 +9,7 @@ class WarehouseLead extends Model
     protected $table = 'third_warehouse_leads';
 
     protected $fillable = [
-        'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes',
+        'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes', 'hash',
     ];
 
     protected $casts = [
@@ -27,4 +27,13 @@ class WarehouseLead extends Model
         'waiting payment',
         'abandoned',
     ];
+
+    public static function findByHash(string $hash): WarehouseLead|null
+    {
+        $results = WarehouseLead::where('hash', $hash)->get();
+        if ($results->count() > 0) {
+            return $results[0];
+        }
+        return null;
+    }
 }

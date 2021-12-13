@@ -60,11 +60,6 @@
         50% 50% no-repeat rgb(249,249,249);
 }
 
-.step {
-    width: 100%;
-    display: none;
-}
-
 .hidden {
     display: none;
 }
@@ -83,6 +78,11 @@
 
 .text-green {
     color: green;
+}
+
+.step {
+    width: 100%;
+    display: none;
 }
 
 .paymentMethodDescription {
@@ -468,11 +468,11 @@
         </div>
 
         <div id="step3" class="step">
-
             <h2 class="mb-3 text-center">
                 INDIRIZZO SPEDIZIONE
             </h2>
 
+            <div id="map" class="hidden"></div>
             <div class="mb-3">
                 <!--<label for="address" class="form-label">Trova indirizzo</label>-->
                 <input id="address" class="form-control py-2" type="text" placeholder="TROVA INDIRIZZO" value="" />
@@ -799,12 +799,6 @@
 </div>
 
 <!-- Form plugins -->
-<script id="plugin-js" src="{{ asset('js/plugins/plugin.js') }}"></script>
-@foreach($plugins as $plugin => $value)
-    @if(file_exists(public_path('js/plugins/' . $plugin . '.js')))
-        <script id="plugin-{{$plugin}}-js" src="{{ asset('js/plugins/' . $plugin . '.js') }}"></script>
-    @endif
-@endforeach
 <?php
 $plugins = json_encode($plugins);
 $debug = env('APP_LOCAL', 'false') ? 'true' : 'false';
@@ -813,7 +807,7 @@ $beta = env('APP_BETA', 'false') ? 'true' : 'false';
 ?>
 
 <!-- Form script -->
-<script id="checkout-js" src="{{ asset('js/checkout.js') }}" data-product-id="{{ $product_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
+<script id="checkout-js" src="{{ asset('js/checkout/index.js') }}" data-product-id="{{ $product_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
 
 </body>
 

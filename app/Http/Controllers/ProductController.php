@@ -206,4 +206,10 @@ class ProductController extends Controller {
             'plugins' => $plugins,
         ]);
     }
+
+    public function getCheckoutCancel($hash) {
+        return view('checkout_cancel')->with([
+            'lead_id' => $hash,
+        ]);
+    }
 }

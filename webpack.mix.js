@@ -64,3 +64,4 @@ mix.webpackConfig({
     }
 });
 
+//mix.js('public/js/checkout/index.js', 'public/js/checkout.js');

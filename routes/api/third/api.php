@@ -192,7 +192,7 @@ Route::get('/warehouse/leads', 'api\third\WarehouseController@leads')->middlewar
     ->name('warehouse.leads.index');
 Route::post('/warehouse/leads', 'api\third\WarehouseController@createLead')
     ->name('warehouse.leads.create');
-Route::put('/warehouse/leads/{id}', 'api\third\WarehouseController@updateLead')
+Route::put('/warehouse/leads/{id}', 'api\third\WarehouseController@updateLead')->middleware('auth:api')
     ->name('warehouse.leads.update');
 Route::delete('/warehouse/leads/{id}', 'api\third\WarehouseController@destroyLead')->middleware('auth:api')
     ->name('warehouse.leads.destroy');
@@ -205,6 +205,13 @@ Route::put('/warehouse/delivery', 'api\third\WarehouseController@updateDelivery'
     ->name('warehouse.delivery.update');
 Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
     ->name('warehouse.products.index');
+
+Route::get('/warehouse/leads/{id}/info', 'api\third\WarehouseController@getLeadInfo')
+    ->name('warehouse.leads.info');
+Route::put('/warehouse/leads/{hash}/update', 'api\third\WarehouseController@publicUpdateLead')
+    ->name('warehouse.leads.update.public');
+Route::delete('/warehouse/leads/{hash}/delete', 'api\third\WarehouseController@publicDeleteLead')
+    ->name('warehouse.leads.delete.public');
 Route::post('/warehouse/leads/{lead_id}/address', 'api\third\WarehouseController@updateLeadAddress')
     ->name('warehouse.leads.address.update');
 Route::post('/warehouse/leads/{lead_id}/complete', 'api\third\WarehouseController@completeLead')

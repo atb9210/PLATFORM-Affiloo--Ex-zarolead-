@@ -1,218 +1,152 @@
 /******************************************************************************/
+/**                                   LIBS                                   **/
+/******************************************************************************/
+
+/*
+import { utils } from "./utils";
+import { ZaroLead } from "./zarolead";
+import { Facebook } from "./facebook";
+import { TikTok } from "./tiktok";
+*/
+
+/******************************************************************************/
 /**                                   UTILS                                  **/
 /******************************************************************************/
 
-function strval(o: any): string
+class Utils
 {
-    return <string>String(o);
-}
-
-function intval(o: any): number
-{
-    return parseInt(o);
-}
-
-function jsonEncode(o: object): string|null
-{
-    var result: string|null = null;
-    try {
-        result = JSON.stringify(o);
-    } catch (error) {
-        result = null;
-    }
-    return result;
-}
-
-function jsonDecode(s: string): object|Array<any>|null
-{
-    var result: object|Array<any>|null = null;
-    try {
-        result = JSON.parse(s);
-    } catch (error) {
-        result = null;
-    }
-    return result;
-}
-
-function getUrlParam(param: string): string|null
-{
-    let url = new URL(window.location.href);
-    return url.searchParams.get(param);
-}
-
-function getHostname(): string
-{
-    let tmpUrl = new URL(window.location.href);
-    return tmpUrl.origin
-}
-
-function getCookie(key: string): string|null
-{
-    let cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
-    if (cookiesMatch) return cookiesMatch[2];
-    else return null;
-}
-
-function hideElement(elementId: string): void
-{
-    var e: HTMLElement = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'none';
-    }
-}
-
-function showElement(elementId: string): void
-{
-    var e: HTMLElement = document.getElementById(elementId);
-    if (e !== null) {
-        e.style.display = 'block';
-    }
-}
-
-function getAttribute(e: HTMLElement, name: string): string|null
-{
-    var result: string|null = null;
-    if (e !== null && e.attributes.hasOwnProperty(name)) {
-        result = <string>e.attributes[name].value;
-    }
-    return result;
-}
-
-function getInputValue(inputId: string): string
-{
-    var result: string = '';
-    const e: HTMLInputElement = <HTMLInputElement>document.getElementById(inputId);
-    if (e !== null) {
-        result = <string>e.value;
-    }
-    return result;
-}
-
-function getCurrencyValue(s: string): number
-{
-    let value = 0.0;
-    s = s.replace(',', '.');
-    if (s === '') {
-        value = 0.0;
-    } else if (!isNaN(Number(s))) {
-        value = <number>parseFloat(s);
-    }
-    return value;
-}
-
-function formatCurrency(n: number): string
-{
-    return n.toFixed(2).replace('.', ',');
-}
-
-function loadingStart()
-{
-    var loading: HTMLElement = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'block';
-    }
-}
-
-function loadingEnd()
-{
-    var loading: HTMLElement = document.getElementById('loading');
-    if (loading !== null) {
-        loading.style.display = 'none';
-    }
-}
-
-/*
- * TODO: Use axios as http library because this library is not async this means
- * that loading does not work properly.
- * ALTERNATIVE: Make this library asynchronous
- */
-
-var axios: any;
-var $http: any;
-
-/******************************************************************************/
-/**                              MY HTTP LIBRARY                             **/
-/******************************************************************************/
-
-class Http
-{
-    buildQuery(obj: object|null): string
+    strval(o: any): string
     {
-        var result: string = '';
-
-        if (obj !== null) {
-            for (const [key, val] of Object.entries(obj)) {
-                result += encodeURIComponent(<string>key) + '='
-                result += encodeURIComponent(<string>val) + '&'
-            }
-        }
-        if (result.length > 0) {
-            result = result.substring(0, result.length - 1);
-        }
-
-        return result;
+        return <string>String(o);
     }
 
-    request(method: string, url: string, params: object = {}, headers: object = {}): string|null
+    intval(o: any): number
+    {
+        return parseInt(o);
+    }
+
+    jsonEncode(o: object): string|null
     {
         var result: string|null = null;
-
         try {
-            var req: XMLHttpRequest = new XMLHttpRequest();
-
-            if (method.toLowerCase() === 'get') {
-                url += '?' + this.buildQuery(params);
-            }
-            req.open(method, url, false);
-
-            // Headers
-            let fmtHeaders = {};
-            for (var k in headers) {
-                // TODO: Lower case is different header???
-                //let fmtKey = k.toLowerCase();
-                let fmtKey = k;
-                fmtHeaders[fmtKey] = <string>headers[k];
-                req.setRequestHeader(fmtKey, <string>fmtHeaders[fmtKey]);
-            }
-            headers = fmtHeaders;
-
-            // Params query
-            var query: string|null = null;
-            if (method.toLowerCase() !== 'get') {
-                let contentType = '';
-                if (headers.hasOwnProperty('Content-Type')) {
-                    contentType = headers['Content-Type'];
-                }
-                if (contentType === 'application/json') {
-                    query = <string>jsonEncode(params);
-                } else {
-                    query = this.buildQuery(params);
-                }
-            }
-
-            req.send(query);
-            if (req.readyState === 4) {
-                result = req.response;
-            }
-        } catch (e) {
-            // Nothing
+            result = JSON.stringify(o);
+        } catch (error) {
+            result = null;
         }
         return result;
     }
 
-    get(url: string, params: object = {}, headers: object = {}): string|null
+    jsonDecode(s: string): object|Array<any>|null
     {
-        return this.request('GET', url, params, headers);
+        var result: object|Array<any>|null = null;
+        try {
+            result = JSON.parse(s);
+        } catch (error) {
+            result = null;
+        }
+        return result;
     }
 
-    post(url: string, params: object = {}, headers: object = {}): string|null
+    getUrlParam(param: string): string|null
     {
-        return this.request('POST', url, params, headers);
+        let url = new URL(window.location.href);
+        return url.searchParams.get(param);
+    }
+
+    getHostname(): string
+    {
+        let tmpUrl = new URL(window.location.href);
+        return tmpUrl.origin
+    }
+
+    getCookie(key: string): string|null
+    {
+        let cookiesMatch = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+        if (cookiesMatch) return cookiesMatch[2];
+        else return null;
+    }
+
+    hideElement(elementId: string): void
+    {
+        var e: HTMLElement = document.getElementById(elementId);
+        if (e !== null) {
+            e.style.display = 'none';
+        }
+    }
+
+    showElement(elementId: string): void
+    {
+        var e: HTMLElement = document.getElementById(elementId);
+        if (e !== null) {
+            e.style.display = 'block';
+        }
+    }
+
+    getAttribute(e: HTMLElement, name: string): string|null
+    {
+        var result: string|null = null;
+        if (e !== null && e.attributes.hasOwnProperty(name)) {
+            result = <string>e.attributes[name].value;
+        }
+        return result;
+    }
+
+    getInputValue(inputId: string): string
+    {
+        var result: string = '';
+        const e: HTMLInputElement = <HTMLInputElement>document.getElementById(inputId);
+        if (e !== null) {
+            result = <string>e.value;
+        }
+        return result;
+    }
+
+    setInputValue(inputId: string, value: string): void
+    {
+        const e: HTMLInputElement = <HTMLInputElement>document.getElementById(inputId);
+        if (e !== null) {
+            e.value = value;
+        }
+    }
+
+    getCurrencyValue(s: string): number
+    {
+        let value = 0.0;
+        s = s.replace(',', '.');
+        if (s === '') {
+            value = 0.0;
+        } else if (!isNaN(Number(s))) {
+            value = <number>parseFloat(s);
+        }
+        return value;
+    }
+
+    formatCurrency(n: number): string
+    {
+        return n.toFixed(2).replace('.', ',');
+    }
+
+    loadingStart()
+    {
+        var loading: HTMLElement = document.getElementById('loading');
+        if (loading !== null) {
+            loading.style.display = 'block';
+        }
+    }
+
+    loadingEnd()
+    {
+        var loading: HTMLElement = document.getElementById('loading');
+        if (loading !== null) {
+            loading.style.display = 'none';
+        }
     }
 }
 
+let utils = new Utils();
+
 /******************************************************************************/
-/**                             ZAROLEAD LIBRARY                             **/
+/**                                 ZAROLEAD                                 **/
 /******************************************************************************/
 
 class ZaroLead
@@ -225,7 +159,7 @@ class ZaroLead
 
     constructor()
     {
-        let hostname = getHostname();
+        let hostname = utils.getHostname();
         this.API_URL = hostname + '/api/v1/'
         this.API_URL_3RD = hostname + '/api/3rd/'
 
@@ -246,7 +180,7 @@ class ZaroLead
         try {
             const response = await this.$http.post(this.API_URL + 'orders', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
-                //order = jsonDecode(response);
+                //order = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
                     order = response['data'];
                 }
@@ -268,7 +202,52 @@ class ZaroLead
         try {
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
-                //lead = jsonDecode(response);
+                //lead = utils.jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    lead = response['data'];
+                }
+
+                if (lead === null || lead.hasOwnProperty('error') || lead.hasOwnProperty('errors')) {
+                    lead = null;
+                } else if (lead.hasOwnProperty('data')) {
+                    lead = lead['data'];
+                }
+            }
+        } catch (error) {
+            lead = null;
+        }
+        return lead;
+    }
+
+    async updateLead(leadId: string, params: object)
+    {
+        try {
+            const response = await this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //let respJson = utils.jsonDecode(response);
+                let respJson = null;
+                if (response.hasOwnProperty('data')) {
+                    respJson = response['data'];
+                }
+                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
+    async getLeadInfo(leadId: string)
+    {
+        var lead: object = null;
+        try {
+            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //lead = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
                     lead = response['data'];
                 }
@@ -290,7 +269,7 @@ class ZaroLead
         try {
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
-                //let respJson = jsonDecode(response);
+                //let respJson = utils.jsonDecode(response);
                 let respJson = null;
                 if (response.hasOwnProperty('data')) {
                     let respJson = response['data'];
@@ -317,7 +296,29 @@ class ZaroLead
             };
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
-                //let respJson = jsonDecode(response);
+                //let respJson = utils.jsonDecode(response);
+                let respJson = null;
+                if (response.hasOwnProperty('data')) {
+                    respJson = response['data'];
+                }
+                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
+    async deleteLead(leadId: string)
+    {
+        try {
+            const response = await this.$http.delete(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders });
+            if (response !== null && response !== '') {
+                //let respJson = utils.jsonDecode(response);
                 let respJson = null;
                 if (response.hasOwnProperty('data')) {
                     respJson = response['data'];
@@ -336,11 +337,11 @@ class ZaroLead
 
     async getProduct(productId: string)
     {
-        var product: object = null;
+        var product: object|null = null;
         try {
             const response = await this.$http.get(this.API_URL + 'products/' + productId + '/info', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
-                //product = jsonDecode(response);
+                //product = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
                     product = response['data'];
                 }
@@ -360,7 +361,7 @@ class ZaroLead
     {
         var paymentIntent: object = null;
         let params = {
-            lead_id: leadId,
+            lead: leadId,
             quantity: quantity,
         };
         let httpHeaders = {
@@ -370,7 +371,7 @@ class ZaroLead
         try {
             const response = await this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
             if (response !== null && response !== '') {
-                //paymentIntent = jsonDecode(response);
+                //paymentIntent = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
                     paymentIntent = response['data'];
                 }
@@ -404,7 +405,7 @@ class ZaroLead
 }
 
 /******************************************************************************/
-/**                             FACEBOOK LIBRARY                             **/
+/**                                 FACEBOOK                                 **/
 /******************************************************************************/
 
 class Facebook
@@ -433,10 +434,10 @@ class Facebook
     getClickId(): string
     {
         let clickId = '';
-        clickId = getCookie('_fbc');
-        let urlParamClickId = getUrlParam('fbclid');
+        clickId = utils.getCookie('_fbc');
+        let urlParamClickId = utils.getUrlParam('fbclid');
         if (urlParamClickId !== null && urlParamClickId !== '') {
-            clickId = getUrlParam('fbclid');
+            clickId = utils.getUrlParam('fbclid');
         }
         if (clickId === null) {
             clickId = '';
@@ -476,132 +477,20 @@ class Facebook
 }
 
 /******************************************************************************/
-/**                              TIKTOK LIBRARY                              **/
+/**                                  TIKTOK                                  **/
 /******************************************************************************/
 
 class TikTok
 {
-    // TODO: HERE
-}
-
-/******************************************************************************/
-/**                            VALIDATION LIBRARY                            **/
-/******************************************************************************/
-
-// TODO: We do not use it
-// TODO: Delete it???????????
-
-/*
-
-Example:
-
-let params = {
-    name: 'John Doe',
-    quantity: 1,
-}
-
-let rules = {
-    name: 'required|string|min:4',
-    quantity: 'required|number|min:1',
-}
-
-*/
-
-function validate(params: object, rules: object): object|null
-{
-    var result: object|null = {};
-
-    for (var k in rules) {
-        var rule: string = '';
-        if (typeof(rules[k]) === 'string') {
-            rule = rules[k];
-        }
-
-        var r: Array<string> = rule.split('|');
-        let type = 'string';
-        if (r.includes('number')) {
-            type = 'number';
-        }
-
-        let required = false;
-        if (r.includes('required')) {
-            required = true;
-        }
-
-        if (required && !params.hasOwnProperty(k)) {
-            return null;
-        }
-
-        let value: string|number = '';
-        if (type === 'string') {
-            value = <string>params[k];
-        } else if (type === 'number') {
-            if (isNaN(params[k])) {
-                return null;
-            }
-            value = <number>Number(params[k]);
-        }
-
-        for (let i = 0; i < r.length; i++) {
-            let currentRule = r[i];
-            var param: any = '';
-
-            if (currentRule === '' ||
-                currentRule === 'required' ||
-                currentRule === 'string' ||
-                currentRule === 'number')
-            {
-                continue;
-            }
-
-            let tmp = currentRule.split(':');
-            if (tmp.length === 0) {
-                return null;
-            }
-
-            currentRule = tmp[0];
-            if (tmp.length > 1) {
-                param = tmp[1];
-            }
-
-            if (currentRule === 'min') {
-                if (isNaN(param)) { return null; }
-                let m = <number>Number(param);
-                if (type === 'string') {
-                    if ((<string>value).length < m) {
-                        return null;
-                    }
-                } else if (type === 'number') {
-                    if (<number>value < m) {
-                        return null;
-                    }
-                }
-            } else if (currentRule === 'max') {
-                if (isNaN(param)) { return null; }
-                let m = <number>Number(param);
-                if (type === 'string') {
-                    if ((<string>value).length > m) {
-                        return null;
-                    }
-                } else if (type === 'number') {
-                    if (<number>value > m) {
-                        return null;
-                    }
-                }
-            } else {
-                return null;
-            }
-
-            result[k] = value;
-        }
-    }
-
-    return result;
+    // TODO
 }
 
 /******************************************************************************/
 /**                             GLOBAL VARIABLES                             **/
 /******************************************************************************/
+
+var axios: any;
+var $http: any;
 
 let zarolead = new ZaroLead();
 
@@ -776,60 +665,71 @@ function setStripeError(stripeErrorId: string, error: string) {
     }
 }
 
+function changeLocation(place: object|null): void
+{
+    if (place === null) {
+        return
+    }
+
+    if (place.hasOwnProperty('address_components') && place['address_components'] !== null) {
+        for (const component of place['address_components']) {
+            const componentType = component.types[0];
+
+            if (componentType === 'street_number') {
+                currentLocation.street_number = component.long_name
+            } else if (componentType === 'route') {
+                currentLocation.route = component.long_name
+            } else if (componentType === 'administrative_area_level_3') {
+                currentLocation.area3 = component.long_name
+            } else if (componentType === 'administrative_area_level_2') {
+                currentLocation.area2 = component.short_name
+            } else if (componentType === 'administrative_area_level_1') {
+                currentLocation.area1 = component.short_name
+            } else if (componentType === 'country') {
+                currentLocation.country = component.short_name
+            } else if (componentType === 'postal_code') {
+                currentLocation.postcode = component.long_name
+            }
+        }
+
+        var e: HTMLInputElement = null;
+        
+        e = <HTMLInputElement>document.getElementById('streetAddress');
+        if (e !== null) {
+            e.value = currentLocation.route;
+        }
+        e = <HTMLInputElement>document.getElementById('streetNumber');
+        if (e !== null) {
+            e.value = currentLocation.street_number;
+        }
+        e = <HTMLInputElement>document.getElementById('cap');
+        if (e !== null) {
+            e.value = currentLocation.postcode;
+        }
+        e = <HTMLInputElement>document.getElementById('city');
+        if (e !== null) {
+            e.value = currentLocation.area3;
+        }
+        e = <HTMLInputElement>document.getElementById('province');
+        if (e !== null) {
+            e.value = currentLocation.area2;
+        }
+
+        setError(form, 'address', '');
+        setError(form, 'streetAddress', '');
+        setError(form, 'streetNumber', '');
+        setError(form, 'cap', '');
+        setError(form, 'city', '');
+        setError(form, 'province', '');
+    }
+}
+
 function fillInAddress(): void
 {
     resetCurrentLocation()
 
     const place = autocomplete.getPlace();
-    for (const component of place.address_components) {
-        const componentType = component.types[0];
-
-        if (componentType === 'street_number') {
-            currentLocation.street_number = component.long_name
-        } else if (componentType === 'route') {
-            currentLocation.route = component.long_name
-        } else if (componentType === 'administrative_area_level_3') {
-            currentLocation.area3 = component.long_name
-        } else if (componentType === 'administrative_area_level_2') {
-            currentLocation.area2 = component.short_name
-        } else if (componentType === 'administrative_area_level_1') {
-            currentLocation.area1 = component.short_name
-        } else if (componentType === 'country') {
-            currentLocation.country = component.short_name
-        } else if (componentType === 'postal_code') {
-            currentLocation.postcode = component.long_name
-        }
-    }
-
-    var e: HTMLInputElement = null;
-    
-    e = <HTMLInputElement>document.getElementById('streetAddress');
-    if (e !== null) {
-        e.value = currentLocation.route;
-    }
-    e = <HTMLInputElement>document.getElementById('streetNumber');
-    if (e !== null) {
-        e.value = currentLocation.street_number;
-    }
-    e = <HTMLInputElement>document.getElementById('cap');
-    if (e !== null) {
-        e.value = currentLocation.postcode;
-    }
-    e = <HTMLInputElement>document.getElementById('city');
-    if (e !== null) {
-        e.value = currentLocation.area3;
-    }
-    e = <HTMLInputElement>document.getElementById('province');
-    if (e !== null) {
-        e.value = currentLocation.area2;
-    }
-
-    setError(form, 'address', '');
-    setError(form, 'streetAddress', '');
-    setError(form, 'streetNumber', '');
-    setError(form, 'cap', '');
-    setError(form, 'city', '');
-    setError(form, 'province', '');
+    changeLocation(place);
 }
 
 /******************************************************************************/
@@ -907,14 +807,14 @@ async function initPaymentMethods()
                 if (pms[pm].hasOwnProperty('enabled') && pms[pm]['enabled'] === true) {
                     paymentMethods[pmIndex].enabled = true;
                     if (pms[pm].hasOwnProperty('fee') && pms[pm]['fee'] !== null) {
-                        paymentMethods[pmIndex].fee = getCurrencyValue(pms[pm]['fee']);
+                        paymentMethods[pmIndex].fee = utils.getCurrencyValue(pms[pm]['fee']);
                     }
                     if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
-                        paymentMethods[pmIndex].name = strval(pms[pm]['name']);
+                        paymentMethods[pmIndex].name = utils.strval(pms[pm]['name']);
                     }
                 } else {
                     paymentMethods[pmIndex].enabled = false;
-                    hideElement(pm + 'Div');
+                    utils.hideElement(pm + 'Div');
                 }
             }
         }
@@ -933,7 +833,7 @@ function changePaymentMethod(pmId: string): void
 {
     for (let i = 0; i < paymentMethods.length; i++) {
         let pm = paymentMethods[i];
-        hideElement(pm.id);
+        utils.hideElement(pm.id);
 
         if (pm.id === pmId) {
             let e = document.getElementById('reviewTotalAmount');
@@ -942,7 +842,7 @@ function changePaymentMethod(pmId: string): void
             }
         }
     }
-    showElement(pmId);
+    utils.showElement(pmId);
     paymentMethod = pmId;
 }
 
@@ -969,7 +869,7 @@ async function initStep5()
 
         e = document.getElementById('orderNumber');
         if (e !== null) {
-            e.innerText = lead['id'];
+            e.innerText = lead['number'];
         }
         e = document.getElementById('orderDate');
         if (e !== null) {
@@ -1010,12 +910,12 @@ async function initStep5()
 
 async function validateStep1()
 {
-    loadingStart();
+    utils.loadingStart();
 
     let isValid = true;
 
-    fullName = getInputValue('fullName');
-    phone = forcePhoneFormat(getInputValue('phone'));
+    fullName = utils.getInputValue('fullName');
+    phone = forcePhoneFormat(utils.getInputValue('phone'));
     phone = phone.split(' ').join('');
 
     // Check full name
@@ -1064,18 +964,26 @@ async function validateStep1()
             }
         }
 
-        lead = await zarolead.createLead({
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone,
-            sku: product['sku'],
-            product_name: product['name'],
-            product_id: intval(productId),
-            price: price.toFixed(2),
-            total: total.toFixed(2),
-            quantity: quantity,
-            status: 'abandoned',
-        });
+        if (lead === null) {
+            lead = await zarolead.createLead({
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone,
+                sku: product['sku'],
+                product_name: product['name'],
+                product_id: utils.intval(productId),
+                price: price.toFixed(2),
+                total: total.toFixed(2),
+                quantity: quantity,
+                status: 'abandoned',
+            });
+        } else {
+            const updateLeadResult = await zarolead.updateLead(utils.strval(lead['hash']), {
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone,
+            });
+        }
 
         let fbResult = false;
         if (facebook !== null) {
@@ -1086,7 +994,7 @@ async function validateStep1()
     // DEBUG TODO: to delete
     console.log('validateStep1', isValid);
 
-    loadingEnd();
+    utils.loadingEnd();
 
     return isValid;
 }
@@ -1109,7 +1017,7 @@ async function validateStep2()
 
     if (isValid) {
         if (lead !== null && lead.hasOwnProperty('id')) {
-            let pIntent = await zarolead.getPaymentIntent(strval(productId), strval(lead['id']), quantity);
+            let pIntent = await zarolead.getPaymentIntent(utils.strval(productId), utils.strval(lead['hash']), quantity);
             if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
                 paymentIntent = pIntent;
                 stripeClientSecret = pIntent['client_secret'];
@@ -1142,11 +1050,11 @@ async function validateStep3()
     */
 
     // Check address fields
-    var streetAddress: string = getInputValue('streetAddress');
-    var streetNumber: string = getInputValue('streetNumber');
-    var cap: string = getInputValue('cap');
-    var city: string = getInputValue('city');
-    var province: string = getInputValue('province');
+    var streetAddress: string = utils.getInputValue('streetAddress');
+    var streetNumber: string = utils.getInputValue('streetNumber');
+    var cap: string = utils.getInputValue('cap');
+    var city: string = utils.getInputValue('city');
+    var province: string = utils.getInputValue('province');
     if (streetAddress == '') {
         setError(form, 'streetAddress', 'Indirizzo non valido');
         isValid = false;
@@ -1180,7 +1088,7 @@ async function validateStep3()
 
     if (isValid) {
         if (lead !== null) {
-            let addressUpdated = await zarolead.updateLeadAddress(lead['id'], {
+            let addressUpdated = await zarolead.updateLeadAddress(lead['hash'], {
                 street_address: streetAddress + ', ' + streetNumber,
                 city          : city,
                 province      : province,
@@ -1242,7 +1150,7 @@ async function validateStep4()
         if (pm !== null) {
             fee = pm.fee;
         }
-        let leadUpdated = await zarolead.completeLead(lead['id'], 'confirmed', total + fee, pMethod);
+        let leadUpdated = await zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod);
         isValid = leadUpdated && isValid;
     }
 
@@ -1303,13 +1211,13 @@ var currentStep = -1;
 function hideSteps(): void
 {
     for (let i = 0; i < steps.length; i++) {
-        hideElement(steps[i].id);
+        utils.hideElement(steps[i].id);
     }
 }
 
 function showStep(stepId: string): void
 {
-    showElement(stepId);
+    utils.showElement(stepId);
 }
 
 function getStepIndexById(stepId: string): number
@@ -1356,10 +1264,10 @@ async function nextStep()
         goToNextStep = true;
     } else {
         if (steps[currentStep].validate !== null) {
-            loadingStart();
+            utils.loadingStart();
             const res = await steps[currentStep].validate();
             goToNextStep = (res === true);
-            loadingEnd();
+            utils.loadingEnd();
         }
     }
 
@@ -1376,9 +1284,9 @@ async function nextStep()
 
             showStep(step.id);
             if (step.init !== null) {
-                loadingStart();
+                utils.loadingStart();
                 await step.init();
-                loadingEnd();
+                utils.loadingEnd();
             }
 
             let btn = document.getElementById('nextStepButton');
@@ -1386,9 +1294,9 @@ async function nextStep()
                 btn.innerText = step.buttonText;
             }
             if (step.validate === null) {
-                hideElement('nextStepButton');
+                utils.hideElement('nextStepButton');
             } else {
-                showElement('nextStepButton');
+                utils.showElement('nextStepButton');
             }
             currentStep = i;
             break;
@@ -1484,12 +1392,12 @@ function addUpSellOption(
     let eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    eContentPrice1.innerText = '€' + formatCurrency(price);
+    eContentPrice1.innerText = '€' + utils.formatCurrency(price);
     eContentPrice.appendChild(eContentPrice1);
     let eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    eContentPrice2.innerText = '€' + formatCurrency(unitPrice) + ' al pezzo';
+    eContentPrice2.innerText = '€' + utils.formatCurrency(unitPrice) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
 
     eContent.appendChild(eContentQty);
@@ -1512,7 +1420,7 @@ function addUpSellOption(
 function changeQuantity(qty: string): void
 {
     if (product['quantity']['options'].hasOwnProperty(qty)) {
-        price = getCurrencyValue(product['quantity']['options'][qty]['price']);
+        price = utils.getCurrencyValue(product['quantity']['options'][qty]['price']);
         quantity = qty;
     }
     total = price;
@@ -1573,7 +1481,7 @@ var tiktok: TikTok|null = null;
 function initPlugins()
 {
     // Privacy Policy (Terms and conditions)
-    hideElement('termsAndConditionsDiv');
+    utils.hideElement('termsAndConditionsDiv');
     let tcInput = <HTMLInputElement>document.getElementById('termsAndConditions');
     if (tcInput !== null) {
         tcInput.checked = true;
@@ -1581,7 +1489,7 @@ function initPlugins()
     if (plugins !== null && plugins.hasOwnProperty('privacy_policy') && plugins['privacy_policy'] !== null) {
         let p = plugins['privacy_policy'];
         if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
-            showElement('termsAndConditionsDiv');
+            utils.showElement('termsAndConditionsDiv');
             if (tcInput !== null) {
                 tcInput.checked = false;
             }
@@ -1609,13 +1517,13 @@ function initPlugins()
                     let qty = q;
                     let discount = 0;
                     if (typeof(product['quantity']['options'][q]['discount']) === 'string') {
-                        discount = getCurrencyValue(product['quantity']['options'][q]['discount']);
+                        discount = utils.getCurrencyValue(product['quantity']['options'][q]['discount']);
                     } else if (product['quantity']['options'][q]['discount'] !== '') {
                         discount = product['quantity']['options'][q]['discount'];
                     }
                     let price = 0;
                     if (typeof(product['quantity']['options'][q]['price']) === 'string') {
-                        price = getCurrencyValue(product['quantity']['options'][q]['price']);
+                        price = utils.getCurrencyValue(product['quantity']['options'][q]['price']);
                     } else {
                         price = product['quantity']['options'][q]['price'];
                     }
@@ -1626,7 +1534,7 @@ function initPlugins()
                     } else {
                         bestSeller = (counter === 1);
                     }
-                    let unitPrice = price/intval(qty);
+                    let unitPrice = price/utils.intval(qty);
                     addUpSellOption(qty, discount, price, unitPrice, bestSeller);
                     counter++;
                 }
@@ -1664,10 +1572,11 @@ function initPlugins()
 /**                                  ONLOAD                                  **/
 /******************************************************************************/
 
-
 async function onLoad()
 {
-    loadingStart();
+    utils.loadingStart();
+
+    $http = axios;
 
     // Steps initialization
     hideSteps();
@@ -1733,13 +1642,13 @@ async function onLoad()
     });
 
     // TODO:
-    // Get form's info
+    // Get checkout info
     thisScript = document.getElementById('checkout-js');
     if (thisScript !== null) {
-        productId = getAttribute(thisScript, 'data-product-id');
-        var pluginListStr: string|null = getAttribute(thisScript, 'data-plugins');
+        productId = utils.getAttribute(thisScript, 'data-product-id');
+        var pluginListStr: string|null = utils.getAttribute(thisScript, 'data-plugins');
         if (pluginListStr !== null && pluginListStr !== '') {
-            pluginsList = < Array<object> > jsonDecode(pluginListStr);
+            pluginsList = < Array<object> > utils.jsonDecode(pluginListStr);
         }
 
         product = await zarolead.getProduct(productId);
@@ -1766,9 +1675,80 @@ async function onLoad()
         // TODO: Abort??
     }
 
+    lead = null;
+    let leadId = utils.getUrlParam('lid');
+    if (leadId !== null) {
+        let leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
+        if (leadInfo !== null) {
+            lead = leadInfo;
+
+            // Prefill name and phone
+            let fullName = '';
+            if (lead.hasOwnProperty('first_name') && lead['first_name'] !== null) {
+                fullName += lead['first_name'];
+            }
+            if (lead.hasOwnProperty('last_name') && lead['last_name'] !== null) {
+                fullName += ' ' + lead['last_name'];
+            }
+            utils.setInputValue('fullName', fullName);
+
+            let phone = '';
+            if (lead.hasOwnProperty('phone') && lead['phone'] !== null) {
+                phone = lead['phone'];
+            }
+            utils.setInputValue('phone', phone);
+
+            // Prefill quantity
+            if (lead.hasOwnProperty('quantity') && lead['quantity'] !== null) {
+                changeQuantity(lead['quantity']);
+            }
+
+            // Prefill address
+            if (lead.hasOwnProperty('shipping') && lead['shipping'] !== null) {
+                let shipping = lead['shipping'];
+                if (shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
+                    shipping.hasOwnProperty('city') && shipping['city'] !== null &&
+                    shipping.hasOwnProperty('province') && shipping['province'] !== null &&
+                    shipping.hasOwnProperty('state') && shipping['state'] !== null) {
+
+                    let address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
+
+                    utils.setInputValue('address', address);
+                    if (autocomplete !== null) {
+                        autocomplete.set(address);
+                        //google.maps.event.trigger(autocomplete, 'place_changed');
+                        //const res = await google.maps.places.AutocompletionRequest.getPlacePredictions({ input: address});
+                        //const res = await autocomplete.getPlacePredictions({ input: address});
+
+                        let acService = new google.maps.places.AutocompleteService();
+                        const res = await acService.getPlacePredictions({ input: address});
+
+                        let placeId = res['predictions'][0]['place_id'];
+
+                        const map = new google.maps.Map(document.getElementById('map'), {
+                            center: new google.maps.LatLng(-33.8665433,151.1956316),
+                            zoom: 15,
+                        });
+                        let pService = new google.maps.places.PlacesService(map);
+                        await pService.getDetails({
+                            placeId: placeId,
+                            componentRestrictions: { country: ['it'] },
+                            fields: ['address_components'],
+                            types: ['address'],
+                        }, function (place, status) {
+                            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                                changeLocation(place);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     // Initialize steps and start with first step
     initSteps();
     await nextStep();
 
-    loadingEnd();
+    utils.loadingEnd();
 }
