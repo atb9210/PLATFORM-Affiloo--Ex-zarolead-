@@ -629,6 +629,14 @@
                 <div class="vx-row mb-3">
                     <div class="vx-col w-full">
                         <h3>Confirmation message</h3>
+                        <p>
+                            <ul>
+                                <li><span>&lbrace;</span>&lbrace; product_name &rbrace;&rbrace; => Product name</li>
+                                <li><span>&lbrace;</span>&lbrace; price(n) &rbrace;&rbrace; => Price of quantity n (integer)</li>
+                                <li><span>&lbrace;</span>&lbrace; confirm_link &rbrace;&rbrace; => Confirmation Link</li>
+                                <li><span>&lbrace;</span>&lbrace; cancel_link &rbrace;&rbrace; => Cancel link</li>
+                            </ul>
+                        </pa>
                         <vs-textarea v-model="confirmationMessage" height="200px"></vs-textarea>
                         <div class="flex" style="float: right;">
                             <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="updateConfirmationMessage(confirmationMessage)"></vs-button>

@@ -167,7 +167,13 @@ class Warehouse {
             obj.carrier = obj.info.delivery.carrier_slug
           }
           if (obj.info.delivery.hasOwnProperty('status')) {
-            obj.order_status = obj.info.delivery.status
+            if (!Array.isArray(obj.info.delivery.status)) {
+              obj.order_status = obj.info.delivery.status
+            } else {
+              if (obj.info.delivery.status.length > 0 && obj.info.delivery.status[0].hasOwnProperty('status')) {
+                obj.order_status = obj.info.delivery.status[0].status
+              }
+            }
           }
 
           if (obj.info.delivery.hasOwnProperty('order_number')) {
