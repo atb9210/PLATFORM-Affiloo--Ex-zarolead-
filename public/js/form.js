@@ -789,9 +789,6 @@ Form.prototype.finishDelivery = function() {
 
     $('#delivery').val(this.deliveryOption);
 
-    // DEBUG TODO: to delete
-    console.log("called this.onSubmit(3) in finishDelivery()");
-
     this.currentStep = 'final';
     this.onSubmit(3);
 }
