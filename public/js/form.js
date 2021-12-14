@@ -885,6 +885,8 @@ Form.prototype.validateInput = function() {
                 this.currentStep = 'delivery';
                 this.showForm('deliveryStep');
                 this.setDeliveryOption(0);
+            } else {
+                this.currentStep = 'final';
             }
             this.onSubmit(2);
 
@@ -968,9 +970,6 @@ Form.prototype.onSubmit = function(step) {
 
     this.sendingForm = true;
 
-    // DEBUG TODO: to delete
-    console.log("called onSubmit(" + step + ")");
-
     // Form validation
     $("#submit-button").prop("disabled", true);
 
@@ -1047,6 +1046,15 @@ Form.prototype.onSubmit = function(step) {
                     $('#thankyou-page').css('display', 'block');
                 }
                 */
+
+                if (this.currentStep === 'final') {
+                    if (this.lead !== null) {
+                        this.sendingForm = false;
+                        this.onSubmit(3);
+                    } else {
+                        this.showForm('thankyou-page');
+                    }
+                }
                 this.sendingForm = false;
             }.bind(this),
             error: function(data) {
