@@ -56,7 +56,7 @@ class Order extends Model
         return $this->belongsTo('App\Network', 'network_id');
     }
 
-    public function sendToNetwork(array $input, array $form, Network $network)
+    public function sendToNetwork(array $input, array $form, Network $network, array $product)
     {
         // Variables to return
         $status = 'error';
@@ -70,6 +70,7 @@ class Order extends Model
             'input' => $input,
             'form' => $form,
             'order' => $this->toArray(),
+            'product' => $product,
         ];
 
         // Params validation

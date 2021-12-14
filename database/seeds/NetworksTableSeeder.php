@@ -48,7 +48,7 @@ class NetworksTableSeeder extends Seeder
                                 'aff_sub2' => 'string',
                                 'name' => 'required|min:3',
                                 'phone' => 'required|string|min:10|regex:' . $phone_regex,
-                                'address' => 'required|min:4',
+                                'address' => 'string',
                                 'quantity' => 'required',
                                 'doubleCheck' => 'in:0,1',
                             ],
@@ -112,7 +112,6 @@ class NetworksTableSeeder extends Seeder
                             ],
                             'address' => [
                                 'type' => 'text',
-                                'required' => '',
                                 'label' => 'Città e indirizzo di consegna'
                             ],
                         ],
@@ -141,7 +140,7 @@ class NetworksTableSeeder extends Seeder
                         'input' => [
                             'name' => 'required|string|min:4',
                             'phone' => 'required|string|min:10|regex:' . $phone_regex,
-                            'address' => 'required|string|min:4',
+                            'address' => 'string',
                         ],
                         'params' => [
                             'api_key' => 'required|string|min:1',
@@ -936,21 +935,23 @@ class NetworksTableSeeder extends Seeder
                         'method' => 'post',
                         'type' => 'json',
                         'bodyParams' => [
-                            'first_name' => '{input.name}',
-                            'last_name' => ' . ',
-                            'phone' => '{input.phone}',
-                            'order_id' => '{order.id}',
-                            'sku' => '{form.sku}',
+                            'first_name'   => '{input.name}',
+                            'last_name'    => ' . ',
+                            'phone'        => '{input.phone}',
+                            'order_id'     => '{order.id}',
+                            'sku'          => '{form.sku}',
                             'product_name' => '{form.product_name}',
-                            'price' => '{input.price}',
-                            'total' => '{input.price}',
-                            'quantity' => '{input.quantity}',
+                            'price'        => '{input.price}',
+                            'total'        => '{input.price}',
+                            'quantity'     => '{input.quantity}',
 
                             'ip'             => '{input.ip}',
                             'user_agent'     => '{input.user_agent}',
                             'source_url'     => '{input.source_url}',
                             'affiliate_id'   => '{form.affiliate_id}',
                             'traffic_source' => '{input.traffic_source}',
+
+                            'product_id'     => '{product.id}',
                         ],
                         'validation' => [
                             'bodyParams' => [
@@ -969,6 +970,8 @@ class NetworksTableSeeder extends Seeder
                                 'source_url'     => 'nullable|string',
                                 'affiliate_id'   => 'nullable|numeric',
                                 'traffic_source' => 'nullable|string',
+
+                                'product_id'     => 'nullable|numeric',
                             ],
                         ],
                     ],
@@ -1000,7 +1003,6 @@ class NetworksTableSeeder extends Seeder
                             ],
                             'address' => [
                                 'type' => 'text',
-                                'required' => '',
                                 'label' => 'Indirizzo e numero civico'
                             ],
                         ],
@@ -1019,7 +1021,7 @@ class NetworksTableSeeder extends Seeder
                         'input' => [
                             'name' => 'required|string|min:4',
                             'phone' => 'required|string|min:10|regex:' . $phone_regex,
-                            'address' => 'required|string|min:4',
+                            'address' => 'string',
                         ],
                         'params' => [
                             'product_name' => 'required|string|min:1',
