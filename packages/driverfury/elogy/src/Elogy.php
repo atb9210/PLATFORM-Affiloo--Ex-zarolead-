@@ -282,14 +282,12 @@ class Elogy
         return $output;
     }
 
-    public function getOrders(): array
+    public function getOrders(array $params = []): array
     {
         $objects = [];
 
-        $params = [
-            'offset' => 0,
-            'length' => 100,
-        ];
+        $params['offset'] = 0;
+        $params['length'] = 100;
         $objects = $this->getRequestAllPages('/orders', $params);
 
         return $objects;

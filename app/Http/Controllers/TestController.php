@@ -318,7 +318,219 @@ class TestController extends Controller
 
     public function test()
     {
-        dd("TEST");
+        $elogy = new \Driverfury\Elogy\Elogy(
+            env('ELOGY_API_TOKEN'),
+            env('ELOGY_EMAIL'),
+            env('ELOGY_PASSWORD')
+        );
+        $eOrders = $elogy->getOrders([
+            'from_creation_date' => '2021-12-01T00:00:00.000Z',
+        ]);
+        $eProducts = $elogy->getProducts();
+        //dd($eProducts);
+        //dd($eOrders[count($eOrders)-1]);
+
+        foreach ($eOrders as $eOrder) {
+            if (!isset($eOrder['customer']) || $eOrder['customer'] === null) {
+                dd('There is no customer field or it is null');
+            }
+
+            if (!isset($eOrder['customer']['phone']) || $eOrder['customer']['phone'] === null) {
+                dd('Customer field has no phone sub-field (or it is null)');
+            }
+
+            if (!isset($eOrder['shipping_address_id']) || $eOrder['shipping_address_id'] === null) {
+                dd('Order has no shipping_address_id field');
+            }
+
+            if (!isset($eOrder['products']) || $eOrder['products'] === null ||
+                count($eOrder['products']) < 1) {
+                dd('Invalid product field');
+            }
+
+            foreach ($eOrder['products'] as $product) {
+                if (!isset($product['id']) || $product['id'] === null) {
+                    dd('Product has no id');
+                }
+                if (!isset($product['product_name']) || $product['product_name'] === null) {
+                    dd('Product has no product_name field');
+                }
+                if (!isset($product['price']) || $product['price'] === null) {
+                    dd('Product has no price field');
+                }
+                if (!isset($product['quantity']) || $product['quantity'] === null) {
+                    dd('Product has no quantity field');
+                }
+            }
+        }
+        //dd('All eOrders corrects');
+
+        $wLeads = \App\third\WarehouseLead::where('created_at', '>=', '2021-12-01 00:00:00');
+
+        $errors = [];
+        $createdLeads = [];
+        foreach ($eOrders as $eOrder) {
+            // Skip if that phone already exists
+            foreach ($wLeads as $wLead) {
+                if ($wLead->phone == $eOrder['phone']) {
+                    continue;
+                }
+            }
+
+            // First name, last name, phone, email
+            $firstName = '.';
+            $lastName = '.';
+            $phone = '';
+            $email = null;
+            if (isset($eOrder['customer']['first_name']) && $eOrder['customer']['first_name']) {
+                $firstName = $eOrder['customer']['first_name'];
+            }
+            if (isset($eOrder['customer']['last_name']) && $eOrder['customer']['last_name']) {
+                $lastName = $eOrder['customer']['last_name'];
+            }
+            if (isset($eOrder['customer']['phone']) && $eOrder['customer']['phone']) {
+                $phone = $eOrder['customer']['phone'];
+            }
+            if (isset($eOrder['customer']['email']) && $eOrder['customer']['email']) {
+                $email = $eOrder['customer']['email'];
+            }
+
+            // Status
+            $status = 'to do';
+            // TODO: Status mapping?
+
+            // Translate date in our format
+            $tmp = explode('T', $eOrder['created_at']);
+            if (count($tmp) <= 1) {
+                $errors[] = 'invalid date ' . $eOrder['created_at'];
+                continue;
+            }
+            $d = $tmp[0];
+            $t = $tmp[1];
+            $tmp = explode('.', $t);
+            if (count($tmp) < 1) {
+                $errors[] = 'invalid date ' . $eOrder['created_at'];
+                continue;
+            }
+            $t = $tmp[0];
+            $createdAt = $d . ' ' . $t;
+
+            // Products, price and total
+            $products = [];
+            $sku = null;
+            $quantity = 0;
+            foreach ($eOrder['products'] as $p) {
+                $product = null;
+                foreach ($eProducts as $eProduct) {
+                    if ($eProduct['id'] == $p['id']) {
+                        $product = $eProduct;
+                        break;
+                    }
+                }
+                if ($product === null) {
+                    continue;
+                }
+
+                if ($sku === null) {
+                    $sku = $product['sku'];
+                }
+
+                $quantity += intval($p['quantity']);
+
+                $products[] = [
+                    'id' => $p['id'],
+                    'name' => $p['product_name'],
+                    'sku' => $product['sku'],
+                    'price' => $p['price'],
+                    'quantity' => $p['quantity'],
+                    'total' => intval($p['quantity']) * floatval($p['price']),
+                    'upsell' => false,
+                ];
+            }
+            $price = $eOrder['products'][0]['price'];
+            $total = $eOrder['total_price'];
+            $productName = $eOrder['products'][0]['product_name'];
+
+            // Shipping
+            $shipping = [
+                'first_name' => '',
+                'last_name' => '',
+                'phone' => '',
+                'email' => '',
+                'street_address' => '',
+                'city' => '',
+                'state' => '',
+                'province' => '',
+                'postcode' => '',
+                'country' => '',
+                'notes' => ''
+            ];
+            $order = $elogy->getOrder($eOrder['id']);
+            if ($order === null) {
+                $order = $eOrder;
+            }
+            if ($order !== null && isset($order['shipping_address'])) {
+                if (isset($order['shipping_address']['first_name'])) {
+                    $shipping['first_name'] = $order['shipping_address']['first_name'];
+                }
+                if (isset($order['shipping_address']['last_name'])) {
+                    $shipping['last_name'] = $order['shipping_address']['last_name'];
+                }
+                if (isset($order['shipping_address']['shipping_phone'])) {
+                    $shipping['phone'] = $order['shipping_address']['shipping_phone'];
+                }
+                if (isset($order['shipping_address']['shipping_email'])) {
+                    $shipping['email'] = $order['shipping_address']['shipping_email'];
+                }
+                if (isset($order['shipping_address']['address1'])) {
+                    $shipping['street_address'] = $order['shipping_address']['address1'];
+                }
+                if (isset($order['shipping_address']['city'])) {
+                    $shipping['city'] = $order['shipping_address']['city'];
+                }
+                if (isset($order['shipping_address']['province_code'])) {
+                    $shipping['province'] = $order['shipping_address']['province_code'];
+                }
+                if (isset($order['shipping_address']['zip'])) {
+                    $shipping['postcode'] = $order['shipping_address']['zip'];
+                }
+                if (isset($order['shipping_address']['country_code'])) {
+                    $shipping['country'] = $order['shipping_address']['country_code'];
+                }
+            }
+
+            // Info
+            $info = [
+                'sku'          => $sku,
+                'product_name' => $productName,
+                'price'        => $price,
+                'total'        => $total,
+                'quantity'     => $quantity,
+                'products'     => $products,
+                'shipping'     => $shipping,
+                'insurance'    => 0,
+                'delivery'     => $order,
+                'contact'      => ($order['contacted'] != 0),
+            ];
+
+            $params = [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $phone,
+                'email' => $email,
+                'status' => $status,
+                'info' => $info,
+                'created_at' => $createdAt,
+            ];
+
+            $lead = \App\third\WarehouseLead::create($params);
+            $createdLeads[] = $lead->phone;
+        }
+
+        dd([
+            'createdLeads' => $createdLeads,
+            'errors' => $errors,
+        ]);
         exit();
 
         /*
