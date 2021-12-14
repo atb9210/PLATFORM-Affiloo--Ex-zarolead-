@@ -11,7 +11,7 @@ function TikTokPlugin(data) {
     this.pixel = this.data.pixel;
     this.token = this.data.token;
 
-    if (TikTokPlugin_getUrlParams('pi') != '' && TikTokPlugin_getUrlParams('pi') != null) {
+    if (TikTokPlugin_getUrlParams('pi') !== null && TikTokPlugin_getUrlParams('pi') !== '') {
         this.pixel = TikTokPlugin_getUrlParams('pi');
     }
 
@@ -29,7 +29,7 @@ function TikTokPlugin(data) {
 
     // Fetch click id (ttclid)
     this.ttclid = TikTokPlugin_getUrlParams('ttclid');
-    if (this.ttclid == null) {
+    if (this.ttclid === null) {
       this.ttclid = ''
     }
 }
