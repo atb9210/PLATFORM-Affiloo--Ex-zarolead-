@@ -502,6 +502,9 @@
                             <vs-select-item :key="gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
                         </vs-select>
                     </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-button v-if="order.gateway === 'online' && order.phone != ''" class="w-full" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="confirmSendPaymentLinkViaMessage">Send payment link via Whatsapp</vs-button>
+                    </div>
                 </div>
 
                 <hr class="mt-3 mb-3">
@@ -1780,11 +1783,15 @@ export default {
 
       return canCreate
     },
+    getPaymentLink(leadId, paymentSuccessUrl = '', paymentCancelUrl = '') {
+      let url = 'https://' + window.location.hostname + '/leads/' + leadId + '/checkout'
+      url += '?success_url=' + paymentSuccessUrl
+      url += '&cancel_url=' + paymentCancelUrl
+      return url
+    },
     showPaymentLink(lead) {
       this.lead = lead
-      let url = 'https://' + window.location.hostname + '/leads/' + this.lead.id + '/checkout'
-      url += '?success_url=' + this.paymentSuccessUrl
-      url += '&cancel_url=' + this.paymentCancelUrl
+      let url = this.getPaymentLink(this.lead.id, this.paymentSuccessUrl, this.paymentCancelUrl)
       this.paymentLink = url
       this.showPopup['payment_link'] = true
     },
@@ -1818,6 +1825,48 @@ export default {
       }
 
       await this.copyToClipboard(toCopy)
+    },
+    async sendMessage(phone, message) {
+      this.$vs.loading()
+
+      const result = await this.warehouse.sendMessage(phone, message)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Message sent',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while sending the message',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    confirmSendPaymentLinkViaMessage() {
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Send Payment link confirmation',
+        text: 'Are you sure you want to send the payment link via message (Whatsapp)?',
+        accept: this.sendPaymentLinkViaMessage
+      })
+    },
+    sendPaymentLinkViaMessage() {
+      let paymentLink = this.getPaymentLink(this.order.lead_id)
+
+      let phone = this.order.phone
+      let message = 'Link di pagamento: ' + paymentLink
+
+      this.sendMessage(phone, message)
     },
   },
   async created() {

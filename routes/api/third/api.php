@@ -206,6 +206,9 @@ Route::put('/warehouse/delivery', 'api\third\WarehouseController@updateDelivery'
 Route::get('/warehouse/products', 'api\third\WarehouseController@products')->middleware('auth:api')
     ->name('warehouse.products.index');
 
+Route::post('/warehouse/send-message', 'api\third\WarehouseController@sendMessage')->middleware('auth:api')
+    ->name('warehouse.message.send');
+
 Route::get('/warehouse/leads/{id}/info', 'api\third\WarehouseController@getLeadInfo')
     ->name('warehouse.leads.info');
 Route::put('/warehouse/leads/{hash}/update', 'api\third\WarehouseController@publicUpdateLead')
@@ -221,3 +224,4 @@ Route::post('/warehouse/leads/{lead_id}/complete', 'api\third\WarehouseControlle
 // Also change public/js/checkout.ts
 Route::get('/warehouse/products/{product_id}/payment-intent', 'api\third\WarehouseController@getPaymentIntent')
     ->name('warehouse.products.payment-intent');
+

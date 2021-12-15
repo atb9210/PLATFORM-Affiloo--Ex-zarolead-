@@ -1162,4 +1162,36 @@ class WarehouseController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get payment intend.
+     *
+     * @bodyParam phone required string Phone number
+     * @bodyParam message required string Message
+     */
+    public function sendMessage(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'phone'   => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        $chatapi = $this->getChatAPIClient();
+        $result = $chatapi->sendMessage($params['phone'], $params['message']);
+
+        if (!$result) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Message not sent',
+            ], 500);
+        }
+
+        return response([
+            'status' => 'success',
+            'message' => 'Message sent',
+        ]);
+    }
 }

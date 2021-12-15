@@ -343,6 +343,23 @@ class Warehouse {
 
     return delivery
   }
+
+  async sendMessage(phone, message) {
+    try {
+      let headers = this.getHeaders()
+      let params = {
+        phone: phone,
+        message: message,
+      }
+      const response = await this.$http.post('/api/3rd/warehouse/send-message', params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('status') && response.data.status === 'success') {
+        return true
+      }
+    } catch (error) {
+      // Nothing
+    }
+    return false
+  }
 }
 
 export default Warehouse
