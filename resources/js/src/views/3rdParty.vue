@@ -69,19 +69,46 @@
     <vs-popup title="Stripe" :active.sync="showPopup['stripe']">
       <div class="vx-row mb-6">
         <div class="vx-col sm:w-1/3 w-full">
-          <span>API Public Key</span>
+          <span>Test Mode</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input v-if="hasSetting('stripe') && settings.stripe.hasOwnProperty('api_public_key')" class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="settings.stripe.api_public_key" />
+          <vs-checkbox v-model="stripe.test_mode" />
         </div>
       </div>
 
       <div class="vx-row mb-6">
         <div class="vx-col sm:w-1/3 w-full">
-          <span>API Secret Key</span>
+          <span>Test API Public Key</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input v-if="hasSetting('stripe') && settings.stripe.hasOwnProperty('api_secret_key')" class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="settings.stripe.api_secret_key" />
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="stripe.test_api_public_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Test API Secret Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="stripe.test_api_secret_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Live API Public Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="stripe.live_api_public_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Live API Secret Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="stripe.live_api_secret_key" />
         </div>
       </div>
 
@@ -94,7 +121,7 @@
 </template>
 
 <script>
-export default{
+export default {
   data() {
     return {
       settings: {},
@@ -190,6 +217,14 @@ export default{
           callback: null,
         },
       ],
+
+      stripe: {
+        test_mode: false,
+        test_api_public_key: '',
+        test_api_secret_key: '',
+        live_api_public_key: '',
+        live_api_secret_key: '',
+      },
     }
   },
   methods: {
@@ -264,6 +299,19 @@ export default{
       }
       return false
     },
+    adjustSettings(obj, defaultSettings) {
+      for (const [key, value] of Object.entries(defaultSettings)) {
+        if (!obj.hasOwnProperty(key)) {
+          obj[key] = value
+        }
+      }
+      return obj
+    },
+    copySettings(src, dest) {
+      for (const [key, value] of Object.entries(src)) {
+        dest[key] = value
+      }
+    },
 
     /* ChatAPI */
     async showChatAPISettings() {
@@ -282,15 +330,35 @@ export default{
 
     /* Stripe */
     async showStripeSettings() {
-      if (!this.settings.hasOwnProperty('stripe')) {
-        this.settings['stripe'] = {
-          api_secret_key: '',
-          api_public_key: '',
-        }
+      let stripeSettingsDefault = {
+        test_mode: false,
+        test_api_secret_key: '',
+        test_api_public_key: '',
+        live_api_secret_key: '',
+        live_api_public_key: '',
+        api_secret_key: '',
+        api_public_key: '',
       }
+
+      if (!this.settings.hasOwnProperty('stripe')) {
+        this.settings['stripe'] = stripeDefauleSettings
+      }
+      this.adjustSettings(this.settings['stripe'], stripeSettingsDefault)
+
+      this.copySettings(this.settings['stripe'], this.stripe)
+
       this.showPopup['stripe'] = true
     },
     async updateStripeSettings() {
+      this.settings['stripe'] = this.stripe
+
+      this.settings['stripe'].api_secret_key = this.settings['stripe'].test_api_secret_key
+      this.settings['stripe'].api_public_key = this.settings['stripe'].test_api_public_key
+      if (this.settings['stripe'].test_mode !== true) {
+        this.settings['stripe'].api_secret_key = this.settings['stripe'].live_api_secret_key
+        this.settings['stripe'].api_public_key = this.settings['stripe'].live_api_public_key
+      }
+
       await this.updateSettingsWithLoading()
       this.showPopup['stripe'] = false
     },

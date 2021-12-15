@@ -316,7 +316,7 @@ class TestController extends Controller
     ];
     */
 
-    public function test()
+    public function importFromElogy()
     {
         $elogy = new \Driverfury\Elogy\Elogy(
             env('ELOGY_API_TOKEN'),
@@ -1011,6 +1011,22 @@ class TestController extends Controller
         echo '</pre>';
         exit();
         */
+    }
+
+    public function test(Request $request)
+    {
+        $settings = \App\Settings::get();
+        $apiInstance = '';
+        $apiToken = '';
+        if (isset($settings['chatapi']['api_instance'])) {
+            $apiInstance = $settings['chatapi']['api_instance'];
+        }
+        if (isset($settings['chatapi']['api_token'])) {
+            $apiToken = $settings['chatapi']['api_token'];
+        }
+        $chatapi = new \Driverfury\ChatAPI\ChatAPI($apiInstance, $apiToken);
+        dd($chatapi->sendMessage('+(39)3895662155', 'test'));
+        dd("TEST");
     }
 
     public function test2(Request $request)
