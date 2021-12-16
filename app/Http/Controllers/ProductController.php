@@ -201,9 +201,16 @@ class ProductController extends Controller {
         }
         */
 
+        $stripeKey = '';
+        $settings = \App\Settings::get();
+        if (isset($settings['stripe']['api_public_key'])) {
+            $stripeKey = $settings['stripe']['api_public_key'];
+        }
+
         return view('checkout')->with([
             'product_id' => $product->id,
             'plugins' => $plugins,
+            'stripe_key' => $stripeKey,
         ]);
     }
 

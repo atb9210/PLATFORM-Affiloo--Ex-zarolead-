@@ -162,7 +162,7 @@
                     <vs-th sort-key="phone">Phone</vs-th>
                     <!--<vs-th sort-key="sku">SKU</vs-th>-->
                     <vs-th sort-key="product_name">Product</vs-th>
-                    <vs-th sort-key="delivery.gateway">Method</vs-th>
+                    <vs-th sort-key="gateway">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Qty</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
@@ -232,8 +232,8 @@
                             </vs-chip>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.delivery.gateway">
-                            {{item.delivery.gateway}}
+                        <vs-td class="column-no-padding" :data="item.gateway">
+                            {{item.gateway}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
@@ -1583,6 +1583,7 @@ export default {
         id: lead.id,
         status: lead.status,
         lead_id: lead.id,
+        lead_hash: lead.hash,
         first_name: lead.first_name,
         last_name: lead.last_name,
         phone: lead.phone,
@@ -1783,15 +1784,13 @@ export default {
 
       return canCreate
     },
-    getPaymentLink(leadId, paymentSuccessUrl = '', paymentCancelUrl = '') {
-      let url = 'https://' + window.location.hostname + '/leads/' + leadId + '/checkout'
-      url += '?success_url=' + paymentSuccessUrl
-      url += '&cancel_url=' + paymentCancelUrl
+    getPaymentLink(leadHash, paymentSuccessUrl = '', paymentCancelUrl = '') {
+      let url = 'https://' + window.location.hostname + '/leads/' + leadHash + '/checkout'
       return url
     },
     showPaymentLink(lead) {
       this.lead = lead
-      let url = this.getPaymentLink(this.lead.id, this.paymentSuccessUrl, this.paymentCancelUrl)
+      let url = this.getPaymentLink(this.lead.hash, this.paymentSuccessUrl, this.paymentCancelUrl)
       this.paymentLink = url
       this.showPopup['payment_link'] = true
     },
@@ -1861,7 +1860,7 @@ export default {
       })
     },
     sendPaymentLinkViaMessage() {
-      let paymentLink = this.getPaymentLink(this.order.lead_id)
+      let paymentLink = this.getPaymentLink(this.order.lead_hash)
 
       let phone = this.order.phone
       let message = 'Link di pagamento: ' + paymentLink

@@ -358,7 +358,7 @@ class ZaroLead
         return product;
     }
 
-    async getPaymentIntent(productId: string, leadId: string, quantity: string)
+    async getPaymentIntentProduct(productId: string, leadId: string, quantity: string)
     {
         var paymentIntent: object = null;
         let params = {

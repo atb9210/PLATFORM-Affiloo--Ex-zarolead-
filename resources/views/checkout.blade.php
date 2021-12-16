@@ -807,7 +807,7 @@ $beta = env('APP_BETA', 'false') ? 'true' : 'false';
 ?>
 
 <!-- Form script -->
-<script id="checkout-js" src="{{ asset('js/checkout/index.js') }}" data-product-id="{{ $product_id }}" data-plugins="{{ $plugins }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
+<script id="checkout-js" src="{{ asset('js/checkout/index.js') }}" data-product-id="{{ $product_id }}" data-plugins="{{ $plugins }}" data-stripe-key="{{ $stripe_key }}" data-debug="{{ $debug }}" data-alpha="{{ $alpha }}" data-beta="{{ $beta }}"></script>
 
 </body>
 

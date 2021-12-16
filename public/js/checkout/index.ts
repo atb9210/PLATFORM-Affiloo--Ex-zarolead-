@@ -357,7 +357,7 @@ class ZaroLead
         return product;
     }
 
-    async getPaymentIntent(productId: string, leadId: string, quantity: string)
+    async getPaymentIntentProduct(productId: string, leadId: string, quantity: string)
     {
         var paymentIntent: object = null;
         let params = {
@@ -519,6 +519,7 @@ var currentLocation: GmapLocation = {
 }
 
 declare var Stripe: any;
+var stripeKey: string|null = null;
 var stripe: any;
 var card: any;
 var stripeClientSecret: string = '';
@@ -964,6 +965,23 @@ async function validateStep1()
             }
         }
 
+        let info = {
+            products: [
+                {
+                    price: price,
+                    quantity: utils.intval(quantity),
+                    total: total,
+                    // TODO: IMPORTANT
+                    /*
+                    id: elogy id,
+                    name: product name,
+                    sku: product sku,
+                    upsell: true/false,
+                    */
+                }
+            ],
+        };
+
         if (lead === null) {
             lead = await zarolead.createLead({
                 first_name: firstName,
@@ -976,6 +994,7 @@ async function validateStep1()
                 total: total.toFixed(2),
                 quantity: quantity,
                 status: 'abandoned',
+                info: info,
             });
         } else {
             const updateLeadResult = await zarolead.updateLead(utils.strval(lead['hash']), {
@@ -1017,7 +1036,7 @@ async function validateStep2()
 
     if (isValid) {
         if (lead !== null && lead.hasOwnProperty('id')) {
-            let pIntent = await zarolead.getPaymentIntent(utils.strval(productId), utils.strval(lead['hash']), quantity);
+            let pIntent = await zarolead.getPaymentIntentProduct(utils.strval(productId), utils.strval(lead['hash']), quantity);
             if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
                 paymentIntent = pIntent;
                 stripeClientSecret = pIntent['client_secret'];
@@ -1618,29 +1637,6 @@ async function onLoad()
         autocomplete.addListener('place_changed', fillInAddress);
     }
 
-    // Stripe initialization
-    stripe = Stripe('pk_test_51HZhdsKZ0GYSGPZVGo4ggAfbpvnXbooyq1kATn5fn5HUcZmm15W63iUzTLztDS9iUebQr3VjkHUHJkUrYDgPMj1x00c5Xc1pyG');
-    let elements = stripe.elements();
-    card = elements.create('card', {
-        classes: {
-            base: 'form-control py-2',
-        },
-        hidePostalCode: true,
-    });
-    if (card !== null) {
-        card.mount('#cardElement');
-    }
-    card.on('change', function ({error}) {
-        let displayError = document.getElementById('cardErrors');
-        if (error) {
-            displayError.textContent = error.message;
-            displayError.style.display = 'block';
-        } else {
-            displayError.textContent = '';
-            displayError.style.display = 'none';
-        }
-    });
-
     // TODO:
     // Get checkout info
     thisScript = document.getElementById('checkout-js');
@@ -1659,6 +1655,9 @@ async function onLoad()
                 plugins = <object>checkout['plugins'];
             }
         }
+
+        stripeKey = utils.getAttribute(thisScript, 'data-stripe-key');
+
         initPlugins();
 
         changeQuantity(product['quantity']['default']);
@@ -1673,6 +1672,33 @@ async function onLoad()
 
     } else {
         // TODO: Abort??
+    }
+
+    // Stripe initialization
+    if (stripeKey !== null) {
+        stripe = Stripe(stripeKey);
+        let elements = stripe.elements();
+        card = elements.create('card', {
+            classes: {
+                base: 'form-control py-2',
+            },
+            hidePostalCode: true,
+        });
+        if (card !== null) {
+            card.mount('#cardElement');
+        }
+        card.on('change', function ({error}) {
+            let displayError = document.getElementById('cardErrors');
+            if (error) {
+                displayError.textContent = error.message;
+                displayError.style.display = 'block';
+            } else {
+                displayError.textContent = '';
+                displayError.style.display = 'none';
+            }
+        });
+    } else {
+        // TODO: Error handling
     }
 
     lead = null;

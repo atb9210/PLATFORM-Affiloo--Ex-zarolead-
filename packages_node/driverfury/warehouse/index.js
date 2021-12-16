@@ -100,6 +100,7 @@ class Warehouse {
       obj.order_number = ''
       obj.carrier = ''
       obj.order_status = ''
+      obj.gateway = ''
       obj.delivery_status = 'not sent'
       if (obj.hasOwnProperty('info') && obj.info !== null) {
         if (obj.info.hasOwnProperty('product_name')) {
@@ -122,6 +123,10 @@ class Warehouse {
         }
         if (obj.info.hasOwnProperty('paid')) {
           obj.paid = obj.info.paid
+        }
+
+        if (obj.info.hasOwnProperty('gateway')) {
+          obj.gateway = obj.info.gateway
         }
 
         if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
@@ -182,8 +187,10 @@ class Warehouse {
           if (obj.info.delivery.hasOwnProperty('gateway') && obj.info.delivery.gateway !== null) {
             if (obj.info.delivery.gateway === 'cashondelivery') {
                 obj.delivery.gateway = 'cod'
+                obj.gateway = 'cod'
             } else if (obj.info.delivery.gateway !== '') {
                 obj.delivery.gateway = 'online'
+                obj.gateway = 'online'
             }
           }
           if (obj.info.delivery.hasOwnProperty('products') && obj.info.delivery.products !== null) {

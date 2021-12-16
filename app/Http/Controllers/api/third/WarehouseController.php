@@ -441,9 +441,19 @@ class WarehouseController extends Controller
             $productName = $info['product_name'];
         }
 
+        $products = [];
+        $accessories = [];
+        if (isset($info['products']) && $info['products'] !== null) {
+            $products = $info['products'];
+        }
+        if (isset($info['accessories']) && $info['accessories'] !== null) {
+            $accessories = $info['accessories'];
+        }
+
         return response([
             'data' => [
                 'id' => $lead->hash,
+                'hash' => $lead->hash,
                 'number' => $lead->id,
                 'first_name' => $lead->first_name,
                 'last_name' => $lead->last_name,
@@ -451,6 +461,8 @@ class WarehouseController extends Controller
                 'product_name' => $productName,
                 'quantity' => $quantity,
                 'total' => $total,
+                'products' => $products,
+                'accessories' => $accessories,
                 'shipping' => $shipping,
                 'created_at' => $lead->created_at,
             ],
@@ -604,6 +616,7 @@ class WarehouseController extends Controller
         $info['paid'] = true;
         $info['total'] = $params['total'];
         $info['payment_method'] = $params['payment_method'];
+        $info['gateway'] = $params['payment_method'];
         $lead->info = $info;
         $lead->status = $params['status'];
         $lead->save();
@@ -975,15 +988,48 @@ class WarehouseController extends Controller
     /**
      * Lead checkout (online payment via Stripe).
      *
-     * @urlParam lead_id required int Lead's id
-     *
-     * @bodyParam success_url required string Success URL (Thank you page)
-     * @bodyParam cancel_url required string Cancel URL
+     * @urlParam hash required int Lead's id
      */
-    public function checkout($lead_id, Request $request)
+    public function checkout($hash, Request $request)
     {
+        $lead = WarehouseLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        $line_items = [];
+        $products = [];
+        if ($info !== null && isset($info['products']) && $info['products'] !== null) {
+            $products = $info['products'];
+        }
+
+        $stripeKey = '';
+        $settings = \App\Settings::get();
+        if (isset($settings['stripe']['api_public_key'])) {
+            $stripeKey = $settings['stripe']['api_public_key'];
+        }
+
+        return view('payment')->with([
+            'lead_id' => $lead->hash,
+            'products' => $products,
+            'stripe_key' => $stripeKey,
+        ]);
+
+        // TODO: old code
+        /*
         $lead = WarehouseLead::findOrFail($lead_id);
         $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
 
         // Param validation
         $params = $request->validate([
@@ -1038,6 +1084,7 @@ class WarehouseController extends Controller
             ],
         ]);
         return redirect($session->url);
+        */
     }
 
     /**
@@ -1104,14 +1151,14 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Get payment intend.
+     * Get payment intent.
      *
      * @urlParam product_id required int Product's id
      *
      * @bodyParam lead required numeric Lead's hash
      * @bodyParam quantity required string Quantity selected
      */
-    public function getPaymentIntent($product_id, Request $request)
+    public function getPaymentIntentProduct($product_id, Request $request)
     {
         // Param validation
         $params = $request->validate([
@@ -1164,7 +1211,34 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Get payment intend.
+     * Get payment intent (custom price).
+     *
+     * @bodyParam amount required float Amount
+     */
+    public function getPaymentIntent(Request $request)
+    {
+        // Param validation
+        $params = $request->validate([
+            'amount'  => 'required|numeric',
+        ]);
+
+        $amount = floatval($params['amount']);
+
+        $stripe = $this->getStripeClient();
+        $intent = $stripe->paymentIntents->create([
+            'amount' => intval($amount*100),
+            'currency' => 'eur',
+        ]);
+
+        return response([
+            'data' => [
+                'client_secret' => $intent->client_secret,
+            ],
+        ]);
+    }
+
+    /**
+     * Send message
      *
      * @bodyParam phone required string Phone number
      * @bodyParam message required string Message
