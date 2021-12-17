@@ -515,9 +515,13 @@ class WarehouseController extends Controller
         }
         if (!isset($info['shipping']) || $info['shipping'] === null || empty($info['shipping'])) {
             $info['shipping'] = $params;
-            $lead->info = $info;
-            $lead->save();
+        } else {
+            foreach ($params as $key => $value) {
+                $info['shipping'][$key] = $value;
+            }
         }
+        $lead->info = $info;
+        $lead->save();
 
         return response([
             'status' => 'success',

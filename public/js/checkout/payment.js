@@ -560,25 +560,116 @@ var form = null;
 var products = [];
 var accessories = [];
 var lead = null;
+var currentLocation = {
+    street_number: '',
+    route: '',
+    area3: '',
+    area2: '',
+    area1: '',
+    country: '',
+    postcode: ''
+};
 var stripeKey = null;
 var stripe;
 var card;
 var stripeClientSecret = '';
 var paymentIntent = null;
-var total = 0.0;
-// Billing info
-var firstName = '';
-var lastName = '';
 var fullName = '';
 var phone = '';
-var country = '';
-var city = '';
-var address = '';
-var postcode = '';
-var state = '';
+var total = 0.0;
 /******************************************************************************/
-/**                                  ONLOAD                                  **/
+/**                              STEP VALIDATION                             **/
 /******************************************************************************/
+function resetCurrentLocation() {
+    currentLocation = {
+        street_number: '',
+        route: '',
+        area3: '',
+        area2: '',
+        area1: '',
+        country: '',
+        postcode: ''
+    };
+}
+function checkFullName(fullName) {
+    fullName = fullName.trim();
+    if (fullName.length < 5) {
+        return false;
+    }
+    var tmp = fullName.split(' ');
+    if (tmp.length < 2) {
+        return false;
+    }
+    var firstName = tmp[0];
+    var i = 1;
+    while (tmp[i] === '') {
+        i++;
+        if (i >= tmp.length) {
+            return false;
+        }
+    }
+    var secondName = tmp[i];
+    if (firstName.length === 0 || secondName.length === 0) {
+        return false;
+    }
+    return true;
+}
+function checkPhone(phone) {
+    phone = phone.split(' ').join('');
+    if (phone.length < 8) {
+        return false;
+    }
+    for (var i = 0; i < phone.length; i++) {
+        if (!(phone[i] >= '0' && phone[i] <= '9') &&
+            phone[i] !== '+' && phone[i] !== '(' && phone[i] !== ')') {
+            return false;
+        }
+    }
+    return true;
+}
+function checkLocation(loc) {
+    if (loc.street_number === '') {
+        return false;
+    }
+    if (loc.route === '') {
+        return false;
+    }
+    if (loc.area3 === '') {
+        return false;
+    }
+    if (loc.area2 === '') {
+        return false;
+    }
+    if (loc.area1 === '') {
+        return false;
+    }
+    if (loc.country === '') {
+        return false;
+    }
+    if (loc.postcode === '') {
+        return false;
+    }
+    return true;
+}
+function setError(form, inputId, error) {
+    var e = document.getElementById(inputId);
+    if (e !== null) {
+        e.setCustomValidity(error);
+        e.reportValidity();
+        form.reportValidity();
+    }
+}
+function clearErrors(form) {
+    setError(form, 'fullName', '');
+    setError(form, 'phone', '');
+    setError(form, 'address', '');
+    setError(form, 'streetAddress', '');
+    setError(form, 'streetNumber', '');
+    setError(form, 'cap', '');
+    setError(form, 'city', '');
+    setError(form, 'province', '');
+    form.reportValidity();
+}
 function setStripeError(stripeErrorId, error) {
     var displayError = document.getElementById(stripeErrorId);
     displayError.textContent = error;
@@ -589,7 +680,81 @@ function setStripeError(stripeErrorId, error) {
         displayError.style.display = 'none';
     }
 }
-function init() {
+function changeLocation(place) {
+    if (place === null) {
+        return;
+    }
+    if (place.hasOwnProperty('address_components') && place['address_components'] !== null) {
+        for (var _i = 0, _a = place['address_components']; _i < _a.length; _i++) {
+            var component = _a[_i];
+            var componentType = component.types[0];
+            if (componentType === 'street_number') {
+                currentLocation.street_number = component.long_name;
+            }
+            else if (componentType === 'route') {
+                currentLocation.route = component.long_name;
+            }
+            else if (componentType === 'administrative_area_level_3') {
+                currentLocation.area3 = component.long_name;
+            }
+            else if (componentType === 'administrative_area_level_2') {
+                currentLocation.area2 = component.short_name;
+            }
+            else if (componentType === 'administrative_area_level_1') {
+                currentLocation.area1 = component.short_name;
+            }
+            else if (componentType === 'country') {
+                currentLocation.country = component.short_name;
+            }
+            else if (componentType === 'postal_code') {
+                currentLocation.postcode = component.long_name;
+            }
+        }
+        var e = null;
+        e = document.getElementById('streetAddress');
+        if (e !== null) {
+            e.value = currentLocation.route;
+        }
+        e = document.getElementById('streetNumber');
+        if (e !== null) {
+            e.value = currentLocation.street_number;
+        }
+        e = document.getElementById('cap');
+        if (e !== null) {
+            e.value = currentLocation.postcode;
+        }
+        e = document.getElementById('city');
+        if (e !== null) {
+            e.value = currentLocation.area3;
+        }
+        e = document.getElementById('province');
+        if (e !== null) {
+            e.value = currentLocation.area2;
+        }
+        setError(form, 'address', '');
+        setError(form, 'streetAddress', '');
+        setError(form, 'streetNumber', '');
+        setError(form, 'cap', '');
+        setError(form, 'city', '');
+        setError(form, 'province', '');
+    }
+}
+function fillInAddress() {
+    resetCurrentLocation();
+    var place = autocomplete.getPlace();
+    changeLocation(place);
+}
+/******************************************************************************/
+/**                                   STEPS                                  **/
+/******************************************************************************/
+function initStep1() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/];
+        });
+    });
+}
+function initStep2() {
     return __awaiter(this, void 0, void 0, function () {
         var pIntent;
         return __generator(this, function (_a) {
@@ -601,13 +766,130 @@ function init() {
                         paymentIntent = pIntent;
                         stripeClientSecret = pIntent['client_secret'];
                     }
-                    utils.showElement('step1');
                     return [2 /*return*/];
             }
         });
     });
 }
-function next() {
+function validateStep1() {
+    return __awaiter(this, void 0, void 0, function () {
+        var isValid, termsAndConditions, termsAndConditionsInput, streetAddress, streetNumber, cap, city, province, firstName, lastName, tmp, i, updateLeadResult, addressUpdated;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    isValid = true;
+                    fullName = utils.getInputValue('fullName');
+                    phone = forcePhoneFormat(utils.getInputValue('phone'));
+                    phone = phone.split(' ').join('');
+                    // Check full name
+                    if (checkFullName(fullName)) {
+                        setError(form, 'fullName', '');
+                    }
+                    else {
+                        setError(form, 'fullName', 'Nome e Cognome non validi');
+                        isValid = false;
+                    }
+                    // Check phone
+                    if (checkPhone(phone)) {
+                        setError(form, 'phone', '');
+                    }
+                    else {
+                        setError(form, 'phone', 'Numero di telefono non valido');
+                        isValid = false;
+                    }
+                    termsAndConditions = false;
+                    termsAndConditionsInput = document.getElementById('termsAndConditions');
+                    if (termsAndConditionsInput !== null) {
+                        termsAndConditions = (termsAndConditionsInput.checked === true);
+                    }
+                    if (termsAndConditions) {
+                        setError(form, 'termsAndConditions', '');
+                    }
+                    else {
+                        setError(form, 'termsAndConditions', 'Devi accettare i termini e condizioni');
+                        isValid = false;
+                    }
+                    streetAddress = utils.getInputValue('streetAddress');
+                    streetNumber = utils.getInputValue('streetNumber');
+                    cap = utils.getInputValue('cap');
+                    city = utils.getInputValue('city');
+                    province = utils.getInputValue('province');
+                    if (streetAddress == '') {
+                        setError(form, 'streetAddress', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'streetAddress', '');
+                    }
+                    if (streetNumber == '') {
+                        setError(form, 'streetNumber', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'streetNumber', '');
+                    }
+                    if (cap == '') {
+                        setError(form, 'cap', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'cap', '');
+                    }
+                    if (city == '') {
+                        setError(form, 'city', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'city', '');
+                    }
+                    if (province == '') {
+                        setError(form, 'province', 'Indirizzo non valido');
+                        isValid = false;
+                    }
+                    else {
+                        setError(form, 'province', '');
+                    }
+                    if (!isValid) return [3 /*break*/, 3];
+                    firstName = '';
+                    lastName = '';
+                    tmp = fullName.split(' ');
+                    if (tmp.length > 0) {
+                        firstName = tmp[0];
+                    }
+                    for (i = 1; i < tmp.length; i++) {
+                        lastName += tmp[i];
+                        if (i + 1 < tmp.length) {
+                            lastName += ' ';
+                        }
+                    }
+                    if (!(lead !== null)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, zarolead.updateLead(utils.strval(lead['hash']), {
+                            first_name: firstName,
+                            last_name: lastName,
+                            phone: phone
+                        })];
+                case 1:
+                    updateLeadResult = _a.sent();
+                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], {
+                            street_address: streetAddress + ', ' + streetNumber,
+                            city: city,
+                            province: province,
+                            state: currentLocation.area1,
+                            country: 'IT',
+                            postcode: cap
+                        })];
+                case 2:
+                    addressUpdated = _a.sent();
+                    _a.label = 3;
+                case 3:
+                    // DEBUG TODO: to delete
+                    console.log('validateStep1', isValid);
+                    return [2 /*return*/, isValid];
+            }
+        });
+    });
+}
+function validateStep2() {
     return __awaiter(this, void 0, void 0, function () {
         var isValid, stripeResult, leadUpdated;
         return __generator(this, function (_a) {
@@ -620,12 +902,12 @@ function next() {
                                 billing_details: {
                                     name: fullName,
                                     address: {
-                                        country: country,
-                                        city: city,
-                                        line1: address,
+                                        country: currentLocation.country,
+                                        city: currentLocation.area3,
+                                        line1: currentLocation.route + ' ' + currentLocation.street_number,
                                         line2: '',
-                                        postal_code: postcode,
-                                        state: state
+                                        postal_code: currentLocation.postcode,
+                                        state: currentLocation.area2
                                     },
                                     phone: phone
                                 }
@@ -650,16 +932,142 @@ function next() {
                     _a.label = 3;
                 case 3:
                     // DEBUG TODO: to delete
-                    console.log("next", isValid);
-                    if (isValid) {
-                        utils.hideElement('step1');
-                        utils.showElement('step2');
-                    }
+                    console.log("validateStep2", isValid);
                     return [2 /*return*/, isValid];
             }
         });
     });
 }
+var steps = [
+    {
+        id: 'step1',
+        enabled: true,
+        init: initStep1,
+        validate: validateStep1,
+        buttonText: 'CONTINUA'
+    },
+    {
+        id: 'step2',
+        enabled: true,
+        init: initStep2,
+        validate: validateStep2,
+        buttonText: 'PAGA ORA'
+    },
+    {
+        id: 'step3',
+        enabled: true,
+        init: null,
+        validate: null,
+        buttonText: 'CONTINUA'
+    },
+];
+var currentStep = -1;
+function hideSteps() {
+    for (var i = 0; i < steps.length; i++) {
+        utils.hideElement(steps[i].id);
+    }
+}
+function showStep(stepId) {
+    utils.showElement(stepId);
+}
+function getStepIndexById(stepId) {
+    for (var i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return i;
+        }
+    }
+    return -1;
+}
+function getStepById(stepId) {
+    for (var i = 0; i < steps.length; i++) {
+        if (steps[i].id === stepId) {
+            return steps[i];
+        }
+    }
+    return null;
+}
+function initSteps() {
+    // Nothing
+}
+function nextStep() {
+    return __awaiter(this, void 0, void 0, function () {
+        var goToNextStep, res, i, step, btn;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    goToNextStep = false;
+                    if (!(currentStep < 0)) return [3 /*break*/, 1];
+                    currentStep = -1;
+                    goToNextStep = true;
+                    return [3 /*break*/, 3];
+                case 1:
+                    if (!(steps[currentStep].validate !== null)) return [3 /*break*/, 3];
+                    utils.loadingStart();
+                    return [4 /*yield*/, steps[currentStep].validate()];
+                case 2:
+                    res = _a.sent();
+                    goToNextStep = (res === true);
+                    utils.loadingEnd();
+                    _a.label = 3;
+                case 3:
+                    if (!goToNextStep) return [3 /*break*/, 8];
+                    hideSteps();
+                    clearErrors(form);
+                    currentStep += 1;
+                    i = currentStep;
+                    _a.label = 4;
+                case 4:
+                    if (!(i < steps.length)) return [3 /*break*/, 8];
+                    step = steps[i];
+                    if (!step.enabled) {
+                        return [3 /*break*/, 7];
+                    }
+                    showStep(step.id);
+                    if (!(step.init !== null)) return [3 /*break*/, 6];
+                    utils.loadingStart();
+                    return [4 /*yield*/, step.init()];
+                case 5:
+                    _a.sent();
+                    utils.loadingEnd();
+                    _a.label = 6;
+                case 6:
+                    btn = document.getElementById('nextStepButton');
+                    if (btn !== null) {
+                        btn.innerText = step.buttonText;
+                    }
+                    if (step.validate === null) {
+                        utils.hideElement('nextStepButton');
+                    }
+                    else {
+                        utils.showElement('nextStepButton');
+                    }
+                    currentStep = i;
+                    return [3 /*break*/, 8];
+                case 7:
+                    i++;
+                    return [3 /*break*/, 4];
+                case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+function forcePhoneFormat(val) {
+    var phonePrefix = '+(39)';
+    var pos = val.indexOf(phonePrefix);
+    if (pos < 0) {
+        val = phonePrefix + val;
+    }
+    var newVal = phonePrefix;
+    for (var i = phonePrefix.length; i < val.length; i++) {
+        if ((val[i] >= '0' && val[i] <= '9') || val[i] === ' ') {
+            newVal += val[i];
+        }
+    }
+    return newVal;
+}
+/******************************************************************************/
+/**                                  REVIEW                                  **/
+/******************************************************************************/
 function addProduct(name, quantity, total, bold) {
     if (bold === void 0) { bold = false; }
     var reviewDiv = null;
@@ -710,13 +1118,18 @@ function addProduct(name, quantity, total, bold) {
         reviewDiv.appendChild(row);
     }
 }
+/******************************************************************************/
+/**                                  ONLOAD                                  **/
+/******************************************************************************/
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var thisScript, i, product, pTotal, i, accessory, aTotal, elements, e, dateOptions;
+        var phoneInput, addressInput, thisScript, i, product, pTotal, i, accessory, aTotal, elements, fullName_1, phone_1, shipping, address, acService, res, placeId, map, pService, e, dateOptions;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     utils.loadingStart();
+                    // Steps initialization
+                    hideSteps();
                     // Form initialization
                     form = document.getElementById('mainForm');
                     if (form === null) {
@@ -730,7 +1143,7 @@ function onLoad() {
                                         event.preventDefault();
                                         event.stopPropagation();
                                         form.classList.add('was-validated');
-                                        return [4 /*yield*/, next()];
+                                        return [4 /*yield*/, nextStep()];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];
@@ -738,6 +1151,27 @@ function onLoad() {
                             });
                         });
                     }, false);
+                    phoneInput = document.getElementById('phone');
+                    if (phoneInput !== null) {
+                        phoneInput.addEventListener('keyup', function (event) {
+                            var inputTarget = (event.target);
+                            var value = inputTarget.value;
+                            value = forcePhoneFormat(value);
+                            inputTarget.value = value;
+                        });
+                    }
+                    addressInput = document.getElementById('address');
+                    addressInput.addEventListener('change', function (event) {
+                        resetCurrentLocation();
+                    });
+                    if (addressInput !== null) {
+                        autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                            componentRestrictions: { country: ['it'] },
+                            fields: ['address_components'],
+                            types: ['address']
+                        });
+                        autocomplete.addListener('place_changed', fillInAddress);
+                    }
                     thisScript = document.getElementById('checkout-js');
                     if (!(thisScript !== null)) return [3 /*break*/, 3];
                     leadId = utils.getAttribute(thisScript, 'data-lead-id');
@@ -782,39 +1216,6 @@ function onLoad() {
                         total += aTotal;
                     }
                     addProduct('TOTAL', '', total, true);
-                    // TODO: Check correctness of lead['shipping'] otherwise he cannot pay.
-                    // Well, technically he can pay but we need to make invoice so we need his
-                    // billing info.
-                    // Fetch billing ingo
-                    if (lead !== null && lead.hasOwnProperty('shipping') && lead['shipping'] !== null) {
-                        // Name and phone
-                        if (lead['shipping'].hasOwnProperty('first_name') && lead['shipping']['first_name'] !== null) {
-                            firstName = lead['shipping']['first_name'];
-                        }
-                        if (lead['shipping'].hasOwnProperty('last_name') && lead['shipping']['last_name'] !== null) {
-                            lastName = lead['shipping']['last_name'];
-                        }
-                        fullName = firstName + ' ' + lastName;
-                        if (lead['shipping'].hasOwnProperty('phone') && lead['shipping']['phone'] !== null) {
-                            phone = lead['shipping']['phone'];
-                        }
-                        // Address
-                        if (lead['shipping'].hasOwnProperty('country') && lead['shipping']['country'] !== null) {
-                            country = lead['shipping']['country'];
-                        }
-                        if (lead['shipping'].hasOwnProperty('city') && lead['shipping']['city'] !== null) {
-                            city = lead['shipping']['city'];
-                        }
-                        if (lead['shipping'].hasOwnProperty('street_address') && lead['shipping']['street_address'] !== null) {
-                            address = lead['shipping']['street_address'];
-                        }
-                        if (lead['shipping'].hasOwnProperty('postcode') && lead['shipping']['postcode'] !== null) {
-                            postcode = lead['shipping']['postcode'];
-                        }
-                        if (lead['shipping'].hasOwnProperty('state') && lead['shipping']['state'] !== null) {
-                            state = lead['shipping']['state'];
-                        }
-                    }
                     // Stripe initialization
                     if (stripeKey !== null) {
                         stripe = Stripe(stripeKey);
@@ -844,6 +1245,54 @@ function onLoad() {
                     else {
                         // TODO: Error handling
                     }
+                    if (!(lead !== null)) return [3 /*break*/, 6];
+                    fullName_1 = '';
+                    if (lead.hasOwnProperty('first_name') && lead['first_name'] !== null) {
+                        fullName_1 += lead['first_name'];
+                    }
+                    if (lead.hasOwnProperty('last_name') && lead['last_name'] !== null) {
+                        fullName_1 += ' ' + lead['last_name'];
+                    }
+                    utils.setInputValue('fullName', fullName_1);
+                    phone_1 = '';
+                    if (lead.hasOwnProperty('phone') && lead['phone'] !== null) {
+                        phone_1 = lead['phone'];
+                    }
+                    utils.setInputValue('phone', phone_1);
+                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 6];
+                    shipping = lead['shipping'];
+                    if (!(shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
+                        shipping.hasOwnProperty('city') && shipping['city'] !== null &&
+                        shipping.hasOwnProperty('province') && shipping['province'] !== null &&
+                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 6];
+                    address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
+                    utils.setInputValue('address', address);
+                    if (!(autocomplete !== null)) return [3 /*break*/, 6];
+                    autocomplete.set(address);
+                    acService = new google.maps.places.AutocompleteService();
+                    return [4 /*yield*/, acService.getPlacePredictions({ input: address })];
+                case 4:
+                    res = _a.sent();
+                    placeId = res['predictions'][0]['place_id'];
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        center: new google.maps.LatLng(-33.8665433, 151.1956316),
+                        zoom: 15
+                    });
+                    pService = new google.maps.places.PlacesService(map);
+                    return [4 /*yield*/, pService.getDetails({
+                            placeId: placeId,
+                            componentRestrictions: { country: ['it'] },
+                            fields: ['address_components'],
+                            types: ['address']
+                        }, function (place, status) {
+                            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                                changeLocation(place);
+                            }
+                        })];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
                     e = null;
                     e = document.getElementById('orderNumber');
                     if (e !== null) {
@@ -866,7 +1315,11 @@ function onLoad() {
                     if (e !== null) {
                         e.innerText = 'Carta di credito'; // TODO: What about other methods?
                     }
-                    init();
+                    // Initialize steps and start with first step
+                    initSteps();
+                    return [4 /*yield*/, nextStep()];
+                case 7:
+                    _a.sent();
                     utils.loadingEnd();
                     return [2 /*return*/];
             }

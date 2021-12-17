@@ -25,6 +25,27 @@ class Utils
         return parseInt(o);
     }
 
+    boolval(o: any): boolean
+    {
+        if (typeof(o) === 'string') {
+            let s = <string>o;
+            if (s !== '' && s !== '0' && s !== 'false') {
+                return true;
+            }
+        } else if (typeof(o) === 'number') {
+            let n = <number>o;
+            if (n != 0) {
+                return true;
+            }
+        } else if (typeof(o) === 'boolean') {
+            let b = <boolean>o;
+            if (b === true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     jsonEncode(o: object): string|null
     {
         var result: string|null = null;
