@@ -194,11 +194,6 @@ class ZaroLead
         };
         */
 
-        this.httpHeaders = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        };
-
         this.$http = axios;
     }
 

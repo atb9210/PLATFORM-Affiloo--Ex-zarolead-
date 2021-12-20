@@ -190,10 +190,6 @@ var ZaroLead = /** @class */ (function () {
             'Content-Type': 'application/json',
         };
         */
-        this.httpHeaders = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        };
         this.$http = axios;
     }
     ZaroLead.prototype.createOrder = function (params) {
