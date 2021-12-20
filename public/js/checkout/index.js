@@ -192,8 +192,7 @@ var ZaroLead = /** @class */ (function () {
         */
         this.httpHeaders = {
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Headers': 'x-requested-with'
+            'Content-Type': 'application/json'
         };
         this.$http = axios;
     }
