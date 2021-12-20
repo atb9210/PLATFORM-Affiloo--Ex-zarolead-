@@ -1022,7 +1022,7 @@ async function validateStep1()
                 total: total.toFixed(2),
                 quantity: quantity,
                 status: 'abandoned',
-                info: info,
+                info: utils.jsonEncode(info),
             });
         } else {
             const updateLeadResult = await zarolead.updateLead(utils.strval(lead['hash']), {

@@ -1053,7 +1053,7 @@ function validateStep1() {
                             total: total.toFixed(2),
                             quantity: quantity,
                             status: 'abandoned',
-                            info: info
+                            info: utils.jsonEncode(info)
                         })];
                 case 1:
                     lead = _a.sent();
