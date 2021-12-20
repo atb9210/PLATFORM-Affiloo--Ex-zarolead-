@@ -1,3 +1,6 @@
+/******************************************************************************/
+/**                                   LIBS                                   **/
+/******************************************************************************/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,9 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-/******************************************************************************/
-/**                                   LIBS                                   **/
-/******************************************************************************/
 /*
 import { utils } from "./utils";
 import { ZaroLead } from "./zarolead";
@@ -54,6 +54,27 @@ var Utils = /** @class */ (function () {
     };
     Utils.prototype.intval = function (o) {
         return parseInt(o);
+    };
+    Utils.prototype.boolval = function (o) {
+        if (typeof (o) === 'string') {
+            var s = o;
+            if (s !== '' && s !== '0' && s !== 'false') {
+                return true;
+            }
+        }
+        else if (typeof (o) === 'number') {
+            var n = o;
+            if (n != 0) {
+                return true;
+            }
+        }
+        else if (typeof (o) === 'boolean') {
+            var b = o;
+            if (b === true) {
+                return true;
+            }
+        }
+        return false;
     };
     Utils.prototype.jsonEncode = function (o) {
         var result = null;
@@ -157,7 +178,9 @@ var utils = new Utils();
 /******************************************************************************/
 var ZaroLead = /** @class */ (function () {
     function ZaroLead() {
-        var hostname = utils.getHostname();
+        // TODO: Change this based on which server is hosted
+        //let hostname = utils.getHostname();
+        var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
         /*
@@ -438,7 +461,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
+    ZaroLead.prototype.getPaymentIntentProduct = function (productId, leadId, quantity) {
         return __awaiter(this, void 0, void 0, function () {
             var paymentIntent, params, httpHeaders, response, error_9;
             return __generator(this, function (_a) {
@@ -598,6 +621,7 @@ var currentLocation = {
     country: '',
     postcode: ''
 };
+var stripeKey = null;
 var stripe;
 var card;
 var stripeClientSecret = '';
@@ -953,7 +977,7 @@ function initStep5() {
 }
 function validateStep1() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, termsAndConditions, termsAndConditionsInput, firstName, lastName, tmp, i, updateLeadResult, fbResult;
+        var isValid, termsAndConditions, termsAndConditionsInput, firstName, lastName, tmp, i, info, updateLeadResult, fbResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1004,6 +1028,15 @@ function validateStep1() {
                             lastName += ' ';
                         }
                     }
+                    info = {
+                        products: [
+                            {
+                                price: price,
+                                quantity: utils.intval(quantity),
+                                total: total
+                            }
+                        ]
+                    };
                     if (!(lead === null)) return [3 /*break*/, 2];
                     return [4 /*yield*/, zarolead.createLead({
                             first_name: firstName,
@@ -1015,7 +1048,8 @@ function validateStep1() {
                             price: price.toFixed(2),
                             total: total.toFixed(2),
                             quantity: quantity,
-                            status: 'abandoned'
+                            status: 'abandoned',
+                            info: info
                         })];
                 case 1:
                     lead = _a.sent();
@@ -1062,7 +1096,7 @@ function validateStep2() {
                     }
                     if (!isValid) return [3 /*break*/, 3];
                     if (!(lead !== null && lead.hasOwnProperty('id'))) return [3 /*break*/, 2];
-                    return [4 /*yield*/, zarolead.getPaymentIntent(utils.strval(productId), utils.strval(lead['hash']), quantity)];
+                    return [4 /*yield*/, zarolead.getPaymentIntentProduct(utils.strval(productId), utils.strval(lead['hash']), quantity)];
                 case 1:
                     pIntent = _a.sent();
                     if (pIntent !== null && pIntent.hasOwnProperty('client_secret')) {
@@ -1576,7 +1610,7 @@ function initPlugins() {
 /******************************************************************************/
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, elements, pluginListStr, checkout, _loop_1, i, leadId, leadInfo, fullName_1, phone_1, shipping, address, acService, res, placeId, map, pService;
+        var phoneInput, addressInput, pluginListStr, checkout, _loop_1, i, elements, leadId, leadInfo, fullName_1, phone_1, shipping, address, acService, res, placeId, map, pService;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1626,30 +1660,6 @@ function onLoad() {
                         });
                         autocomplete.addListener('place_changed', fillInAddress);
                     }
-                    // Stripe initialization
-                    stripe = Stripe('pk_test_51HZhdsKZ0GYSGPZVGo4ggAfbpvnXbooyq1kATn5fn5HUcZmm15W63iUzTLztDS9iUebQr3VjkHUHJkUrYDgPMj1x00c5Xc1pyG');
-                    elements = stripe.elements();
-                    card = elements.create('card', {
-                        classes: {
-                            base: 'form-control py-2'
-                        },
-                        hidePostalCode: true
-                    });
-                    if (card !== null) {
-                        card.mount('#cardElement');
-                    }
-                    card.on('change', function (_a) {
-                        var error = _a.error;
-                        var displayError = document.getElementById('cardErrors');
-                        if (error) {
-                            displayError.textContent = error.message;
-                            displayError.style.display = 'block';
-                        }
-                        else {
-                            displayError.textContent = '';
-                            displayError.style.display = 'none';
-                        }
-                    });
                     // TODO:
                     // Get checkout info
                     thisScript = document.getElementById('checkout-js');
@@ -1668,6 +1678,7 @@ function onLoad() {
                             plugins = checkout['plugins'];
                         }
                     }
+                    stripeKey = utils.getAttribute(thisScript, 'data-stripe-key');
                     initPlugins();
                     changeQuantity(product['quantity']['default']);
                     _loop_1 = function (i) {
@@ -1682,6 +1693,35 @@ function onLoad() {
                     }
                     return [3 /*break*/, 2];
                 case 2:
+                    // Stripe initialization
+                    if (stripeKey !== null) {
+                        stripe = Stripe(stripeKey);
+                        elements = stripe.elements();
+                        card = elements.create('card', {
+                            classes: {
+                                base: 'form-control py-2'
+                            },
+                            hidePostalCode: true
+                        });
+                        if (card !== null) {
+                            card.mount('#cardElement');
+                        }
+                        card.on('change', function (_a) {
+                            var error = _a.error;
+                            var displayError = document.getElementById('cardErrors');
+                            if (error) {
+                                displayError.textContent = error.message;
+                                displayError.style.display = 'block';
+                            }
+                            else {
+                                displayError.textContent = '';
+                                displayError.style.display = 'none';
+                            }
+                        });
+                    }
+                    else {
+                        // TODO: Error handling
+                    }
                     lead = null;
                     leadId = utils.getUrlParam('lid');
                     if (!(leadId !== null)) return [3 /*break*/, 6];

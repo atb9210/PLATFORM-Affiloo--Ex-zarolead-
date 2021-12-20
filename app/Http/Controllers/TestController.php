@@ -1015,18 +1015,10 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        $settings = \App\Settings::get();
-        $apiInstance = '';
-        $apiToken = '';
-        if (isset($settings['chatapi']['api_instance'])) {
-            $apiInstance = $settings['chatapi']['api_instance'];
-        }
-        if (isset($settings['chatapi']['api_token'])) {
-            $apiToken = $settings['chatapi']['api_token'];
-        }
-        $chatapi = new \Driverfury\ChatAPI\ChatAPI($apiInstance, $apiToken);
-        dd($chatapi->sendMessage('+(39)3895662155', 'test'));
-        dd("TEST");
+        $page_url = 'https://beta2.zarolead.com/products/109/checkout';
+        $html = file_get_contents($page_url);
+        echo $html;
+        exit();
     }
 
     public function test2(Request $request)

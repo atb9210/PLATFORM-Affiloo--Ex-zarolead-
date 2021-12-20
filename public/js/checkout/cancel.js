@@ -1,3 +1,6 @@
+/******************************************************************************/
+/**                                   LIBS                                   **/
+/******************************************************************************/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,9 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-/******************************************************************************/
-/**                                   LIBS                                   **/
-/******************************************************************************/
 /*
 import { utils } from "./utils";
 import { ZaroLead } from "./zarolead";
@@ -155,7 +155,9 @@ var Utils = /** @class */ (function () {
 var utils = new Utils();
 var ZaroLead = /** @class */ (function () {
     function ZaroLead() {
-        var hostname = utils.getHostname();
+        // TODO: Change this based on which server is hosted
+        //let hostname = utils.getHostname();
+        var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
         /*
@@ -436,7 +438,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.getPaymentIntent = function (productId, leadId, quantity) {
+    ZaroLead.prototype.getPaymentIntentProduct = function (productId, leadId, quantity) {
         return __awaiter(this, void 0, void 0, function () {
             var paymentIntent, params, httpHeaders, response, error_9;
             return __generator(this, function (_a) {

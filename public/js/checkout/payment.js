@@ -155,7 +155,9 @@ var Utils = /** @class */ (function () {
 var utils = new Utils();
 var ZaroLead = /** @class */ (function () {
     function ZaroLead() {
-        var hostname = utils.getHostname();
+        // TODO: Change this based on which server is hosted
+        //let hostname = utils.getHostname();
+        var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
         /*
