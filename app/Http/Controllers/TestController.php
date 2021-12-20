@@ -1015,9 +1015,7 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        $page_url = 'https://beta2.zarolead.com/products/109/checkout';
-        $html = file_get_contents($page_url);
-        echo $html;
+        echo file_get_contents("http://zarolead.localhost/products/3/checkout");
         exit();
     }
 

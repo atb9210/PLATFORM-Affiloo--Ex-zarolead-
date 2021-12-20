@@ -55,6 +55,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.context_menu.close();includeCheckoutPopup(data);" class="flex items-center text-sm">
+                <feather-icon icon="PlusIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Include Checkout</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
@@ -646,6 +652,26 @@
             </div>
         </vs-popup>
 
+        <!-- Include checkout popup -->
+        <vs-popup title="Include checkout" :active.sync="showPopup['include_checkout']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full mb-3">
+                        <vs-select v-model="includeCheckout.type" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in includeCheckoutTypeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col w-full mb-3">
+                        <vs-textarea height="100px" disabled="true" :value="includeCheckout.code[includeCheckout.type]"></vs-textarea>
+                    </div>
+
+                    <div class="vx-col w-full mb-3">
+                        <vs-button color="success" type="filled" icon-pack="feather" icon="icon-copy" @click="copyToClipboard(includeCheckout.code[includeCheckout.type])">Copy to clipboard</vs-button>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -675,6 +701,7 @@ export default {
         'edit_qty': false,
         'checkout_settings': false,
         'confirmation_message': false,
+        'include_checkout': false,
       },
       newObject: {
         'create': {
@@ -790,6 +817,17 @@ export default {
       tiktokEventNameOptions: ['SubmitForm', 'ClickButton'],
 
       confirmationMessage: '',
+
+      includeCheckoutTypeOptions: [
+        'iframe', 'php',
+      ],
+      includeCheckout: {
+        type: 'iframe',
+        code: {
+          'iframe': '',
+          'php': '',
+        },
+      },
     }
   },
   computed: {
@@ -1150,7 +1188,8 @@ export default {
         options: {},
         default: '',
       }
-      this.quantityOptions.forEach((opt) => {
+      for (let qIndex = 0; qIndex < this.quantityOptions.length; qIndex++) {
+        let opt = this.quantityOptions[qIndex]
         quantity['options'][opt.quantity] = {
           title: opt.title,
           price: opt.price,
@@ -1159,7 +1198,7 @@ export default {
           old_price: opt.old_price,
           discount: opt.discount,
         }
-      })
+      }
       quantity['default'] = this.quantityOptions[this.quantityDefaultIndex].quantity
       quantity = JSON.stringify(quantity)
       data.append('quantity', quantity)
@@ -1316,9 +1355,13 @@ export default {
         color: 'success'
       })
     },
-    async copyCheckoutLink(productId) {
+    getCheckoutLink(productId) {
       let url = new URL(window.location)
-      let toCopy = url.origin + '/products/' + productId + '/checkout'
+      let result = url.origin + '/products/' + productId + '/checkout'
+      return result
+    },
+    async copyCheckoutLink(productId) {
+      let toCopy = this.getCheckoutLink(productId)
       await this.copyToClipboard(toCopy, 'Checkout link copied')
     },
     resetPlugins() {
@@ -1549,6 +1592,22 @@ export default {
 
       this.showPopup['confirmation_message'] = false
       this.$vs.loading.close()
+    },
+    includeCheckoutPopup(product) {
+      let iframeCode = ''
+      let phpCode = ''
+
+      let checkoutLink = this.getCheckoutLink(product.id)
+
+      iframeCode = '<iframe src="' + checkoutLink + '"></iframe>'
+      phpCode += "<?php\n"
+      phpCode += "echo file_get_contents(\"" + checkoutLink + "\");\n"
+      phpCode += "?>"
+
+      this.includeCheckout.code['iframe'] = iframeCode
+      this.includeCheckout.code['php'] = phpCode
+
+      this.showPopup['include_checkout'] = true
     },
   },
   created() {
