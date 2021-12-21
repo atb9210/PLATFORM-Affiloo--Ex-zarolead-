@@ -1599,7 +1599,7 @@ export default {
 
       let checkoutLink = this.getCheckoutLink(product.id)
 
-      iframeCode = '<iframe src="' + checkoutLink + '"></iframe>'
+      iframeCode = '<iframe scrolling="no" id="buy-frame" width="100%" height="700px" src="' + checkoutLink + '"></iframe>'
       phpCode += "<?php\n"
       phpCode += "echo file_get_contents(\"" + checkoutLink + "\");\n"
       phpCode += "?>"
