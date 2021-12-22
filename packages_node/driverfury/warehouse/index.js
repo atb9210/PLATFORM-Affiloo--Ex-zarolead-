@@ -214,6 +214,12 @@ class Warehouse {
       objects[i] = obj
     }
 
+    if (filters.hasOwnProperty('statuses') && filters.statuses.length > 0) {
+      objects = objects.filter((obj) => {
+        return (obj.hasOwnProperty('status') && filters.statuses.includes(obj.status))
+      })
+    }
+
     if (filters.hasOwnProperty('order_status') && filters.order_status != '') {
       objects = objects.filter((obj) => {
         return (obj.hasOwnProperty('order_status') && obj.order_status === filters.order_status)

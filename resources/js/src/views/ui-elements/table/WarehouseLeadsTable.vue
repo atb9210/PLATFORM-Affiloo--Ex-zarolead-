@@ -14,6 +14,16 @@
             <vx-tooltip text="Back" position="top">
                 <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
+
+            <vx-tooltip text="Only confirmed" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-circle" @click="setFiltersStatuses(['confirmed'])"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Only carts" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-shopping-cart" @click="setFiltersStatuses(['to do','abandoned'])"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Only waiting payment" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-clock" @click="setFiltersStatuses(['waiting payment'])"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -43,20 +53,20 @@
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Status</label>
-                    <vs-select class="w-full" v-model="filters.status">
-                        <vs-select-item :key="sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
+                    <vs-select autocomplete multiple class="w-full" v-model="filters.statuses">
+                        <vs-select-item :key="'statusOption' + sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
                     </vs-select>
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Product</label>
                     <vs-select class="w-full" v-model="filters.product">
-                        <vs-select-item :key="pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
+                        <vs-select-item :key="'productOption' + pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
                     </vs-select>
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Order Status</label>
                     <vs-select class="w-full" v-model="filters.order_status">
-                        <vs-select-item :key="osIndex" :value="oStatus.id" :text="oStatus.name" v-for="(oStatus, osIndex) in orderStatuses" />
+                        <vs-select-item :key="'orderStatusOption' + osIndex" :value="oStatus.id" :text="oStatus.name" v-for="(oStatus, osIndex) in orderStatuses" />
                     </vs-select>
                 </div>
             </div>
@@ -131,7 +141,8 @@
                 </li>
             </vue-context>
 
-            <popover class="customer_popover" :name="'customer_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
+            <!--
+            <popover class="customer_popover" :name="'customer_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'leadPopover' + index">
                 <div><b>{{ lead.full_name }}</b></div>
                 <div v-if="lead.info !== null && lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null">
                     <div v-if="lead.info.shipping.hasOwnProperty('street_address') && lead.info.shipping.hasOwnProperty('city') && lead.info.shipping.hasOwnProperty('province')">
@@ -141,14 +152,17 @@
                 </div>
                 <div>{{ lead.phone }}</div>
             </popover>
+            -->
 
-            <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="index">
+            <!--
+            <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'itemsPopover' + index">
                 <ul v-if="lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null && lead.info.products.length > 0">
-                    <li v-for="(item, pIndex) in lead.info.products" :key="pIndex">
+                    <li v-for="(item, pIndex) in lead.info.products" :key="'itemsPopoverElement' + pIndex">
                         {{item.name}} (x{{item.quantity}})
                     </li>
                 </ul>
             </popover>
+            -->
 
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
@@ -178,7 +192,7 @@
                 </template>
 
                 <template slot-scope="{data}">
-                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                    <vs-tr :data="item" :key="'tableRow' + indextr" v-for="(item, indextr) in data">
 
                         <!--
                         <vs-td class="column-no-padding" :data="item.id">
@@ -206,9 +220,12 @@
 
                         <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
-                                <vs-chip v-popover="{name:'customer_popover_' + item.id}">
-                                    {{item.full_name}}
-                                </vs-chip>
+                                <vx-tooltip :title="item.full_name" :text="hasAddressInfo(item) ? getAddress(item) : 'Address undefined'" position="left">
+                                    <!--<vs-chip v-popover="{name:'customer_popover_' + item.id}">-->
+                                    <vs-chip>
+                                        {{item.full_name}}
+                                    </vs-chip>
+                                </vx-tooltip>
                             </div>
                         </vs-td>
 
@@ -264,9 +281,12 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding">
-                            <vs-chip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" v-popover="{name:'items_popover_' + item.id}">
-                                {{item.info.products.length}} items
-                            </vs-chip>
+                            <!--<vs-chip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" v-popover="{name:'items_popover_' + item.id}">-->
+                            <vx-tooltip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" title="Items" :text="getProductsList(item)">
+                                <vs-chip>
+                                    {{item.info.products.length}} items
+                                </vs-chip>
+                            </vx-tooltip>
                             <vs-chip v-else>
                                 0 items
                             </vs-chip>
@@ -499,7 +519,7 @@
                 <div class="vx-row w-full mb-3 font-bold">
                     <div class="vx-col mb-3 md:w-1/2 w-full">
                         <vs-select class="w-full" v-model="order.gateway">
-                            <vs-select-item :key="gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
+                            <vs-select-item :key="'paymentMethodOption' + gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
                         </vs-select>
                     </div>
                     <div class="vx-col mb-3 md:w-1/2 w-full">
@@ -531,7 +551,7 @@
                     </div>
                 </div>
 
-                <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="pIndex">
+                <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="'reviewProductOption' + pIndex">
                     <div class="vx-col w-full md:w-1/12">
                         <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
                     </div>
@@ -556,7 +576,7 @@
                     </div>
                 </div>
 
-                <div class="vx-row w-full mb-3" v-for="(acc, aIndex) in order.accessories" :key="aIndex">
+                <div class="vx-row w-full mb-3" v-for="(acc, aIndex) in order.accessories" :key="'accessoyOption' + aIndex">
                     <div class="vx-col w-full md:w-1/12">
                         <vs-checkbox v-model="order.accessories[aIndex].enabled" @change="refreshOrderReviewTotal()" />
                     </div>
@@ -666,7 +686,7 @@
                         SKU
                     </div>
                 </div>
-                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="pIndex">
+                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="'addProductOption' + pIndex">
                     <div class="vx-col md:w-1/6 w-full">
                         <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
                     </div>
@@ -686,7 +706,7 @@
         <!-- Lead info popup -->
         <vs-popup title="Lead info" :active.sync="showPopup['lead_info']">
             <div class="w-full pr-2 pl-2">
-                <div class="vx-row mb-3" v-for="(value, key, index) in lead.delivery" :key="index">
+                <div class="vx-row mb-3" v-for="(value, key, index) in lead.delivery" :key="'leadInfo' + index">
                     <div class="vx-col md:w-1/2 w-full">
                         <b>{{key}}</b>
                     </div>
@@ -790,7 +810,7 @@ export default {
       filters: {
         date_from: '',
         date_to: '',
-        status: '',
+        statuses: ['confirmed'],
         product: '',
         order_status: '',
       },
@@ -853,6 +873,7 @@ export default {
         'to recall',
         'to do',
         'waiting payment',
+        'abandoned',
       ],
       leadStatusColor: {
         'confirmed'      : 'success',
@@ -863,6 +884,7 @@ export default {
         'to recall'      : 'primary',
         'to do'          : '',
         'waiting payment': 'primary',
+        'abandoned'      : '',
       },
 
       deliveryStatuses: [
@@ -998,11 +1020,18 @@ export default {
       this.filters = {
         date_from: '',
         date_to: '',
-        status: '',
+        statuses: ['confirmed'],
         product: '',
         order_status: '',
       }
       await this.filterDatesShortcut('this_month')
+    },
+    async setFiltersStatuses(statuses) {
+      this.filters.statuses = []
+      for (let i = 0; i < statuses.length; i++) {
+        this.filters.statuses.push(statuses[i])
+      }
+      await this.applyFilters()
     },
     async filterDatesShortcut(period) {
       let invalidPeriod = false
@@ -1866,6 +1895,38 @@ export default {
       let message = 'Link di pagamento: ' + paymentLink
 
       this.sendMessage(phone, message)
+    },
+    hasAddressInfo(lead) {
+      if (lead.hasOwnProperty('info') && lead.info !== null) {
+        if (lead.info.hasOwnProperty('street_address') && lead.info.street_address !== null &&
+            lead.info.hasOwnProperty('city') && lead.info.city !== null &&
+            lead.info.hasOwnProperty('province') && lead.info.province !== null) {
+          return true
+        }
+      }
+      return false
+    },
+    getAddress(lead) {
+      return (lead.info.street_address + ', ' + lead.info.city + '(' + lead.info.province + ')')
+    },
+    getProductsList(lead) {
+      let productName = lead.product_name
+      let s = ''
+      if (lead.hasOwnProperty('info') && lead.info !== null &&
+          lead.info.hasOwnProperty('products') && lead.info.products !== null) {
+        for (let i = 0; i < lead.info.products.length; i++) {
+          let p = lead.info.products[i]
+          if (i > 0) {
+            s += ' - '
+          }
+          let pName = productName
+          if (p.hasOwnProperty('name') && p.name !== null) {
+            pName = p.name
+          }
+          s += pName + '(x' + p.quantity + ')'
+        }
+      }
+      return s
     },
   },
   async created() {

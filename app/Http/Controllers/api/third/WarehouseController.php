@@ -68,7 +68,6 @@ class WarehouseController extends Controller
      *
      * @bodyParam filter_date_from string From date (Y-m-d format)
      * @bodyParam filter_date_to string To date (Y-m-d format)
-     * @bodyParam filter_status string Leads status
      * @bodyParam filter_product string Leads product's SKU
      *
      * @response {
@@ -83,7 +82,6 @@ class WarehouseController extends Controller
         $params = $request->validate([
             'filter_date_from' => 'nullable|date|date_format:Y-m-d',
             'filter_date_to'   => 'nullable|date|date_format:Y-m-d',
-            'filter_status'    => 'nullable|string|' . $this->statusValidation(),
             'filter_product'   => 'nullable|string',
         ]);
 
@@ -93,9 +91,6 @@ class WarehouseController extends Controller
         }
         if (isset($params['filter_date_to'])) {
             $q = $q->where('created_at', '<=', $params['filter_date_to'] . " 23:59:59");
-        }
-        if (isset($params['filter_status'])) {
-            $q = $q->where('status', $params['filter_status']);
         }
         if (isset($params['filter_product'])) {
             $q = $q->where('info->sku', $params['filter_product']);
@@ -253,6 +248,7 @@ class WarehouseController extends Controller
                     if ($l->id != $lead->id && $l->info !== null && isset($l->info['sku']) &&
                         $l->info['sku'] == $sku) {
                         $lead->status = 'duplicate';
+                        $lead->archived = 1;
                         $lead->save();
                     }
                 }
