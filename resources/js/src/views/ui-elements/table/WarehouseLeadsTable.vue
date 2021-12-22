@@ -24,6 +24,9 @@
             <vx-tooltip text="Only waiting payment" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-clock" @click="setFiltersStatuses(['waiting payment'])"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="No answer and to recall" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to recall','no answer'])"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
