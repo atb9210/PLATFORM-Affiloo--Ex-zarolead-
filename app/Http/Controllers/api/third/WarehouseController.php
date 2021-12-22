@@ -248,7 +248,6 @@ class WarehouseController extends Controller
                     if ($l->id != $lead->id && $l->info !== null && isset($l->info['sku']) &&
                         $l->info['sku'] == $sku) {
                         $lead->status = 'duplicate';
-                        $lead->archived = 1;
                         $lead->save();
                     }
                 }
