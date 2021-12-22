@@ -1898,16 +1898,20 @@ export default {
     },
     hasAddressInfo(lead) {
       if (lead.hasOwnProperty('info') && lead.info !== null) {
-        if (lead.info.hasOwnProperty('street_address') && lead.info.street_address !== null &&
-            lead.info.hasOwnProperty('city') && lead.info.city !== null &&
-            lead.info.hasOwnProperty('province') && lead.info.province !== null) {
-          return true
+        if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
+          let shipping = lead.info.shipping
+          if (shipping.hasOwnProperty('street_address') && shipping.street_address !== null &&
+              shipping.hasOwnProperty('city') && shipping.city !== null &&
+              shipping.hasOwnProperty('province') && shipping.province !== null) {
+            return true
+          }
         }
       }
       return false
     },
     getAddress(lead) {
-      return (lead.info.street_address + ', ' + lead.info.city + '(' + lead.info.province + ')')
+      let shipping = lead.info.shipping
+      return (shipping.street_address + ', ' + shipping.city + '(' + shipping.province + ')')
     },
     getProductsList(lead) {
       let productName = lead.product_name
@@ -1952,6 +1956,7 @@ export default {
   white-space: nowrap;
 }
 
+/*
 .customer_popover {
   z-index: 999999 !important;
   position: fixed !important;
@@ -1961,6 +1966,7 @@ export default {
   z-index: 999999 !important;
   position: fixed !important;
 }
+*/
 
 .carrier-icon {
   width: 24px !important;
