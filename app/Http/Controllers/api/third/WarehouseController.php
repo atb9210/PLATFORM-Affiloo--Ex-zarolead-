@@ -596,6 +596,7 @@ class WarehouseController extends Controller
             'status'         => 'required|string|' . $this->statusValidation(),
             'total'          => 'required|numeric|min:0',
             'payment_method' => 'required|string',
+            'push'           => 'nullable|string',
         ]);
 
         $lead = WarehouseLead::findByHash($hash);
@@ -632,6 +633,12 @@ class WarehouseController extends Controller
                 $deliveryParams = [
                     'gateway' => $params['payment_method'],
                 ];
+                if (isset($params['push']) && $params['push'] !== null) {
+                    if ($params['push'] === 'auto') {
+                        $deliveryParams['transform_to_order'] = 1;
+                        $deliveryParams['completed_at'] = (new \DateTime())->format(\DateTime::ISO8601);
+                    }
+                }
                 if ($elogy->updateOrder(strval($orderId), $deliveryParams)) {
                     $delivery = $elogy->getOrderByNumber($orderNumber);
                     if ($delivery !== null) {

@@ -8,6 +8,9 @@
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Send message (bulk)" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Delete selected leads" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
             </vx-tooltip>
@@ -125,9 +128,9 @@
                   </a>
                 </li>
                 <li>
-                  <a href="#" @click="$refs.lead_context_menu.close();whatsappMessage(data)"class="flex items-center text-sm">
+                  <a href="#" @click="$refs.lead_context_menu.close();openSendMessagePopup([data])"class="flex items-center text-sm">
                     <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Whatsapp message</span>
+                    <span class="ml-2">Send message (Whatsapp)</span>
                   </a>
                 </li>
                 <li>
@@ -296,7 +299,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.contact">
-                            <vs-checkbox v-model="data[indextr].contact" @change="updateContact(data[indextr])" />
+                            <vs-checkbox v-model="data[indextr].contact" @change="updateContact(data[indextr])">{{item.call_count}}</vs-checkbox>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.status">
@@ -768,6 +771,36 @@
             </div>
         </vs-popup>
 
+        <!-- Recall popup -->
+        <vs-popup title="Recall info" :active.sync="showPopup['recall']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <label>Recall date</label>
+                        <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="recall.date" />
+                    </div>
+                </div>
+                <div class="vx-col w-full">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveRecall(recall)">Save</vs-button>
+                </div>
+            </div>
+        </vs-popup>
+
+        <!-- Send message popup -->
+        <vs-popup title="Send message" :active.sync="showPopup['send_message']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3">
+                    <div class="vx-col w-full">
+                        <h3>Message</h3>
+                        <vs-textarea v-model="message"></vs-textarea>
+                        <div class="flex" style="float: right;">
+                            <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="sendBulkMessage()"></vs-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -824,6 +857,8 @@ export default {
         'lead_info': false,
         'create_delivery': false,
         'payment_link': false,
+        'recall': false,
+        'send_message': false,
       },
 
       leads: [],
@@ -952,6 +987,13 @@ export default {
       paymentSuccessUrl: '',
       paymentCancelUrl: '',
       paymentLink: '',
+
+      recall: {
+        date: '',
+      },
+
+      receivers: [],
+      message: '',
     }
   },
   computed: {
@@ -1150,6 +1192,12 @@ export default {
         color: 'success'
       })
 
+      if (this.newStatus === 'to recall') {
+        this.recall.date = ''
+        this.lead = lead
+        this.showPopup['recall'] = true
+      }
+
       this.$vs.loading.close()
 
       this.applyFilters()
@@ -1201,7 +1249,16 @@ export default {
       this.$vs.loading()
 
       let info = lead.info
+      if (info === null) {
+        info = {}
+      }
       info.contact = lead.contact
+      if (!info.hasOwnProperty('call_count')) {
+        info.call_count = 0
+      }
+      if (lead.contact === true) {
+        info.call_count += 1
+      }
       let params = {
         info: JSON.stringify(info),
       }
@@ -1858,9 +1915,27 @@ export default {
       await this.copyToClipboard(toCopy)
     },
     async sendMessage(phone, message) {
+      const result = await this.warehouse.sendMessage(phone, message)
+      return result
+    },
+    confirmSendPaymentLinkViaMessage() {
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Send Payment link confirmation',
+        text: 'Are you sure you want to send the payment link via message (Whatsapp)?',
+        accept: this.sendPaymentLinkViaMessage
+      })
+    },
+    async sendPaymentLinkViaMessage() {
       this.$vs.loading()
 
-      const result = await this.warehouse.sendMessage(phone, message)
+      let paymentLink = this.getPaymentLink(this.order.lead_hash)
+
+      let phone = this.order.phone
+      let message = 'Link di pagamento: ' + paymentLink
+
+      const result = await this.sendMessage(phone, message)
 
       if (result) {
         this.$vs.notify({
@@ -1881,23 +1956,6 @@ export default {
       }
 
       this.$vs.loading.close()
-    },
-    confirmSendPaymentLinkViaMessage() {
-      this.$vs.dialog({
-        type: 'confirm',
-        color: 'primary',
-        title: 'Send Payment link confirmation',
-        text: 'Are you sure you want to send the payment link via message (Whatsapp)?',
-        accept: this.sendPaymentLinkViaMessage
-      })
-    },
-    sendPaymentLinkViaMessage() {
-      let paymentLink = this.getPaymentLink(this.order.lead_hash)
-
-      let phone = this.order.phone
-      let message = 'Link di pagamento: ' + paymentLink
-
-      this.sendMessage(phone, message)
     },
     hasAddressInfo(lead) {
       if (lead.hasOwnProperty('info') && lead.info !== null) {
@@ -1934,6 +1992,52 @@ export default {
         }
       }
       return s
+    },
+    async saveRecall(recall) {
+      let recallDate = this.formatDateTime(new Date(recall.date))
+      if (this.lead.notes === null) {
+        this.lead.notes = ''
+      }
+      if (this.lead.notes !== '') {
+        this.lead.notes += "\n"
+      }
+      this.lead.notes += 'Recall date: ' + recallDate
+      await this.updateNotes(this.lead)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Recall info saved',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.showPopup['recall'] = false
+    },
+    openSendMessagePopup(receivers) {
+      this.receivers = receivers
+      this.message = ''
+      this.showPopup['send_message'] = true
+    },
+    async sendBulkMessage() {
+      this.$vs.loading()
+      for (let i = 0; i < this.receivers.length; i++) {
+        let r = this.receivers[i]
+        if (!r.hasOwnProperty('phone') || r.phone === null || r.phone === '') {
+          continue
+        }
+
+        await this.sendMessage(r.phone, this.message)
+      }
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Messages sent successfully',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+      this.showPopup['send_message'] = false
+      this.$vs.loading.close()
     },
   },
   async created() {

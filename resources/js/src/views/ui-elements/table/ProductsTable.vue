@@ -584,8 +584,8 @@
             <!-- Payment methods -->
             <h2 class="mb-2">Payment methods</h2>
 
-            <div class="vx-col w-full mt-5">
-                <div class="mb-2">Cash on delivery</div>
+            <div class="mt-5">Cash on delivery</div>
+            <div class="vx-col w-full">
                 <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                     <template slot="prepend">
                         <div class="prepend-text">
@@ -601,11 +601,14 @@
                         min="0"
                         step="0.1"
                     />
+                    <vs-select v-model="paymentMethods['paymentMethodCod'].push" class="w-full select-large">
+                        <vs-select-item :key="'pushOption' + index" :value="item.value" :text="item.label" v-for="(item, index) in pushOptions" class="w-full" />
+                    </vs-select>
                 </vx-input-group>
             </div>
 
-            <div class="vx-col w-full mt-5">
-                <div class="mb-2">Online (credit card)</div>
+            <div class="mt-5">Online (credit card)</div>
+            <div class="vx-col w-full">
                 <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                     <template slot="prepend">
                         <div class="prepend-text">
@@ -621,6 +624,9 @@
                         min="0"
                         step="0.1"
                     />
+                    <vs-select v-model="paymentMethods['paymentMethodOnline'].push" class="w-full select-large">
+                        <vs-select-item :key="'pushOption' + index" :value="item.value" :text="item.label" v-for="(item, index) in pushOptions" class="w-full" />
+                    </vs-select>
                 </vx-input-group>
             </div>
             
@@ -642,7 +648,7 @@
                                 <li><span>&lbrace;</span>&lbrace; confirm_link &rbrace;&rbrace; => Confirmation Link</li>
                                 <li><span>&lbrace;</span>&lbrace; cancel_link &rbrace;&rbrace; => Cancel link</li>
                             </ul>
-                        </pa>
+                        </p>
                         <vs-textarea v-model="confirmationMessage" height="200px"></vs-textarea>
                         <div class="flex" style="float: right;">
                             <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="updateConfirmationMessage(confirmationMessage)"></vs-button>
@@ -804,11 +810,13 @@ export default {
           enabled: false,
           fee: '0',
           name: 'Alla consegna',
+          push: 'no',
         },
         'paymentMethodOnline': {
           enabled: false,
           fee: '0',
           name: 'Online',
+          push: 'no',
         },
       },
 
@@ -828,6 +836,11 @@ export default {
           'php': '',
         },
       },
+
+      pushOptions: [
+        { value: 'auto', label: 'Automatic push' },
+        { value: 'no',   label: 'No push' },
+      ],
     }
   },
   computed: {
@@ -1396,11 +1409,13 @@ export default {
           enabled: false,
           fee: '0',
           name: 'Alla consegna',
+          push: 'no',
         },
         'paymentMethodOnline': {
           enabled: false,
           fee: '0',
           name: 'Online',
+          push: 'no',
         },
       }
     },

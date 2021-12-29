@@ -359,7 +359,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod) {
+    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod, push) {
         return __awaiter(this, void 0, void 0, function () {
             var params, response, respJson, error_6;
             return __generator(this, function (_a) {
@@ -369,7 +369,8 @@ var ZaroLead = /** @class */ (function () {
                         params = {
                             status: status,
                             total: total,
-                            payment_method: paymentMethod
+                            payment_method: paymentMethod,
+                            push: push
                         };
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
                     case 1:
@@ -809,13 +810,15 @@ var paymentMethods = [
         id: 'paymentMethodCod',
         fee: 0.0,
         name: 'Alla consegna',
-        enabled: false
+        enabled: false,
+        push: 'no'
     },
     {
         id: 'paymentMethodOnline',
         fee: 0.0,
         name: 'Online',
-        enabled: false
+        enabled: false,
+        push: 'no'
     },
 ];
 var paymentMethod = '';
@@ -872,6 +875,9 @@ function initPaymentMethods() {
                             }
                             if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
                                 paymentMethods[pmIndex].name = utils.strval(pms[pm]['name']);
+                            }
+                            if (pms[pm].hasOwnProperty('push') && pms[pm]['push'] !== null) {
+                                paymentMethods[pmIndex].push = utils.strval(pms[pm]['push']);
                             }
                         }
                         else {
@@ -1237,7 +1243,7 @@ function validateStep4() {
                     if (pm !== null) {
                         fee = pm.fee;
                     }
-                    return [4 /*yield*/, zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod)];
+                    return [4 /*yield*/, zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod, pm.push)];
                 case 4:
                     leadUpdated = _a.sent();
                     isValid = leadUpdated && isValid;

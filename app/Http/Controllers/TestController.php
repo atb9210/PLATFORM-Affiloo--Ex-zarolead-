@@ -1015,7 +1015,8 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        echo file_get_contents("http://zarolead.localhost/products/3/checkout");
+        $d = new \DateTime();
+        dd($d->format(\DateTime::ISO8601));
         exit();
     }
 

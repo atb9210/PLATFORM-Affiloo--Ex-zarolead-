@@ -336,7 +336,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod) {
+    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod, push) {
         return __awaiter(this, void 0, void 0, function () {
             var params, response, respJson, error_6;
             return __generator(this, function (_a) {
@@ -346,7 +346,8 @@ var ZaroLead = /** @class */ (function () {
                         params = {
                             status: status,
                             total: total,
-                            payment_method: paymentMethod
+                            payment_method: paymentMethod,
+                            push: push
                         };
                         return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
                     case 1:
@@ -927,7 +928,7 @@ function validateStep2() {
                         }
                     }
                     if (!isValid) return [3 /*break*/, 3];
-                    return [4 /*yield*/, zarolead.completeLead(lead['hash'], 'confirmed', total, 'online')];
+                    return [4 /*yield*/, zarolead.completeLead(lead['hash'], 'confirmed', total, 'online', 'auto')];
                 case 2:
                     leadUpdated = _a.sent();
                     isValid = leadUpdated && isValid;

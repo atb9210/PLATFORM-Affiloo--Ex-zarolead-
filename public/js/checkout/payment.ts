@@ -289,13 +289,14 @@ class ZaroLead
         return false;
     }
 
-    async completeLead(leadId: string, status: string, total: number, paymentMethod: string)
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
     {
         try {
             let params = {
                 status: status,
                 total: total,
                 payment_method: paymentMethod,
+                push: push,
             };
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
@@ -848,7 +849,7 @@ async function validateStep2()
 
     // Update total and status
     if (isValid) {
-        let leadUpdated = await zarolead.completeLead(lead['hash'], 'confirmed', total, 'online');
+        let leadUpdated = await zarolead.completeLead(lead['hash'], 'confirmed', total, 'online', 'auto');
         isValid = leadUpdated && isValid;
     }
 

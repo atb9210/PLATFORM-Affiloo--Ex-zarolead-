@@ -309,13 +309,14 @@ class ZaroLead
         return false;
     }
 
-    async completeLead(leadId: string, status: string, total: number, paymentMethod: string)
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
     {
         try {
             let params = {
                 status: status,
                 total: total,
                 payment_method: paymentMethod,
+                push: push,
             };
             const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
@@ -766,6 +767,7 @@ interface PaymentMethod
     fee: number,
     name: string,
     enabled: boolean,
+    push: string,
 }
 
 var paymentMethods: Array<PaymentMethod> = [
@@ -774,12 +776,14 @@ var paymentMethods: Array<PaymentMethod> = [
         fee: 0.0,
         name: 'Alla consegna',
         enabled: false,
+        push: 'no',
     },
     {
         id: 'paymentMethodOnline',
         fee: 0.0,
         name: 'Online',
         enabled: false,
+        push: 'no',
     },
 ];
 var paymentMethod: string = '';
@@ -835,6 +839,9 @@ async function initPaymentMethods()
                     }
                     if (pms[pm].hasOwnProperty('name') && pms[pm]['name'] !== null) {
                         paymentMethods[pmIndex].name = utils.strval(pms[pm]['name']);
+                    }
+                    if (pms[pm].hasOwnProperty('push') && pms[pm]['push'] !== null) {
+                        paymentMethods[pmIndex].push = utils.strval(pms[pm]['push']);
                     }
                 } else {
                     paymentMethods[pmIndex].enabled = false;
@@ -1192,7 +1199,7 @@ async function validateStep4()
         if (pm !== null) {
             fee = pm.fee;
         }
-        let leadUpdated = await zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod);
+        let leadUpdated = await zarolead.completeLead(lead['hash'], 'confirmed', total + fee, pMethod, pm.push);
         isValid = leadUpdated && isValid;
     }
 

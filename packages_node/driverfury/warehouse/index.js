@@ -96,6 +96,7 @@ class Warehouse {
       obj.quantity = 0
       obj.total = 0.0
       obj.contact = false
+      obj.call_count = 0
       obj.paid = false
       obj.order_number = ''
       obj.carrier = ''
@@ -120,6 +121,9 @@ class Warehouse {
         }
         if (obj.info.hasOwnProperty('contact')) {
           obj.contact = obj.info.contact
+        }
+        if (obj.info.hasOwnProperty('call_count')) {
+          obj.call_count = obj.info.call_count
         }
         if (obj.info.hasOwnProperty('paid')) {
           obj.paid = obj.info.paid
