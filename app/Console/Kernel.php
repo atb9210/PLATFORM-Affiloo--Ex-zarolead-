@@ -25,11 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // DEBUG
-        $schedule->call(function () {
-            Log::channel('tiktok')->info('** DEBUG **: Every minute');
-        })->everyMinute();
-
+        // Tiktok Rules
         $schedule->call(function () {
             $rules = \App\third\TikTokRule::where('status', 'active')
                 ->where('frequency', 'every_five_minutes')->get();
@@ -93,6 +89,44 @@ class Kernel extends ConsoleKernel
                 $rule->apply();
             }
         })->daily();
+
+        // Warehouse leads update
+        $schedule->call(function () {
+            $dateStart = date('Y-m-d', strtotime('-7 day'));
+            $dateEnd   = date('Y-m-d');
+            $leads = \App\third\WarehouseLead::where('archived', 0)
+                ->where('created_at', '>=', $dateStart . ' 00:00:00')
+                ->where('created_at', '<=', $dateEnd   . ' 23:59:59')
+                ->where(function($query) {
+                    $query->where('status', 'to recall')
+                        ->orWhere('status', 'no answer');
+                })
+                ->get();
+            foreach ($leads as $lead) {
+                // Reset contact check
+                $info = $lead->info;
+                if ($info === null) {
+                    $info = [];
+                }
+                if (isset($info['contact'])) {
+                    $info['contact'] = false;
+                }
+
+                // Update delivery info
+                $delivery = null;
+                if (isset($info['delivery']) && isset($info['delivery']['order_number'])) {
+                    $elogy = new \Driverfury\Elogy\Elogy(
+                        env('ELOGY_API_TOKEN'),
+                        env('ELOGY_EMAIL'),
+                        env('ELOGY_PASSWORD'));
+                    $delivery = $elogy->getOrderByNumber($info['delivery']['order_number']);
+                    $info['delivery'] = $delivery;
+                }
+
+                $lead->info = $info;
+                $lead->save();
+            }
+        })->everyFiveMinutes();
     }
 
     /**

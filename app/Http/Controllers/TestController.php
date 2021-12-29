@@ -1015,6 +1015,17 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $dateStart = date('Y-m-d', strtotime('-7 day'));
+        $dateEnd   = date('Y-m-d');
+        $leads = \App\third\WarehouseLead::where('archived', 0)
+            ->where('created_at', '>=', $dateStart . ' 00:00:00')
+            ->where('created_at', '<=', $dateEnd   . ' 23:59:59')
+            ->where(function($query) {
+                $query->where('status', 'to recall')
+                    ->orWhere('status', 'no answer');
+            })
+            ->get();
+        dd($leads);
         $d = new \DateTime();
         dd($d->format(\DateTime::ISO8601));
         exit();
