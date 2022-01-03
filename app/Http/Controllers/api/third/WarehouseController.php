@@ -528,6 +528,9 @@ class WarehouseController extends Controller
             if ($elogyOrder !== null) {
                 $orderId = $elogyOrder['id'];
                 $deliveryParams = [
+                    'shipping_first_name' => $lead->first_name,
+                    'shipping_last_name' => $lead->last_name,
+                    'shipping_phone' => $lead->phone,
                     'shipping_address1' => $params['street_address'],
                     'shipping_address2' => '',
                     'shipping_city' => $params['city'],

@@ -311,12 +311,27 @@ export default [
       },
 
       {
-        url: '/dashboard/forms',
-        name: 'Forms',
-        slug: 'forms',
+        url: null,
+        name: 'Campaigns',
         icon: 'ClipboardIcon',
         i18n: 'Campaigns',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        submenu: [
+          {
+            url: '/dashboard/forms',
+            name: 'All campaigns',
+            slug: 'campaigns',
+            i18n: 'All campaigns',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+          {
+            url: '/dashboard/forms/builder',
+            name: 'Create campaign',
+            slug: 'create-campaign',
+            i18n: 'Create campaign',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+        ]
       },
 
       {

@@ -16,7 +16,9 @@ class CreateNetworksTable extends Migration
         Schema::create('networks', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
+            $table->string('slug');
             $table->json('api')->nullable();
+            $table->boolean('enabled')->default(1);
             $table->timestamps();
             $table->boolean('archived')->default(0);
         });

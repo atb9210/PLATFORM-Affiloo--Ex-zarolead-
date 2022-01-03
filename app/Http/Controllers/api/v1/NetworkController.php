@@ -102,6 +102,7 @@ class NetworkController extends Controller
         // Params validation
         $params = $request->validate([
             'name' => 'string|min:3',
+            'enabled' => 'boolean',
         ]);
 
         $network->update($params);

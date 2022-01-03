@@ -36,7 +36,8 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">Id</vs-th>
-                <vs-th sort-key="username">Name</vs-th>
+                <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="enabled"></vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -48,6 +49,10 @@
 
                     <vs-td :data="data[indextr].name">
                         {{data[indextr].name}}
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].enabled">
+                        <vs-checkbox v-model="data[indextr].enabled" @change="switchEnabled(data[indextr])">{{(data[indextr].enabled) ? 'Enabled' : 'Disabled'}}</vs-checkbox>
                     </vs-td>
 
                 </vs-tr>
@@ -115,6 +120,28 @@ export default {
     },
     onPageChanged(val) {
       this.currentPage = val
+    },
+
+    async switchEnabled(network) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        enabled: network.enabled,
+      }
+
+      await this.$http.put('/api/v1/networks/' + network.id, params, { headers })
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Network updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
     },
   },
   created() {

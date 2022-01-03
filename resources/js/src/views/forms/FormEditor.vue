@@ -21,25 +21,25 @@
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeUpSellOptions">
+              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeUpSellOptions">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select v-model="network" class="w-full select-large" label="Network" v-validate="'required'" @change="changeNetwork" disabled="true">
+              <vs-select autocomplete v-model="network" class="w-full select-large" label="Network" v-validate="'required'" @change="changeNetwork" disabled="true">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in networksOptions" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.network') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select v-model="traffic_source" class="w-full select-large" label="Traffic Source" v-validate="'required'">
+              <vs-select autocomplete v-model="traffic_source" class="w-full select-large" label="Traffic Source" v-validate="'required'">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
             </div> 
             <div class="vx-col md:w-1/2 w-full mt-5" v-if="canChangeUser">
-              <vs-select v-model="user" class="w-full select-large" label="User" v-validate="'required'">
+              <vs-select autocomplete v-model="user" class="w-full select-large" label="Mediabuyer" v-validate="'required'">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in users" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.user') }}</span>
@@ -170,7 +170,7 @@
                   v-model="plugins['facebook'].pixel"
                   name="fb_pixel" placeholder="Facebook pixel"
                 />
-                <vs-select v-model="plugins['facebook'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['facebook'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
                 </vs-select>
                 <vs-input
@@ -182,7 +182,7 @@
                   v-model="plugins['facebook'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value (optional)"
                 />
-                <vs-select v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -225,7 +225,7 @@
                   v-model="plugins['facebook_conversions_api'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value"
                 />
-                <vs-select v-model="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -252,7 +252,7 @@
                   v-model="plugins['tiktok'].token"
                   placeholder="TikTok pixel token API"
                 />
-                <vs-select v-model="plugins['tiktok'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['tiktok'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -273,7 +273,7 @@
                   v-model="plugins['google'].pixel"
                   placeholder="Google pixel"
                 />
-                <vs-select v-model="plugins['google'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['google'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in googleEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -294,13 +294,15 @@
                   v-model="plugins['outbrain'].pixel"
                   placeholder="Outbrain pixel"
                 />
-                <vs-select v-model="plugins['outbrain'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model="plugins['outbrain'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in outbrainEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
             </div>
 
             <!-- Zeus track plugin -->
+            <!-- TODO: At the moment we don't use it -->
+            <!--
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Zeus Track</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -317,6 +319,7 @@
                 />
               </vx-input-group>
             </div>
+            -->
 
             <!-- Double recovery plugin -->
             <div class="vx-col w-full mt-5">
@@ -327,7 +330,7 @@
                     <vs-checkbox v-model="plugins['double_recovery'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'" @change="changeNetwork">
+                <vs-select autocomplete v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'" @change="changeNetwork">
                   <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in formsOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>

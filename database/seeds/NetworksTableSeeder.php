@@ -18,6 +18,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/worldfilia' : '{form.api_call_url}');
         \App\Network::create([
             'name' => 'Worldfilia',
+            'slug' => 'worldfilia',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -157,6 +158,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/amsped' : 'https://manager.amsped.it/web/service/affiliateNetworkAPI/publisherCreateOrder');
         \App\Network::create([
             'name' => 'Amsped',
+            'slug' => 'amsped',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -286,6 +288,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/affiliation-park' : 'https://new.affiliationpark.com/api/public/603b1940cd40a3e/addorder.php');
         \App\Network::create([
             'name' => 'Affiliation Park',
+            'slug' => 'affiliation_park',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -403,6 +406,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/zarolead' : $app_url . '/api/3rd/network');
         \App\Network::create([
             'name' => 'ZaroLead',
+            'slug' => 'zarolead',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -569,6 +573,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/finapsy' : 'https://fynapsyhost.com/api/publisher/orders/send');
         \App\Network::create([
             'name' => 'Finapsy',
+            'slug' => 'finapsy',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -694,6 +699,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/limitless' : 'https://app.limitl3ssnetwork.com/api/affiliate/leads/create');
         \App\Network::create([
             'name' => 'Limitless',
+            'slug' => 'limitless',
             'api' => [
                 'default_status' => 'waiting',
                 'store' => [
@@ -824,6 +830,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/profitparadise' : 'https://new-tech.co/forms/api/');
         \App\Network::create([
             'name' => 'ProfitParadise',
+            'slug' => 'profit_paradise',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [
@@ -927,6 +934,7 @@ class NetworksTableSeeder extends Seeder
         $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/warehouse/leads' : $app_url . '/api/3rd/warehouse/leads');
         \App\Network::create([
             'name' => 'Ecommerce',
+            'slug' => 'ecommerce',
             'api' => [
                 'default_status' => 'confirmed',
                 'store' => [

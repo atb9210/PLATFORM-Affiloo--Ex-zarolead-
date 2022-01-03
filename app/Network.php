@@ -12,7 +12,7 @@ class Network extends Model
      * @var array
      */
     protected $fillable = [
-        'name',
+        'name', 'slug', 'enabled',
     ];
 
     protected $casts = [

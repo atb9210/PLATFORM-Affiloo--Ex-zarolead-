@@ -47,7 +47,7 @@
           <span>API Instance</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input v-if="hasSetting('chatapi') && settings.chatapi.hasOwnProperty('api_instance')" class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="settings.chatapi.api_instance" />
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="chatapi.api_instance" />
         </div>
       </div>
 
@@ -56,7 +56,7 @@
           <span>API Token</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
-          <vs-input v-if="hasSetting('chatapi') && settings.chatapi.hasOwnProperty('api_token')" class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="settings.chatapi.api_token" />
+          <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="chatapi.api_token" />
         </div>
       </div>
 
@@ -117,6 +117,63 @@
       </div>
     </vs-popup>
 
+    <!-- Worldfilia popup -->
+    <vs-popup title="Worldfilia" :active.sync="showPopup['worldfilia']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="worldfilia.api_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Source ID</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-lock" icon-no-border v-model="worldfilia.source_id" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateWorldfiliaSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
+    <!-- ProfitParadise popup -->
+    <vs-popup title="ProfitParadise" :active.sync="showPopup['profit_paradise']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>UID (User ID)</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="profit_paradise.uid" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateProfitParadiseSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
+    <!-- Limitless popup -->
+    <vs-popup title="Limitless" :active.sync="showPopup['limitless']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="limitless.apikey" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateLimitlessSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
   </div>
 </template>
 
@@ -129,6 +186,9 @@ export default {
       showPopup: {
         'chatapi': false,
         'stripe': false,
+        'worldfilia': false,
+        'profit_paradise': false,
+        'limitless': false,
       },
 
       apps: [
@@ -148,7 +208,7 @@ export default {
           name: 'Worldfilia',
           image: '/images/3rd_party/worldfilia.png',
           description: 'Network',
-          callback: null,
+          callback: this.showWorldfiliaSettings,
         },
         {
           name: 'AMSped',
@@ -161,6 +221,18 @@ export default {
           image: '/images/3rd_party/affiliation-park.png',
           description: 'Network',
           callback: null,
+        },
+        {
+          name: 'ProfitParadise',
+          image: '/images/3rd_party/profit-paradise.png',
+          description: 'Network',
+          callback: this.showProfitParadiseSettings,
+        },
+        {
+          name: 'Limitless',
+          image: '/images/3rd_party/limitless.png',
+          description: 'Network',
+          callback: this.showLimitlessSettings,
         },
         {
           name: 'Facebook Business',
@@ -218,12 +290,29 @@ export default {
         },
       ],
 
+      chatapi: {
+        api_instance: '',
+        api_token: '',
+      },
+
       stripe: {
         test_mode: false,
         test_api_public_key: '',
         test_api_secret_key: '',
         live_api_public_key: '',
         live_api_secret_key: '',
+      },
+
+      /* Networks */
+      worldfilia: {
+        api_key: '',
+        source_id: '',
+      },
+      profit_paradise: {
+        uid: 'asd',
+      },
+      limitless: {
+        apikey: '',
       },
     }
   },
@@ -315,15 +404,20 @@ export default {
 
     /* ChatAPI */
     async showChatAPISettings() {
-      if (!this.settings.hasOwnProperty('chatapi')) {
-        this.settings['chatapi'] = {
-          api_instance: '',
-          api_token: '',
-        }
+      let chatapiSettingsDefault = {
+        api_instance: '',
+        api_token: '',
       }
+      if (!this.settings.hasOwnProperty('chatapi')) {
+        this.settings['chatapi'] = chatapiSettingsDefault
+      }
+      this.adjustSettings(this.settings['chatapi'], chatapiSettingsDefault)
+      this.copySettings(this.settings['chatapi'], this.chatapi)
+
       this.showPopup['chatapi'] = true
     },
     async updateChatAPISettings() {
+      this.settings['chatapi'] = this.chatapi
       await this.updateSettingsWithLoading()
       this.showPopup['chatapi'] = false
     },
@@ -339,12 +433,10 @@ export default {
         api_secret_key: '',
         api_public_key: '',
       }
-
       if (!this.settings.hasOwnProperty('stripe')) {
         this.settings['stripe'] = stripeSettingsDefault
       }
       this.adjustSettings(this.settings['stripe'], stripeSettingsDefault)
-
       this.copySettings(this.settings['stripe'], this.stripe)
 
       this.showPopup['stripe'] = true
@@ -361,6 +453,67 @@ export default {
 
       await this.updateSettingsWithLoading()
       this.showPopup['stripe'] = false
+    },
+
+    /* Worldfilia */
+    async showWorldfiliaSettings() {
+      let worldfiliaSettingsDefault = {
+        api_key: '',
+        source_id: '',
+      }
+
+      if (!this.settings.hasOwnProperty('worldfilia')) {
+        this.settings['worldfilia'] = worldfiliaSettingsDefault
+      }
+      this.adjustSettings(this.settings['worldfilia'], worldfiliaSettingsDefault)
+      this.copySettings(this.settings['worldfilia'], this.worldfilia)
+
+      this.showPopup['worldfilia'] = true
+    },
+    async updateWorldfiliaSettings() {
+      this.settings['worldfilia'] = this.worldfilia
+      await this.updateSettingsWithLoading()
+      this.showPopup['worldfilia'] = false
+    },
+
+    /* ProfitParadise */
+    async showProfitParadiseSettings() {
+      let profitParadiseSettingsDefault = {
+        uid: '',
+      }
+
+      if (!this.settings.hasOwnProperty('profit_paradise')) {
+        this.settings['profit_paradise'] = profitParadiseSettingsDefault
+      }
+      this.adjustSettings(this.settings['profit_paradise'], profitParadiseSettingsDefault)
+      this.copySettings(this.settings['profit_paradise'], this.profit_paradise)
+
+      this.showPopup['profit_paradise'] = true
+    },
+    async updateProfitParadiseSettings() {
+      this.settings['profit_paradise'] = this.profit_paradise
+      await this.updateSettingsWithLoading()
+      this.showPopup['profit_paradise'] = false
+    },
+
+    /* Limitless */
+    async showLimitlessSettings() {
+      let limitlessSettingsDefault = {
+        apikey: '',
+      }
+
+      if (!this.settings.hasOwnProperty('limitless')) {
+        this.settings['limitless'] = limitlessSettingsDefault
+      }
+      this.adjustSettings(this.settings['limitless'], limitlessSettingsDefault)
+      this.copySettings(this.settings['limitless'], this.limitless)
+
+      this.showPopup['limitless'] = true
+    },
+    async updateLimitlessSettings() {
+      this.settings['limitless'] = this.limitless
+      await this.updateSettingsWithLoading()
+      this.showPopup['limitless'] = false
     },
 
   },
