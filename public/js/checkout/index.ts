@@ -1013,9 +1013,6 @@ async function validateStep1()
             ],
         };
 
-        // DEBUG TODO: to delete
-        console.log('before createLead/updateLead this is the lead', lead);
-
         if (lead === null) {
             lead = await zarolead.createLead({
                 first_name: firstName,
@@ -1037,9 +1034,6 @@ async function validateStep1()
                 phone: phone,
             });
         }
-
-        // DEBUG TODO: to delete
-        console.log('after createLead/updateLead this is the lead', lead);
 
         let fbResult = false;
         if (facebook !== null) {
@@ -1143,9 +1137,6 @@ async function validateStep3()
     }
 
     if (isValid) {
-        // DEBUG TODO: to delete
-        console.log('lead', lead);
-
         if (lead !== null) {
             let params = {
                 street_address: streetAddress + ', ' + streetNumber,
@@ -1156,9 +1147,6 @@ async function validateStep3()
                 postcode      : cap,
             };
             let addressUpdated = await zarolead.updateLeadAddress(lead['hash'], params);
-
-            // DEBUG TODO: to delete
-            console.log('params', params);
         }
     }
 

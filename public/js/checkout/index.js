@@ -1043,8 +1043,6 @@ function validateStep1() {
                             }
                         ]
                     };
-                    // DEBUG TODO: to delete
-                    console.log('before createLead/updateLead this is the lead', lead);
                     if (!(lead === null)) return [3 /*break*/, 2];
                     return [4 /*yield*/, zarolead.createLead({
                             first_name: firstName,
@@ -1071,8 +1069,6 @@ function validateStep1() {
                     updateLeadResult = _a.sent();
                     _a.label = 4;
                 case 4:
-                    // DEBUG TODO: to delete
-                    console.log('after createLead/updateLead this is the lead', lead);
                     fbResult = false;
                     if (!(facebook !== null)) return [3 /*break*/, 6];
                     return [4 /*yield*/, facebook.finalize()];
@@ -1176,8 +1172,6 @@ function validateStep3() {
                         setError(form, 'province', '');
                     }
                     if (!isValid) return [3 /*break*/, 2];
-                    // DEBUG TODO: to delete
-                    console.log('lead', lead);
                     if (!(lead !== null)) return [3 /*break*/, 2];
                     params = {
                         street_address: streetAddress + ', ' + streetNumber,
@@ -1190,8 +1184,6 @@ function validateStep3() {
                     return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], params)];
                 case 1:
                     addressUpdated = _a.sent();
-                    // DEBUG TODO: to delete
-                    console.log('params', params);
                     _a.label = 2;
                 case 2:
                     // DEBUG TODO: to delete
