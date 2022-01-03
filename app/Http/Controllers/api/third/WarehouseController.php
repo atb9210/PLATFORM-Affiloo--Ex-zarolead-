@@ -518,6 +518,34 @@ class WarehouseController extends Controller
         $lead->info = $info;
         $lead->save();
 
+        if (isset($info['delivery']['order_number'])) {
+            $orderNumber = strval($info['delivery']['order_number']);
+            $elogy = new \Driverfury\Elogy\Elogy(
+                env('ELOGY_API_TOKEN'),
+                env('ELOGY_EMAIL'),
+                env('ELOGY_PASSWORD'));
+            $elogyOrder = $elogy->getOrderByNumber($orderNumber);
+            if ($elogyOrder !== null) {
+                $orderId = $elogyOrder['id'];
+                $deliveryParams = [
+                    'shipping_address1' => $params['street_address'],
+                    'shipping_address2' => '',
+                    'shipping_city' => $params['city'],
+                    'shipping_zip' => $params['postcode'],
+                    'shipping_province_code' => $params['province'],
+                    'shipping_country_code' => $params['country'],
+                ];
+                if ($elogy->updateOrder(strval($orderId), $deliveryParams)) {
+                    $delivery = $elogy->getOrderByNumber($orderNumber);
+                    if ($delivery !== null) {
+                        $info['delivery'] = $delivery;
+                        $lead->info = $info;
+                        $lead->save();
+                    }
+                }
+            }
+        }
+
         return response([
             'status' => 'success',
             'message' => 'Lead\'s address updated',

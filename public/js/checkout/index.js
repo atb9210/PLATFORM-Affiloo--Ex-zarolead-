@@ -1043,6 +1043,8 @@ function validateStep1() {
                             }
                         ]
                     };
+                    // DEBUG TODO: to delete
+                    console.log('before createLead/updateLead this is the lead', lead);
                     if (!(lead === null)) return [3 /*break*/, 2];
                     return [4 /*yield*/, zarolead.createLead({
                             first_name: firstName,
@@ -1069,6 +1071,8 @@ function validateStep1() {
                     updateLeadResult = _a.sent();
                     _a.label = 4;
                 case 4:
+                    // DEBUG TODO: to delete
+                    console.log('after createLead/updateLead this is the lead', lead);
                     fbResult = false;
                     if (!(facebook !== null)) return [3 /*break*/, 6];
                     return [4 /*yield*/, facebook.finalize()];
@@ -1126,7 +1130,7 @@ function validateStep2() {
 }
 function validateStep3() {
     return __awaiter(this, void 0, void 0, function () {
-        var isValid, streetAddress, streetNumber, cap, city, province, addressUpdated;
+        var isValid, streetAddress, streetNumber, cap, city, province, params, addressUpdated;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1172,17 +1176,22 @@ function validateStep3() {
                         setError(form, 'province', '');
                     }
                     if (!isValid) return [3 /*break*/, 2];
+                    // DEBUG TODO: to delete
+                    console.log('lead', lead);
                     if (!(lead !== null)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], {
-                            street_address: streetAddress + ', ' + streetNumber,
-                            city: city,
-                            province: province,
-                            state: currentLocation.area1,
-                            country: 'IT',
-                            postcode: cap
-                        })];
+                    params = {
+                        street_address: streetAddress + ', ' + streetNumber,
+                        city: city,
+                        province: province,
+                        state: currentLocation.area1,
+                        country: 'IT',
+                        postcode: cap
+                    };
+                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], params)];
                 case 1:
                     addressUpdated = _a.sent();
+                    // DEBUG TODO: to delete
+                    console.log('params', params);
                     _a.label = 2;
                 case 2:
                     // DEBUG TODO: to delete

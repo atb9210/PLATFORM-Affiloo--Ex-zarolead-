@@ -341,7 +341,7 @@ export default {
       }
 
       if (!this.settings.hasOwnProperty('stripe')) {
-        this.settings['stripe'] = stripeDefauleSettings
+        this.settings['stripe'] = stripeSettingsDefault
       }
       this.adjustSettings(this.settings['stripe'], stripeSettingsDefault)
 
