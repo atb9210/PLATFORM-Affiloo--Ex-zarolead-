@@ -85,6 +85,7 @@
             <template slot="thead">
                 <vs-th sort-key="created_at">Creation date</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
+                <vs-th sort-key="default_style"></vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -100,6 +101,10 @@
                                 {{data[indextr].name}}
                             </vs-chip>
                         </div>
+                    </vs-td>
+
+                    <vs-td :data="data[indextr].default_style">
+                        <vs-checkbox v-model="data[indextr].default_style" @change="changeDefaultStyle(data[indextr])">{{(data[indextr].default_style) ? 'Default' : 'Not default'}}</vs-checkbox>
                     </vs-td>
 
                 </vs-tr>
@@ -816,6 +821,30 @@ export default {
       this.previewObject = this.allObjects[this.getObjectIndexById(id)]
       this.newObject['preview'] = this.previewObject.settings
       this.showPopup['preview'] = true
+    },
+    async changeDefaultStyle(style) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        default_style: style.default_style,
+      }
+
+      // Update forms style
+      const response = await this.$http.put('/api/v1/forms-styles/' + style.id, data, { headers: headers })
+      this.$vs.loading.close()
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Style updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.retrieveObjects()
     },
   },
   created() {

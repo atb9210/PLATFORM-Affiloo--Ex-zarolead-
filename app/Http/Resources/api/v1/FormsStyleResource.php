@@ -20,6 +20,7 @@ class FormsStyleResource extends JsonResource
             'type' => $this->type,
             'code' => $this->code,
             'settings' => $this->settings,
+            'default_style' => $this->default_style,
             'url' => env('APP_URL', '') . '/forms-styles/' . $this->id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

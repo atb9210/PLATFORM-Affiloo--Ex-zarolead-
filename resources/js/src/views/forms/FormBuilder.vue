@@ -1101,6 +1101,13 @@ export default {
 
     // Retrieve forms styles
     await this.getFormsStyles()
+    for (let i = 0; i < this.formsStyles.length; i++) {
+      let s = this.formsStyles[i]
+      if (s.default_style) {
+        this.selectedFormsStyle = s
+        break
+      }
+    }
 
     // Retrieve users
     try {

@@ -1118,6 +1118,7 @@ class FormController extends Controller
      * @bodyParam type string Style's type (css)
      * @bodyParam code string Style's code
      * @bodyParam settings json Style's settings (button text, etc...)
+     * @bodyParam default_style boolean Style's default flag
      *
      * @response {
      *  "message": "Forms style updated",
@@ -1134,10 +1135,15 @@ class FormController extends Controller
             'type' => 'in:css',
             'code' => 'string',
             'settings' => 'json',
+            'default_style' => 'boolean',
         ]);
 
         if (isset($params['settings'])) {
             $params['settings'] = json_decode($params['settings'], TRUE);
+        }
+
+        if (isset($params['default_style']) && $params['default_style']) {
+            FormsStyle::query()->update(['default_style' => 0]);
         }
 
         $formsStyle->update($params);
