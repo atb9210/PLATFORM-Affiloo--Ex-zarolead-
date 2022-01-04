@@ -267,9 +267,14 @@ class OrderController extends Controller
 
         // Send order to the network
         $network = $order->network;
+        $productInfo = $form->product->info;
+        if ($productInfo === null) {
+            $productInfo = [];
+        }
         $product = [
             'id' => $form->product->id,
             'name' => $form->product->name,
+            'info' => $productInfo,
         ];
         $api_call = $order->sendToNetwork($network_data, $network_params, $network, $product);
 

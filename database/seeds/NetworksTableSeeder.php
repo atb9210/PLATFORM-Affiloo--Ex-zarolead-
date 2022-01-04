@@ -183,7 +183,7 @@ class NetworksTableSeeder extends Seeder
                             'country' => 'IT', //@TODO
                             'external_notes' => '',
                             'product_reference' => '{form.product_reference}',
-                            'product_name' => '{form.product_name}',
+                            'product_name' => '{product.name}',
                             'ip_address' => '{input.ip}',
                         ],
                         'validation' => [
@@ -265,10 +265,6 @@ class NetworksTableSeeder extends Seeder
                             'type' => 'text',
                             'required' => '',
                         ],
-                        'product_name' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
                     ],
                     'validation' => [
                         'input' => [
@@ -278,7 +274,6 @@ class NetworksTableSeeder extends Seeder
                         ],
                         'params' => [
                             'product_reference' => 'required|string|min:1',
-                            'product_name' => 'required|string|min:1',
                         ],
                     ],
                 ],
@@ -426,8 +421,8 @@ class NetworksTableSeeder extends Seeder
                             'quantity' => '{input.quantity}',
                             'price' => '{input.price}',
                             'name' => '{input.name}',
-                            'product_name' => '{form.product_name}',
-                            'sku' => '{form.sku}',
+                            'product_name' => '{product.name}',
+                            'sku' => '{product.info.sku}',
                             'weight' => '{form.weight}',
                             'transaction_id' => '',
                             'cross_sell' => '{input.cross_sell}',
@@ -537,14 +532,6 @@ class NetworksTableSeeder extends Seeder
                         ],
                     ],
                     'params' => [
-                        'product_name' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
-                        'sku' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
                         'weight' => [
                             'type' => 'text',
                             'required' => '',
@@ -562,8 +549,6 @@ class NetworksTableSeeder extends Seeder
                             'address' => 'required|string|min:4',
                         ],
                         'params' => [
-                            'product_name' => 'required|string|min:1',
-                            'sku' => 'required|string|min:1',
                         ],
                     ],
                 ],
@@ -716,8 +701,8 @@ class NetworksTableSeeder extends Seeder
                             'affiliate_id' => '{form.affiliate_id}',
                             'offer_id' => '{form.offer_id}',
                             'lid' => '{form.lid}',
-                            'quantity' => '{form.quantity}',
-                            'amount' => '{form.amount}',
+                            'quantity' => '{input.quantity}',
+                            'amount' => '{input.price}',
                             'firstname' => '{input.name}',
                             'lastname' => '{input.surname}',
                             'phone' => '{input.phone}',
@@ -798,14 +783,6 @@ class NetworksTableSeeder extends Seeder
                             'type' => 'text',
                             'required' => '',
                         ],
-                        'quantity' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
-                        'amount' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
                     ],
                     'validation' => [
                         'input' => [
@@ -819,8 +796,6 @@ class NetworksTableSeeder extends Seeder
                             'affiliate_id' => 'required|string|min:1',
                             'offer_id' => 'required|string|min:1',
                             'lid' => 'required|string|min:1',
-                            'quantity' => 'required|string|min:1',
-                            'amount' => 'required|string|min:1',
                         ],
                     ],
                 ],
@@ -947,8 +922,8 @@ class NetworksTableSeeder extends Seeder
                             'last_name'    => ' . ',
                             'phone'        => '{input.phone}',
                             'order_id'     => '{order.id}',
-                            'sku'          => '{form.sku}',
-                            'product_name' => '{form.product_name}',
+                            'sku'          => '{product.info.sku}',
+                            'product_name' => '{product.name}',
                             'price'        => '{input.price}',
                             'total'        => '{input.price}',
                             'quantity'     => '{input.quantity}',
@@ -1016,14 +991,6 @@ class NetworksTableSeeder extends Seeder
                         ],
                     ],
                     'params' => [
-                        'product_name' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
-                        'sku' => [
-                            'type' => 'text',
-                            'required' => '',
-                        ],
                     ],
                     'validation' => [
                         'input' => [
@@ -1032,8 +999,6 @@ class NetworksTableSeeder extends Seeder
                             'address' => 'string',
                         ],
                         'params' => [
-                            'product_name' => 'required|string|min:1',
-                            'sku' => 'required|string|min:1',
                         ],
                     ],
                 ],
