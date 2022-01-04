@@ -234,6 +234,42 @@
                 <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['url']" />
             </div>
 
+            <h2 class="vx-col w-full">Worldfilia</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['worldfilia'].api_call_url" />
+            </div>
+
+            <h2 class="vx-col w-full">Profit Paradise</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['profit_paradise'].lp" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['profit_paradise'].offer" />
+            </div>
+
+            <h2 class="vx-col w-full">Limitless</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['limitless'].lid" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].country" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].offer_id" />
+            </div>
+
+            <h2 class="vx-col w-full">Amsped</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['amsped'].product_reference" />
+            </div>
+
             <div class="vx-col w-full">
                 <span class="text-danger">{{ errors.first('create.info') }}</span>
             </div>
@@ -335,6 +371,42 @@
 
             <div class="vx-col md:w-1/2 w-full">
                 <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['url']" />
+            </div>
+
+            <h2 class="vx-col w-full">Worldfilia</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['worldfilia'].api_call_url" />
+            </div>
+
+            <h2 class="vx-col w-full">Profit Paradise</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['profit_paradise'].lp" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['profit_paradise'].offer" />
+            </div>
+
+            <h2 class="vx-col w-full">Limitless</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['limitless'].lid" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].country" />
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].offer_id" />
+            </div>
+
+            <h2 class="vx-col w-full">Amsped</h2>
+
+            <div class="vx-col md:w-1/2 w-full">
+                <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['amsped'].product_reference" />
             </div>
 
             <div class="vx-col w-full">
@@ -724,6 +796,23 @@ export default {
             'size': '',
             'vat': 22.0,
             'url': '',
+
+            // Networks
+            'worldfilia': {
+              api_call_url: '',
+            },
+            'profit_paradise': {
+              lp: '',
+              offer: '',
+            },
+            'limitless': {
+              lid: '',
+              country: '',
+              offer_id: '',
+            },
+            'amsped': {
+              product_reference: '',
+            },
           },
         },
         'edit': {
@@ -740,6 +829,23 @@ export default {
             'size': '',
             'vat': 22.0,
             'url': '',
+
+            // Networks
+            'worldfilia': {
+              api_call_url: '',
+            },
+            'profit_paradise': {
+              lp: '',
+              offer: '',
+            },
+            'limitless': {
+              lid: '',
+              country: '',
+              offer_id: '',
+            },
+            'amsped': {
+              product_reference: '',
+            },
           },
         },
         'create_qty': {
@@ -1014,6 +1120,23 @@ export default {
             'size': '',
             'vat': 22.0,
             'url': '',
+
+            // Networks
+            'worldfilia': {
+              api_call_url: '',
+            },
+            'profit_paradise': {
+              lp: '',
+              offer: '',
+            },
+            'limitless': {
+              lid: '',
+              country: '',
+              offer_id: '',
+            },
+            'amsped': {
+              product_reference: '',
+            },
           },
         }
       }
@@ -1111,6 +1234,23 @@ export default {
         'size': '',
         'vat': 22.0,
         'url': '',
+
+        // Networks
+        'worldfilia': {
+          api_call_url: '',
+        },
+        'profit_paradise': {
+          lp: '',
+          offer: '',
+        },
+        'limitless': {
+          lid: '',
+          country: '',
+          offer_id: '',
+        },
+        'amsped': {
+          product_reference: '',
+        },
       }
       if (obj.info != null) {
         for (const [key, value] of Object.entries(info)) {

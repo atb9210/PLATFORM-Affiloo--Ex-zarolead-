@@ -174,12 +174,104 @@
       </div>
     </vs-popup>
 
+    <!-- Facebook popup -->
+    <vs-popup title="Facebook" :active.sync="showPopup['facebook']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Access token</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="facebook.access_token" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Pixel</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="facebook.pixel" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Event</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-select autocomplete v-model="facebook.eventName" class="w-full select-large">
+            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in ['Purchase', 'Lead', 'Complete registration']" class="w-full" />
+          </vs-select>
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Event Currency</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-select autocomplete v-model="facebook.eventCurrency" class="w-full select-large">
+            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in ['EUR', 'USD']" class="w-full" />
+          </vs-select>
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Test code</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="facebook.test_code" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateFacebookSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
+    <!-- TikTok popup -->
+    <vs-popup title="TikTok" :active.sync="showPopup['tiktok']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Access token</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="tiktok.token" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Pixel</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-eye" icon-no-border v-model="tiktok.pixel" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Event</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-select autocomplete v-model="tiktok.eventName" class="w-full select-large">
+            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in ['SubmitForm', 'ClickButton']" class="w-full" />
+          </vs-select>
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateTikTokSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
   </div>
 </template>
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       settings: {},
 
@@ -189,6 +281,8 @@ export default {
         'worldfilia': false,
         'profit_paradise': false,
         'limitless': false,
+        'facebook': false,
+        'tiktok': false,
       },
 
       apps: [
@@ -235,16 +329,16 @@ export default {
           callback: this.showLimitlessSettings,
         },
         {
-          name: 'Facebook Business',
-          image: '/images/3rd_party/facebook-business.png',
+          name: 'Facebook',
+          image: '/images/3rd_party/facebook.png',
           description: 'Advertising Platform',
-          callback: null,
+          callback: this.showFacebookSettings,
         },
         {
           name: 'TikTok',
           image: '/images/3rd_party/tiktok.png',
           description: 'Advertising Platform',
-          callback: null,
+          callback: this.showTikTokSettings,
         },
         {
           name: 'Google Ads',
@@ -313,6 +407,19 @@ export default {
       },
       limitless: {
         apikey: '',
+      },
+
+      facebook: {
+        access_token: '',
+        pixel: '',
+        eventName: '',
+        eventCurrency: '',
+        test_code: '',
+      },
+      tiktok: {
+        token: '',
+        pixel: '',
+        eventName: '',
       },
     }
   },
@@ -514,6 +621,54 @@ export default {
       this.settings['limitless'] = this.limitless
       await this.updateSettingsWithLoading()
       this.showPopup['limitless'] = false
+    },
+
+    /* Facebook */
+    async showFacebookSettings() {
+      let facebookSettingsDefault = {
+        access_token: '',
+        pixel: '',
+        eventName: '',
+        eventCurrency: '',
+        test_code: '',
+      }
+
+      if (!this.settings.hasOwnProperty('facebook')) {
+        this.settings['facebook'] = facebookSettingsDefault
+      }
+      this.adjustSettings(this.settings['facebook'], facebookSettingsDefault)
+      this.copySettings(this.settings['facebook'], this.facebook)
+
+      this.showPopup['facebook'] = true
+    },
+    async updateFacebookSettings() {
+      this.settings['facebook'] = this.facebook
+      await this.updateSettingsWithLoading()
+      this.showPopup['facebook'] = false
+    },
+
+    /* TikTok */
+    async showTikTokSettings() {
+      let tiktokSettingsDefault = {
+        access_token: '',
+        pixel: '',
+        eventName: '',
+        eventCurrency: '',
+        test_code: '',
+      }
+
+      if (!this.settings.hasOwnProperty('tiktok')) {
+        this.settings['tiktok'] = tiktokSettingsDefault
+      }
+      this.adjustSettings(this.settings['tiktok'], tiktokSettingsDefault)
+      this.copySettings(this.settings['tiktok'], this.tiktok)
+
+      this.showPopup['tiktok'] = true
+    },
+    async updateTikTokSettings() {
+      this.settings['tiktok'] = this.tiktok
+      await this.updateSettingsWithLoading()
+      this.showPopup['tiktok'] = false
     },
 
   },

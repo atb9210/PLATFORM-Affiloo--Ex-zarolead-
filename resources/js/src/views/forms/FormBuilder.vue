@@ -21,7 +21,7 @@
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeUpSellOptions">
+              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeProduct">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
@@ -705,6 +705,12 @@ export default {
       return index
     },
     changeNetwork() {
+      let prod = null
+      let prodIndex = this.getObjectIndexById(this.product, this.products)
+      if (prodIndex >= 0) {
+        prod = this.products[prodIndex]
+      }
+
       this.network_params = []
       this.network_params_values = []
       if (this.network != '' && this.network > 0) {
@@ -723,14 +729,17 @@ export default {
                 val = this.settings[networkSlug][key]
               }
             }
+            if (prod !== null && prod.hasOwnProperty('info') && prod.info !== null) {
+              if (prod.info.hasOwnProperty(networkSlug) && prod.info[networkSlug] !== null &&
+                  prod.info[networkSlug].hasOwnProperty(key) && prod.info[networkSlug][key] !== null) {
+                val = prod.info[networkSlug][key]
+              }
+            }
 
             this.network_params_values.push(val)
             this.network_params[this.network_params.length - 1].value = val
           }
         }
-
-        // TODO: Product params
-        // TODO: HERE
       }
     },
     async getFormsStyles() {
@@ -1005,7 +1014,7 @@ export default {
         price: 0,
       })
     },
-    changeUpSellOptions() {
+    changeProduct() {
       let index = -1
 
       this.upSellOptions = []
@@ -1024,6 +1033,20 @@ export default {
         this.upSellOptions.push(key)
         this.upSellBestSeller = key
       }
+
+      let eventValue = 0.0
+      if (p.hasOwnProperty('quantity') && p.quantity !== null && p.quantity.hasOwnProperty('options') && p.quantity.options !== null) {
+        if (p.quantity.options.hasOwnProperty('1')) {
+          eventValue = parseFloat(p.quantity.options['1'].price)
+        } else {
+          for (const [key, value] of Object.entries(p.quantity.options)) {
+            eventValue = parseFloat(value.price)
+            break
+          }
+        }
+      }
+      this.plugins['facebook'].eventValue = eventValue
+      this.plugins['facebook_conversions_api'].eventValue = eventValue
     },
     async fetchTrafficSourcesDefaultInfo() {
       let plugins = {
@@ -1114,11 +1137,8 @@ export default {
     const productResponse = await this.$http.get('/api/v1/products', { headers })
     for (let i = 0; i < productResponse.data.data.length; i++) {
       let p = productResponse.data.data[i]
-      this.products.push({
-        id: p.id,
-        label: p.name,
-        quantity: p.quantity,
-      })
+      p.label = p.name
+      this.products.push(p)
       this.product = p.id;
     }
 
@@ -1152,6 +1172,21 @@ export default {
         label: form.name + " - ID: " + form.id,
       })
       this.plugins['double_recovery'].form_id = form.id;
+    }
+
+    // Adjust plugins default values
+    if (this.settings !== null) {
+      if (this.settings.hasOwnProperty('facebook') && this.settings.facebook !== null) {
+        for (const [key, value] of Object.entries(this.settings.facebook)) {
+          this.plugins['facebook'][key] = value
+          this.plugins['facebook_conversions_api'][key] = value
+        }
+      }
+      if (this.settings.hasOwnProperty('tiktok') && this.settings.tiktok !== null) {
+        for (const [key, value] of Object.entries(this.settings.tiktok)) {
+          this.plugins['tiktok'][key] = value
+        }
+      }
     }
   },
 }

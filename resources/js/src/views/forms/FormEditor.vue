@@ -21,7 +21,7 @@
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeUpSellOptions">
+              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeProduct">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
@@ -539,6 +539,8 @@ export default {
     return {
       form: [],
 
+      settings: {},
+
       users: [],
       networks: [],
       forms: [],
@@ -713,6 +715,12 @@ export default {
       return index
     },
     changeNetwork() {
+      let prod = null
+      let prodIndex = this.getObjectIndexById(this.product, this.products)
+      if (prodIndex >= 0) {
+        prod = this.products[prodIndex]
+      }
+
       this.network_params = []
       this.network_params_values = []
       if (this.network != '' && this.network > 0) {
@@ -724,12 +732,27 @@ export default {
             this.network_params[this.network_params.length - 1].name = key
             this.network_params[this.network_params.length - 1].validation = this.networks[index].api.form.validation.params[key];
 
-            let v = ''
+            let val = ''
             if (this.form.network.id == this.network) {
-              v = this.form.network_params[key]
+              if (this.form.network_params.hasOwnProperty(key) && this.form.network_params[key] !== null) {
+                val = this.form.network_params[key]
+              }
+            } else {
+              if (this.settings !== null && this.settings.hasOwnProperty(networkSlug) && this.settings[networkSlug] !== null) {
+                if (this.settings[networkSlug].hasOwnProperty(key) && this.settings[networkSlug][key] !== null) {
+                  val = this.settings[networkSlug][key]
+                }
+              }
+              if (prod !== null && prod.hasOwnProperty('info') && prod.info !== null) {
+                if (prod.info.hasOwnProperty(networkSlug) && prod.info[networkSlug] !== null &&
+                    prod.info[networkSlug].hasOwnProperty(key) && prod.info[networkSlug][key] !== null) {
+                  val = prod.info[networkSlug][key]
+                }
+              }
             }
-            this.network_params_values.push(v)
-            this.network_params[this.network_params.length - 1].value = v
+
+            this.network_params_values.push(val)
+            this.network_params[this.network_params.length - 1].value = val
           }
         }
       }
@@ -1009,7 +1032,7 @@ export default {
         price: 0,
       })
     },
-    changeUpSellOptions() {
+    changeProduct() {
       let index = -1
 
       this.upSellOptions = []
@@ -1029,6 +1052,22 @@ export default {
         this.upSellBestSeller = key
       }
     },
+    async fetchSettings() {
+      let settings = []
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/v1/settings', { headers })
+        if (response !== null && response.hasOwnProperty('data') && response.data !== null &&
+            response.data.hasOwnProperty('data') && response.data.data !== null) {
+          settings = response.data.data
+        }
+      } catch (error) {
+        // Nothing
+      }
+      return settings
+    },
   },
   async created() {
     this.$vs.loading()
@@ -1036,6 +1075,9 @@ export default {
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
+
+    // Retrieve settings
+    this.settings = await this.fetchSettings()
 
     // Retrieve forms styles
     await this.getFormsStyles()
