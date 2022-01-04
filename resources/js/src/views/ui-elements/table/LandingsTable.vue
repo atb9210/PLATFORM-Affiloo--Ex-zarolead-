@@ -231,7 +231,7 @@
                     <span>Country</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].country" />
+                    <v-select :options="countryOptions" v-model="newObject['create'].country" />
                 </div>
             </div>
 
@@ -278,7 +278,7 @@
                     <span>Country</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].country" />
+                    <v-select :options="countryOptions" v-model="newObject['edit'].country" />
                 </div>
             </div>
 
@@ -373,6 +373,8 @@ export default {
       landingCodeId: -1,
       formCode: '',
       defaultFormId: -1,
+
+      countryOptions: [ 'IT', 'FR', 'UK', 'US' ],
     }
   },
   computed: {

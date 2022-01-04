@@ -269,8 +269,18 @@
                     <a href="item.url">{{item.url}}</a>
                 </div>
                 <div class="vx-col w-1/6">
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="item.url" v-clipboard:success="onUrlCopied"></vs-button>
+                    <p class="flex items-center">
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="item.url" v-clipboard:success="onUrlCopied"></vs-button>
+                        <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-code" @click="getFormCode(currentObject.id, item.id)"></vs-button>
+                    </p>
                 </div>
+            </div>
+
+            <div class="vx-row mb-2 p-2">
+                <vs-textarea v-model="formCode" disabled height="10rem" />
+                <p class="flex items-center">
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" v-clipboard:copy="formCode" v-clipboard:success="onCodeCopied"></vs-button>
+                </p>
             </div>
         </vs-popup>
 
@@ -668,6 +678,8 @@ export default {
       allObjects: [],
       objects: [],
       selected: [],
+
+      currentObject: null,
 
       trafficSourcesShortcuts: {
         'Facebook': 'FB',
@@ -1654,6 +1666,8 @@ export default {
 
       let obj = this.allObjects[this.getObjectIndexById(id)]
 
+      this.currentObject = obj
+
       let data = {}
       if (this.filters.product != '') {
         data['filter_product'] = obj.product.id
@@ -1670,6 +1684,7 @@ export default {
             }
             url = url + separator + 'id=' + obj.id
             this.landingUrlObjects.push({
+              id: landing.id,
               name: landing.name,
               url: url,
             })
@@ -1693,6 +1708,15 @@ export default {
       this.$vs.notify({
         title: 'Success',
         text: 'Landing URL copied',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
+    onCodeCopied() {
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Code copied',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
@@ -1756,6 +1780,33 @@ export default {
         shortcut = this.trafficSourcesShortcuts[form.traffic_source.name]
       }
       return shortcut + ' - ' + form.name
+    },
+    async fetchFormCode(formId, landingId) {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let data = {
+          default_form: formId,
+      }
+
+      // Retrieve form code snippet
+      let formCode = null
+      try {
+        const response = await this.$http.get('/api/v1/landings/' + landingId + '/code', { params: data, headers: headers })
+        formCode = response.data.data
+      } catch (error) {
+        formCode = null
+      }
+
+      return formCode
+    },
+    async getFormCode(formId, landingId) {
+      this.$vs.loading()
+
+      const formCode = await this.fetchFormCode(formId, landingId)
+      this.formCode = formCode
+
+      this.$vs.loading.close()
     },
   },
   created() {
