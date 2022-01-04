@@ -360,6 +360,8 @@ export default {
   },
   data () {
     return {
+      settings: {},
+
       objects: [],
       selected: [],
       deleted: [],
@@ -575,6 +577,23 @@ export default {
       })
     },
     showForm(type) {
+      if (type === 'create') {
+        // Default FraudFilter params
+        if (this.settings !== null && this.settings.hasOwnProperty('fraudfilter') && this.settings.fraudfilter !== null) {
+          let ff = this.settings.fraudfilter
+
+          if (ff.hasOwnProperty('enabled') && ff.enabled !== null) {
+            this.newObject['create'].fraud_filter_protection = ff.enabled
+          }
+          if (ff.hasOwnProperty('campaign_id') && ff.campaign_id !== null) {
+            this.newObject['create'].fraud_filter_campaign_id = ff.campaign_id
+          }
+          if (ff.hasOwnProperty('campaign_key') && ff.campaign_key !== null) {
+            this.newObject['create'].fraud_filter_campaign_key = ff.campaign_key
+          }
+        }
+      }
+
       this.showPopup[type] = true
     },
     clearForm(type) {
@@ -987,82 +1006,63 @@ export default {
       this.duplicateObjectIndex = index
       this.showPopup['duplicate'] = true
     },
+    async fetchSettings() {
+      let settings = []
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/v1/settings', { headers })
+        if (response !== null && response.hasOwnProperty('data') && response.data !== null &&
+            response.data.hasOwnProperty('data') && response.data.data !== null) {
+          settings = response.data.data
+        }
+      } catch (error) {
+        // Nothing
+      }
+      return settings
+    },
   },
-  created() {
+  async created() {
     this.retrieveObjects()
+
+    this.$vs.loading()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
-    // Retrieve landings
-    this.$vs.loading()
-    this.$http.get('/api/v1/landings', { headers })
-      .then((response) => {
-        this.landings = response.data.data
+    // Retrieve settings
+    this.settings = await this.fetchSettings()
 
-        this.landingOptions = []
-        this.landings.forEach((landing) => {
-          this.landingOptions.push({
-            id: landing.id,
-            label: landing.name,
-          })
-        })
-        this.$vs.loading.close()
+    // Retrieve landings
+    const landingsResponse = await this.$http.get('/api/v1/landings', { headers })
+    this.landings = landingsResponse.data.data
+    this.landingOptions = []
+    this.landings.forEach((landing) => {
+      this.landingOptions.push({
+        id: landing.id,
+        label: landing.name,
       })
-      .catch((error) => {
-        this.$vs.loading.close()
-        this.$vs.notify({
-          title: 'Error',
-          text: error.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      })
+    })
 
     // Retrieve traffic sources
-    this.$vs.loading()
-    this.$http.get('/api/v1/traffic-sources', { headers })
-      .then((response) => {
-        this.trafficSources = response.data.data
-        if (this.trafficSources.length > 0) {
-          this.firstTrafficSourceId = this.trafficSources[0].id
-          this.newObject['create'].traffic_source = this.newObject['edit'].traffic_source = this.firstTrafficSourceId
-        }
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-        this.$vs.notify({
-          title: 'Error',
-          text: error.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      })
+    const tfResponse = await this.$http.get('/api/v1/traffic-sources', { headers })
+    this.trafficSources = tfResponse.data.data
+    if (this.trafficSources.length > 0) {
+      this.firstTrafficSourceId = this.trafficSources[0].id
+      this.newObject['create'].traffic_source = this.newObject['edit'].traffic_source = this.firstTrafficSourceId
+    }
 
     // Retrieve domains
     this.$vs.loading()
-    this.$http.get('/api/v1/domains', { headers })
-      .then((response) => {
-        this.domains = response.data.data
-        if (this.domains.length > 0) {
-          this.newObject['create'].domain = this.newObject['edit'].domain = this.domains[0]
-        }
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-        this.$vs.notify({
-          title: 'Error',
-          text: error.message,
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      })
+    const domainsResponse = await this.$http.get('/api/v1/domains', { headers })
+    this.domains = domainsResponse.data.data
+    if (this.domains.length > 0) {
+      this.newObject['create'].domain = this.newObject['edit'].domain = this.domains[0]
+    }
+
+    this.$vs.loading.close()
   },
   mounted () {
   }

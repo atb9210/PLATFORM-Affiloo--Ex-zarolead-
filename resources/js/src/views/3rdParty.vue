@@ -266,6 +266,41 @@
       </div>
     </vs-popup>
 
+    <!-- FraudFilter popup -->
+    <vs-popup title="FraudFilter" :active.sync="showPopup['fraudfilter']">
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Enabled by default</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-checkbox v-model="fraudfilter.enabled">{{(fraudfilter.enabled) ? 'Enabled' : 'Disabled'}}</vs-checkbox>
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Campaign ID</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="fraudfilter.campaign_id" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Campaign Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-unlock" icon-no-border v-model="fraudfilter.campaign_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateFraudFilterSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
   </div>
 </template>
 
@@ -278,11 +313,15 @@ export default {
       showPopup: {
         'chatapi': false,
         'stripe': false,
+
+        // Networks
         'worldfilia': false,
         'profit_paradise': false,
         'limitless': false,
         'facebook': false,
         'tiktok': false,
+
+        'fraudfilter': false,
       },
 
       apps: [
@@ -382,6 +421,12 @@ export default {
           description: 'Webpages Cloner',
           callback: null,
         },
+        {
+          name: 'FraudFilter',
+          image: '/images/3rd_party/fraudfilter.png',
+          description: 'Cloaker',
+          callback: this.showFraudFilterSettings,
+        },
       ],
 
       chatapi: {
@@ -420,6 +465,12 @@ export default {
         token: '',
         pixel: '',
         eventName: '',
+      },
+
+      fraudfilter: {
+        enabled: false,
+        campaign_id: '',
+        campaign_key: '',
       },
     }
   },
@@ -669,6 +720,28 @@ export default {
       this.settings['tiktok'] = this.tiktok
       await this.updateSettingsWithLoading()
       this.showPopup['tiktok'] = false
+    },
+
+    /* FraudFilter */
+    async showFraudFilterSettings() {
+      let fraudFilterSettingsDefault = {
+        enabled: false,
+        campaign_id: '',
+        campaign_key: '',
+      }
+
+      if (!this.settings.hasOwnProperty('fraudfilter')) {
+        this.settings['fraudfilter'] = fraudFilterSettingsDefault
+      }
+      this.adjustSettings(this.settings['fraudfilter'], fraudFilterSettingsDefault)
+      this.copySettings(this.settings['fraudfilter'], this.fraudfilter)
+
+      this.showPopup['fraudfilter'] = true
+    },
+    async updateFraudFilterSettings() {
+      this.settings['fraudfilter'] = this.fraudfilter
+      await this.updateSettingsWithLoading()
+      this.showPopup['fraudfilter'] = false
     },
 
   },
