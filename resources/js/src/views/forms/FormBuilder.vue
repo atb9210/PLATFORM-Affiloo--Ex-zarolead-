@@ -11,7 +11,7 @@
 <template>
   <vx-card title="" code-toggler>
     <div class="mt-5">
-      <form-wizard color="rgba(var(--vs-primary), 1)" errorColor="rgba(var(--vs-danger), 1)" :title="null" :subtitle="null" finishButtonText="Create Form">
+      <form-wizard color="rgba(var(--vs-primary), 1)" errorColor="rgba(var(--vs-danger), 1)" :title="null" :subtitle="null" finishButtonText="Finish">
         <!-- tab 1 content -->
         <tab-content title="Form Informations" class="mb-5" icon="feather icon-info" :before-change="validateStep1">
           <form data-vv-scope="step-1">
@@ -135,8 +135,9 @@
         <tab-content title="Plugins" class="mb-5" icon="feather icon-plus-square" :before-change="validateStep4">
           <form data-vv-scope="step-4">
 
-          <!-- Thank you redirect plugin -->
           <div class="vx-row">
+
+            <!-- Thank you redirect plugin -->
             <div class="vx-col w-full mt-5">
               <div class="mb-2">Thank You Page URL Redirect</div>
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
@@ -367,6 +368,79 @@
                 </template>
                 <vs-textarea v-model="plugins['custom'].afterSubmit"/>
               </vx-input-group>
+            </div>
+
+          </div>
+          </form>
+        </tab-content>
+
+        <!-- tab 5 content -->
+        <tab-content title="Landing" class="mb-5" icon="feather icon-layout" :before-change="validateStep5">
+          <form data-vv-scope="step-5">
+
+          <div class="vx-row">
+            <div class="vx-col w-full mt-5">
+              <vs-checkbox v-model="landing.useExistingOne">Use an already existing landing</vs-checkbox>
+            </div>
+          </div>
+
+          <div class="vx-row" v-if="!landing.useExistingOne">
+
+            <div class="vx-col md:w-1/2 w-full mt-5">
+              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Landing Name" v-model="landing.name" class="w-full" name="landing_name" v-validate="'required'" />
+              <span class="text-danger">{{ errors.first('step-5.landing_name') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full mt-5">
+              <vs-select autocomplete v-model="landing.product" class="w-full select-large" label="Product" v-validate="'required'" disabled="disabled">
+                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
+              </vs-select>
+              <span class="text-danger">{{ errors.first('step-5.landing_product') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full mt-5">
+              <vs-input icon-pack="feather" icon="icon-globe" icon-no-border label="Landing URL" v-model="landing.url" class="w-full" name="landing_url" v-validate="'required'" />
+              <span class="text-danger">{{ errors.first('step-5.landing_url') }}</span>
+            </div>
+
+            <div class="vx-col md:w-1/2 w-full mt-5">
+              <vs-select autocomplete v-model="landing.country" class="w-full select-large" label="Country" v-validate="'required'">
+                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in countryOptions" class="w-full" />
+              </vs-select>
+              <span class="text-danger">{{ errors.first('step-5.landing_country') }}</span>
+            </div>
+
+          </div>
+
+          <div class="vx-row" v-else>
+
+            <div class="vx-col w-full mt-5">
+              <vs-select autocomplete v-model="landing.landing" class="w-full select-large" label="Choose the existing landing to use" v-validate="'required'">
+                <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
+              </vs-select>
+            </div>
+
+          </div>
+
+          </form>
+        </tab-content>
+
+        <!-- tab 6 content -->
+        <tab-content title="Links" class="mb-5" icon="feather icon-layout" :before-change="validateStep6">
+          <form data-vv-scope="step-6">
+
+          <div class="vx-row">
+
+            <div class="vx-col w-full mt-5">
+              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Promotional URL" v-model="linkBuilder.promotional" class="w-full" disabled="disabled" />
+            </div>
+
+            <div class="vx-col w-full mt-5">
+              <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Promotional URL" v-model="linkBuilder.postback" class="w-full" disabled="disabled" />
+            </div>
+
+            <div class="vx-col w-full mt-5">
+              <vs-textarea v-model="linkBuilder.formCode" disabled height="10rem" />
             </div>
 
           </div>
@@ -678,6 +752,25 @@ export default {
 
       formsStylePreviewObject: { name: '' },
       selectedFormsStyle: null,
+
+      form: null,
+
+      landings: [],
+      landing: {
+        useExistingOne: false,
+        landing: '',
+        name: '',
+        product: '',
+        url: '',
+        country: '',
+      },
+      countryOptions: [ 'IT', 'FR', 'UK', 'US' ],
+
+      linkBuilder: {
+        promotional: '',
+        postback: '',
+        formCode: '',
+      },
     }
   },
   watch: {
@@ -799,7 +892,7 @@ export default {
         return false
       }
     },
-    validateStep1 () {
+    validateStep1() {
       return new Promise((resolve, reject) => {
         this.$validator.validateAll('step-1').then(result => {
           let selectionResult = true
@@ -845,7 +938,7 @@ export default {
         })
       })
     },
-    validateStep2 () {
+    validateStep2() {
       return new Promise((resolve, reject) => {
         this.$validator.validateAll('step-2').then(result => {
           if (result) {
@@ -856,7 +949,7 @@ export default {
         })
       })
     },
-    validateStep3 () {
+    validateStep3() {
       return new Promise((resolve, reject) => {
         this.$vs.loading()
 
@@ -905,7 +998,7 @@ export default {
         */
       })
     },
-    validateStep4 () {
+    validateStep4() {
       return new Promise((resolve, reject) => {
         this.$vs.loading()
         let headers = {
@@ -945,6 +1038,7 @@ export default {
         // Create form
         this.$http.post('/api/v1/forms', data, { headers: headers })
           .then((response) => {
+            this.form = response.data.data
             this.$vs.loading.close()
             this.$vs.notify({
               title: 'Success',
@@ -953,7 +1047,6 @@ export default {
               icon: 'icon-alert-circle',
               color: 'success'
             })
-            this.$router.push('/dashboard/forms')
             resolve(true)
           })
           .catch((error) => {
@@ -967,6 +1060,148 @@ export default {
             })
             reject('correct all values')
           })
+      })
+    },
+    validateStep5() {
+      return new Promise((resolve, reject) => {
+        this.$vs.loading()
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+
+        if (this.landing.useExistingOne) {
+          let landing = null
+          let landingIndex = this.getObjectIndexById(this.landing.landing, this.landings)
+          if (landingIndex >= 0) {
+            landing = this.landings[landingIndex]
+          }
+
+          if (landing === null) {
+            this.$vs.loading.close()
+            reject('correct all values')
+          }
+
+          let params = {
+            default_form: this.form.id,
+          }
+
+          this.$http.get('/api/v1/landings/' + landing.id + '/code', { params: params, headers: headers })
+            .then((formCodeResponse) => {
+              let promotionalUrl = ''
+              let formCode = ''
+
+              formCode = formCodeResponse.data.data
+
+              let origin = ''
+              let u = new URL(window.location.href)
+              origin = u.origin
+
+              u = landing.url
+              let separator = '?'
+              if (u.includes('?')) {
+                separator = '&'
+              }
+              promotionalUrl = u + separator + 'id=' + this.form.id
+
+              this.linkBuilder.promotional = promotionalUrl
+              this.linkBuilder.postback = origin + '/api/v1/postback'
+              this.linkBuilder.formCode = formCode
+
+              this.$vs.loading.close()
+              resolve(true)
+            })
+            .catch((error) => {
+              this.$vs.loading.close()
+              reject('correct all values')
+            })
+        } else {
+          // Create landing
+          let data = {
+            name: this.landing.name,
+            product_id: this.landing.product,
+            url: this.landing.url,
+            country: this.landing.country,
+          }
+          this.$http.post('/api/v1/landings', data, { headers: headers })
+            .then((response) => {
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Landing created',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+
+              let landing = response.data.data
+
+              let params = {
+                default_form: this.form.id,
+              }
+              this.$http.get('/api/v1/landings/' + landing.id + '/code', { params: params, headers: headers })
+                .then((formCodeResponse) => {
+                  let promotionalUrl = ''
+                  let formCode = ''
+
+                  formCode = formCodeResponse.data.data
+
+                  let origin = ''
+                  let u = new URL(window.location.href)
+                  origin = u.origin
+
+                  u = landing.url
+                  let separator = '?'
+                  if (u.includes('?')) {
+                    separator = '&'
+                  }
+                  promotionalUrl = u + separator + 'id=' + this.form.id
+
+                  this.linkBuilder.promotional = promotionalUrl
+                  this.linkBuilder.postback = origin + '/api/v1/postback'
+                  this.linkBuilder.formCode = formCode
+
+                  this.$vs.loading.close()
+                  resolve(true)
+                })
+                .catch((error) => {
+                  this.$vs.loading.close()
+                  reject('correct all values')
+                })
+            })
+            .catch((error) => {
+              let e = []
+              if (error !== null && error.hasOwnProperty('response') && error.response !== null &&
+                  error.response.hasOwnProperty('data') && error.response.data !== null &&
+                  error.response.data.hasOwnProperty('errors') && error.response.data.errors !== null) {
+                e = error.response.data.errors
+              }
+              for (const [key, value] of Object.entries(e)) {
+                for (let eIndex = 0; eIndex < value.length; eIndex++) {
+                  this.errors.add({
+                    scope: 'step-5',
+                    field: 'landing_' . key,
+                    msg: value[eIndex],
+                  })
+                }
+              }
+
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+
+              this.$vs.loading.close()
+              reject('correct all values')
+            })
+        }
+      })
+    },
+    validateStep6() {
+      return new Promise((resolve, reject) => {
+        this.$router.push('/dashboard/forms')
+        resolve(true)
       })
     },
     showCrossSellForm() {
@@ -1036,17 +1271,23 @@ export default {
 
       let eventValue = 0.0
       if (p.hasOwnProperty('quantity') && p.quantity !== null && p.quantity.hasOwnProperty('options') && p.quantity.options !== null) {
+        let o = null
         if (p.quantity.options.hasOwnProperty('1')) {
-          eventValue = parseFloat(p.quantity.options['1'].price)
+          o = p.quantity.options['1']
         } else {
           for (const [key, value] of Object.entries(p.quantity.options)) {
-            eventValue = parseFloat(value.price)
+            o = value
             break
           }
+        }
+        if (o !== null && o.hasOwnProperty('commission') && o.commission !== null) {
+          eventValue = parseFloat(o.commission)
         }
       }
       this.plugins['facebook'].eventValue = eventValue
       this.plugins['facebook_conversions_api'].eventValue = eventValue
+
+      this.landing.product = this.product
     },
     async fetchTrafficSourcesDefaultInfo() {
       let plugins = {
@@ -1194,6 +1435,14 @@ export default {
           this.plugins['tiktok'][key] = value
         }
       }
+    }
+
+    // Retrieve landings
+    try {
+      this.landings = []
+      const landingResponse = await this.$http.get('/api/v1/landings', { headers })
+      this.landings = landingResponse.data.data
+    } catch (error) {
     }
   },
 }

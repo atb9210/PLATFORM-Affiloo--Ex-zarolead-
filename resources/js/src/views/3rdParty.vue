@@ -176,6 +176,16 @@
 
     <!-- Facebook popup -->
     <vs-popup title="Facebook" :active.sync="showPopup['facebook']">
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Enabled by default</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-checkbox v-model="facebook.enabled">{{(facebook.enabled) ? 'Enabled' : 'Disabled'}}</vs-checkbox>
+        </div>
+      </div>
+
       <div class="vx-row mb-6">
         <div class="vx-col sm:w-1/3 w-full">
           <span>Access token</span>
@@ -232,6 +242,16 @@
 
     <!-- TikTok popup -->
     <vs-popup title="TikTok" :active.sync="showPopup['tiktok']">
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Enabled by default</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-checkbox v-model="tiktok.enabled">{{(tiktok.enabled) ? 'Enabled' : 'Disabled'}}</vs-checkbox>
+        </div>
+      </div>
+
       <div class="vx-row mb-6">
         <div class="vx-col sm:w-1/3 w-full">
           <span>Access token</span>
@@ -455,6 +475,7 @@ export default {
       },
 
       facebook: {
+        enabled: false,
         access_token: '',
         pixel: '',
         eventName: '',
@@ -462,6 +483,7 @@ export default {
         test_code: '',
       },
       tiktok: {
+        enabled: false,
         token: '',
         pixel: '',
         eventName: '',
@@ -677,6 +699,7 @@ export default {
     /* Facebook */
     async showFacebookSettings() {
       let facebookSettingsDefault = {
+        enabled: false,
         access_token: '',
         pixel: '',
         eventName: '',
@@ -701,6 +724,7 @@ export default {
     /* TikTok */
     async showTikTokSettings() {
       let tiktokSettingsDefault = {
+        enabled: false,
         access_token: '',
         pixel: '',
         eventName: '',
