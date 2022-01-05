@@ -426,7 +426,7 @@
         </tab-content>
 
         <!-- tab 6 content -->
-        <tab-content title="Links" class="mb-5" icon="feather icon-layout" :before-change="validateStep6">
+        <tab-content title="Links" class="mb-5" icon="feather icon-link" :before-change="validateStep6">
           <form data-vv-scope="step-6">
 
           <div class="vx-row">
@@ -436,7 +436,7 @@
             </div>
 
             <div class="vx-col w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Promotional URL" v-model="linkBuilder.postback" class="w-full" disabled="disabled" />
+              <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Postback URL" v-model="linkBuilder.postback" class="w-full" disabled="disabled" />
             </div>
 
             <div class="vx-col w-full mt-5">
