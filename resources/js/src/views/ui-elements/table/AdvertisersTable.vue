@@ -38,6 +38,7 @@
                 <vs-th sort-key="id">Id</vs-th>
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="email">Email</vs-th>
+                <vs-th>Network</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -53,6 +54,18 @@
 
                     <vs-td :data="data[indextr].email">
                         {{data[indextr].email}}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding">
+                        <fast-editable-value-select
+                            class="font-bold"
+                            :options="networks"
+                            v-model="newNetwork"
+                            @onEdit="if (data[indextr].network !== null) { newNetwork = data[indextr].network.id }"
+                            @onUpdate="updateNetwork(data[indextr], newNetwork)">
+                            <span v-if="data[indextr].network !== null">{{data[indextr].network.name}}</span>
+                            <span v-else>No network</span>
+                        </fast-editable-value-select>
                     </vs-td>
 
                 </vs-tr>
@@ -108,7 +121,8 @@ export default {
     return {
       objects: [],
       selected: [],
-      deleted: [],
+
+      networks: [],
 
       maxItems: 20,
 
@@ -126,6 +140,8 @@ export default {
           name: '',
         },
       },
+
+      newNetwork: '',
     }
   },
   computed: {
@@ -158,7 +174,7 @@ export default {
       })
       return index
     },
-    retrieveObjects() {
+    async retrieveObjects() {
       this.selected = []
       this.$vs.loading()
 
@@ -167,25 +183,31 @@ export default {
       }
 
       let data = {}
-      data['filter_roles'] = [5],
+      data['filter_roles'] = [5]
 
       // Retrieve advertisers
-      this.$http.get('/api/v1/users', { headers, params: data })
-        .then((response) => {
-          this.objects = response.data.data
-          this.$vs.loading.close()
-          console.log(this.objects)
-        })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        })
+      const response = await this.$http.get('/api/v1/users', { headers, params: data })
+      this.objects = response.data.data
+
+      for (let i = 0; i < this.objects.length; i++) {
+        let obj = this.objects[i]
+
+        let network = null
+        if (obj.hasOwnProperty('info') && obj.info !== null &&
+            obj.info.hasOwnProperty('network_id') && obj.info.network_id !== null) {
+          for (let j = 0; j < this.networks.length; j++) {
+            if (this.networks[j].id == obj.info.network_id) {
+              network = this.networks[j]
+              break
+            }
+          }
+        }
+        obj.network = network
+
+        this.objects[i] = obj
+      }
+
+      this.$vs.loading.close()
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -200,47 +222,34 @@ export default {
         accept: this.deleteSelected
       })
     },
-    deleteSelected() {
-      if (this.selected.length == 0) return
+    // TODO: Confirmation before deletion
+    async deleteSelected() {
+      let numSelected = this.selected.length
+
+      if (numSelected == 0) return
 
       this.$vs.loading()
-
-      this.deleted = []
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.selected.forEach((advertiser) => {
-        this.$http.delete('/api/v1/advertisers/' + advertiser.id, { headers })
-          .then((response) => {
-            this.deleted.push(advertiser.id)
-            if (this.deleted.length == this.selected.length) {
-              this.$vs.loading.close()
-              this.selected = []
-              this.$vs.notify({
-                title: 'Success',
-                text: this.deleted.length + ' Advertiser(s) deleted',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
-              })
-              this.selected = []
-              this.deleted = []
-              this.retrieveObjects()
-            }
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Error',
-              text: error.message,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'danger'
-            })
-          })
+      for (let i = 0; i < numSelected; i++) {
+        let advertiser = this.selected[i]
+        await this.$http.delete('/api/v1/users/' + advertiser.id, { headers })
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: numSelected + ' Advertiser(s) deleted',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
       })
+
+      this.selected = []
+
+      this.$vs.loading.close()
     },
     showForm(type) {
       this.showPopup[type] = true
@@ -255,7 +264,7 @@ export default {
     isValidForm(type) {
       return (this.newObject[type].name.length > 0)
     },
-    createObject() {
+    async createObject() {
       this.$vs.loading()
 
       let headers = {
@@ -268,31 +277,33 @@ export default {
         fg_color: this.newObject['create'].fg_color,
       }
 
-      // Retrieve advertisers
-      this.$http.post('/api/v1/advertisers', data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Advertiser created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.clearForm('create')
-          this.showPopup['create'] = false
-          this.retrieveObjects()
+      // Create advertiser
+      try {
+        const response = await this.$http.post('/api/v1/users', data, { headers: headers })
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Advertiser created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+
+        this.$vs.loading.close()
+
+        this.clearForm('create')
+        this.showPopup['create'] = false
+        this.retrieveObjects()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create the advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
         })
+        this.$vs.loading.close()
+      }
     },
     editForm(id) {
       let obj = this.objects[this.getObjectIndexById(id)]
@@ -304,7 +315,7 @@ export default {
       this.editingObject = obj.id
       this.showForm('edit')
     },
-    updateObject() {
+    async updateObject() {
       if (this.editingObject <= 0) return
 
       let id = this.editingObject
@@ -316,64 +327,127 @@ export default {
       }
       let data = this.newObject['edit']
 
-      this.$http.put('/api/v1/advertisers/' + id, data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Advertiser updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.retrieveObjects()
+      try {
+        const response = await this.$http.put('/api/v1/users/' + id, data, { headers })
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Advertiser updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+
+        this.showPopup['edit'] = false
+        this.editingObject = -1
+        this.$vs.loading.close()
+
+        this.retrieveObjects()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
         })
-      this.showPopup['edit'] = false
-      this.editingObject = -1
+        this.$vs.loading.close()
+      }
     },
-    deleteObject(id) {
+    // TODO: Confirmation before deletion
+    async deleteObject(id) {
       this.$vs.loading()
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.$http.delete('/api/v1/advertisers/' + id, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Advertiser deleted',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.retrieveObjects()
+      try {
+        const response = await this.$http.delete('/api/v1/users/' + id, { headers })
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Advertiser deleted',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+        this.$vs.loading.close()
+
+        this.retrieveObjects()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
         })
+        this.$vs.loading.close()
+      }
+    },
+    async updateNetwork(advertiser, newNetwork) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let info = {}
+      if (advertiser.info !== null) {
+        for (const [key, value] of Object.entries(advertiser.info)) {
+          info[key] = value
+        }
+      }
+      info['network_id'] = newNetwork
+
+      let data = {
+        info: JSON.stringify(info),
+      }
+      try {
+        const response = await this.$http.put('/api/v1/users/' + advertiser.id, data, { headers })
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Advertiser updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+
+        this.showPopup['edit'] = false
+        this.editingObject = -1
+        this.$vs.loading.close()
+
+        this.retrieveObjects()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+      }
     },
   },
-  created() {
-    this.retrieveObjects()
+  async created() {
+    let headers = {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+    }
+
+    try {
+      const networksResponse = await this.$http.get('/api/v1/networks', { headers })
+      this.networks = networksResponse.data.data
+      for (let i = 0; i < this.networks.length; i++) {
+        this.networks[i].label = this.networks[i].name
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    await this.retrieveObjects()
   },
   mounted () {
   }

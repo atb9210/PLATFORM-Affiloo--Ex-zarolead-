@@ -692,7 +692,7 @@ export default {
           form_id: 0,
         },
         'css_style': {
-          enabled: false,
+          enabled: true, // Enabled by default
           stylesheet_url: '',
           style_id: '',
           button_text: '',

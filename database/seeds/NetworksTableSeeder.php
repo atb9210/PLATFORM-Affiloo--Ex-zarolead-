@@ -152,6 +152,11 @@ class NetworksTableSeeder extends Seeder
                         ],
                     ],
                 ],
+                'product_params' => [
+                    'api_call_url' => [
+                        'type' => 'url',
+                    ],
+                ],
             ],
         ]);
 
@@ -275,6 +280,11 @@ class NetworksTableSeeder extends Seeder
                         'params' => [
                             'product_reference' => 'required|string|min:1',
                         ],
+                    ],
+                ],
+                'product_params' => [
+                    'product_reference' => [
+                        'type' => 'text',
                     ],
                 ],
             ],
@@ -799,6 +809,17 @@ class NetworksTableSeeder extends Seeder
                         ],
                     ],
                 ],
+                'product_params' => [
+                    'lid' => [
+                        'type' => 'text',
+                    ],
+                    'country' => [
+                        'type' => 'text',
+                    ],
+                    'offer_id' => [
+                        'type' => 'text',
+                    ],
+                ],
             ],
         ]);
 
@@ -901,6 +922,14 @@ class NetworksTableSeeder extends Seeder
                             'offer' => 'required|string|min:1',
                             'lp' => 'required|string|min:1',
                         ],
+                    ],
+                ],
+                'product_params' => [
+                    'lp' => [
+                        'type' => 'text',
+                    ],
+                    'offer' => [
+                        'type' => 'text',
                     ],
                 ],
             ],

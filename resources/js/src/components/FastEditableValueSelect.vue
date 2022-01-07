@@ -10,7 +10,8 @@
       v-focus=""
       autofocus
       >
-      <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in options" />
+      <vs-select-item v-if="typeof(item) === 'object'" :key="index" :value="item.id" :text="item.label" v-for="(item, index) in options" />
+      <vs-select-item v-else :key="index" :value="item" :text="item" v-for="(item, index) in options" />
     </vs-select>
 
     <span v-else>

@@ -17,7 +17,7 @@
                 @click="(mode == 'view') ? beginCreation() : (mode = 'view')"></vs-button>
             <vs-button v-if="canCreateAndEdit && mode == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-settings" @click="showSettings()"></vs-button>
             <vs-button v-if="canCreateAndEdit && mode == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="showConfirmationMessage()"></vs-button>
-            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+            <vs-button v-if="canCreateAndEdit" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeleteSelectedPopup"></vs-button>
         </p>
 
         <vs-dropdown vs-trigger-click class="cursor-pointer">
@@ -61,7 +61,7 @@
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.context_menu.close();deleteObject(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.context_menu.close();confirmDeletePopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
               </a>
@@ -155,7 +155,7 @@
             </div>
 
             <div class="vx-col md:w-1/2 w-full">
-                <vs-select v-model="newObject['create'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'">
+                <vs-select v-model="newObject['create'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'" @change="changeAdvertiser(newObject['create'].advertiser)">
                     <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in advertisers" class="w-full" />
                 </vs-select>
                 <span class="text-danger">{{ errors.first('create.advertiser_id') }}</span>
@@ -234,40 +234,48 @@
                 <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['url']" />
             </div>
 
-            <h2 class="vx-col w-full">Worldfilia</h2>
+            <div v-if="network !== null && network.slug === 'worldfilia'" class="w-full">
+                <h2 class="vx-col w-full">Worldfilia</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['worldfilia'].api_call_url" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['worldfilia'].api_call_url" />
+                </div>
             </div>
 
-            <h2 class="vx-col w-full">Profit Paradise</h2>
+            <div v-if="network !== null && network.slug === 'profit_paradise'" class="w-full">
+                <h2 class="vx-col w-full">Profit Paradise</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['profit_paradise'].lp" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['profit_paradise'].lp" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['profit_paradise'].offer" />
+                </div>
             </div>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['profit_paradise'].offer" />
+            <div v-if="network !== null && network.slug === 'limitless'" class="w-full">
+                <h2 class="vx-col w-full">Limitless</h2>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['limitless'].lid" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].country" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].offer_id" />
+                </div>
             </div>
 
-            <h2 class="vx-col w-full">Limitless</h2>
+            <div v-if="network !== null && network.slug === 'amsped'" class="w-full">
+                <h2 class="vx-col w-full">Amsped</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['limitless'].lid" />
-            </div>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].country" />
-            </div>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['create'].info['limitless'].offer_id" />
-            </div>
-
-            <h2 class="vx-col w-full">Amsped</h2>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['amsped'].product_reference" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['create'].info['amsped'].product_reference" />
+                </div>
             </div>
 
             <div class="vx-col w-full">
@@ -294,7 +302,7 @@
             </div>
 
             <div class="vx-col md:w-1/2 w-full">
-                <vs-select v-model="newObject['edit'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'">
+                <vs-select v-model="newObject['edit'].advertiser" class="w-full select-large" label="Advertiser" v-validate="'required'" @change="changeAdvertiser(newObject['edit'].advertiser)">
                     <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in advertisers" class="w-full" />
                 </vs-select>
                 <span class="text-danger">{{ errors.first('edit.advertiser_id') }}</span>
@@ -373,40 +381,48 @@
                 <vs-input class="w-full" label="URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['url']" />
             </div>
 
-            <h2 class="vx-col w-full">Worldfilia</h2>
+            <div v-if="network !== null && network.slug === 'worldfilia'" class="w-full">
+                <h2 class="vx-col w-full">Worldfilia</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['worldfilia'].api_call_url" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Api call URL" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['worldfilia'].api_call_url" />
+                </div>
             </div>
 
-            <h2 class="vx-col w-full">Profit Paradise</h2>
+            <div v-if="network !== null && network.slug === 'profit_paradise'" class="w-full">
+                <h2 class="vx-col w-full">Profit Paradise</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['profit_paradise'].lp" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="LP" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['profit_paradise'].lp" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['profit_paradise'].offer" />
+                </div>
             </div>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Offer" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['profit_paradise'].offer" />
+            <div v-if="network !== null && network.slug === 'limitless'" class="w-full">
+                <h2 class="vx-col w-full">Limitless</h2>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['limitless'].lid" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].country" />
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].offer_id" />
+                </div>
             </div>
 
-            <h2 class="vx-col w-full">Limitless</h2>
+            <div v-if="network !== null && network.slug === 'amsped'" class="w-full">
+                <h2 class="vx-col w-full">Amsped</h2>
 
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="LID" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['limitless'].lid" />
-            </div>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Country" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].country" />
-            </div>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Offer ID" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['edit'].info['limitless'].offer_id" />
-            </div>
-
-            <h2 class="vx-col w-full">Amsped</h2>
-
-            <div class="vx-col md:w-1/2 w-full">
-                <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['amsped'].product_reference" />
+                <div class="vx-col md:w-1/2 w-full">
+                    <vs-input class="w-full" label="Product reference" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['edit'].info['amsped'].product_reference" />
+                </div>
             </div>
 
             <div class="vx-col w-full">
@@ -766,7 +782,6 @@ export default {
 
       objects: [],
       selected: [],
-      deleted: [],
 
       maxItems: 20,
 
@@ -879,6 +894,7 @@ export default {
       quantityDefaultIndex: 0,
 
       tags: [],
+      networks: [],
       advertisers: [],
 
       fileToUpload: null,
@@ -947,6 +963,8 @@ export default {
         { value: 'auto', label: 'Automatic push' },
         { value: 'no',   label: 'No push' },
       ],
+
+      network: null,
     }
   },
   computed: {
@@ -1039,7 +1057,7 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
-    confirmDeletePopup() {
+    confirmDeleteSelectedPopup() {
       if (this.selected.length == 0) return
       this.$vs.dialog({
         type: 'confirm',
@@ -1049,47 +1067,40 @@ export default {
         accept: this.deleteSelected
       })
     },
-    deleteSelected() {
-      if (this.selected.length == 0) return
+    confirmDeletePopup(id) {
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Delete confirmation',
+        text: 'Are you sure you want to delete this object?',
+        accept: this.deleteObject(id)
+      })
+    },
+    async deleteSelected() {
+      let numSelected = this.selected.length
+      if (numSelected == 0) return
 
       this.$vs.loading()
-
-      this.deleted = []
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.selected.forEach((product) => {
-        this.$http.delete('/api/v1/products/' + product.id, { headers })
-          .then((response) => {
-            this.deleted.push(product.id)
-            if (this.deleted.length == this.selected.length) {
-              this.$vs.loading.close()
-              this.selected = []
-              this.$vs.notify({
-                title: 'Success',
-                text: this.deleted.length + ' Product(s) deleted',
-                iconPack: 'feather',
-                icon: 'icon-alert-circle',
-                color: 'success'
-              })
-              this.selected = []
-              this.deleted = []
-              this.retrieveObjects()
-            }
-          })
-          .catch((error) => {
-            this.$vs.loading.close()
-            this.$vs.notify({
-              title: 'Error',
-              text: error.message,
-              iconPack: 'feather',
-              icon: 'icon-alert-circle',
-              color: 'danger'
-            })
-          })
+      for (let i = 0; i < numSelected; i++) {
+        await this.$http.delete('/api/v1/products/' + this.selected[i].id, { headers })
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: numSelected + ' Product(s) deleted',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
       })
+      this.selected = []
+      this.$vs.loading.close()
+
+      await this.retrieveObjects()
     },
     showForm(type) {
       this.showPopup[type] = true
@@ -1156,7 +1167,7 @@ export default {
           && obj.advertiser != '' && obj.advertiser >= 1)
       }
     },
-    createObject() {
+    async createObject() {
       this.$vs.loading()
 
       let headers = {
@@ -1193,33 +1204,32 @@ export default {
       }
 
       // Create product
-      this.$http.post('/api/v1/products', data, { headers: headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Product created',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.clearForm('create')
-          this.clearForm('create_qty')
-          this.mode = 'view'
-          this.retrieveObjects()
+      try {
+        const response = await this.$http.post('/api/v1/products', data, { headers: headers })
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          for (const [key, value] of Object.entries(error.response.data.errors)) {
-            for (let i = 0; i < value.length; i++) {
-              this.errors.add({
-                scope: 'create',
-                field: key,
-                msg: value[i]
-              })
-            }
+        this.clearForm('create')
+        this.clearForm('create_qty')
+        this.mode = 'view'
+        await this.retrieveObjects()
+      } catch (error) {
+        this.$vs.loading.close()
+        for (const [key, value] of Object.entries(error.response.data.errors)) {
+          for (let i = 0; i < value.length; i++) {
+            this.errors.add({
+              scope: 'create',
+              field: key,
+              msg: value[i]
+            })
           }
-        })
+        }
+      }
     },
     editForm(id) {
       let objIndex = this.getObjectIndexById(id)
@@ -1299,7 +1309,7 @@ export default {
       this.editingObject = obj.id
       this.mode = 'edit'
     },
-    updateObject() {
+    async updateObject() {
       if (this.editingObject <= 0) return
 
       let id = this.editingObject
@@ -1361,64 +1371,62 @@ export default {
       }
 
       // Update product
-      this.$http.post('/api/v1/products/' + id, data, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Product updated',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.clearForm('edit')
-          this.clearForm('edit_qty')
-          this.mode = 'view'
-          this.retrieveObjects()
+      try {
+        const response = await this.$http.post('/api/v1/products/' + id, data, { headers })
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          for (const [key, value] of Object.entries(error.response.data.errors)) {
-            for (let i = 0; i < value.length; i++) {
-              this.errors.add({
-                scope: 'edit',
-                field: key,
-                msg: value[i]
-              })
-            }
+        this.clearForm('edit')
+        this.clearForm('edit_qty')
+        this.mode = 'view'
+        await this.retrieveObjects()
+      } catch (error) {
+        this.$vs.loading.close()
+        for (const [key, value] of Object.entries(error.response.data.errors)) {
+          for (let i = 0; i < value.length; i++) {
+            this.errors.add({
+              scope: 'edit',
+              field: key,
+              msg: value[i]
+            })
           }
-        })
+        }
+      }
       this.editingObject = -1
     },
-    deleteObject(id) {
+    async deleteObject(id) {
       this.$vs.loading()
 
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.$http.delete('/api/v1/products/' + id, { headers })
-        .then((response) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Product deleted',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-          this.retrieveObjects()
+      try {
+        const response = await this.$http.delete('/api/v1/products/' + id, { headers })
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product deleted',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
         })
-        .catch((error) => {
-          this.$vs.loading.close()
-          this.$vs.notify({
-            title: 'Error',
-            text: error.message,
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
+        await this.retrieveObjects()
+      } catch (error) {
+        this.$vs.loading.close()
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the product',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
         })
+      }
     },
     beginCreation() {
       this.quantityOptions = [
@@ -1443,6 +1451,21 @@ export default {
         } else {
           this.quantityOptions[i].default = false
         }
+      }
+    },
+    changeAdvertiser(advertiserId) {
+      let advertiser = null
+      for (let i = 0; i < this.advertisers.length; i++) {
+        let adv = this.advertisers[i]
+        if (adv.id == advertiserId) {
+          advertiser = adv
+          break
+        }
+      }
+
+      this.network = null
+      if (advertiser !== null) {
+        this.network = advertiser.network
       }
     },
     showEditQuantityOptionForm(index) {
@@ -1673,7 +1696,6 @@ export default {
       this.showPopup['checkout_settings'] = false
       this.$vs.loading.close()
     },
-
     showConfirmationMessage() {
       let product = null
       let pIndex = this.getObjectIndexById(this.editingObject)
@@ -1765,48 +1787,78 @@ export default {
       this.showPopup['include_checkout'] = true
     },
   },
-  created() {
-    this.retrieveObjects()
+  async created() {
+    await this.retrieveObjects()
+
+    this.$vs.loading()
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
 
     // Retrieve tags
-    this.$vs.loading()
-    this.$http.get('/api/v1/tags/', { headers })
-      .then((response) => {
-        this.tags = []
-        response.data.data.forEach((tag) => {
-          this.tags.push({
-            id: tag.id,
-            label: tag.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+    try {
+      const tagsResponse = await this.$http.get('/api/v1/tags', { headers })
+      this.tags = tagsResponse.data.data
+
+      for (let i = 0; i < this.tags.length; i++) {
+        let obj = this.tags[i]
+
+        obj.label = obj.name
+
+        this.tags[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    // Retrieve networks
+    try {
+      const netResponse = await this.$http.get('/api/v1/networks', { headers })
+      this.networks = netResponse.data.data
+
+      for (let i = 0; i < this.networks.length; i++) {
+        let obj = this.networks[i]
+
+        obj.label = obj.name
+
+        this.networks[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
 
     // Retrieve advertisers
     let data = {}
-    data['filter_roles'] = [5],
-    this.$vs.loading()
-    this.$http.get('/api/v1/users/', { headers, params: data })
-      .then((response) => {
-        this.advertisers = []
-        response.data.data.forEach((advertiser) => {
-          this.advertisers.push({
-            id: advertiser.id,
-            label: advertiser.name,
-          })
-        })
-        this.$vs.loading.close()
-      })
-      .catch((error) => {
-        this.$vs.loading.close()
-      })
+    data['filter_roles'] = [5]
+    try {
+      const advResponse = await this.$http.get('/api/v1/users', { headers, params: data })
+      this.advertisers = advResponse.data.data
+
+      for (let i = 0; i < this.advertisers.length; i++) {
+        let obj = this.advertisers[i]
+
+        obj.label = obj.name
+
+        let network = null
+        if (obj.hasOwnProperty('info') && obj.info !== null &&
+            obj.info.hasOwnProperty('network_id') && obj.info.network_id !== null) {
+          for (let j = 0; j < this.networks.length; j++) {
+            if (this.networks[j].id == obj.info.network_id) {
+              network = this.networks[j]
+              break
+            }
+          }
+        }
+        obj.network = network
+
+        this.advertisers[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    this.$vs.loading.close()
   },
 }
 
