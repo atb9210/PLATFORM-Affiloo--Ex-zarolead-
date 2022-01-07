@@ -33,7 +33,7 @@
               <span class="text-danger">{{ errors.first('step-1.network') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="traffic_source" class="w-full select-large" label="Traffic Source" v-validate="'required'">
+              <vs-select autocomplete v-model="traffic_source" class="w-full select-large" label="Traffic Source" v-validate="'required'" @change="changeTrafficSource">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
@@ -375,6 +375,8 @@
         </tab-content>
 
         <!-- tab 5 content -->
+        <!-- DEBUG TODO: Old step 5 -->
+        <!--
         <tab-content title="Landing" class="mb-5" icon="feather icon-layout" :before-change="validateStep5">
           <form data-vv-scope="step-5">
 
@@ -417,6 +419,133 @@
             <div class="vx-col w-full mt-5">
               <vs-select autocomplete v-model="landing.landing" class="w-full select-large" label="Choose the existing landing to use" v-validate="'required'">
                 <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
+              </vs-select>
+            </div>
+
+          </div>
+
+          </form>
+        </tab-content>
+        -->
+        <tab-content title="Flow" class="mb-5" icon="feather icon-git-branch" :before-change="validateStep5">
+          <form data-vv-scope="step-5">
+
+          <div class="vx-row">
+            <div class="vx-col w-full mt-5">
+              <vs-checkbox v-model="flow.useExistingOne">Use an already existing flow</vs-checkbox>
+            </div>
+          </div>
+
+          <div v-if="!flow.useExistingOne" class="w-full">
+
+            <div class="vx-row mb-10">
+                <div class="vx-col md:w-1/2 w-full mt-5">
+                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" v-model="flow.name" class="w-full" name="flow_name" v-validate="'required'" />
+                  <span class="text-danger">{{ errors.first('step-5.flow_name') }}</span>
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full mt-5">
+                  <vs-select autocomplete v-model="flow.domain_id" class="w-full select-large" label="Domain" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
+                  </vs-select>
+                  <span class="text-danger">{{ errors.first('step-5.flow_domain_id') }}</span>
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full mt-5">
+                  <vs-select autocomplete v-model="flow.type" class="w-full select-large" label="Type" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in flowTypes" class="w-full" />
+                  </vs-select>
+                  <span class="text-danger">{{ errors.first('step-5.flow_type') }}</span>
+                </div>
+
+                <div class="vx-col md:w-1/2 w-full mt-5">
+                  <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Path name" v-model="flow.path_name" class="w-full" name="flow_path_name" v-validate="'required'" />
+                  <span>{{flowPathname}}</span>
+                  <span class="text-danger">{{ errors.first('step-5.flow_path_name') }}</span>
+                </div>
+
+                <div class="vx-col w-full mt-5">
+                  <vs-select autocomplete v-model="flow.traffic_source_id" class="w-full select-large" label="Traffic source" v-validate="'required'">
+                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
+                  </vs-select>
+                  <span class="text-danger">{{ errors.first('step-5.flow_traffic_source_id') }}</span>
+                </div>
+            </div>
+
+            <div class="vx-row mb-2" v-for="(lan, lanIndex) in flow.landings">
+                <div class="vx-col w-1/2 mb-2 text-center" v-if="lanIndex == 0">
+                    <span>Landings</span>
+                </div>
+                <div class="vx-col w-1/6 mb-2 text-center" v-if="lanIndex == 0">
+                    <span>Weight</span>
+                </div>
+                <div class="vx-col w-1/6 mb-2 text-center" v-if="lanIndex == 0">
+                    <span>%</span>
+                </div>
+                <div class="vx-col w-1/6 mb-2 text-center" v-if="lanIndex == 0">
+                </div>
+                <div class="vx-col w-full flex items-center">
+                    <vs-select autocomplete class="w-1/2 select-large" v-model="flow.landings[lanIndex]" v-validate="'required'">
+                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
+                    </vs-select>
+                    <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model="flow.weights[lanIndex]" />
+                    <div class="w-1/6 text-center">{{ weightPercentage(lanIndex) }} %</div>
+                    <div class="w-1/6 text-right">
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeLanding('create', lanIndex)"></vs-button>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full text-danger">{{ errors.first('step-5.flow_rules') }}</div>
+            <div class="w-full text-danger">{{ errors.first('step-5.flow_landings') }}</div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                </div>
+                <div class="vx-col sm:w-2/3 w-full flex items-center">
+                    <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewLanding()">Add</vs-button>
+                    <div class="w-1/3"></div>
+                    <div class="w-1/3"></div>
+                </div>
+            </div>
+
+            <h2>Protection</h2>
+
+            <div class="vx-col w-full mt-5">
+              <div class="mb-2">Protection (Fraud Filter)</div>
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0">
+                <template slot="prepend">
+                  <div class="prepend-text">
+                    <vs-checkbox v-model="flow.fraud_filter_protection"></vs-checkbox>
+                  </div>
+                </template>
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-lock" icon-no-border
+                  v-model="flow.safe_page_url"
+                  placeholder="Safe page URL (https://...)"
+                />
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-tag" icon-no-border
+                  v-model="flow.fraud_filter_campaign_id"
+                  placeholder="Campaign ID"
+                />
+                <vs-input
+                  class="w-full"
+                  icon-pack="feather" icon="icon-hash" icon-no-border
+                  v-model="flow.fraud_filter_campaign_key"
+                  placeholder="Campaign Key (1e6b4d4d-cfa8-...)"
+                />
+              </vx-input-group>
+            </div>
+
+          </div>
+
+          <div class="vx-row" v-else>
+
+            <div class="vx-col w-full mt-5">
+              <vs-select autocomplete v-model="flow.flow" class="w-full select-large" label="Choose the existing flow to use" v-validate="'required'">
+                <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in flows" class="w-full" />
               </vs-select>
             </div>
 
@@ -766,6 +895,30 @@ export default {
       },
       countryOptions: [ 'IT', 'FR', 'UK', 'US' ],
 
+      domains: [],
+
+      flows: [],
+      flow: {
+        flow: '',
+        useExistingOne: false,
+        name: '',
+        domain_id: '',
+        type: 'hotload',
+        path_name: '',
+        traffic_source_id: '',
+        landings: [''],
+        weights: [1],
+        safe_page_url: '',
+        fraud_filter_campaign_id: '',
+        fraud_filter_protection: '',
+        fraud_filter_campaign_key: '',
+      },
+
+      flowTypes: [
+        'hotload',
+        'redirect',
+      ],
+
       linkBuilder: {
         promotional: '',
         postback: '',
@@ -784,6 +937,26 @@ export default {
   computed: {
     canChangeUser() {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
+    },
+    flowPathname() {
+      let obj = this.flow
+      let flowType = obj.type
+      if (flowType == 'redirect') {
+        return 'https://zarolead.com/flo/' + obj.path_name
+      } else if (flowType == 'hotload') {
+        let domain = null
+        for (let i = 0; i < this.domains.length; i++) {
+          let d = this.domains[i]
+          if (d.id == obj.domain_id) {
+            domain = d
+            break
+          }
+        }
+        if (domain !== null) {
+          return 'http://' + domain.domain + '/' + obj.path_name
+        }
+      }
+      return ''
     },
   },
   methods: {
@@ -834,6 +1007,9 @@ export default {
           }
         }
       }
+    },
+    changeTrafficSource() {
+      this.flow.traffic_source_id = this.traffic_source
     },
     async getFormsStyles() {
       let headers = {
@@ -1062,6 +1238,8 @@ export default {
           })
       })
     },
+    // DEBUG TODO: Old step 5
+    /*
     validateStep5() {
       return new Promise((resolve, reject) => {
         this.$vs.loading()
@@ -1198,6 +1376,141 @@ export default {
         }
       })
     },
+    */
+    validateStep5() {
+      return new Promise((resolve, reject) => {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+
+        if (this.flow.useExistingOne) {
+          let promotionalUrl = ''
+
+          let origin = ''
+          let u = new URL(window.location.href)
+          origin = u.origin
+
+          promotionalUrl = this.flow.flow.url_domain
+          promotionalUrl = promotionalUrl.replace('index.html', '')
+          promotionalUrl = promotionalUrl.replace('index.php', '')
+
+          this.linkBuilder.promotional = promotionalUrl
+          this.linkBuilder.postback = origin + '/api/v1/postback'
+          this.linkBuilder.formCode = ''
+
+          resolve(true)
+        } else {
+          this.$vs.loading()
+          let pathName = this.flow.path_name
+          if (pathName.length > 0) {
+            if (!pathName.includes(".")) {
+              if (this.flow.path_name.slice(-1) != "/") {
+                pathName += "/"
+              }
+              pathName += 'index.php'
+            }
+          }
+          this.flow.path_name = pathName
+
+          let landings = []
+          for (let i = 0; i < this.flow.landings.length; i++) {
+            let landing = this.flow.landings[i]
+            let weight = this.flow.weights[i]
+            if (landing == '') {
+              continue
+            }
+            landings.push({
+              id: landing,
+              weight: parseInt(weight)
+            })
+          }
+          let rules = {
+            landings: landings,
+            safe_page_url: this.flow.safe_page_url,
+            fraud_filter_protection: this.flow.fraud_filter_protection,
+            fraud_filter_campaign_id: this.flow.fraud_filter_campaign_id,
+            fraud_filter_campaign_key: this.flow.fraud_filter_campaign_key,
+          }
+
+          let data = {
+            name: this.flow.name,
+            type: this.flow.type,
+            path_name: this.flow.path_name,
+            rules: JSON.stringify(rules),
+            traffic_source_id: this.flow.traffic_source_id,
+            domain_id: this.flow.domain_id,
+          }
+
+          // TODO: to delete
+          console.log('rules', rules)
+          console.log('data', data)
+
+          // Create flow
+          this.$http.post('/api/v1/flows', data, { headers: headers })
+            .then((response) => {
+              if (response.data.hasOwnProperty('jobs')) {
+                for (let i = 0; i < response.data.jobs.length; i++) {
+                  let job = response.data.jobs[i]
+                  this.$store.commit('addJob', job)
+                }
+              }
+
+              this.$vs.notify({
+                title: 'Success',
+                text: 'Flow created (in process)',
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'success'
+              })
+
+              let promotionalUrl = ''
+
+              let origin = ''
+              let u = new URL(window.location.href)
+              origin = u.origin
+
+              promotionalUrl = response.data.data.url_domain
+              promotionalUrl = promotionalUrl.replace('index.html', '')
+              promotionalUrl = promotionalUrl.replace('index.php', '')
+
+              this.linkBuilder.promotional = promotionalUrl
+              this.linkBuilder.postback = origin + '/api/v1/postback'
+              this.linkBuilder.formCode = ''
+
+              this.$vs.loading.close()
+              resolve(true)
+            })
+            .catch((error) => {
+              let e = []
+              if (error !== null && error.hasOwnProperty('response') && error.response !== null &&
+                  error.response.hasOwnProperty('data') && error.response.data !== null &&
+                  error.response.data.hasOwnProperty('errors') && error.response.data.errors !== null) {
+                e = error.response.data.errors
+              }
+              for (const [key, value] of Object.entries(e)) {
+                for (let eIndex = 0; eIndex < value.length; eIndex++) {
+                  this.errors.add({
+                    scope: 'step-5',
+                    field: 'flow_' . key,
+                    msg: value[eIndex],
+                  })
+                }
+              }
+
+              this.$vs.notify({
+                title: 'Error',
+                text: error.message,
+                iconPack: 'feather',
+                icon: 'icon-alert-circle',
+                color: 'danger'
+              })
+
+              this.$vs.loading.close()
+              reject('correct all value')
+            })
+        }
+      })
+    },
     validateStep6() {
       return new Promise((resolve, reject) => {
         this.$router.push('/dashboard/forms')
@@ -1329,6 +1642,30 @@ export default {
       }
       return settings
     },
+    addNewLanding() {
+      this.flow.landings.push('')
+      this.flow.weights.push(1)
+    },
+    removeLanding(type, index) {
+      this.flow.landings.splice(index, 1)
+      this.flow.weights.splice(index, 1)
+    },
+    weightPercentage(index) {
+      let totalWeight = 0
+      let percentage = 0
+
+      let weights = this.flow.weights
+      for (let i = 0; i < weights.length; i++) {
+        totalWeight += parseInt(weights[i])
+      }
+
+      if (totalWeight > 0 && index >= 0 && index < weights.length) {
+        percentage = parseInt(weights[index]) / totalWeight
+      }
+
+      percentage *= 100
+      return percentage.toFixed(2)
+    },
   },
   async created() {
     this.$vs.loading()
@@ -1440,9 +1777,32 @@ export default {
     // Retrieve landings
     try {
       this.landings = []
-      const landingResponse = await this.$http.get('/api/v1/landings', { headers })
-      this.landings = landingResponse.data.data
+      const response = await this.$http.get('/api/v1/landings', { headers })
+      this.landings = response.data.data
     } catch (error) {
+      // Nothing
+    }
+
+    // Retrieve domains
+    try {
+      this.domains = []
+      const response = await this.$http.get('/api/v1/domains', { headers })
+      this.domains = response.data.data
+
+      if (this.domains.length > 0) {
+        this.flow.domain_id = this.domains[0].id
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    // Retrieve flows
+    try {
+      this.flows = []
+      const response = await this.$http.get('/api/v1/flows', { headers })
+      this.flows = response.data.data
+    } catch (error) {
+      // Nothing
     }
   },
 }
