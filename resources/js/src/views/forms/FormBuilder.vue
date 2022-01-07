@@ -1690,7 +1690,10 @@ export default {
     // Retrieve users
     try {
       this.users = []
-      const userResponse = await this.$http.get('/api/v1/users', { headers })
+      let params = {
+        filter_roles: [3]
+      }
+      const userResponse = await this.$http.get('/api/v1/users', { headers, params })
       for (let i = 0; i < userResponse.data.data.length; i++) {
         let user = userResponse.data.data[i]
         this.users.push({
