@@ -300,6 +300,15 @@
 
       <div class="vx-row mb-6">
         <div class="vx-col sm:w-1/3 w-full">
+          <span>Safe page URL (https://...)</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="fraudfilter.safe_page_url" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
           <span>Campaign ID</span>
         </div>
         <div class="vx-col sm:w-2/3 w-full">
@@ -491,6 +500,7 @@ export default {
 
       fraudfilter: {
         enabled: false,
+        safe_page_url: '',
         campaign_id: '',
         campaign_key: '',
       },
@@ -750,6 +760,7 @@ export default {
     async showFraudFilterSettings() {
       let fraudFilterSettingsDefault = {
         enabled: false,
+        safe_page_url: '',
         campaign_id: '',
         campaign_key: '',
       }

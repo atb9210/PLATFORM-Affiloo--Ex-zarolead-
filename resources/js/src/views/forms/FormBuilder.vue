@@ -501,10 +501,11 @@
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex items-center">
-                    <vs-button class="w-1/3" icon-pack="feather" icon="icon-plus" @click="addNewLanding()">Add</vs-button>
-                    <div class="w-1/3"></div>
-                    <div class="w-1/3"></div>
+                <div class="vx-col sm:w-1/3 w-full flex items-center">
+                    <vs-button icon-pack="feather" icon="icon-plus" @click="addNewLanding()">Add</vs-button>
+                </div>
+                <div class="vx-col sm:w-1/3 w-full">
+                    <vs-button icon-pack="feather" icon="icon-layout" @click="showCreateLandingPopup()">Create new landing</vs-button>
                 </div>
             </div>
 
@@ -569,6 +570,9 @@
             </div>
 
             <div class="vx-col w-full mt-5">
+              <vs-select autocomplete v-model="chosenLanding" class="w-full select-large" label="Form code" @change="changeChosenLanding">
+                <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in chosenLandings" class="w-full" />
+              </vs-select>
               <vs-textarea v-model="linkBuilder.formCode" disabled height="10rem" />
             </div>
 
@@ -690,6 +694,57 @@
 
         <div class="vx-row mb-6">
             <vs-button class="mt-12 mr-auto ml-auto" @click="setDelivery" color="primary" type="filled" :disabled="!isValidForm('delivery')">Update</vs-button>
+        </div>
+    </vs-popup>
+
+    <!-- Create landing popup -->
+    <vs-popup title="Create Landing" :active.sync="showPopup['create_landing']">
+        <div class="vx-row mb-6 flex items-center">
+            <vs-button class="mr-auto ml-auto" color="primary">{{landing.name}}</vs-button>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Name</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="landing.name" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Product</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-select autocomplete v-model="landing.product" class="w-full select-large" label="Product" v-validate="'required'" disabled="disabled">
+                  <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
+                </vs-select>
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>URL</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="landing.url" />
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <div class="vx-col sm:w-1/3 w-full">
+                <span>Country</span>
+            </div>
+            <div class="vx-col sm:w-2/3 w-full">
+                <vs-select autocomplete v-model="landing.country" class="w-full select-large" label="Country" v-validate="'required'">
+                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in countryOptions" class="w-full" />
+                </vs-select>
+            </div>
+        </div>
+
+        <div class="vx-row mb-6">
+            <vs-button class="mt-12 mr-auto ml-auto" @click="createLanding" color="primary" type="filled" :disabled="!isValidForm('create_landing')">Create</vs-button>
         </div>
     </vs-popup>
 
@@ -843,6 +898,7 @@ export default {
         'forms_style_preview': false,
         'cross_sell': false,
         'delivery': false,
+        'create_landing': false,
       },
       newObject: {
         'create': {
@@ -919,6 +975,9 @@ export default {
         'redirect',
       ],
 
+      chosenLandings: [],
+      chosenLanding: null,
+
       linkBuilder: {
         promotional: '',
         postback: '',
@@ -962,12 +1021,12 @@ export default {
   methods: {
     getObjectIndexById(id, arr) {
       let index = -1;
-      arr.forEach((obj, i) => {
-        if (obj.id == id) {
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].id == id) {
           index = i
-          return
+          break
         }
-      })
+      }
       return index
     },
     changeNetwork() {
@@ -1064,6 +1123,9 @@ export default {
           obj.commission != '' && obj.sub_commission)
       } else if (type == 'delivery') {
         return true
+      } else if (type == 'create_landing') {
+        return (this.landing.name.length > 0 && this.landing.product != '' &&
+                this.landing.url.length > 0)
       } else {
         return false
       }
@@ -1398,6 +1460,8 @@ export default {
           this.linkBuilder.postback = origin + '/api/v1/postback'
           this.linkBuilder.formCode = ''
 
+          this.setChosenLandings(this.flow.flow.rules.landings)
+
           resolve(true)
         } else {
           this.$vs.loading()
@@ -1441,10 +1505,6 @@ export default {
             domain_id: this.flow.domain_id,
           }
 
-          // TODO: to delete
-          console.log('rules', rules)
-          console.log('data', data)
-
           // Create flow
           this.$http.post('/api/v1/flows', data, { headers: headers })
             .then((response) => {
@@ -1476,6 +1536,8 @@ export default {
               this.linkBuilder.promotional = promotionalUrl
               this.linkBuilder.postback = origin + '/api/v1/postback'
               this.linkBuilder.formCode = ''
+
+              this.setChosenLandings(landings)
 
               this.$vs.loading.close()
               resolve(true)
@@ -1666,6 +1728,100 @@ export default {
       percentage *= 100
       return percentage.toFixed(2)
     },
+    async fetchLandings() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      try {
+        const response = await this.$http.get('/api/v1/landings', { headers })
+        return response.data.data
+      } catch (error) {
+        return []
+      }
+      return []
+    },
+    showCreateLandingPopup() {
+      this.landing.name = ''
+      this.landing.url = ''
+      this.landing.country = ''
+      this.showPopup['create_landing'] = true
+    },
+    async createLanding() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let data = {
+        name: this.landing.name,
+        product_id: this.landing.product,
+        url: this.landing.url,
+        country: this.landing.country,
+      }
+
+      // Create landing
+      try {
+        const response = await this.$http.post('/api/v1/landings', data, { headers: headers })
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Landing created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        this.showPopup['create_landing'] = false
+        this.landings = await this.fetchLandings()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create landing',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    setChosenLandings(landings) {
+      this.chosenLandings = []
+      for (let i = 0; i < landings.length; i++) {
+        let landingIndex = this.getObjectIndexById(landings[i].id, this.landings)
+        if (landingIndex >= 0) {
+          this.chosenLandings.push(this.landings[landingIndex])
+        }
+      }
+    },
+    async changeChosenLanding() {
+      if (this.chosenLanding === null) return
+
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let landing = this.chosenLanding
+      let params = {
+        default_form: this.form.id,
+      }
+
+      try {
+        const response = await this.$http.get('/api/v1/landings/' + landing.id + '/code', { params: params, headers: headers })
+        this.linkBuilder.formCode = response.data.data
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot get form code',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
   },
   async created() {
     this.$vs.loading()
@@ -1676,6 +1832,22 @@ export default {
 
     // Retrieve settings
     this.settings = await this.fetchSettings()
+
+    // FraudFilter default settings
+    if (this.settings !== null && this.settings.hasOwnProperty('fraudfilter') && this.settings.fraudfilter !== null) {
+      if (this.settings.fraudfilter.hasOwnProperty('enabled') && this.settings.fraudfilter.enabled !== null) {
+        this.flow.fraud_filter_protection = this.settings.fraudfilter.enabled
+      }
+      if (this.settings.fraudfilter.hasOwnProperty('safe_page_url') && this.settings.fraudfilter.safe_page_url !== null) {
+        this.flow.safe_page_url = this.settings.fraudfilter.safe_page_url
+      }
+      if (this.settings.fraudfilter.hasOwnProperty('campaign_id') && this.settings.fraudfilter.campaign_id !== null) {
+        this.flow.fraud_filter_campaign_id = this.settings.fraudfilter.campaign_id
+      }
+      if (this.settings.fraudfilter.hasOwnProperty('campaign_key') && this.settings.fraudfilter.campaign_key !== null) {
+        this.flow.fraud_filter_campaign_key = this.settings.fraudfilter.campaign_key
+      }
+    }
 
     // Retrieve forms styles
     await this.getFormsStyles()
@@ -1778,13 +1950,7 @@ export default {
     }
 
     // Retrieve landings
-    try {
-      this.landings = []
-      const response = await this.$http.get('/api/v1/landings', { headers })
-      this.landings = response.data.data
-    } catch (error) {
-      // Nothing
-    }
+    this.landings = await this.fetchLandings()
 
     // Retrieve domains
     try {
