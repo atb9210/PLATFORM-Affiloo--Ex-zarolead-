@@ -1503,6 +1503,7 @@ export default {
             rules: JSON.stringify(rules),
             traffic_source_id: this.flow.traffic_source_id,
             domain_id: this.flow.domain_id,
+            form_id: this.form.id,
           }
 
           // Create flow

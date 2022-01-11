@@ -247,7 +247,7 @@ class LandingController extends Controller
             $form_url = "https://beta2.zarolead.com";
         }
 
-        $form_html  = "<iframe scrolling=\"no\" id=\"buy-frame\" width=\"100%\" height=\"500px\" src=\"\"></iframe>" . PHP_EOL;
+        $form_html  = "<iframe scrolling=\"no\" id=\"buy-frame\" width=\"100%\" height=\"700px\" src=\"\"></iframe>" . PHP_EOL;
         $form_html .= "<script type=\"text/javascript\">" . PHP_EOL;
         $form_html .= "document.addEventListener('DOMContentLoaded', function(event) {" . PHP_EOL;
         $form_html .= "var url_string = window.location.toString();" . PHP_EOL;

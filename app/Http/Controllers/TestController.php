@@ -1015,6 +1015,9 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        dd(strval(82));
+        exit();
+
         $dateStart = date('Y-m-d', strtotime('-7 day'));
         $dateEnd   = date('Y-m-d');
         $leads = \App\third\WarehouseLead::where('archived', 0)

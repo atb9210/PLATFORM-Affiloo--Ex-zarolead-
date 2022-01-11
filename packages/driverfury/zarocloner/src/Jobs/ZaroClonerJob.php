@@ -18,18 +18,22 @@ class ZaroClonerJob implements ShouldQueue
     private $webpage_url;
     private $path;
     private $new_url;
+    private $form_id;
+    private $landing_id;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(string $webpage_url, string $path, string $new_url = '')
+    public function __construct(string $webpage_url, string $path, string $new_url = '', string $form_id = '', string $landing_id = '')
     {
         $this->prepareStatus();
         $this->webpage_url = $webpage_url;
         $this->path = $path;
         $this->new_url = $new_url;
+        $this->form_id = $form_id;
+        $this->landing_id = $landing_id;
     }
 
     /**
@@ -39,12 +43,16 @@ class ZaroClonerJob implements ShouldQueue
      */
     public function handle()
     {
-        Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
-            ->execute(
-                'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
+        $command = 'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
                 $this->webpage_url . ' ' .
                 $this->path . ' ' .
-                $this->new_url
-            );
+                $this->new_url;
+        if ($form_id != '' && $landing_id != '') {
+            $command .= ' ' .
+                $this->form_id . ' ' .
+                $this->landing_id;
+        }
+        Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
+            ->execute($command);
     }
 }

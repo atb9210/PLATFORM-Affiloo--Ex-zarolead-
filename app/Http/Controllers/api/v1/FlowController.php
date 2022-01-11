@@ -58,6 +58,7 @@ class FlowController extends Controller
      * @bodyParam domain_id int required Domain's id
      * @bodyParam path_name string required Flow's path name
      * @bodyParam traffic_source_id int required Traffic source's id
+     * @bodyParam form_id int Form's id (for code substitution)
      *
      * @response 201 {
      *  "message": "Flow created",
@@ -76,6 +77,7 @@ class FlowController extends Controller
             'domain_id' => 'required|exists:domains,id',
             'path_name' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
+            'form_id' => 'nullable|integer',
         ]);
         $params['user_id'] = Auth::user()->id;
         $params['rules'] = json_decode($params['rules'], TRUE);
@@ -93,6 +95,11 @@ class FlowController extends Controller
                 'message' => 'The given data - for the rules JSON param - was invalid.',
                 'errors' => $validator->messages(),
             ], 422);
+        }
+
+        $formId = '';
+        if (isset($params['form_id']) && $params['form_id'] !== null) {
+            $formId = strval($params['form_id']);
         }
 
         // Check if path name already exists
@@ -129,7 +136,7 @@ class FlowController extends Controller
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl, $formId, strval($l->id)),
                         'path' => $path,
                     ];
                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
@@ -147,7 +154,7 @@ class FlowController extends Controller
                 if ($flow->urlIsExternal($url)) {
                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                     $jobsArray[] =  [
-                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
+                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl), // TODO: What about form code substitution?
                         'path' => $path,
                     ];
                     $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
@@ -185,6 +192,7 @@ class FlowController extends Controller
      * @bodyParam name string Flow's name
      * @bodyParam traffic_source_id int Traffic source's id
      * @bodyParam rules json Flow's rules
+     * @bodyParam form_id int Form's id (for code substitution)
      *
      * @response {
      *  "data": flow,
@@ -200,6 +208,7 @@ class FlowController extends Controller
             'name' => 'string|min:3',
             'traffic_source_id' => 'integer|exists:traffic_sources,id',
             'rules' => 'json',
+            'form_id' => 'nullable|integer',
         ]);
         if (isset($params['rules'])) {
             $params['rules'] = json_decode($params['rules'], TRUE);
@@ -216,6 +225,11 @@ class FlowController extends Controller
                     'errors' => $validator->messages(),
                 ], 422);
             }
+        }
+
+        $formId = '';
+        if (isset($params['form_id']) && $params['form_id'] !== null) {
+            $formId = strval($params['form_id']);
         }
 
         // TODO: Is this still useful?
@@ -299,7 +313,7 @@ class FlowController extends Controller
                                 if ($flow->urlIsExternal($url)) {
                                     $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                                     $jobsArray[] =  [
-                                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
+                                        'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl, $formId, strval($l->id)),
                                         'path' => $path,
                                     ];
                                     $params['rules']['landings'][$counter]['internal_url'] = $domain->getUrlFromPath($path);
@@ -353,7 +367,7 @@ class FlowController extends Controller
                     if ($flow->urlIsExternal($url)) {
                         $zaroCloner = new \Driverfury\ZaroCloner\ZaroCloner();
                         $jobsArray[] =  [
-                            'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl),
+                            'id' => $zaroCloner->executeAsync($url, $fullPath, $newUrl), // TODO: What about form code substitution?
                             'path' => $path,
                         ];
                         $params['rules']['safe_page_url'] = $domain->getUrlFromPath($path);
