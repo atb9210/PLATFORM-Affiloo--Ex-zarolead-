@@ -47,7 +47,7 @@ class ZaroClonerJob implements ShouldQueue
                 $this->webpage_url . ' ' .
                 $this->path . ' ' .
                 $this->new_url;
-        if ($form_id != '' && $landing_id != '') {
+        if ($this->form_id != '' && $this->landing_id != '') {
             $command .= ' ' .
                 $this->form_id . ' ' .
                 $this->landing_id;
