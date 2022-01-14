@@ -17,7 +17,7 @@
           <form data-vv-scope="step-1">
           <div class="vx-row">
             <div class="vx-col md:w-full w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Name" v-model="name" class="w-full" name="name" v-validate="'required'" />
+              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Name" v-model="name" class="w-full" name="name" />
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
@@ -440,7 +440,7 @@
 
             <div class="vx-row mb-10">
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" v-model="flow.name" class="w-full" name="flow_name" v-validate="'required'" />
+                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" v-model="flow.name" class="w-full" name="flow_name" />
                   <span class="text-danger">{{ errors.first('step-5.flow_name') }}</span>
                 </div>
 
@@ -1919,21 +1919,8 @@ export default {
       this.network = network.id;
     }
 
-    // Close loading here, we don't need forms in the first step
+    // Close loading here, we don't need forms, landings etc... in the first step
     this.$vs.loading.close()
-
-    // Retrieve forms
-    const formResponse = await this.$http.get('/api/v1/forms', { headers })
-    this.forms = formResponse.data.data
-    this.formsOptions = []
-    for (let i = 0; i < this.forms.length; i++) {
-      let form = this.forms[i]
-      this.formsOptions.push({
-        id: form.id,
-        label: form.name + " - ID: " + form.id,
-      })
-      this.plugins['double_recovery'].form_id = form.id;
-    }
 
     // Adjust plugins default values
     if (this.settings !== null) {
@@ -1948,6 +1935,19 @@ export default {
           this.plugins['tiktok'][key] = value
         }
       }
+    }
+
+    // Retrieve forms
+    const formResponse = await this.$http.get('/api/v1/forms', { headers })
+    this.forms = formResponse.data.data
+    this.formsOptions = []
+    for (let i = 0; i < this.forms.length; i++) {
+      let form = this.forms[i]
+      this.formsOptions.push({
+        id: form.id,
+        label: form.name + " - ID: " + form.id,
+      })
+      this.plugins['double_recovery'].form_id = form.id;
     }
 
     // Retrieve landings
