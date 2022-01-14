@@ -17,29 +17,29 @@
           <form data-vv-scope="step-1">
           <div class="vx-row">
             <div class="vx-col md:w-full w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Name" v-model="name" class="w-full" name="name" />
+              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Name" @input="changeFormName" class="w-full" name="name" :value="name" />
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="product" class="w-full select-large" label="Product" v-validate="'required'" @change="changeProduct">
+              <vs-select autocomplete v-model.lazy="product" class="w-full select-large" label="Product" @change="changeProduct">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="network" class="w-full select-large" label="Network" v-validate="'required'" @change="changeNetwork">
+              <vs-select autocomplete v-model.lazy="network" class="w-full select-large" label="Network" @change="changeNetwork">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in networksOptions" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.network') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="traffic_source" class="w-full select-large" label="Traffic Source" v-validate="'required'" @change="changeTrafficSource">
+              <vs-select autocomplete v-model.lazy="traffic_source" class="w-full select-large" label="Traffic Source" @change="changeTrafficSource">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5" v-if="canChangeUser">
-              <vs-select autocomplete v-model="user" class="w-full select-large" label="Mediabuyer" v-validate="'required'">
+              <vs-select autocomplete v-model.lazy="user" class="w-full select-large" label="Mediabuyer">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in users" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-1.user') }}</span>
@@ -61,7 +61,7 @@
                 :subtitle="'Price: €' + quantityOption.price + ', Commission: €' + quantityOption.commission + ', Sub Commission: €' + quantityOption.sub_commission"
                 v-for="(quantityOption, index) in quantityOptions" :key="index">
                 <div class="flex items-center">
-                  <vs-radio class="mr-4" v-model="quantityDefaultIndex" :vs-value="index" @change="changeQuantityDefault">Default</vs-radio>
+                  <vs-radio class="mr-4" v-model.lazy="quantityDefaultIndex" :vs-value="index" @change="changeQuantityDefault">Default</vs-radio>
                   <vs-button class="mr-2" icon-pack="feather" icon="icon-edit" type="filled" color="primary" @click="showEditQuantityOptionForm(index)"></vs-button>
                   <vs-button class="mr-2" icon-pack="feather" icon="icon-trash" type="filled" color="danger" @click="removeQuantityOption(index)"></vs-button>
                 </div>
@@ -76,10 +76,10 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="upSell"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="upSell"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model="upSellBestSeller" class="w-full">
+                <vs-select v-model.lazy="upSellBestSeller" class="w-full">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item,index) in upSellOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -89,7 +89,7 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="crossSell.enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="crossSell.enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input @click="showCrossSellForm" value="Click here to update" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border />
@@ -100,7 +100,7 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="delivery.enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="delivery.enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input @click="showDeliveryForm" value="Click here to update" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border />
@@ -120,7 +120,7 @@
                 icon-pack="feather" icon="icon-tag" icon-no-border
                 :type="param.type" :label="param.name + (param.hasOwnProperty('required') ? '*' : '')"
                 :name="param.name"
-                v-model="network_params_values[index]"
+                v-model.lazy="network_params_values[index]"
               />
               <span class="text-danger">{{ errors.first('step-3.' + param.name) }}</span>
             </div>
@@ -143,14 +143,14 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['thankyou_redirect'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['thankyou_redirect'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   type="url"
                   class="w-full"
                   icon-pack="feather" icon="icon-globe" icon-no-border
-                  v-model="plugins['thankyou_redirect'].url"
+                  v-model.lazy="plugins['thankyou_redirect'].url"
                   placeholder="http://..."
                 />
               </vx-input-group>
@@ -162,16 +162,16 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['facebook'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['facebook'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook'].pixel"
+                  v-model.lazy="plugins['facebook'].pixel"
                   placeholder="Facebook pixel"
                 />
-                <vs-select autocomplete v-model="plugins['facebook'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['facebook'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
                 </vs-select>
                 <vs-input
@@ -180,10 +180,10 @@
                   min="0"
                   class="w-full"
                   icon-pack="feather" icon="icon-dollar-sign" icon-no-border
-                  v-model="plugins['facebook'].eventValue"
+                  v-model.lazy="plugins['facebook'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value (optional)"
                 />
-                <vs-select autocomplete v-model="plugins['facebook'].eventCurrency" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['facebook'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -195,26 +195,26 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['facebook_conversions_api'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['facebook_conversions_api'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_conversions_api'].pixel"
+                  v-model.lazy="plugins['facebook_conversions_api'].pixel"
                   placeholder="Facebook pixel"
                 />
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_conversions_api'].access_token"
+                  v-model.lazy="plugins['facebook_conversions_api'].access_token"
                   placeholder="Access token"
                 />
                 <!-- TODO: This is only for testing -->
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-facebook" icon-no-border
-                  v-model="plugins['facebook_conversions_api'].test_code"
+                  v-model.lazy="plugins['facebook_conversions_api'].test_code"
                   placeholder="Test code (e.g. TEST2331)"
                 />
                 <vs-input
@@ -223,10 +223,10 @@
                   min="0"
                   class="w-full"
                   icon-pack="feather" icon="icon-dollar-sign" icon-no-border
-                  v-model="plugins['facebook_conversions_api'].eventValue"
+                  v-model.lazy="plugins['facebook_conversions_api'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value"
                 />
-                <vs-select autocomplete v-model="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -238,22 +238,22 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['tiktok'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['tiktok'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-music" icon-no-border
-                  v-model="plugins['tiktok'].pixel"
+                  v-model.lazy="plugins['tiktok'].pixel"
                   placeholder="TikTok pixel"
                 />
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-music" icon-no-border
-                  v-model="plugins['tiktok'].token"
+                  v-model.lazy="plugins['tiktok'].token"
                   placeholder="TikTok pixel token API"
                 />
-                <vs-select autocomplete v-model="plugins['tiktok'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['tiktok'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -265,16 +265,16 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['google'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['google'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-goole" icon-no-border
-                  v-model="plugins['google'].pixel"
+                  v-model.lazy="plugins['google'].pixel"
                   placeholder="Google pixel"
                 />
-                <vs-select autocomplete v-model="plugins['google'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['google'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in googleEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -286,16 +286,16 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['outbrain'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['outbrain'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-brain" icon-no-border
-                  v-model="plugins['outbrain'].pixel"
+                  v-model.lazy="plugins['outbrain'].pixel"
                   placeholder="Outbrain pixel"
                 />
-                <vs-select autocomplete v-model="plugins['outbrain'].eventName" class="w-full select-large">
+                <vs-select autocomplete v-model.lazy="plugins['outbrain'].eventName" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in outbrainEventNameOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -309,13 +309,13 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['zeustrack'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['zeustrack'].enabled"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-at-sign" icon-no-border
-                  v-model="plugins['zeustrack'].sub_id"
+                  v-model.lazy="plugins['zeustrack'].sub_id"
                   placeholder="Sub ID"
                 />
               </vx-input-group>
@@ -328,10 +328,10 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['double_recovery'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['double_recovery'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select autocomplete v-model="plugins['double_recovery'].form_id" class="w-full select-large" v-validate="'required'">
+                <vs-select autocomplete v-model.lazy="plugins['double_recovery'].form_id" class="w-full select-large">
                   <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in formsOptions" class="w-full" />
                 </vs-select>
               </vx-input-group>
@@ -343,10 +343,10 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['css_style'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['css_style'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select autocomplete v-model="selectedFormsStyle" class="w-full select-large" v-validate="'required'">
+                <vs-select autocomplete v-model.lazy="selectedFormsStyle" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in formsStyles" class="w-full" />
                 </vs-select>
                 <template slot="append">
@@ -363,10 +363,10 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="plugins['custom'].enabled"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="plugins['custom'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-textarea v-model="plugins['custom'].afterSubmit"/>
+                <vs-textarea v-model.lazy="plugins['custom'].afterSubmit"/>
               </vx-input-group>
             </div>
 
@@ -382,31 +382,31 @@
 
           <div class="vx-row">
             <div class="vx-col w-full mt-5">
-              <vs-checkbox v-model="landing.useExistingOne">Use an already existing landing</vs-checkbox>
+              <vs-checkbox v-model.lazy="landing.useExistingOne">Use an already existing landing</vs-checkbox>
             </div>
           </div>
 
           <div class="vx-row" v-if="!landing.useExistingOne">
 
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Landing Name" v-model="landing.name" class="w-full" name="landing_name" v-validate="'required'" />
+              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Landing Name" v-model.lazy="landing.name" class="w-full" name="landing_name" />
               <span class="text-danger">{{ errors.first('step-5.landing_name') }}</span>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="landing.product" class="w-full select-large" label="Product" v-validate="'required'" disabled="disabled">
+              <vs-select autocomplete v-model.lazy="landing.product" class="w-full select-large" label="Product" disabled="disabled">
                 <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-5.landing_product') }}</span>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-globe" icon-no-border label="Landing URL" v-model="landing.url" class="w-full" name="landing_url" v-validate="'required'" />
+              <vs-input icon-pack="feather" icon="icon-globe" icon-no-border label="Landing URL" v-model.lazy="landing.url" class="w-full" name="landing_url" />
               <span class="text-danger">{{ errors.first('step-5.landing_url') }}</span>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model="landing.country" class="w-full select-large" label="Country" v-validate="'required'">
+              <vs-select autocomplete v-model.lazy="landing.country" class="w-full select-large" label="Country">
                 <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in countryOptions" class="w-full" />
               </vs-select>
               <span class="text-danger">{{ errors.first('step-5.landing_country') }}</span>
@@ -417,7 +417,7 @@
           <div class="vx-row" v-else>
 
             <div class="vx-col w-full mt-5">
-              <vs-select autocomplete v-model="landing.landing" class="w-full select-large" label="Choose the existing landing to use" v-validate="'required'">
+              <vs-select autocomplete v-model.lazy="landing.landing" class="w-full select-large" label="Choose the existing landing to use">
                 <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
               </vs-select>
             </div>
@@ -432,47 +432,47 @@
 
           <div class="vx-row">
             <div class="vx-col w-full mt-5">
-              <vs-checkbox v-model="flow.useExistingOne">Use an already existing flow</vs-checkbox>
+              <vs-checkbox v-model.lazy="flow_useExistingOne">Use an already existing flow</vs-checkbox>
             </div>
           </div>
 
-          <div v-if="!flow.useExistingOne" class="w-full">
+          <div v-if="!flow_useExistingOne" class="w-full">
 
             <div class="vx-row mb-10">
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" v-model="flow.name" class="w-full" name="flow_name" />
+                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" @input="changeFlowName" class="w-full" name="flow_name" :value="flow_name" />
                   <span class="text-danger">{{ errors.first('step-5.flow_name') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-select autocomplete v-model="flow.domain_id" class="w-full select-large" label="Domain" v-validate="'required'">
+                  <vs-select autocomplete v-model.lazy="flow_domain_id" class="w-full select-large" label="Domain">
                     <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                   </vs-select>
                   <span class="text-danger">{{ errors.first('step-5.flow_domain_id') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-select autocomplete v-model="flow.type" class="w-full select-large" label="Type" v-validate="'required'">
+                  <vs-select autocomplete v-model.lazy="flow_type" class="w-full select-large" label="Type">
                     <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in flowTypes" class="w-full" />
                   </vs-select>
                   <span class="text-danger">{{ errors.first('step-5.flow_type') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Path name" v-model="flow.path_name" class="w-full" name="flow_path_name" v-validate="'required'" />
+                  <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Path name" @input="changeFlowPathName" class="w-full" name="flow_path_name" :value="flow_path_name" />
                   <span>{{flowPathname}}</span>
                   <span class="text-danger">{{ errors.first('step-5.flow_path_name') }}</span>
                 </div>
 
                 <div class="vx-col w-full mt-5">
-                  <vs-select autocomplete v-model="flow.traffic_source_id" class="w-full select-large" label="Traffic source" v-validate="'required'">
+                  <vs-select autocomplete v-model.lazy="flow_traffic_source_id" class="w-full select-large" label="Traffic source">
                     <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
                   </vs-select>
                   <span class="text-danger">{{ errors.first('step-5.flow_traffic_source_id') }}</span>
                 </div>
             </div>
 
-            <div class="vx-row mb-2" v-for="(lan, lanIndex) in flow.landings">
+            <div class="vx-row mb-2" v-for="(lan, lanIndex) in flow_landings">
                 <div class="vx-col w-1/2 mb-2 text-center" v-if="lanIndex == 0">
                     <span>Landings</span>
                 </div>
@@ -485,10 +485,10 @@
                 <div class="vx-col w-1/6 mb-2 text-center" v-if="lanIndex == 0">
                 </div>
                 <div class="vx-col w-full flex items-center">
-                    <vs-select autocomplete class="w-1/2 select-large" v-model="flow.landings[lanIndex]" v-validate="'required'">
+                    <vs-select autocomplete class="w-1/2 select-large" v-model.lazy="flow_landings[lanIndex]">
                         <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
                     </vs-select>
-                    <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model="flow.weights[lanIndex]" />
+                    <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model.lazy="flow_weights[lanIndex]" />
                     <div class="w-1/6 text-center">{{ weightPercentage(lanIndex) }} %</div>
                     <div class="w-1/6 text-right">
                         <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeLanding('create', lanIndex)"></vs-button>
@@ -516,25 +516,25 @@
               <vx-input-group prependClasses="border border-solid border-grey border-r-0">
                 <template slot="prepend">
                   <div class="prepend-text">
-                    <vs-checkbox v-model="flow.fraud_filter_protection"></vs-checkbox>
+                    <vs-checkbox v-model.lazy="flow_fraud_filter_protection"></vs-checkbox>
                   </div>
                 </template>
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-lock" icon-no-border
-                  v-model="flow.safe_page_url"
+                  v-model.lazy="flow_safe_page_url"
                   placeholder="Safe page URL (https://...)"
                 />
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-tag" icon-no-border
-                  v-model="flow.fraud_filter_campaign_id"
+                  v-model.lazy="flow_fraud_filter_campaign_id"
                   placeholder="Campaign ID"
                 />
                 <vs-input
                   class="w-full"
                   icon-pack="feather" icon="icon-hash" icon-no-border
-                  v-model="flow.fraud_filter_campaign_key"
+                  v-model.lazy="flow_fraud_filter_campaign_key"
                   placeholder="Campaign Key (1e6b4d4d-cfa8-...)"
                 />
               </vx-input-group>
@@ -545,7 +545,7 @@
           <div class="vx-row" v-else>
 
             <div class="vx-col w-full mt-5">
-              <vs-select autocomplete v-model="flow.flow" class="w-full select-large" label="Choose the existing flow to use" v-validate="'required'">
+              <vs-select autocomplete v-model.lazy="flow_flow" class="w-full select-large" label="Choose the existing flow to use">
                 <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in flows" class="w-full" />
               </vs-select>
             </div>
@@ -562,18 +562,18 @@
           <div class="vx-row">
 
             <div class="vx-col w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Promotional URL" v-model="linkBuilder.promotional" class="w-full" disabled="disabled" />
+              <vs-input icon-pack="feather" icon="icon-layout" icon-no-border label="Promotional URL" v-model.lazy="linkBuilder.promotional" class="w-full" disabled="disabled" />
             </div>
 
             <div class="vx-col w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Postback URL" v-model="linkBuilder.postback" class="w-full" disabled="disabled" />
+              <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Postback URL" v-model.lazy="linkBuilder.postback" class="w-full" disabled="disabled" />
             </div>
 
             <div class="vx-col w-full mt-5">
-              <vs-select autocomplete v-model="chosenLanding" class="w-full select-large" label="Form code" @change="changeChosenLanding">
+              <vs-select autocomplete v-model.lazy="chosenLanding" class="w-full select-large" label="Form code" @change="changeChosenLanding">
                 <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in chosenLandings" class="w-full" />
               </vs-select>
-              <vs-textarea v-model="linkBuilder.formCode" disabled height="10rem" />
+              <vs-textarea v-model.lazy="linkBuilder.formCode" disabled height="10rem" />
             </div>
 
           </div>
@@ -601,7 +601,7 @@
                 <span>SKU</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].sku" />
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model.lazy="newObject['cross_sell'].sku" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -609,7 +609,7 @@
                 <span>Title</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].title" />
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model.lazy="newObject['cross_sell'].title" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -617,7 +617,7 @@
                 <span>Description</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="newObject['cross_sell'].description" />
+                <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model.lazy="newObject['cross_sell'].description" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -625,7 +625,7 @@
                 <span>Image URL</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="newObject['cross_sell'].img" />
+                <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model.lazy="newObject['cross_sell'].img" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -633,7 +633,7 @@
                 <span>Old price</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].old_price" />
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model.lazy="newObject['cross_sell'].old_price" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -641,7 +641,7 @@
                 <span>Price</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].price" />
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model.lazy="newObject['cross_sell'].price" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -649,7 +649,7 @@
                 <span>Commission</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].commission" />
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model.lazy="newObject['cross_sell'].commission" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -657,7 +657,7 @@
                 <span>Sub commission</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="newObject['cross_sell'].sub_commission" />
+                <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model.lazy="newObject['cross_sell'].sub_commission" />
             </div>
         </div>
         <div class="vx-row mb-6">
@@ -676,9 +676,9 @@
         </div>
         <div class="vx-row mb-6" v-for="(option, index) in newObject['delivery'].options">
             <div class="vx-col w-full flex items-center">
-                <vs-input class="w-1/3" icon-pack="feather" icon="icon-tag" placeholder="Standard delivery" icon-no-border v-model="newObject['delivery'].options[index].name" />
-                <vs-input class="w-1/3" icon-pack="feather" icon="icon-globe" placeholder="3" icon-no-border type="number" step="1" min="1" v-model="newObject['delivery'].options[index].days" />
-                <vs-input class="w-1/3" icon-pack="feather" icon="icon-dollar-sign" icon-no-border type="number" step="0.01" min="0" v-model="newObject['delivery'].options[index].price" />
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-tag" placeholder="Standard delivery" icon-no-border v-model.lazy="newObject['delivery'].options[index].name" />
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-globe" placeholder="3" icon-no-border type="number" step="1" min="1" v-model.lazy="newObject['delivery'].options[index].days" />
+                <vs-input class="w-1/3" icon-pack="feather" icon="icon-dollar-sign" icon-no-border type="number" step="0.01" min="0" v-model.lazy="newObject['delivery'].options[index].price" />
             </div>
         </div>
 
@@ -708,7 +708,7 @@
                 <span>Name</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="landing.name" />
+                <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model.lazy="landing.name" />
             </div>
         </div>
 
@@ -717,7 +717,7 @@
                 <span>Product</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-select autocomplete v-model="landing.product" class="w-full select-large" label="Product" v-validate="'required'" disabled="disabled">
+                <vs-select autocomplete v-model.lazy="landing.product" class="w-full select-large" label="Product" disabled="disabled">
                   <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
                 </vs-select>
             </div>
@@ -728,7 +728,7 @@
                 <span>URL</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model="landing.url" />
+                <vs-input class="w-full" icon-pack="feather" icon="icon-link" icon-no-border v-model.lazy="landing.url" />
             </div>
         </div>
 
@@ -737,7 +737,7 @@
                 <span>Country</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-select autocomplete v-model="landing.country" class="w-full select-large" label="Country" v-validate="'required'">
+                <vs-select autocomplete v-model.lazy="landing.country" class="w-full select-large" label="Country">
                   <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in countryOptions" class="w-full" />
                 </vs-select>
             </div>
@@ -755,34 +755,6 @@
 import { FormWizard, TabContent } from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 import StylePreview from '../components/StylePreview.vue'
-
-// For custom error message
-import { Validator } from 'vee-validate'
-const dict = {
-  custom: {
-    user: {
-      required: 'User is required',
-    },
-    name: {
-      required: 'Name is required',
-    },
-    network: {
-      required: 'Network is required',
-    },
-    product: {
-      required: 'Product is required',
-    },
-    traffic_source: {
-      required: 'Traffic Source is required',
-    },
-  }
-}
-
-// register custom messages
-Validator.localize('en', dict)
-
-// custom rules
-// ...
 
 export default {
   components: {
@@ -954,21 +926,19 @@ export default {
       domains: [],
 
       flows: [],
-      flow: {
-        flow: '',
-        useExistingOne: false,
-        name: '',
-        domain_id: '',
-        type: 'hotload',
-        path_name: '',
-        traffic_source_id: '',
-        landings: [''],
-        weights: [1],
-        safe_page_url: '',
-        fraud_filter_campaign_id: '',
-        fraud_filter_protection: '',
-        fraud_filter_campaign_key: '',
-      },
+      flow_flow: '',
+      flow_useExistingOne: false,
+      flow_name: '',
+      flow_domain_id: '',
+      flow_type: 'hotload',
+      flow_path_name: '',
+      flow_traffic_source_id: '',
+      flow_landings: [''],
+      flow_weights: [1],
+      flow_safe_page_url: '',
+      flow_fraud_filter_campaign_id: '',
+      flow_fraud_filter_protection: '',
+      flow_fraud_filter_campaign_key: '',
 
       flowTypes: [
         'hotload',
@@ -998,21 +968,20 @@ export default {
       return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin'))
     },
     flowPathname() {
-      let obj = this.flow
-      let flowType = obj.type
+      let flowType = this.flow_type
       if (flowType == 'redirect') {
-        return 'https://zarolead.com/flo/' + obj.path_name
+        return 'https://zarolead.com/flo/' + this.flow_path_name
       } else if (flowType == 'hotload') {
         let domain = null
         for (let i = 0; i < this.domains.length; i++) {
           let d = this.domains[i]
-          if (d.id == obj.domain_id) {
+          if (d.id == this.flow_domain_id) {
             domain = d
             break
           }
         }
         if (domain !== null) {
-          return 'http://' + domain.domain + '/' + obj.path_name
+          return 'http://' + domain.domain + '/' + this.flow_path_name
         }
       }
       return ''
@@ -1068,7 +1037,7 @@ export default {
       }
     },
     changeTrafficSource() {
-      this.flow.traffic_source_id = this.traffic_source
+      this.flow_traffic_source_id = this.traffic_source
     },
     async getFormsStyles() {
       let headers = {
@@ -1445,14 +1414,14 @@ export default {
           Authorization: 'Bearer ' + localStorage.getItem('accessToken')
         }
 
-        if (this.flow.useExistingOne) {
+        if (this.flow_useExistingOne) {
           let promotionalUrl = ''
 
           let origin = ''
           let u = new URL(window.location.href)
           origin = u.origin
 
-          promotionalUrl = this.flow.flow.url_domain
+          promotionalUrl = this.flow_flow.url_domain
           promotionalUrl = promotionalUrl.replace('index.html', '')
           promotionalUrl = promotionalUrl.replace('index.php', '')
 
@@ -1460,26 +1429,26 @@ export default {
           this.linkBuilder.postback = origin + '/api/v1/postback'
           this.linkBuilder.formCode = ''
 
-          this.setChosenLandings(this.flow.flow.rules.landings)
+          this.setChosenLandings(this.flow_flow.rules.landings)
 
           resolve(true)
         } else {
           this.$vs.loading()
-          let pathName = this.flow.path_name
+          let pathName = this.flow_path_name
           if (pathName.length > 0) {
             if (!pathName.includes(".")) {
-              if (this.flow.path_name.slice(-1) != "/") {
+              if (this.flow_path_name.slice(-1) != "/") {
                 pathName += "/"
               }
               pathName += 'index.php'
             }
           }
-          this.flow.path_name = pathName
+          this.flow_path_name = pathName
 
           let landings = []
-          for (let i = 0; i < this.flow.landings.length; i++) {
-            let landing = this.flow.landings[i]
-            let weight = this.flow.weights[i]
+          for (let i = 0; i < this.flow_landings.length; i++) {
+            let landing = this.flow_landings[i]
+            let weight = this.flow_weights[i]
             if (landing == '') {
               continue
             }
@@ -1490,19 +1459,19 @@ export default {
           }
           let rules = {
             landings: landings,
-            safe_page_url: this.flow.safe_page_url,
-            fraud_filter_protection: this.flow.fraud_filter_protection,
-            fraud_filter_campaign_id: this.flow.fraud_filter_campaign_id,
-            fraud_filter_campaign_key: this.flow.fraud_filter_campaign_key,
+            safe_page_url: this.flow_safe_page_url,
+            fraud_filter_protection: this.flow_fraud_filter_protection,
+            fraud_filter_campaign_id: this.flow_fraud_filter_campaign_id,
+            fraud_filter_campaign_key: this.flow_fraud_filter_campaign_key,
           }
 
           let data = {
-            name: this.flow.name,
-            type: this.flow.type,
-            path_name: this.flow.path_name,
+            name: this.flow_name,
+            type: this.flow_type,
+            path_name: this.flow_path_name,
             rules: JSON.stringify(rules),
-            traffic_source_id: this.flow.traffic_source_id,
-            domain_id: this.flow.domain_id,
+            traffic_source_id: this.flow_traffic_source_id,
+            domain_id: this.flow_domain_id,
             form_id: this.form.id,
           }
 
@@ -1706,18 +1675,18 @@ export default {
       return settings
     },
     addNewLanding() {
-      this.flow.landings.push('')
-      this.flow.weights.push(1)
+      this.flow_landings.push('')
+      this.flow_weights.push(1)
     },
     removeLanding(type, index) {
-      this.flow.landings.splice(index, 1)
-      this.flow.weights.splice(index, 1)
+      this.flow_landings.splice(index, 1)
+      this.flow_weights.splice(index, 1)
     },
     weightPercentage(index) {
       let totalWeight = 0
       let percentage = 0
 
-      let weights = this.flow.weights
+      let weights = this.flow_weights
       for (let i = 0; i < weights.length; i++) {
         totalWeight += parseInt(weights[i])
       }
@@ -1823,6 +1792,17 @@ export default {
 
       this.$vs.loading.close()
     },
+
+    // DEBUG TEST TODO: check if it is faster
+    changeFormName(val) {
+      this.name = val
+    },
+    changeFlowName(val) {
+      this.flow_name = val
+    },
+    changeFlowPathName(val) {
+      this.flow_path_name = val
+    },
   },
   async created() {
     this.$vs.loading()
@@ -1837,16 +1817,16 @@ export default {
     // FraudFilter default settings
     if (this.settings !== null && this.settings.hasOwnProperty('fraudfilter') && this.settings.fraudfilter !== null) {
       if (this.settings.fraudfilter.hasOwnProperty('enabled') && this.settings.fraudfilter.enabled !== null) {
-        this.flow.fraud_filter_protection = this.settings.fraudfilter.enabled
+        this.flow_fraud_filter_protection = this.settings.fraudfilter.enabled
       }
       if (this.settings.fraudfilter.hasOwnProperty('safe_page_url') && this.settings.fraudfilter.safe_page_url !== null) {
-        this.flow.safe_page_url = this.settings.fraudfilter.safe_page_url
+        this.flow_safe_page_url = this.settings.fraudfilter.safe_page_url
       }
       if (this.settings.fraudfilter.hasOwnProperty('campaign_id') && this.settings.fraudfilter.campaign_id !== null) {
-        this.flow.fraud_filter_campaign_id = this.settings.fraudfilter.campaign_id
+        this.flow_fraud_filter_campaign_id = this.settings.fraudfilter.campaign_id
       }
       if (this.settings.fraudfilter.hasOwnProperty('campaign_key') && this.settings.fraudfilter.campaign_key !== null) {
-        this.flow.fraud_filter_campaign_key = this.settings.fraudfilter.campaign_key
+        this.flow_fraud_filter_campaign_key = this.settings.fraudfilter.campaign_key
       }
     }
 
@@ -1960,7 +1940,7 @@ export default {
       this.domains = response.data.data
 
       if (this.domains.length > 0) {
-        this.flow.domain_id = this.domains[0].id
+        this.flow_domain_id = this.domains[0].id
       }
     } catch (error) {
       // Nothing
