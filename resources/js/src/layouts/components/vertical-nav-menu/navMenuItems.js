@@ -475,6 +475,16 @@ export default [
         roles: ['developer', 'admin' ],
       },
 
+      /* TODO: TEST FIVERR */
+      {
+        url: '/dashboard/fiverr/test',
+        name: 'Fiverr Test',
+        slug: 'fiverr-test',
+        icon: 'CloudLightningIcon',
+        i18n: 'Fiverr Test',
+        roles: ['developer', 'admin', 'fiverr_test' ],
+      },
+
       /*
       {
         url: '/apps/email',

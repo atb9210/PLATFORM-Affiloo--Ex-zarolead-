@@ -1905,6 +1905,23 @@ const router = new Router({
             rule: 'admin'
           }
         },
+
+        /* TODO: TEST FIVERR */
+        {
+          path: '/dashboard/fiverr/test',
+          name: '3rd-party',
+          component: () => import('./views/FormBuilder.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Test Fiverr', active: true }
+            ],
+            pageTitle: 'Test Fiverr',
+            rule: 'admin'
+          }
+        },
+
       ]
     },
 
