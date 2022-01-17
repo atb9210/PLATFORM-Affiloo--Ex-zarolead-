@@ -17,31 +17,23 @@
           <form data-vv-scope="step-1">
           <div class="vx-row">
             <div class="vx-col md:w-full w-full mt-5">
-              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Name" @input="changeFormName" class="w-full" name="name" :value="name" />
+              <vs-input icon-pack="feather" icon="icon-tag" icon-no-border v-model="name" class="w-full" name="name" label="Name" />
               <span class="text-danger">{{ errors.first('step-1.name') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model.lazy="product" class="w-full select-large" label="Product" @change="changeProduct">
-                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
-              </vs-select>
+              <my-select v-model="product" :options="products" class="w-full select-large" label="Product" @change="changeProduct" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model.lazy="network" class="w-full select-large" label="Network" @change="changeNetwork">
-                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in networksOptions" class="w-full" />
-              </vs-select>
+              <my-select v-model="network" :options="networksOptions" class="w-full select-large" label="Network" @change="changeNetwork" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.network') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-select autocomplete v-model.lazy="traffic_source" class="w-full select-large" label="Traffic Source" @change="changeTrafficSource">
-                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
-              </vs-select>
+              <my-select v-model="traffic_source" :options="traffic_sources" class="w-full select-large" label="Traffic Source" @change="changeTrafficSource" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.traffic_source') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5" v-if="canChangeUser">
-              <vs-select autocomplete v-model.lazy="user" class="w-full select-large" label="Mediabuyer">
-                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in users" class="w-full" />
-              </vs-select>
+              <my-select v-model="user" :options="users" class="w-full select-large" label="Mediabuyer" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.user') }}</span>
             </div>
           </div>
@@ -79,9 +71,7 @@
                     <vs-checkbox v-model.lazy="upSell"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select v-model.lazy="upSellBestSeller" class="w-full">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item,index) in upSellOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="upSellBestSeller" :options="upSellOptions" class="w-full select-large" />
               </vx-input-group>
             </div>
             <div class="vx-col w-full mt-5">
@@ -171,9 +161,7 @@
                   v-model.lazy="plugins['facebook'].pixel"
                   placeholder="Facebook pixel"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['facebook'].eventName" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventNameOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['facebook'].eventName" :options="facebookEventNameOptions" class="w-full select-large" :autocomplete="true" />
                 <vs-input
                   type="number"
                   step="0.01"
@@ -183,9 +171,7 @@
                   v-model.lazy="plugins['facebook'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value (optional)"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['facebook'].eventCurrency" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['facebook'].eventCurrency" :options="facebookEventCurrencyOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div>
 
@@ -226,9 +212,7 @@
                   v-model.lazy="plugins['facebook_conversions_api'].eventValue"
                   name="fb_event_value" placeholder="Conversion event value"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['facebook_conversions_api'].eventCurrency" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in facebookEventCurrencyOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['facebook_conversions_api'].eventCurrency" :options="facebookEventCurrencyOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div>
 
@@ -253,9 +237,7 @@
                   v-model.lazy="plugins['tiktok'].token"
                   placeholder="TikTok pixel token API"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['tiktok'].eventName" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in tiktokEventNameOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['tiktok'].eventName" :options="tiktokEventNameOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div> 
 
@@ -274,9 +256,7 @@
                   v-model.lazy="plugins['google'].pixel"
                   placeholder="Google pixel"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['google'].eventName" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in googleEventNameOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['google'].eventName" :options="googleEventNameOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div>
 
@@ -295,9 +275,7 @@
                   v-model.lazy="plugins['outbrain'].pixel"
                   placeholder="Outbrain pixel"
                 />
-                <vs-select autocomplete v-model.lazy="plugins['outbrain'].eventName" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in outbrainEventNameOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['outbrain'].eventName" :options="outbrainEventNameOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div>
 
@@ -331,9 +309,7 @@
                     <vs-checkbox v-model.lazy="plugins['double_recovery'].enabled"></vs-checkbox>
                   </div>
                 </template>
-                <vs-select autocomplete v-model.lazy="plugins['double_recovery'].form_id" class="w-full select-large">
-                  <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in formsOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="plugins['double_recovery'].form_id" :options="formsOptions" class="w-full select-large" :autocomplete="true" />
               </vx-input-group>
             </div>
 
@@ -349,6 +325,7 @@
                 <vs-select autocomplete v-model.lazy="selectedFormsStyle" class="w-full select-large">
                   <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in formsStyles" class="w-full" />
                 </vs-select>
+                <!--<my-select v-model="selectedFormsStyle" :options="formsStyles" class="w-full select-large" label="Product" @change="changeProduct" :autocomplete="true" />-->
                 <template slot="append">
                     <div class="append-text cursor-pointer" :class="(selectedFormsStyle != null) ? 'bg-primary' : 'bg-dark'" @click="previewFormsStyle()">
                         <span><vs-icon icon-pack="feather" icon="icon-eye"></vs-icon></span>
@@ -440,34 +417,29 @@
 
             <div class="vx-row mb-10">
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" @input="changeFlowName" class="w-full" name="flow_name" :value="flow_name" />
+                  <vs-input icon-pack="feather" icon="icon-tag" icon-no-border label="Flow Name" v-model="flow_name" class="w-full" name="flow_name" />
                   <span class="text-danger">{{ errors.first('step-5.flow_name') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-select autocomplete v-model.lazy="flow_domain_id" class="w-full select-large" label="Domain">
-                    <vs-select-item :key="index" :value="item.id" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
-                  </vs-select>
+                  <my-select v-model="flow_domain_id" :options="domains" class="w-full select-large" label="Domain" :autocomplete="true" />
                   <span class="text-danger">{{ errors.first('step-5.flow_domain_id') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-select autocomplete v-model.lazy="flow_type" class="w-full select-large" label="Type">
-                    <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in flowTypes" class="w-full" />
-                  </vs-select>
+                  <label>Type</label>
+                  <my-select v-model="flow_type" :options="flowTypes" class="w-full select-large" :autocomplete="true" />
                   <span class="text-danger">{{ errors.first('step-5.flow_type') }}</span>
                 </div>
 
                 <div class="vx-col md:w-1/2 w-full mt-5">
-                  <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Path name" @input="changeFlowPathName" class="w-full" name="flow_path_name" :value="flow_path_name" />
+                  <vs-input icon-pack="feather" icon="icon-hash" icon-no-border label="Path name" v-model="flow_path_name" class="w-full" name="flow_path_name" />
                   <span>{{flowPathname}}</span>
                   <span class="text-danger">{{ errors.first('step-5.flow_path_name') }}</span>
                 </div>
 
                 <div class="vx-col w-full mt-5">
-                  <vs-select autocomplete v-model.lazy="flow_traffic_source_id" class="w-full select-large" label="Traffic source">
-                    <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in traffic_sources" class="w-full" />
-                  </vs-select>
+                  <my-select v-model="flow_traffic_source_id" :options="traffic_sources" class="w-full select-large" label="Traffic source" :autocomplete="true" />
                   <span class="text-danger">{{ errors.first('step-5.flow_traffic_source_id') }}</span>
                 </div>
             </div>
@@ -485,9 +457,7 @@
                 <div class="vx-col w-1/6 mb-2 text-center" v-if="lanIndex == 0">
                 </div>
                 <div class="vx-col w-full flex items-center">
-                    <vs-select autocomplete class="w-1/2 select-large" v-model.lazy="flow_landings[lanIndex]">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in landings" class="w-full" />
-                    </vs-select>
+                    <my-select v-model="flow_landings[lanIndex]" :options="landings" class="w-1/2 select-large" :autocomplete="true" />
                     <vs-input class="w-1/6" type="number" min="0" icon-pack="feather" icon="icon-percent" placeholder="Weight" icon-no-border v-model.lazy="flow_weights[lanIndex]" />
                     <div class="w-1/6 text-center">{{ weightPercentage(lanIndex) }} %</div>
                     <div class="w-1/6 text-right">
@@ -717,9 +687,7 @@
                 <span>Product</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-select autocomplete v-model.lazy="landing.product" class="w-full select-large" label="Product" disabled="disabled">
-                  <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in products" class="w-full" />
-                </vs-select>
+                <my-select v-model="landing.product" :options="products" class="w-full select-large" label="Product" disabled="disabled" :autocomplete="true" />
             </div>
         </div>
 
@@ -737,9 +705,7 @@
                 <span>Country</span>
             </div>
             <div class="vx-col sm:w-2/3 w-full">
-                <vs-select autocomplete v-model.lazy="landing.country" class="w-full select-large" label="Country">
-                  <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in countryOptions" class="w-full" />
-                </vs-select>
+                <my-select v-model="landing.country" :options="countryOptions" class="w-full select-large" :autocomplete="true" />
             </div>
         </div>
 
@@ -1699,16 +1665,26 @@ export default {
       return percentage.toFixed(2)
     },
     async fetchLandings() {
+      let landings = []
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
       try {
         const response = await this.$http.get('/api/v1/landings', { headers })
-        return response.data.data
+        landings = response.data.data
+        for (let i = 0; i < landings.length; i++) {
+          let obj = landings[i]
+
+          obj.value = obj.id
+          obj.label = obj.name
+
+          landings[i] = obj
+        }
       } catch (error) {
-        return []
+        landings = []
       }
-      return []
+      return landings
     },
     showCreateLandingPopup() {
       this.landing.name = ''
@@ -1793,15 +1769,11 @@ export default {
       this.$vs.loading.close()
     },
 
-    // DEBUG TEST TODO: check if it is faster
-    changeFormName(val) {
-      this.name = val
-    },
-    changeFlowName(val) {
-      this.flow_name = val
-    },
-    changeFlowPathName(val) {
-      this.flow_path_name = val
+    // TEST TODO: to delete
+    testFoo() {
+      // TODO: to delete
+      console.log('testFoo() called')
+      console.log('product', this.product)
     },
   },
   async created() {
@@ -1851,6 +1823,7 @@ export default {
         let user = userResponse.data.data[i]
         this.users.push({
           id: user.id,
+          value: user.id,
           label: user.email,
         })
         this.user = user.id;
@@ -1865,6 +1838,7 @@ export default {
       let ts = trafficSourceResponse.data.data[i]
       this.traffic_sources.push({
         id: ts.id,
+        value: ts.id,
         label: ts.name,
         name: ts.name,
         script: ts.script,
@@ -1878,6 +1852,7 @@ export default {
     const productResponse = await this.$http.get('/api/v1/products', { headers })
     for (let i = 0; i < productResponse.data.data.length; i++) {
       let p = productResponse.data.data[i]
+      p.value = p.id
       p.label = p.name
       this.products.push(p)
       this.product = p.id;
@@ -1893,6 +1868,7 @@ export default {
       if (network.enabled) {
         this.networksOptions.push({
           id: network.id,
+          value: network.id,
           label: network.name,
         })
       }
@@ -1925,6 +1901,7 @@ export default {
       let form = this.forms[i]
       this.formsOptions.push({
         id: form.id,
+        value: form.id,
         label: form.name + " - ID: " + form.id,
       })
       this.plugins['double_recovery'].form_id = form.id;
@@ -1941,6 +1918,15 @@ export default {
 
       if (this.domains.length > 0) {
         this.flow_domain_id = this.domains[0].id
+      }
+
+      for (let i = 0; i < this.domains.length; i++) {
+        let obj = this.domains[i]
+
+        obj.value = obj.id
+        obj.label = obj.domain
+
+        this.domains[i] = obj
       }
     } catch (error) {
       // Nothing

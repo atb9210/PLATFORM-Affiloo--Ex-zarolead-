@@ -24,6 +24,8 @@ Vue.component(FeatherIcon.name, FeatherIcon)
 Vue.component(VxInputGroup.name, VxInputGroup)
 
 // NOTE: Custom (created by driverfury)
+import MySelect  from './components/MySelect.vue'
+Vue.component(MySelect.name, MySelect)
 import EditableValue  from './components/EditableValue.vue'
 Vue.component(EditableValue.name, EditableValue)
 import FastEditableValue  from './components/FastEditableValue.vue'
