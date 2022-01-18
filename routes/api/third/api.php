@@ -78,7 +78,6 @@ Route::delete('/facebook/rules/{id}', 'api\third\FacebookController@deleteRule')
 Route::post('/facebook/rules/{id}/run', 'api\third\FacebookController@runRule')->middleware('auth:api')
     ->name('facebook.rules.run');
 
-/*
 Route::get('/facebook/advertisers', 'api\third\FacebookController@advertisers')->middleware('auth:api')
     ->name('facebook.advertisers');
 Route::post('/facebook/advertisers', 'api\third\FacebookController@storeAdvertiser')->middleware('auth:api')
@@ -87,12 +86,15 @@ Route::put('/facebook/advertisers/{id}', 'api\third\FacebookController@updateAdv
     ->name('facebook.advertisers.update');
 Route::delete('/facebook/advertisers/{id}', 'api\third\FacebookController@destroyAdvertiser')->middleware('auth:api')
     ->name('facebook.advertisers.destroy');
+Route::get('/facebook/adaccounts', 'api\third\FacebookController@adAccounts')->middleware('auth:api')
+    ->name('facebook.adaccounts');
 Route::get('/facebook/campaigns', 'api\third\FacebookController@campaigns')->middleware('auth:api')
     ->name('facebook.campaigns');
 Route::get('/facebook/adsets', 'api\third\FacebookController@adsets')->middleware('auth:api')
     ->name('facebook.adsets');
 Route::get('/facebook/ads', 'api\third\FacebookController@ads')->middleware('auth:api')
     ->name('facebook.ads');
+/*
 Route::put('/facebook/campaigns/{id}', 'api\third\FacebookController@updateCampaign')->middleware('auth:api')
     ->name('facebook.campaigns.update');
 Route::put('/facebook/adsets/{id}', 'api\third\FacebookController@updateAdset')->middleware('auth:api')
@@ -102,6 +104,8 @@ Route::put('/facebook/ads/{id}', 'api\third\FacebookController@updateAd')->middl
 */
 Route::post('/facebook/events', 'api\third\FacebookController@sendEvent')
     ->name('facebook.events.trigger');
+
+
 
 /* TikTok routes */
 Route::get('/tiktok/advertisers', 'api\third\TikTokController@advertisers')->middleware('auth:api')

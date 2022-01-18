@@ -22,6 +22,7 @@
         "core-js": "2.6.5",
         "echarts": "^4.2.1",
         "ecommerce": "file:packages_node/driverfury/ecommerce",
+        "facebook": "file:packages_node/driverfury/facebook",
         "file-saver": "2.0.1",
         "firebase": "7.13.2",
         "instantsearch.css": "^7.3.1",

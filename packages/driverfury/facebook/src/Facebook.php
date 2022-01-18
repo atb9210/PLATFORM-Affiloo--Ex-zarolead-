@@ -124,6 +124,16 @@ class Facebook
         return $output;
     }
 
+    public function getMe(array $fields = []): array
+    {
+        $params = [];
+        if (count($fields) > 0) {
+            $params['fields'] = $fields;
+        }
+        $object = $this->getRequest('/me', $params);
+        return $object;
+    }
+
     public function getAdAccounts(
         array $reports = []): array
     {
@@ -172,7 +182,7 @@ class Facebook
     }
 
     public function getCampaigns(
-        string $advertiserId,
+        string $parentId,
         array $reports = []): array
     {
         $params = [
@@ -212,7 +222,7 @@ class Facebook
             }
         }
 
-        $objects = $this->getRequestAllPages('/' . $advertiserId . '/campaigns', $params);
+        $objects = $this->getRequestAllPages('/' . $parentId . '/campaigns', $params);
         for ($i = 0; $i < count($objects); $i++) {
             if (isset($objects[$i]['insights']['data'][0])) {
                 $insights = $objects[$i]['insights']['data'][0];

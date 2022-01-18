@@ -1857,8 +1857,7 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      let params = {
-      }
+      let params = {}
 
       if (this.filters.date_from != '') {
         params.filter_date_from = this.filters.date_from

@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Log;
 
 use Driverfury\Facebook\Facebook;
 
-use App\third\FacebookAdvertiser;
-use App\Http\Resources\api\third\FacebookAdvertiserResource;
-
 use App\third\FacebookLogin;
 
 use App\third\FacebookRule;
 use App\Http\Resources\api\third\FacebookRuleResource;
+
+use App\third\FacebookAdvertiser;
+use App\Http\Resources\api\third\FacebookAdvertiserResource;
 
 class FacebookController extends Controller
 {
@@ -370,6 +370,356 @@ class FacebookController extends Controller
 
         return response([
             'message' => 'Rule executed',
+        ]);
+    }
+
+    /**
+     * Get advertisers list
+     *
+     * @response {
+     *  "data": [advertisers],
+     * }
+     */
+    public function advertisers(Request $request)
+    {
+        // TODO: Authorization
+
+        $advertisers = FacebookAdvertiser::all();
+        return FacebookAdvertiserResource::collection($advertisers);
+    }
+
+    /**
+     * Create advertiser
+     *
+     * @bodyParam name string Advertiser's name
+     * @bodyParam access_token string required Advertiser's access token
+     *
+     * @response {
+     *  "message": "Advertiser has been successfully created",
+     *  "data": advertiser,
+     * }
+     */
+    public function storeAdvertiser(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'nullable|string',
+            'access_token' => 'required|string|min:32',
+        ]);
+
+        $accessToken = $params['access_token'];
+        if (!isset($params['name']) || $params['name'] === null) {
+            $fb = new \Driverfury\Facebook\Facebook($accessToken);
+            $info = $fb->getMe(['id', 'name']);
+            if ($info !== null && isset($info['name'])) {
+                $params['name'] = $info['name'];
+            } else {
+                return response([
+                    'message' => 'Invalid access token',
+                    'errors' => [
+                        'access_token' => [ 'Invalid access token' ],
+                    ],
+                ], 422);
+            }
+        }
+
+        $advertiser = FacebookAdvertiser::create($params);
+        return response([
+            'message' => 'Facebook Advertiser has been successfully created',
+            'data' => new FacebookAdvertiserResource($advertiser),
+        ]);
+    }
+
+    /**
+     * Update advertiser
+     *
+     * @urlParam id string required Advertiser's id
+     *
+     * @bodyParam name string Advertiser's new name
+     * @bodyParam access_token string Advertiser's new access token
+     *
+     * @response {
+     *  "data": advertiser,
+     * }
+     */
+    public function updateAdvertiser($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $advertiser = FacebookAdvertiser::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'name' => 'string|min:1',
+            'access_token' => 'string|min:32',
+        ]);
+
+        $accessToken = $params['access_token'];
+        if (!isset($params['name']) || $params['name'] === null) {
+            $fb = new \Driverfury\Facebook\Facebook($accessToken);
+            $info = $fb->getMe(['id', 'name']);
+            if ($info !== null && isset($info['name'])) {
+                $params['name'] = $info['name'];
+            } else {
+                return response([
+                    'message' => 'Invalid access token',
+                    'errors' => [
+                        'access_token' => [ 'Invalid access token' ],
+                    ],
+                ], 422);
+            }
+        }
+
+        $advertiser->update($params);
+
+        return response([
+            'data' => new FacebookAdvertiserResource($advertiser),
+        ]);
+    }
+
+    /**
+     * Delete advertiser
+     *
+     * @urlParam id string required Advertiser's id
+     *
+     * @response {
+     *  "message": "Advertiser deleted",
+     * }
+     */
+    public function destroyAdvertiser($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $advertiser = FacebookAdvertiser::findOrFail($id);
+        $advertiser->delete();
+        return response([
+            'message' => 'Advertiser deleted',
+        ]);
+    }
+
+    /**
+     * Get ad accounts list
+     *
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam reports bool Reports (default: true)
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [adaccounts],
+     * }
+     */
+    public function adAccounts(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
+            'reports' => 'nullable|boolean',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+        ]);
+
+        $reports = [];
+        if (!isset($params['reports']) || boolval($params['reports']) === true) {
+            $reports = [
+                'metrics' => [
+                    'spend',
+                    'conversions',
+                    'cpm',
+                ],
+            ];
+        }
+
+        if (isset($params['filter_date_from'])) {
+            $reports['start_date'] = $params['filter_date_from'];
+        }
+        if (isset($params['filter_date_to'])) {
+            $reports['end_date'] = $params['filter_date_to'];
+        }
+
+        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
+        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
+        $adAccounts = $fb->getAdAccounts($reports);
+        return response([
+            'data' => $adAccounts,
+        ]);
+    }
+
+    /**
+     * Get campaigns list
+     *
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam parent_id string required Parent's id
+     * @bodyParam reports bool Reports (default: true)
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [campaigns],
+     * }
+     */
+    public function campaigns(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
+            'parent_id' => 'nullable|string|min:4',
+            'reports' => 'nullable|boolean',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+        ]);
+
+        $reports = [];
+        if (!isset($params['reports']) || boolval($params['reports']) === true) {
+            $reports = [
+                'metrics' => [
+                    'spend',
+                    'cpm',
+                    'actions',
+                ],
+            ];
+        }
+
+        if (isset($params['filter_date_from'])) {
+            $reports['start_date'] = $params['filter_date_from'];
+        }
+        if (isset($params['filter_date_to'])) {
+            $reports['end_date'] = $params['filter_date_to'];
+        }
+
+        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
+        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
+        $campaigns = [];
+        if (isset($params['parent_id']) && $params['parent_id'] !== null) {
+            $campaigns = $fb->getCampaigns($params['parent_id'], $reports);
+        } else {
+            // TODO: Get all campaigns of the specified advertiser (all ad accounts)
+        }
+
+        return response([
+            'data' => $campaigns,
+        ]);
+    }
+    
+    /**
+     * Get adsets list
+     *
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam parent_id string required Parent's id
+     * @bodyParam reports bool Reports (default: true)
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [adsets],
+     * }
+     */
+    public function adsets(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
+            'parent_id' => 'nullable|string|min:4',
+            'reports' => 'nullable|boolean',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+        ]);
+
+        $reports = [];
+        if (!isset($params['reports']) || boolval($params['reports']) === true) {
+            $reports = [
+                'metrics' => [
+                    'spend',
+                    'conversions',
+                    'cpm',
+                ],
+            ];
+        }
+
+        if (isset($params['filter_date_from'])) {
+            $reports['start_date'] = $params['filter_date_from'];
+        }
+        if (isset($params['filter_date_to'])) {
+            $reports['end_date'] = $params['filter_date_to'];
+        }
+
+        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
+        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
+        $adsets = [];
+        if (isset($params['parent_id']) && $params['parent_id'] !== null) {
+            $adsets = $fb->getAdsets($params['parent_id'], $reports);
+        } else {
+            // TODO: Get all adsets of the specified advertiser (all ad accounts)
+        }
+
+        return response([
+            'data' => $adsets,
+        ]);
+    }
+
+    /**
+     * Get ads list
+     *
+     * @bodyParam advertiser_id string required Advertiser's id
+     * @bodyParam parent_id string required Parent's id
+     * @bodyParam reports bool Reports (default: true)
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
+     * @response {
+     *  "data": [ads],
+     * }
+     */
+    public function ads(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'advertiser_id' => 'required|exists:third_facebook_advertisers,id',
+            'parent_id' => 'nullable|string|min:4',
+            'reports' => 'nullable|boolean',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to' => 'date|date_format:Y-m-d',
+        ]);
+
+        $reports = [];
+        if (!isset($params['reports']) || boolval($params['reports']) === true) {
+            $reports = [
+                'metrics' => [
+                    'spend',
+                    'conversions',
+                    'cpm',
+                ],
+            ];
+        }
+
+        if (isset($params['filter_date_from'])) {
+            $reports['start_date'] = $params['filter_date_from'];
+        }
+        if (isset($params['filter_date_to'])) {
+            $reports['end_date'] = $params['filter_date_to'];
+        }
+
+        $advertiser = FacebookAdvertiser::findOrFail($params['advertiser_id']);
+        $fb = new \Driverfury\Facebook\Facebook($advertiser->access_token);
+        $ads = [];
+        if (isset($params['parent_id']) && $params['parent_id'] !== null) {
+            $ads = $fb->getAds($params['parent_id'], $reports);
+        } else {
+            // TODO: Get all ads of the specified advertiser (all ad accounts)
+        }
+
+        return response([
+            'data' => $ads,
         ]);
     }
 }

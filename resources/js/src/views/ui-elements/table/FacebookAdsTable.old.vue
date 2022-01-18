@@ -11,221 +11,210 @@
 <template>
     <vx-card title="Facebook Ads" code-toggler>
 
-        <div class="vx-row mb-2" v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'">
-            <div class="vx-col w-1/3">
-            </div>
-            <div class="vx-col w-1/3 text-center">
-                <vs-select
-                    autocomplete
-                    @input="onAdvertiserSwitch"
-                    label="Switch Advertiser"
-                    v-model="advertiserSwitch"
-                    >
-                    <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" />
-                </vs-select>
-            </div>
-            <div class="vx-col w-1/3">
-            </div>
+        <div class="h-48 flex flex-col justify-center items-center">
+            <vs-button v-if="!loggedIn" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="login">Login with Facebook</vs-button>
+            <vs-button v-else class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook" @click="logout">Logout from Facebook</vs-button>
         </div>
 
-        <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <span class="btn-group flex items-center mr-2">
-                <vs-button @click="changeView('advertisers')" :color="(view == 'advertisers') ? 'success' : 'primary'">Advertisers</vs-button>
-                <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
-                <vs-button @click="changeView('adgroups')" :color="(view == 'adgroups') ? 'success' : 'primary'">Adgroups</vs-button>
-                <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
-                <vs-button @click="changeView('rules')" :color="(view == 'rules') ? 'success' : 'primary'">Rules</vs-button>
-            </span>
+        <div v-if="loggedIn">
 
-            <vs-button v-if="view == 'advertisers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateAdvertiserForm"></vs-button>
-            <vs-button v-if="view == 'campaigns' || view == 'adgroups' || view == 'ads'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-dollar-sign" @click="showUpdateFormCost"></vs-button>
-            <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
-            <vs-button v-if="view == 'rules'" :disabled="selectedRules.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-menu" @click="showBulkEditRuleForm"></vs-button>
-            <vs-button v-if="['campaigns','adgroups','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
-            <!--
-            <vs-button v-if="view == 'campaigns'" :disabled="!((view == 'campaigns') && (selectedCampaigns.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('campaigns')"></vs-button>
-            <vs-button v-if="view == 'adgroups'" :disabled="!((view == 'adgroups') && (selectedAdgroups.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('adgroups')"></vs-button>
-            <vs-button v-if="view == 'ads'" :disabled="!((view == 'ads') && (selectedAds.length > 0))" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-trending-up" @click="fetchTrend('ads')"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="fetchAdvancedStats()"></vs-button>
-            -->
-        </p>
+            <p class="flex items-center mb-4">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+                <span class="btn-group flex items-center mr-2">
+                    <vs-button @click="changeView('ad_accounts')" :color="(view == 'ad_accounts') ? 'success' : 'primary'">Ad accounts</vs-button>
+                    <vs-button @click="changeView('campaigns')" :color="(view == 'campaigns') ? 'success' : 'primary'">Campaigns</vs-button>
+                    <vs-button @click="changeView('adsets')" :color="(view == 'adsets') ? 'success' : 'primary'">Adsets</vs-button>
+                    <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
+                    <vs-button @click="changeView('rules')" :color="(view == 'rules') ? 'success' : 'primary'">Rules</vs-button>
+                </span>
+                <vs-button v-if="view == 'ads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="adLauncherPopup"></vs-button>
+                <vs-button v-if="view == 'rules'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateRuleForm"></vs-button>
+                <vs-button v-if="view == 'rules'" :disabled="selectedRules.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-menu" @click="showBulkEditRuleForm"></vs-button>
+                <vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
+            </p>
 
-        <div v-if="showFilters" class="mb-12">
-            <div class="vx-row mb-2">
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+            <div v-if="showFilters" class="mb-12">
+                <div class="vx-row mb-2">
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
+                    </div>
+                    <div class="vx-col w-3-12">
+                        <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
+                    </div>
                 </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
-                </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
-                </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
-                </div>
-            </div>
 
-            <div class="vx-row mb-2">
-                <div class="vx-col w-1/2">
-                    <label>From</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                <div class="vx-row mb-2">
+                    <div class="vx-col w-1/2">
+                        <label>From</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
+                    </div>
+                    <div class="vx-col w-1/2">
+                        <label>To</label>
+                        <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                    </div>
                 </div>
-                <div class="vx-col w-1/2">
-                    <label>To</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+
+                <div class="vx-row mb-2">
+                    <div class="vx-col md:w-1/3 w-full">
+                        <label>Status</label>
+                        <vs-select autocomplete v-model="filters.status" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
+                        </vs-select>
+                    </div>
                 </div>
-            </div>
-            <div class="vx-row mb-2">
-                <div class="vx-col md:w-1/3 w-full">
-                    <label>Status</label>
-                    <vs-select autocomplete v-model="filters.status" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-            <div class="vx-row mt-6">
-                <div class="vx-col w-full">
-                    <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
-                    <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+
+                <div class="vx-row mt-6">
+                    <div class="vx-col w-full">
+                        <vs-button class="mr-3 mb-2" @click="applyFilters">Apply</vs-button>
+                        <vs-button color="warning" type="border" class="mb-2" @click="resetFilters">Reset</vs-button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <vue-context ref="advertiser_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.advertiser_context_menu.close();changeView('campaigns', data.id);" class="flex items-center text-sm">
-                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show Campaigns</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.advertiser_context_menu.close();showEditAdvertiserForm(data);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.advertiser_context_menu.close();deleteAdvertiser(data);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.advertiser_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <vue-context ref="ad_account_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.ad_account_context_menu.close();adAccount = data;changeView('campaigns', data);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Campaigns</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.ad_account_context_menu.close();adRulesPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Rules</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.ad_account_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
-        <vue-context ref="campaign_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();changeView('adgroups', data.id);" class="flex items-center text-sm">
-                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show Adgroups</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <vue-context ref="campaign_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();changeView('adsets', data);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Adsets</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit bid</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
-        <vue-context ref="adgroup_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
-                <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show Ads</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close();editBudgetPopup(data);" class="flex items-center text-sm">
-                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit Budget</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
-                <feather-icon icon="MinusCircleIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit bid</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.adgroup_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <vue-context ref="adset_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data);" class="flex items-center text-sm">
+                    <feather-icon icon="ActivityIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Ads</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit bid</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();duplicateAdsetPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Duplicate</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.campaign_context_menu.close();duplicateAdsetBidderPopup(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Duplicate (bidder)</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
-        <vue-context ref="ad_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.ad_context_menu.close();viewAdPopup(data);" class="flex items-center text-sm">
-                <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">View ad</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <vue-context ref="ad_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.ad_context_menu.close();viewAd(data);" class="flex items-center text-sm">
+                    <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">View Ad</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
-        <vue-context ref="rule_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();showCampaignList(data);" class="flex items-center text-sm">
-                <feather-icon icon="MenuIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Campaigns list</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();runRule(data);" class="flex items-center text-sm">
-                <feather-icon icon="SettingsIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Run now</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
-                <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Enable/Disable</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();cloneRule(data);" class="flex items-center text-sm">
-                <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Clone</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
-                <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Edit</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
-                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Delete</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.rule_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <vue-context ref="rule_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();showCampaignList(data);" class="flex items-center text-sm">
+                    <feather-icon icon="MenuIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Campaigns list</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();runRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="SettingsIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Run now</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();switchStatusRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="EyeIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Enable/Disable</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();cloneRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="CopyIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Clone</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();showEditRuleForm(data);" class="flex items-center text-sm">
+                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close();deleteRule(data);" class="flex items-center text-sm">
+                    <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Delete</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.rule_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
-        <div>
             <vs-dropdown vs-trigger-click class="cursor-pointer">
                 <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ campaigns.length - currentPage * maxItems > 0 ? currentPage * maxItems : campaigns.length }} of {{ campaigns.length }}</span>
+                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
                     <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
                 </div>
                 <vs-dropdown-menu>
@@ -244,104 +233,96 @@
                 </vs-dropdown-menu>
             </vs-dropdown>
 
-            <!-- Advertisers table -->
-            <vs-table v-if="view == 'advertisers'" stripe multiple v-model="selectedAdvertisers" :max-items="maxItems" pagination search :data="advertisers" :currentPage="currentPage" @change-page="onPageChanged">
-
+            <!-- Ad accounts table -->
+            <vs-table v-if="view == 'ad_accounts'" stripe multiple v-model="selectedAdAccounts" :max-items="maxItems" pagination search :data="adAccounts" :currentPage="currentPage" @change-page="onPageChanged">
                 <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="id">Id</vs-th>
-                    <vs-th>Actions</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                        <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.advertiser_context_menu.open($event, data[indextr])">
-                                <vs-chip
-                                    transparent
-                                    class="disabled-object"
-                                    :color="campaignStatusColor[data[indextr].status]">
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.ad_account_context_menu.open($event, item)">
+                                <vs-chip transparent>
                                     <vs-avatar icon-pack="feather" icon="icon-user" />
-                                    {{data[indextr].name}}
+                                    {{item.name}}
                                 </vs-chip>
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].id">
-                            {{data[indextr].id}}
-                        </vs-td>
-
-                        <vs-td class="column-no-padding">
-                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="changeView('campaigns', data[indextr].id);"></vs-button>
-                        </vs-td>
                     </vs-tr>
 
+                    <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
 
             <!-- Campaigns table -->
             <vs-table v-if="view == 'campaigns'" stripe multiple v-model="selectedCampaigns" :max-items="maxItems" pagination search :data="campaigns" :currentPage="currentPage" @change-page="onPageChanged">
-
                 <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="effective_status">Status</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="objective">Objective</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="conversion">Conversion</vs-th>
-                    <vs-th sort-key="cpa">CPA</vs-th>
-                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
-                    <!--<vs-th sort-key="daily_budget">Budget</vs-th>-->
+                    <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                        <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
-                                <vs-chip
-                                    transparent
-                                    class="disabled-object"
-                                    :color="campaignStatusColor[data[indextr].status]">
-                                    <vs-avatar icon-pack="feather" icon="icon-user" />
-                                    {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
                                 </vs-chip>
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
+                        <vs-td class="column-no-padding" :data="item.status">
                             <vs-switch
-                                :color="campaignStatusColor[data[indextr].status]"
-                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
+                                :color="statusColors[item.status]"
+                                v-model="item.status == 'ACTIVE'"
                                 vs-icon-off="pause" vs-icon-on="done"
-                                @input="switchStatus('campaign', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
+                                @input="switchStatus('campaign', item)">
+                                <span slot="on" v-if="item.status == 'ACTIVE'">Active</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].spent">
-                            € {{data[indextr].spent.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.objective">
+                            {{ item.objective }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
-                            {{data[indextr].conversion}}
+                        <vs-td class="column-no-padding" :data="item.spent">
+                            € {{ item.spent.toFixed(2) }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
-                            € {{data[indextr].cpa.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                            {{ item.impressions }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cr">
-                            {{data[indextr].cr.toFixed(2)}}%
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
-                            € {{data[indextr].cpm.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                            € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
@@ -356,115 +337,97 @@
                             </vs-chip>
                         </vs-td>
 
-                        <!--
                         <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
-                            € {{data[indextr].daily_budget.toFixed(2)}}
+                            <editable-value
+                                v-model="data[indextr].new_daily_budget"
+                                @onEdit="data[indextr].new_daily_budget = data[indextr].daily_budget"
+                                @onUpdate="updateBudget('campaign', data[indextr])">
+                                <span v-if="item.cbo">
+                                    € {{ item.daily_budget.toFixed(2) }}
+                                </span>
+                                <span v-else>
+                                    ABO
+                                </span>
+                            </editable-value>
                         </vs-td>
-                        -->
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.spent.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.conversion}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpa.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.cr.toFixed(2)}}%
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpm.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
-                            € {{total_stats.profit.toFixed(2)}}
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
                         </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
-                            {{total_stats.roi.toFixed(2)}}%
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
                         </vs-chip>
                     </vs-td>
-                    <!--
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.budget.toFixed(2)}}
-                    </vs-td>
-                    -->
+                    <vs-td class="column-no-padding"></vs-td>
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
 
-            <!-- Adgroups table -->
-            <vs-table v-if="view == 'adgroups'" stripe multiple v-model="selectedAdgroups" :max-items="maxItems" pagination search :data="adgroups" :currentPage="currentPage" @change-page="onPageChanged">
-
+            <!-- Adsets table -->
+            <vs-table v-if="view == 'adsets'" stripe multiple v-model="selectedAdsets" :max-items="maxItems" pagination search :data="adsets" :currentPage="currentPage" @change-page="onPageChanged">
                 <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="effective_status">Status</vs-th>
+                    <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="conversion">Conversion</vs-th>
-                    <vs-th sort-key="cpa">CPA</vs-th>
-                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
-                    <!--<vs-th sort-key="budget">Budget</vs-th>-->
-                    <!--<vs-th sort-key="conversion_bid">Bid</vs-th>-->
+                    <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                        <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.adgroup_context_menu.open($event, data[indextr])">
-                                <vs-chip
-                                    transparent
-                                    class="disabled-object"
-                                    :color="adgroupStatusColor[data[indextr].status]">
-                                    <vs-avatar icon-pack="feather" icon="icon-user" />
-                                    {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.adset_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
                                 </vs-chip>
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
+                        <vs-td class="column-no-padding" :data="item.status">
                             <vs-switch
-                                :color="adgroupStatusColor[data[indextr].status]"
-                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
+                                :color="statusColors[item.status]"
+                                v-model="item.status == 'ACTIVE'"
                                 vs-icon-off="pause" vs-icon-on="done"
-                                @input="switchStatus('adgroup', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
+                                @input="switchStatus('campaign', item)">
+                                <span slot="on" v-if="item.status == 'ACTIVE'">Active</span>
                                 <span slot="off">Paused</span>
                             </vs-switch>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].spent">
-                            € {{data[indextr].spent.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.spent">
+                          € {{ item.spent.toFixed(2) }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
-                            {{data[indextr].conversion}}
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                          {{ item.impressions }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
-                            € {{data[indextr].cpa.toFixed(2)}}
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cr">
-                            {{data[indextr].cr.toFixed(2)}}%
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
-                            € {{data[indextr].cpm.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                          € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
@@ -479,127 +442,83 @@
                             </vs-chip>
                         </vs-td>
 
-                        <!--
-                        <vs-td class="column-no-padding" :data="data[indextr].budget">
-                            <span v-if="data[indextr].cbo">
-                                CBO
-                            </span>
-                            <span v-else>
-                                € {{data[indextr].budget.toFixed(2)}}
-                            </span>
+                        <vs-td class="column-no-padding" :data="data[indextr].daily_budget">
+                            <editable-value
+                                v-model="data[indextr].new_daily_budget"
+                                @onEdit="data[indextr].new_daily_budget = data[indextr].daily_budget"
+                                @onUpdate="updateBudget('adset', data[indextr])">
+                                <span v-if="item.cbo">
+                                    CBO
+                                </span>
+                                <span v-else>
+                                    € {{ item.daily_budget.toFixed(2) }}
+                                </span>
+                            </editable-value>
                         </vs-td>
-                        -->
-
-                        <!--
-                        <vs-td class="column-no-padding" :data="data[indextr].conversion_bid">
-                            € {{data[indextr].conversion_bid.toFixed(2)}}
-                        </vs-td>
-                        -->
 
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.spent.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.conversion}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpa.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.cr.toFixed(2)}}%
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpm.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
-                            € {{total_stats.profit.toFixed(2)}}
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
                         </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
-                            {{total_stats.roi.toFixed(2)}}%
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
                         </vs-chip>
                     </vs-td>
-                    <!--
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.budget.toFixed(2)}}
-                    </vs-td>
-                    -->
-                    <!--
                     <vs-td class="column-no-padding"></vs-td>
-                    -->
                     <!-- END TOTAL STATS-->
                 </template>
             </vs-table>
 
             <!-- Ads table -->
             <vs-table v-if="view == 'ads'" stripe multiple v-model="selectedAds" :max-items="maxItems" pagination search :data="ads" :currentPage="currentPage" @change-page="onPageChanged">
-
                 <template slot="thead">
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
-                    <vs-th sort-key="effective_status">Status</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
-                    <vs-th sort-key="conversion">Conversion</vs-th>
-                    <vs-th sort-key="cpa">CPA</vs-th>
-                    <vs-th sort-key="cr">CR</vs-th>
+                    <vs-th sort-key="impressions">Impressions</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
-                    <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                        <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.ad_context_menu.open($event, data[indextr])">
-                                <vs-chip
-                                    transparent
-                                    class="disabled-object"
-                                    :color="adStatusColor[data[indextr].status]">
-                                    <vs-avatar icon-pack="feather" icon="icon-user" />
-                                    {{data[indextr].name}}
+                        <vs-td class="column-no-padding" :data="item.id">
+                          {{ item.id }}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.ad_context_menu.open($event, item)">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-box" />
+                                    {{item.name}}
                                 </vs-chip>
                             </div>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].effective_status">
-                            <vs-switch
-                                :color="adStatusColor[data[indextr].status]"
-                                v-model="data[indextr].effective_status == 'ACTIVE' || data[indextr].effective_status == 'REVIEW' || data[indextr].effective_status == 'DISABLED'"
-                                vs-icon-off="pause" vs-icon-on="done"
-                                @input="switchStatus('ad', data[indextr].id)">
-                                <span slot="on" v-if="data[indextr].effective_status == 'ACTIVE'">Active</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'REVIEW'">Review</span>
-                                <span slot="on" v-else-if="data[indextr].effective_status == 'DISABLED'">Disabled</span>
-                                <span slot="off">Paused</span>
-                            </vs-switch>
+                        <vs-td class="column-no-padding" :data="item.spent">
+                          € {{ item.spent.toFixed(2) }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].spent">
-                            € {{data[indextr].spent.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.impressions">
+                          {{ item.impressions }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].conversion">
-                            {{data[indextr].conversion}}
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
-                            € {{data[indextr].cpa.toFixed(2)}}
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cr">
-                            {{data[indextr].cr.toFixed(2)}}%
-                        </vs-td>
-
-                        <vs-td class="column-no-padding" :data="data[indextr].cpm">
-                            € {{data[indextr].cpm.toFixed(2)}}
+                        <vs-td class="column-no-padding" :data="item.cpm">
+                          € {{ item.cpm.toFixed(2) }}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].profit">
@@ -619,30 +538,18 @@
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding">{{ data.length }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.spent.toFixed(2) }}</vs-td>
+                    <vs-td class="column-no-padding">{{ totalStats.impressions }}</vs-td>
+                    <vs-td class="column-no-padding">€ {{ totalStats.cpm.toFixed(2) }}</vs-td>
                     <vs-td class="column-no-padding">
-                        € {{total_stats.spent.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.conversion}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpa.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        {{total_stats.cr.toFixed(2)}}%
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.cpm.toFixed(2)}}
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.profit > 0) ? 'success' : ((total_stats.profit < 0) ? 'danger' : 'dark')">
-                            € {{total_stats.profit.toFixed(2)}}
+                        <vs-chip transparent :color="(totalStats.profit > 0) ? 'success' : ((totalStats.profit < 0) ? 'danger' : 'dark')">
+                            € {{totalStats.profit.toFixed(2)}}
                         </vs-chip>
                     </vs-td>
                     <vs-td class="column-no-padding">
-                        <vs-chip transparent :color="(total_stats.roi > 0) ? 'success' : ((total_stats.roi < 0) ? 'danger' : 'dark')">
-                            {{total_stats.roi.toFixed(2)}}%
+                        <vs-chip transparent :color="(totalStats.roi > 0) ? 'success' : ((totalStats.roi < 0) ? 'danger' : 'dark')">
+                            {{totalStats.roi.toFixed(2)}}%
                         </vs-chip>
                     </vs-td>
                     <!-- END TOTAL STATS-->
@@ -702,654 +609,823 @@
                 </template>
             </vs-table>
 
-        </div>
-
-        <!-- Edit budget popup -->
-        <vs-popup title="Edit budget" :active.sync="showPopup['edit_budget']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{editingObject.name}}</vs-button>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Budget</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.budget" />
-                </div>
-                <!--
-                <div class="vx-col w-full mt-2" v-if="(editingObject.object_type == 'campaign') && (editingObject.hasOwnProperty('cbo')) && (!editingObject.cbo)">
-                    <span>* This campaign is non-CBO: this daily budget will be assigned to every adset of this campaign.</span>
-                </div>
-                -->
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="editBudget" color="primary" type="filled" :disabled="!isValidForm('edit_budget')">Update budget</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- Edit bid popup -->
-        <vs-popup title="Edit bid" :active.sync="showPopup['edit_bid']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{editingObject.name}}</vs-button>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Strategy</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select v-model="editingObject.bid_strategy" :disabled="true" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Bid</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.conversion_bid" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="editBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update bid</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- Update form cost popup -->
-        <vs-popup title="Update form cost" :active.sync="showPopup['update_form_cost']">
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Total amount spent</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    € {{updateFormTotalCost.toFixed(2)}}
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Form</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select
-                      autocomplete
-                      v-model="updateFormId"
-                      class="w-full">
-                        <vs-select-item :key="index" :value="item.id" :text="item.id + ' - ' + item.name" v-for="(item, index) in forms" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Form association</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                   <vs-checkbox v-model="updateFormAssociate">Associate</vs-checkbox>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Date</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="updateFormDate" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateFormCost" color="primary" type="filled" :disabled="!isValidForm('update_form_cost')">Update Form Cost</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- View ad popup -->
-        <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
-
-            <div>
+            <!-- Edit bid popup -->
+            <vs-popup title="Edit budget" :active.sync="showPopup['edit_bid']">
                 <div class="vx-row mb-6 flex items-center">
-                    <vs-button class="mr-auto ml-auto">{{ad.name}}</vs-button>
+                    <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
                 </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <img v-if="adImage.url != ''" :src="adImage.url" class="w-full">
-                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                <div class="vx-row mb-6" v-if="(editingObject.object_type == 'adset' && editingObject.hasOwnProperty('cbo') && editingObject.cbo)">
+                    <div class="vx-col w-full mt-2">
+                        <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
                     </div>
                 </div>
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <span>{{ad.ad_text}}</span>
+                <div class="vx-row mb-6" v-else>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Type</span>
                     </div>
-                </div>
-
-                <!--
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <span><b>{{viewingObject.title}}</b></span>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select v-model="editingObject.bid_strategy" class="w-full">
+                            <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in bidOptions" />
+                        </vs-select>
                     </div>
                 </div>
                 
+                <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid_amount" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full mt-2" v-if="(editingObject.object_type == 'campaign' && editingObject.hasOwnProperty('cbo') && !editingObject.cbo)">
+                        <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- View ad popup -->
+            <vs-popup title="View Ad" :active.sync="showPopup['view_ad']">
+
+                <div>
+                    <div class="vx-row mb-6 flex items-center">
+                        <vs-button class="mr-auto ml-auto">{{ ad.name }}</vs-button>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                        <div class="vx-col sm:w-1/2 w-full mt-2">
+                            <img v-if="ad.image_url != ''" :src="ad.image_url" class="w-full">
+                            <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                        </div>
+                        <div class="vx-col sm:w-1/4 w-full mt-2">
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <span>{{ ad.body }}</span>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <span><b>{{ ad.title }}</b></span>
+                        </div>
+                    </div>
+                    
+                    <div class="vx-row mb-6">
+                        <div class="vx-col w-full">
+                            <vs-table :data="[{spent:ad.spent,impressions:ad.impressions,cpm:ad.cpm}]">
+                                <template slot="thead">
+                                    <vs-th sort-key="spent">Spent</vs-th>
+                                    <vs-th sort-key="impressions">Impressions</vs-th>
+                                    <vs-th sort-key="cpm">CPM</vs-th>
+                                    <vs-th>Actions</vs-th>
+                                </template>
+
+                                <template slot-scope="{data}">
+                                    <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
+                                        <vs-td v-if="ad.hasOwnProperty('spent')">
+                                            {{data[indextr].spent.toFixed(2)}}%
+                                        </vs-td>
+                                        <vs-td v-if="ad.hasOwnProperty('impressions')">
+                                            € {{data[indextr].impressions.toFixed(2)}}
+                                        </vs-td>
+                                        <vs-td v-if="ad.hasOwnProperty('cpm')">
+                                            € {{data[indextr].cpm.toFixed(2)}}
+                                        </vs-td>
+                                        <vs-td>
+                                            <div class="flex items-center">
+                                                <vs-button :disabled="ad.post_url == ''" @click="openNewTab(ad.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
+                                                <vs-button :disabled="ad.url == ''" @click="openNewTab(ad.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
+                                            </div>
+                                        </vs-td>
+                                    </vs-tr>
+                                </template>
+                                
+                            </vs-table>
+                        </div>
+                    </div>
+                </div>
+
+            </vs-popup>
+
+            <!-- Duplicate adset popup -->
+            <vs-popup title="Duplicate adset" :active.sync="showPopup['duplicate_adset']">
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Number of new adsets</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="1" step="1" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="editingObject.adsetNumber" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Budget (daily) of each adset</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.adsetBudget" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateAdsetNormal(editingObject)" color="primary" type="filled" :disabled="!isValidForm('duplicate_adset')">Duplicate</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Duplicate (bidder) adset popup -->
+            <vs-popup title="Bidder" :active.sync="showPopup['duplicate_adset_bidder']">
+                <div class="vx-row mb-6" v-if="editingObject.cbo">
+                    <div class="vx-col w-full">
+                        <span>* Warning: This adset is from a CBO campaign</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Budget</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <span>Accelerated</span>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-for="(item, index) in editingObject.adsets" :key="index">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.budget" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select v-model="item.bid" class="w-full">
+                            <vs-select-item :key="optionIndex" :value="option.value" :text="option.label" v-for="(option, optionIndex) in duplicateBidderBidOptions" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input type="number" min="0.0" step="0.1" class="w-full" v-model="item.bid_amount" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-checkbox v-model="item.accelerated">Acc.</vs-checkbox>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="removeBidderAdset(index)" color="danger" type="filled" icon-pack="feather" icon="icon-trash"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full"></div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" @click="addBidderAdset" color="primary" type="filled" icon-pack="feather" icon="icon-plus"></vs-button>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="duplicateAdsetBidder(editingObject)" color="primary" type="filled" :disabled="!isValidForm('duplicate_adset_bidder')">Duplicate (bidder)</vs-button>
+                </div>
+            </vs-popup>
+
+            <!-- Ad launcher popup -->
+            <vs-popup title="Ad Launcher" :active.sync="showPopup['ad_launcher']">
+
+                <div v-if="ad.view == 'normal'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Choose ad template</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="adTemplate" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item.name" v-for="(item, index) in adTemplates" class="w-full" />
+                            </vs-select>
+                            <p class="flex items-center w-full">
+                              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="loadAdTemplate(adTemplate)"></vs-button>
+                              <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate)"></vs-button>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>New ad template name</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newAdTemplateName" />
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Page</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.pageId" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in fbAccountPages" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Campaign name</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="ad.campaignName" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Status</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignStatus" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in campaignStatusOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Objective</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignObjective" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in campaignObjectiveOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6" v-if="ad.campaignObjective == 'CONVERSIONS'">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Pixel ID</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="ad.pixelId" disabled />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6" v-if="ad.campaignObjective == 'CONVERSIONS'">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Conversion event</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.conversionEvent" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in conversionEventOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Budget</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignBudgetStrategy" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in campaignBudgetStrategyOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.campaignBudget" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Bid</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.campaignBidStrategy" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in campaignBidStrategyOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input v-if="ad.campaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP'" type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.campaignBid" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Split Adset</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="ad.splitAdset" class="w-full select-large">
+                                <vs-select-item value="true" text="Yes" class="w-full" />
+                                <vs-select-item value="false" text="No" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Gender</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingGender" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in targetingGenderOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Age</span>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="1" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.targetingAgeMin" />
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-input type="number" min="0" step="1" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="ad.targetingAgeMax" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Country</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingCountry" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in targetingCountryOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Device</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-select autocomplete v-model="ad.targetingDevice" class="w-full select-large">
+                                <vs-select-item :key="index" :value="item.value" :text="item.label" v-for="(item, index) in targetingDeviceOptions" class="w-full" />
+                            </vs-select>
+                            <vs-checkbox v-model="ad.targetingWifi">Only when connected to Wi-Fi</vs-checkbox>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Platforms</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <div class="vx-row w-full">
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformFacebook">Facebook</vs-checkbox>
+                                </div>
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformInstagram">Instagram</vs-checkbox>
+                                </div>
+                            </div>
+                            <div class="vx-row w-full">
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformAudience">Audience</vs-checkbox>
+                                </div>
+                                <div class="vx-col sm:w-1/2 w-full">
+                                    <vs-checkbox v-model="ad.targetingPlatformMessenger">Messenger</vs-checkbox>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- TODO: Creative info -->
+
+                    <hr>
+
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Title</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="ad.title" />
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Text</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-textarea v-model="ad.text"></vs-textarea>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>URL</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="ad.url" />
+                            <span>Final URL: {{ad.url}}?pi={pixel_id}</span>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6 mt-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Conversion domain</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-input class="w-full" icon-pack="feather" icon="icon-globe" icon-no-border v-model="ad.conversionDomain" />
+                            <span>Pixel name: {{(this.selectedAdAccounts.length > 0 && this.selectedAdAccounts[0].hasOwnProperty('pixel_name')) ? this.selectedAdAccounts[0].pixel_name : ''}}</span>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Image/Video</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="ad.view = 'upload'">Choose medias</vs-button>
+                            <div>
+                                <!--<span class="ml-auto mr-auto">{{ (ad.filesToUpload.length == 0) ? 'No file selected' : ((ad.filesToUpload.length == 1) ? ad.filesToUpload[0].name : ad.filesToUpload.length + ' files') }}</span>-->
+                                <span class="ml-auto mr-auto">{{ (selectedProductMedias.length == 0) ? 'No media selected' : selectedProductMedias.length + ' media(s) selected' }}</span>
+                            </div>
+                        </div>
+                        <!--
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker">Upload</vs-button>
+                            <div>
+                                <span class="ml-auto mr-auto">{{ (ad.filesToUpload.length == 0) ? 'No file selected' : ((ad.filesToUpload.length == 1) ? ad.filesToUpload[0].name : ad.filesToUpload.length + ' files') }}</span>
+                            </div>
+                            <input type="file" ref="adFileUpload" class="hidden" :accept="'image/*,video/*'" multiple @change="onFilesUploadChange">
+                        </div>
+                        -->
+                    </div>
+
+                    <div class="vx-row mb-6" v-if="selectedProductMediasHaveVideo()">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <span>Video(s) preview</span>
+                        </div>
+                        <div class="vx-col sm:w-2/3 w-full">
+                            <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="ad.view = 'upload_preview'">Choose preview</vs-button>
+                            <div>
+                                <span class="ml-auto mr-auto">{{ (selectedPreview.length == 0) ? 'No media selected' : selectedPreview.length + ' preview selected' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vx-row mb-6">
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate" color="primary" type="filled">Save Ad Template</vs-button>
+                        <vs-button class="mt-12 mr-auto ml-auto" @click="launchAd" color="primary" type="filled" :disabled="!isValidForm('ad_launcher')">Launch Ad(s)</vs-button>
+                    </div>
+                </div>
+
+                <div v-if="ad.view == 'upload'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedProductMedias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="ad.view = 'normal'"></vs-button>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="productMediasFilterProductId" class="w-full select-large" @change="changeProductMediaFilterProductId">
+                                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full flex items-center">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias"></vs-button>
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full" :class="productMediaIsSelected(index) ? 'selected-product-media' : ''" v-for="(item, index) in productMediasFiltered" @click="selectProductMedia(index)" @dblclick="openProductMedia(index)">
+                            <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+                            <center>{{item.type}} ({{item.pathname}})</center>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="ad.view == 'upload_preview'">
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(selectedPreview.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="ad.view = 'normal'"></vs-button>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                            <vs-select autocomplete v-model="productMediasFilterProductId" class="w-full select-large" @change="changeProductMediaFilterProductId" disabled="disabled">
+                                <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productOptions" class="w-full" />
+                            </vs-select>
+                        </div>
+                        <div class="vx-col sm:w-1/3 w-full">
+                        </div>
+                    </div>
+                    <div class="vx-row mb-6">
+                        <div class="vx-col sm:w-1/3 w-full" :class="(selectedPreview.length == 1 && selectedPreview[0] == index) ? 'selected-product-media' : ''" v-for="(item, index) in productMediasFiltered" @click="selectPreview(index)" @dblclick="openProductMedia(index)" v-if="item.type == 'image'">
+                            <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+                            <center>{{item.type}} ({{item.pathname}})</center>
+                        </div>
+                    </div>
+                </div>
+
+            </vs-popup>
+
+            <!-- Create rule popup -->
+            <vs-popup title="Create rule" :active.sync="showPopup['create_rule']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Frequency</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                            <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full flex">
+                        <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                        <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Time</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                            <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
+
                 <div class="vx-row mb-6">
                     <div class="vx-col w-full">
-                        <vs-table :data="[{ctr:viewingObject.ctr,cpc:viewingObject.cpc,cpa:viewingObject.cpa}]">
-                            <template slot="thead">
-                                <vs-th sort-key="ctr">CTR</vs-th>
-                                <vs-th sort-key="cpc">CPC</vs-th>
-                                <vs-th sort-key="cpa">CPA</vs-th>
-                                <vs-th>Actions</vs-th>
-                            </template>
-
-                            <template slot-scope="{data}">
-                                <vs-tr :key="indextr" v-for="(tr, indextr) in data" >
-                                    <vs-td v-if="viewingObject.hasOwnProperty('ctr')">
-                                        {{data[indextr].ctr.toFixed(2)}}%
-                                    </vs-td>
-                                    <vs-td v-if="viewingObject.hasOwnProperty('cpc')">
-                                        € {{data[indextr].cpc.toFixed(2)}}
-                                    </vs-td>
-                                    <vs-td v-if="viewingObject.hasOwnProperty('cpa')">
-                                        € {{data[indextr].cpa.toFixed(2)}}
-                                    </vs-td>
-                                    <vs-td>
-                                        <div class="flex items-center">
-                                            <vs-button :disabled="viewingObject.post_url == ''" @click="openNewTab(viewingObject.post_url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-facebook"></vs-button>
-                                            <vs-button :disabled="viewingObject.url == ''" @click="openNewTab(viewingObject.url)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-link"></vs-button>
-                                            <vs-button @click="saveAdBegin(viewingObject)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save"></vs-button>
-                                        </div>
-                                    </vs-td>
-                                </vs-tr>
-                            </template>
-                            
-                        </vs-table>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else>
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="viewAdSaving = false"></vs-button>
+                        <span>Rules</span>
                     </div>
                 </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <vs-select v-model="viewAdSavingProduct" class="w-full select-large" label="Product" v-validate="'required'" autocomplete>
-                            <vs-select-item :key="index" :value="item.id" :text="item.label" v-for="(item, index) in productsOptions" class="w-full" />
+                <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                            <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
                         </vs-select>
                     </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                </div>
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <vs-select v-model="viewAdSavingType" class="w-full select-large" label="Type" v-validate="'required'">
-                            <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in typesOptions" class="w-full" />
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                            <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
                         </vs-select>
                     </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
                     </div>
-                </div>
-
-                <div class="vx-row mb-6" v-if="viewAdSavingType == 'video'">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="showFilePicker('main')">Upload media</vs-button>
-                        <div class="vx-col w-full flex items-center">
-                            <span class="ml-auto mr-auto">{{ (fileToUpload.length == 0) ? 'No file selected' : fileToUpload.name }}</span>
-                        </div>
-                        <div class="vx-col w-full flex items-center">
-                            <span class="text-danger">{{ errors.first('file') }}</span>
-                        </div>
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <input type="file" ref="fileUpload" class="hidden" :accept="viewAdSavingType + '/*'" @change="onFileUploadChange">
-                </div>
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        {{ (viewAdSavingType == 'video') ? 'Preview' : 'Media' }}
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
-                    </div>
-                    <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <img ref="viewAdSavingImg" v-if="viewingObject.image_url != ''" :src="viewingObject.image_url" class="w-full">
-                        <img ref="viewAdSavingImg" v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
-                    </div>
-                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
                     </div>
                 </div>
 
                 <div class="vx-row mb-6">
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        CTR
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
+                </div>
+
+                <hr>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Actions</span>
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        CPC
+                </div>
+
+                <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                            <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                        </vs-select>
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        CPA
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCtr" />
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
                     </div>
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpc" />
-                    </div>
-                    <div class="vx-col sm:w-1/3 w-full mt-2">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="viewAdSavingCpa" />
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
                     </div>
                 </div>
 
                 <div class="vx-row mb-6">
-                    <vs-button class="mt-12 mr-auto ml-auto" @click="adSave" color="primary" type="filled" :disabled="!isValidForm('save_ad')">Save Ad</vs-button>
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
                 </div>
-                -->
-            </div>
-            
-        </vs-popup>
- 
-        <!-- Create advertiser popup -->
-        <vs-popup title="Create advertiser" :active.sync="showPopup['create_advertiser']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{advertiser.name}}</vs-button>
-            </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="createRule" color="primary" type="filled" :disabled="!isValidForm('create_rule')">Create rule</vs-button>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.name" />
-                </div>
-            </div>
+            </vs-popup>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>ID</span>
+            <!-- Edit rule popup -->
+            <vs-popup title="Edit rule" :active.sync="showPopup['edit_rule']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.id" />
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Access token</span>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Name</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
+                    </div>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="advertiser.access_token" />
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="createAdvertiser" color="primary" type="filled" :disabled="!isValidForm('create_advertiser')">Create advertiser</vs-button>
-            </div>
-        </vs-popup>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Frequency</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
+                            <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
 
-        <!-- Edit advertiser popup -->
-        <vs-popup title="Edit advertiser" :active.sync="showPopup['edit_advertiser']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{advertiser.name}}</vs-button>
-            </div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full flex">
+                        <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
+                        <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.name" />
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>ID</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.id" />
-                </div>
-            </div>
+                <hr>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Access token</span>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Time</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.time" class="w-full select-large">
+                            <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
+                        </vs-select>
+                    </div>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="advertiser.access_token" />
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateAdvertiser" color="primary" type="filled" :disabled="!isValidForm('edit_advertiser')">Update advertiser</vs-button>
-            </div>
-        </vs-popup>
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Rules</span>
+                    </div>
+                </div>
 
-        <!-- Create rule popup -->
-        <vs-popup title="Create rule" :active.sync="showPopup['create_rule']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
-            </div>
+                <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
+                            <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
+                            <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
+                    </div>
+                </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Frequency</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
-                        <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
+                <hr>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Advertiser</span>
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Actions</span>
+                    </div>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaigns</span>
+                <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
+                    <div class="vx-col sm:w-2/5 w-full">
+                        <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
+                            <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
+                    </div>
+                    <div class="vx-col sm:w-1/5 w-full">
+                        <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
+                    </div>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full flex">
-                    <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
-                    <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
 
-            <hr>
+                <div class="vx-row mb-6">
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
+                </div>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Time</span>
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateRule" color="primary" type="filled" :disabled="!isValidForm('edit_rule')">Update rule</vs-button>
                 </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.time" class="w-full select-large">
-                        <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
+            </vs-popup>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col w-full">
-                    <span>Rules</span>
-                </div>
-            </div>
+            <!-- Bulk edit rule popup -->
+            <vs-popup title="Bulk edit rule" :active.sync="showPopup['bulk_edit_rule']">
 
-            <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
-                <div class="vx-col sm:w-2/5 w-full">
-                    <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
-                        <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
-                    </vs-select>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Ad Account</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete v-model="rule.ad_account_id" class="w-full select-large" @input="refreshCampaignsOptions()">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in adAccounts" class="w-full" />
+                        </vs-select>
+                    </div>
                 </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
-                        <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
-                    </vs-select>
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
-            </div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Campaigns</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
+                            <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
+                        </vs-select>
+                    </div>
+                </div>
 
-            <hr>
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="bulkUpdateRules" color="primary" type="filled" :disabled="!isValidForm('bulk_edit_rule')">Bulk update</vs-button>
+                </div>
+            </vs-popup>
 
-            <div class="vx-row mb-6">
-                <div class="vx-col w-full">
-                    <span>Actions</span>
+            <!-- Campaign ids list view popup -->
+            <vs-popup title="Campaign ids list" :active.sync="showPopup['campaign_ids']">
+                <div class="vx-row mb-6 flex items-center">
+                    <h2>Campaign ids list</h2>
                 </div>
-            </div>
 
-            <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
-                <div class="vx-col sm:w-2/5 w-full">
-                    <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
-                        <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
-                    </vs-select>
+                <div class="vx-row mb-6">
+                    <vs-col v-for="(item, index) in campaignsList" :key="index">
+                        <vs-checkbox v-model="campaignsListUpdated" :vs-value="item.id">{{ item.name }}</vs-checkbox>
+                    </vs-col>
                 </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
-                </div>
-            </div>
 
-            <div class="vx-row mb-6">
-                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
-            </div>
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateCampaignsList" color="primary" type="filled">Update campaigns list</vs-button>
+                </div>
+            </vs-popup>
 
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="createRule" color="primary" type="filled" :disabled="!isValidForm('create_rule')">Create rule</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- Edit rule popup -->
-        <vs-popup title="Edit rule" :active.sync="showPopup['edit_rule']">
-            <div class="vx-row mb-6 flex items-center">
-                <vs-button class="mr-auto ml-auto">{{rule.name}}</vs-button>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Name</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="rule.name" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Frequency</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.frequency" class="w-full select-large">
-                        <vs-select-item :key="f.value" :value="f.value" :text="f.label" v-for="(f, fIndex) in ruleFrequencyOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Advertiser</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaigns</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full flex">
-                    <vs-checkbox v-model="rule.all_campaigns">All</vs-checkbox>
-                    <vs-select :disabled="rule.all_campaigns == true" autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Time</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.time" class="w-full select-large">
-                        <vs-select-item :key="tIndex" :value="t.value" :text="t.label" v-for="(t, tIndex) in ruleTimeOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col w-full">
-                    <span>Rules</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6" :key="'rule_' + ruleIndex" v-for="(ruleItem, ruleIndex) in rule.rules">
-                <div class="vx-col sm:w-2/5 w-full">
-                    <vs-select autocomplete v-model="rule.rules[ruleIndex].metric" class="w-full select-large">
-                        <vs-select-item :key="m.value" :value="m.value" :text="m.label" v-for="(m, mIndex) in ruleMetricOptions" class="w-full" />
-                    </vs-select>
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-select autocomplete v-model="rule.rules[ruleIndex].comparison" class="w-full select-large">
-                        <vs-select-item :key="c" :value="c" :text="c" v-for="(c, cIndex) in ruleComparisonOptions" class="w-full" />
-                    </vs-select>
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.rules[ruleIndex].value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeRule(ruleIndex)"></vs-button>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addRule"></vs-button>
-            </div>
-
-            <hr>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col w-full">
-                    <span>Actions</span>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6" :key="'action_' + actionIndex" v-for="(actionItem, actionIndex) in rule.actions">
-                <div class="vx-col sm:w-2/5 w-full">
-                    <vs-select autocomplete v-model="rule.actions[actionIndex].type" class="w-full select-large">
-                        <vs-select-item :key="a.value" :value="a.value" :text="a.label" v-for="(a, aIndex) in ruleActionOptions" class="w-full" />
-                    </vs-select>
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-input class="w-full" icon-no-border v-model="rule.actions[actionIndex].max_value" />
-                </div>
-                <div class="vx-col sm:w-1/5 w-full">
-                    <vs-button class="mr-auto ml-auto" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeAction(actionIndex)"></vs-button>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addAction"></vs-button>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateRule" color="primary" type="filled" :disabled="!isValidForm('edit_rule')">Update rule</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- Bulk edit rule popup -->
-        <vs-popup title="Bulk edit rule" :active.sync="showPopup['bulk_edit_rule']">
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Advertiser</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete v-model="rule.advertiser_id" class="w-full select-large" @input="refreshCampaignsOptions()">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in advertisers" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <div class="vx-col sm:w-1/3 w-full">
-                    <span>Campaigns</span>
-                </div>
-                <div class="vx-col sm:w-2/3 w-full">
-                    <vs-select autocomplete multiple v-model="rule.campaign_ids" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item.id" :text="item.name" v-for="(item, index) in campaignsOptions" class="w-full" />
-                    </vs-select>
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="bulkUpdateRules" color="primary" type="filled" :disabled="!isValidForm('bulk_edit_rule')">Bulk update</vs-button>
-            </div>
-        </vs-popup>
-
-        <!-- Campaign ids list view popup -->
-        <vs-popup title="Campaign ids list" :active.sync="showPopup['campaign_ids']">
-            <div class="vx-row mb-6 flex items-center">
-                <h2>Campaign ids list</h2>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-col v-for="(item, index) in campaignsList" :key="index">
-                    <vs-checkbox v-model="campaignsListUpdated" :vs-value="item.id">{{ item.name }}</vs-checkbox>
-                </vs-col>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateCampaignsList" color="primary" type="filled">Update campaigns list</vs-button>
-            </div>
-        </vs-popup>
+        </div>
 
     </vx-card>
 </template>
 
 <script>
-import vSelect from 'vue-select'
-import VueApexCharts from 'vue-apexcharts'
-
 import { VueContext } from 'vue-context'
 
 // TODO: Move this function into a utilities package?
@@ -1371,49 +1447,178 @@ function intersect(a, b) {
   return Array.from(intersection)
 }
 
+async function convertImgToBase64(url) {
+  const data = await fetch(url)
+  const blob = await data.blob()
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(blob)
+    reader.onloadend = () => {
+      const base64data = reader.result
+      resolve(base64data)
+    }
+  })
+}
+
+async function convertImgToBase64Raw(url) {
+  let dataBase64 = await convertImgToBase64(url)
+  let toSearch = 'base64,'
+  let result = dataBase64
+  result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+  return result
+}
+
 export default {
   name: 'FacebookAdsTable',
   components: {
-    'v-select': vSelect,
-    VueApexCharts,
     VueContext,
   },
   props: {
   },
   data () {
     return {
-      view: 'advertisers',
+      loggedIn: false,
+      FB: {},
+      fbApiVersion: 'v12.0',
+      accessToken:'',
 
-      selectedAdvertisers: [],
-      selectedCampaigns: [],
-      selectedAdgroups: [],
-      selectedAds: [],
-      selectedRules: [],
-
-      deleted: [],
+      view: 'ad_accounts',
+      viewLevel: {
+        'ad_accounts': 0,
+        'campaigns': 1,
+        'adsets': 2,
+        'ads': 3,
+      },
 
       maxItems: 20,
+      showFilters: false,
+      filters: {
+        date_from: '',
+        date_to: '',
+        status: '',
+      },
+      dateFormat: 'yyyy-MM-dd',
 
-      advertisersLoaded: false,
-      campaignsLoaded: false,
-      adgroupsLoaded: false,
-      adsLoaded: false,
-      rulesLoaded: false,
+      adAccounts: [],
+      selectedAdAccounts: [],
 
-      advertisers: [],
       campaigns: [],
-      adgroups: [],
-      ads: [],
-      rules: [],
+      selectedCampaigns: [],
 
-      advertiserSwitch: null,
-      currentAdvertiserId: null,
-      currentCampaignId: null,
-      currentAdgroupId: null,
+      adsets: [],
+      selectedAdsets: [],
+
+      ads: [],
+      selectedAds: [],
+
+      rules: [],
+      selectedRules: [],
+
+      parent: null,
+      currentAdAccount: null,
+      currentCampaign: null,
+      currentAdset: null,
+      currentAd: null,
+
+      statusOptions: ['ACTIVE', 'PAUSED', 'REVIEW'],
+      statusColors: {
+        'ACTIVE': 'success',
+        'PAUSED': 'warning',
+        'DELETED': 'danger',
+        'ARCHIVED': 'warning',
+      },
+
+      totalStats: {
+        spent: 0.0,
+        impressions: 0,
+        cpm: 0.0,
+        value: 0.0,
+        profit: 0.0,
+        roi: 0.0,
+      },
+
+      showPopup: {
+        'edit_bid': false,
+        'view_ad': false,
+        'duplicate_adset': false,
+        'duplicate_adset_bidder': false,
+        'ad_launcher': false,
+        'create_rule': false,
+        'edit_rule': false,
+        'bulk_edit_rule': false,
+        'campaign_ids': false,
+      },
+
+      adAccount: {},
+      campaign: {},
+      adset: {},
+      ad: {},
+
+      editingObject: {},
+
+      bidOptions: [
+        { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+      duplicateBidderBidOptions: [
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
+
+      adTemplate: {
+        'name': 'new',
+        'value': {},
+      },
+      adTemplates: [],
+      newAdTemplateName: '',
+
+      fbAccountPages: [],
+
+      productMedias: [],
+      productMediasFiltered: [],
+      productMediasFilterProductId: '',
+
+      selectedProductMedias: [],
+      selectedPreview: [],
+      videoThumbnail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAkFBMVEX///8EAgQAAAD29vby8vJubm7MzMzv7+/b29u7u7v7+/tTU1MzNTM3NzfOzs739/epqqmcnJzU1NTk5OR/f39lZmVISUiOjo6JiYkxMTEWFRZgYWDn5+coKSi4ubh3d3dBQUGfn59aWVpRUFEgHyAPDg/DxMOTlJOoqaiDg4MrKisjIyM9PD0LCwt5enlFRUUd5XBlAAAIIklEQVR4nO2da1savRaG42KAYdzAAAoKyEERtKL9//9uz1BAxAGyTsnwXnk+tB9au3KXkMM6xZigoKCgoKCgoKCgoKCgoKCgoKCgoNIo6sW1dHX3Va1Wn/v97Nfp3aDTiOOx74FJKF4ORrMFFOu1+TJNa5HvMZLVbqxmO5abIu3+cFFNe74Hi1bUepidYfsN+llN674Hba/6pDq0g/uJ2V/FvodupeU9lu4Astkp+ycZvxPxDj7JRuKb4qSSyS0Hb085HJRzG2nPH/l4W0aodn3j/FJ7cCPEt2V8KRdjpSMwPY8Zb0u0sqavwnxbyGpJDgLLpgbfBhEefMNlqt8r8W0Zl74B54p8/xifvU7VXl8ZcMP45g8w1efbID57umBFt04AN4wNH4C1T0d8G8R394DaS8wxY9/1pWPkFjD/GJ0e48b/c8y3QUzdAXYX7gFzxIErwKXrGbpHrLoBbHgCzBlvXQC++QPMEfU3f8e7xC/EWeW/DZghNnUdVRPfgPnerwnocZE5QBzpAbbKAJghqm0avXIAZohKzo3Iy0mmUEoHuNvSAGanm5YC4Ht5ADPEV/nLVFomwAzxURqwNKvMTuK3/mbJAG+kPal3ZQPMED8lv4q+boRnJXmVqgxLCCi6K1bxgG5cxVLztEYBdDGvpc7gySOBMH5wgCjlC+8QhgqR6T07iNp8SFyH65SBQu5rmEiHvgvsdAQICcvMltAkd9qIEotNjzRG2PqLutoBRoHbMO3OBHuPWKo7VQG4GRtEx8U3oYk0A/2ZpXsmIfHaC4dezdpaNZmB9yFSfU8/CE3S0UTkfRPviSODI8/0WG9zBODk+dEW0pvfhNn1RCVvamPri0H4JUdoEq1zHAD9YJOQx1RAaEz8osMIczLhG3lAhYRamyP8IRPSnTMnCE1lqoJYIwJ26aM5RZjtPwqbI3nDYPiATxNqhCDhhhYZbn/oEJq6+OYIExIhwXnxbfJ8LHoplfS+M0dzZ3B8pBcITXsligjQphC+KhJmxyXRzZHksOlyBnCZ0JjGUI6RdIdaaROaipyTA4BAyIrFWBFm8+SvFCMhZBqxbFsSbjZHEUaC023JMmxNaKKqCCK8oAkfHBEKbY6wQB9r+s4ITSKxOaLdNXVeQA1FaMyYn/aPrsqIeRaRhNnm+IfJCFOkxYljQtNmOjnQCX3M7Bk8YTZtZhxGwJocuSdk1jECrgIsYZYb0AhNxHByIA/fvBMNmdCYFnlzRHrc6szFm0yYh5yJwSBcSibvzMYipFalItNruHl6HMLs/5eyOcITygYlO0GO0CQDPCLyijjwS0iqv8URTn0TZl+UBZIRULcLatxQkNBE78gWN6g44qwEhMZ0UZsjzpHBraCUIdyUkVmPBBefKQuhqds7Oa6U0Jia7eZ4tYS559ZqNFdMaOInm+FcM+HAKoRyvYRdy/4310pov5jiCJ/LQohon4JzYzDdNFKEqPRU3KnN+91iI1z0DXe3YAUPhQgbOM8b8n44906ITvWHIerfZ7q8+YT4YA3MUAaYYQsuYe2D4MXABS68+UtzjUlBU1ihjFSYddscwjmtLAxbyfbiizCm9ijEdlliuqKohPTABeAcUWyHKZFwQs/Dgj/IXOiWB8KYE+tGZ0Uxq9MphEjn4bFFdK8MXnk6nnDJzHLDF6/zfMJYwjG3OAqQIWDDjT4hCfm5X7DGAmbnNid5bblaTwJdwAmFM6yCcwQhwud7ziAhhZZUHYsnTEW6GZCqZVkXKFvCHiuH5sBeEw9oKqz8HSvCCm8LPLRHqunm+NusCBvYGOgZe6RCUnpdlxXhWLDJK3xQAGmtBqwJB5JlbNTOpoxpeonQOmRmZ41a7cxYTc8T0twUZ6xRWylW6P2szxJiQtd21shd2+kX/TOEtqEkhDF6cwy6T/EkYaTQDIRTkb+mjuYUIToNyMoYo9N3Q5ZwrFLMTTqx7WUVQC+yWkDYJqTjWdlitVKinmsKCNn1BqdM8TooUn3fvwj1Hmvhdm0jhtmOCfVaSMMjsxlWQtv1fxK2tF4TuuF/hFSP1CFhXaWPws4QvWPEXqRv4gGhbqMoiR6fpLT9PSGv1OeyHXxhZYEol6gtYUW5tyC/09dGFM/pP8KGgCP0vJk7CUBSwWxOKFA2ecnKUCr1Cr/YQKTa32tnRewZKHwPEJgrndF+GHmWAqR0xHLSvVSwVTKlSau6ZJ8qYzRU0hKrTVuBuKVe4kJnJlwUM8FGWkJ7/aES6nVfRUDsDHVWvKCwsHReCyzBO0E7ab3dxU0cFhMsSI2vLERuhSkr0a3+SNzCSxEpLKPfSkrwmg6Q+0DayftbJeqvPFe49bNsQIWN8Kcir4gOAI3Xl610XrL6LW5RFAPQ1Yu56k8enAD8cPfMugMfTAHg2uWzzu6fRwL2EwFI9RxvjCDyGglKbd1HHY4BP3UPMsVy9zAwwF/9Z4CLRC7gQQM6n6F7uXnUaa14l7goevMxe0BnL6qf0Eo3AAozd7v8Kak+PzLUeTQWq6VOnDebHAM/S2iBUsHW3N98Vc4DMuKay0abMr6RzxW0SMmb3LKa8U3LxpcrafRF1tX8+1eq+XmoeApMyOzHmxPpqJKokrRPh8x+cPFQxul5pF6HBJn9yNPUxw2CpHF6DwjKzd99XLW0ohFKanX+Alzk/Pc3hl8Tlx4KQXUn0/4H7HXElet1PerUrpRup6jXTR+mo/UBaf6pPd1W7zrL+MrhDpW0o6hej+JWq579FlVKvSMEBQUFBQUFBQUFBQUFBQUFBQUF/db/Afm8kjbo5XSmAAAAAElFTkSuQmCC',
+
+      campaignStatusOptions: [ 'ACTIVE', 'PAUSED' ],
+      campaignObjectiveOptions: [
+        { value: 'LINK_CLICKS', label: 'Link clicks' },
+        { value: 'CONVERSIONS', label: 'Conversions' },
+        { value: 'LEAD_GENERATION', label: 'Lead generation' },
+        { value: 'PAGE_LIKES', label: 'Page likes' },
+        { value: 'POST_ENGAGEMENT', label: 'Post engagement' },
+        { value: 'REACH', label: 'Reach' },
+      ],
+      conversionEventOptions: [
+        { value: 'SUBSCRIBE', label: 'Subscribe' },
+        { value: 'ADD_TO_CART', label: 'Add to cart' },
+        { value: 'PURCHASE', label: 'Purchase' },
+        { value: 'LEAD', label: 'Lead' },
+        { value: 'COMPLETE_REGISTRATION', label: 'Complete registration' },
+      ],
+      campaignBudgetStrategyOptions: [ 'CBO', 'Adset' ],
+      campaignBidStrategyOptions: [
+        { value: 'LOWEST_COST_WITHOUT_CAP', label: 'Lowest cost' },
+        { value: 'LOWEST_COST_WITH_BID_CAP', label: 'Bid cap' },
+        { value: 'COST_CAP', label: 'Cost cap' },
+      ],
+      targetingGenderOptions: [ 'All', 'Male', 'Female' ],
+      targetingCountryOptions: [
+        { value: 'IT', label: 'Italy'},
+        { value: 'US', label: 'United States'},
+      ],
+      targetingDeviceOptions: [
+        { label: 'All', value: '' },
+        { label: 'Mobile', value: 'mobile' },
+        { label: 'Desktop', value: 'desktop' },
+      ],
 
       rule: {
         name: '',
-        advertiser_id: '',
+        ad_account_id: '',
         campaign_ids: [],
         all_campaigns: false,
         rules: [],
@@ -1422,270 +1627,7 @@ export default {
         time: 'lifetime',
       },
       campaignsOptions: [],
-      currAdvId: null,
-
-      total_stats: {
-        spent: 0,
-        conversion: 0,
-        cpa: 0,
-        impressions: 0,
-        clicks: 0,
-        cr: 0,
-        cpm: 0,
-        ctr: 0,
-        cpc: 0,
-        budget: 0,
-      },
-      dateFormat: 'yyyy-MM-dd',
-      filters: {
-        date_from: '',
-        date_to: '',
-        status: '',
-      },
-      showFilters: false,
-
-      advertiserStatuses: [
-        'STATUS_DISABLE',
-        'STATUS_PENDING_CONFIRM',
-        'STATUS_PENDING_VERIFIED',
-        'STATUS_CONFIRM_FAIL',
-        'STATUS_ENABLE',
-        'STATUS_CONFIRM_FAIL_END',
-        'STATUS_PENDING_CONFIRM_MODIFY',
-        'STATUS_CONFIRM_MODIFY_FAIL',
-        'STATUS_LIMIT',
-        'STATUS_WAIT_FOR_BPM_AUDIT',
-        'STATUS_WAIT_FOR_PUBLIC_AUTH',
-        'STATUS_SELF_SERVICE_UNAUDITED',
-        'STATUS_CONTRACT_PENDING',
-      ],
-
-      campaignStatuses: [
-        'CAMPAIGN_STATUS_DELETE',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT_DENY',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT_DENY',
-        'ADVERTISER_CONTRACT_PENDING',
-        'CAMPAIGN_STATUS_BUDGET_EXCEED',
-        'CAMPAIGN_STATUS_DISABLE',
-        'CAMPAIGN_STATUS_ENABLE',
-        'CAMPAIGN_STATUS_ALL',
-        'CAMPAIGN_STATUS_NOT_DELETE',
-      ],
-
-      adgroupStatuses: [
-        'ADGROUP_STATUS_DELETE',
-        'ADGROUP_STATUS_CAMPAIGN_DELETE',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT_DENY',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT_DENY',
-        'ADVERTISER_CONTRACT_PENDING',
-        'ADGROUP_STATUS_CAMPAIGN_EXCEED',
-        'ADGROUP_STATUS_BUDGET_EXCEED',
-        'ADGROUP_STATUS_BALANCE_EXCEED',
-        'ADGROUP_STATUS_AUDIT_DENY',
-        'ADGROUP_STATUS_REAUDIT',
-        'ADGROUP_STATUS_AUDIT',
-        'ADGROUP_STATUS_CREATE',
-        'ADGROUP_STATUS_NOT_START',
-        'ADGROUP_STATUS_TIME_DONE',
-        'ADGROUP_STATUS_CAMPAIGN_DISABLE',
-        'ADGROUP_STATUS_DISABLE',
-        'ADGROUP_STATUS_DELIVERY_OK',
-        'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT',
-        'ADGROUP_STATUS_ALL',
-        'ADGROUP_STATUS_NOT_DELETE',
-      ],
-
-      adStatuses: [
-        'AD_STATUS_CAMPAIGN_DELETE',
-        'AD_STATUS_ADGROUP_DELETE',
-        'AD_STATUS_DELETE',
-        'AD_STATUS_ADVERTISER_AUDIT_DENY',
-        'AD_STATUS_ADVERTISER_AUDIT_DENY',
-        'ADVERTISER_CONTRACT_PENDING',
-        'AD_STATUS_BALANCE_EXCEED',
-        'AD_STATUS_CAMPAIGN_EXCEED',
-        'AD_STATUS_BUDGET_EXCEED',
-        'AD_STATUS_AUDIT',
-        'AD_STATUS_REAUDIT',
-        'AD_STATUS_AUDIT_DENY',
-        'AD_STATUS_ADGROUP_AUDIT_DENY',
-        'AD_STATUS_NOT_START',
-        'AD_STATUS_DONE',
-        'AD_STATUS_CAMPAIGN_DISABLE',
-        'AD_STATUS_ADGROUP_DISABLE',
-        'AD_STATUS_DISABLE',
-        'AD_STATUS_DELIVERY_OK',
-        'AD_STATUS_ALL',
-        'AD_STATUS_NOT_DELETE',
-      ],
-
-      advertiserStatusColor: {
-        'STATUS_DISABLE'               : 'danger',
-        'STATUS_PENDING_CONFIRM'       : 'warning',
-        'STATUS_PENDING_VERIFIED'      : 'success',
-        'STATUS_CONFIRM_FAIL'          : 'danger',
-        'STATUS_ENABLE'                : 'success',
-        'STATUS_CONFIRM_FAIL_END'      : 'danger',
-        'STATUS_PENDING_CONFIRM_MODIFY': 'warning',
-        'STATUS_CONFIRM_MODIFY_FAIL'   : 'danger',
-        'STATUS_LIMIT'                 : 'warning',
-        'STATUS_WAIT_FOR_BPM_AUDIT'    : 'warning',
-        'STATUS_WAIT_FOR_PUBLIC_AUTH'  : 'warning',
-        'STATUS_SELF_SERVICE_UNAUDITED': 'warning',
-        'STATUS_CONTRACT_PENDING'      : 'warning',
-      },
-
-      campaignStatusColor: {
-        'CAMPAIGN_STATUS_DELETE'               : 'danger',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT_DENY': 'danger',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT'     : 'warning',
-        'ADVERTISER_CONTRACT_PENDING'          : 'warning',
-        'CAMPAIGN_STATUS_BUDGET_EXCEED'        : 'success',
-        'CAMPAIGN_STATUS_DISABLE'              : 'warning',
-        'CAMPAIGN_STATUS_ENABLE'               : 'success',
-        'CAMPAIGN_STATUS_ALL'                  : 'danger',
-        'CAMPAIGN_STATUS_NOT_DELETE'           : 'danger',
-      },
-
-      adgroupStatusColor: {
-        'ADGROUP_STATUS_DELETE'                : 'danger',
-        'ADGROUP_STATUS_CAMPAIGN_DELETE'       : 'danger',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT_DENY' : 'danger',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT'      : 'warning',
-        'ADVERTISER_CONTRACT_PENDING'          : 'warning',
-        'ADGROUP_STATUS_CAMPAIGN_EXCEED'       : 'success',
-        'ADGROUP_STATUS_BUDGET_EXCEED'         : 'success',
-        'ADGROUP_STATUS_BALANCE_EXCEED'        : 'danger',
-        'ADGROUP_STATUS_AUDIT_DENY'            : 'danger',
-        'ADGROUP_STATUS_REAUDIT'               : 'warning',
-        'ADGROUP_STATUS_AUDIT'                 : 'warning',
-        'ADGROUP_STATUS_CREATE'                : 'success',
-        'ADGROUP_STATUS_NOT_START'             : 'danger',
-        'ADGROUP_STATUS_TIME_DONE'             : 'success',
-        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'warning',
-        'ADGROUP_STATUS_DISABLE'               : 'warning',
-        'ADGROUP_STATUS_DELIVERY_OK'           : 'success',
-        'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT': 'warning',
-        'ADGROUP_STATUS_ALL'                   : 'danger',
-        'ADGROUP_STATUS_NOT_DELETE'            : 'danger',
-      },
-
-      adStatusColor: {
-        'AD_STATUS_CAMPAIGN_DELETE'      : 'danger',
-        'AD_STATUS_ADGROUP_DELETE'       : 'danger',
-        'AD_STATUS_DELETE'               : 'danger',
-        'AD_STATUS_ADVERTISER_AUDIT_DENY': 'danger',
-        'AD_STATUS_ADVERTISER_AUDIT'     : 'warning',
-        'ADVERTISER_CONTRACT_PENDING'    : 'warning',
-        'AD_STATUS_BALANCE_EXCEED'       : 'danger',
-        'AD_STATUS_CAMPAIGN_EXCEED'      : 'success',
-        'AD_STATUS_BUDGET_EXCEED'        : 'success',
-        'AD_STATUS_AUDIT'                : 'warning',
-        'AD_STATUS_REAUDIT'              : 'warning',
-        'AD_STATUS_AUDIT_DENY'           : 'danger',
-        'AD_STATUS_ADGROUP_AUDIT_DENY'   : 'danger',
-        'AD_STATUS_NOT_START'            : 'danger',
-        'AD_STATUS_DONE'                 : 'success',
-        'AD_STATUS_CAMPAIGN_DISABLE'     : 'warning',
-        'AD_STATUS_ADGROUP_DISABLE'      : 'warning',
-        'AD_STATUS_DISABLE'              : 'warning',
-        'AD_STATUS_DELIVERY_OK'          : 'success',
-        'AD_STATUS_ALL'                  : 'danger',
-        'AD_STATUS_NOT_DELETE'           : 'danger',
-      },
-
-      effectiveStatus: {
-        'CAMPAIGN_STATUS_DELETE'               : 'DISABLED',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT_DENY': 'DISABLED',
-        'CAMPAIGN_STATUS_ADVERTISER_AUDIT'     : 'REVIEW',
-        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
-        'CAMPAIGN_STATUS_BUDGET_EXCEED'        : 'ACTIVE',
-        'CAMPAIGN_STATUS_DISABLE'              : 'PAUSED',
-        'CAMPAIGN_STATUS_ENABLE'               : 'ACTIVE',
-        'CAMPAIGN_STATUS_ALL'                  : 'DISABLED',
-        'CAMPAIGN_STATUS_NOT_DELETE'           : 'DISABLED',
-
-        'ADGROUP_STATUS_DELETE'                : 'DISABLED',
-        'ADGROUP_STATUS_CAMPAIGN_DELETE'       : 'DISABLED',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT_DENY' : 'DISABLED',
-        'ADGROUP_STATUS_ADVERTISER_AUDIT'      : 'REVIEW',
-        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
-        'ADGROUP_STATUS_CAMPAIGN_EXCEED'       : 'ACTIVE',
-        'ADGROUP_STATUS_BUDGET_EXCEED'         : 'ACTIVE',
-        'ADGROUP_STATUS_BALANCE_EXCEED'        : 'DISABLED',
-        'ADGROUP_STATUS_AUDIT_DENY'            : 'DISABLED',
-        'ADGROUP_STATUS_REAUDIT'               : 'REVIEW',
-        'ADGROUP_STATUS_AUDIT'                 : 'REVIEW',
-        'ADGROUP_STATUS_CREATE'                : 'ACTIVE',
-        'ADGROUP_STATUS_NOT_START'             : 'DISABLED',
-        'ADGROUP_STATUS_TIME_DONE'             : 'ACTIVE',
-        'ADGROUP_STATUS_CAMPAIGN_DISABLE'      : 'PAUSED',
-        'ADGROUP_STATUS_DISABLE'               : 'PAUSED',
-        'ADGROUP_STATUS_DELIVERY_OK'           : 'ACTIVE',
-        'ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT': 'REVIEW',
-        'ADGROUP_STATUS_ALL'                   : 'DISABLED',
-        'ADGROUP_STATUS_NOT_DELETE'            : 'DISABLED',
-
-        'AD_STATUS_CAMPAIGN_DELETE'            : 'DISABLED',
-        'AD_STATUS_ADGROUP_DELETE'             : 'DISABLED',
-        'AD_STATUS_DELETE'                     : 'DISABLED',
-        'AD_STATUS_ADVERTISER_AUDIT_DENY'      : 'DISABLED',
-        'AD_STATUS_ADVERTISER_AUDIT'           : 'REVIEW',
-        'ADVERTISER_CONTRACT_PENDING'          : 'REVIEW',
-        'AD_STATUS_BALANCE_EXCEED'             : 'DISABLED',
-        'AD_STATUS_CAMPAIGN_EXCEED'            : 'ACTIVE',
-        'AD_STATUS_BUDGET_EXCEED'              : 'ACTIVE',
-        'AD_STATUS_AUDIT'                      : 'REVIEW',
-        'AD_STATUS_REAUDIT'                    : 'REVIEW',
-        'AD_STATUS_AUDIT_DENY'                 : 'DISABLED',
-        'AD_STATUS_ADGROUP_AUDIT_DENY'         : 'DISABLED',
-        'AD_STATUS_NOT_START'                  : 'DISABLED',
-        'AD_STATUS_DONE'                       : 'ACTIVE',
-        'AD_STATUS_CAMPAIGN_DISABLE'           : 'PAUSED',
-        'AD_STATUS_ADGROUP_DISABLE'            : 'PAUSED',
-        'AD_STATUS_DISABLE'                    : 'PAUSED',
-        'AD_STATUS_DELIVERY_OK'                : 'ACTIVE',
-        'AD_STATUS_ALL'                        : 'DISABLED',
-        'AD_STATUS_NOT_DELETE'                 : 'DISABLED',
-      },
-
-      bidTypes: [
-        'BID_TYPE_CUSTOM',
-        'BID_TYPE_MAX_CONVERSION',
-        'BID_TYPE_NO_BID',
-      ],
-
-      showPopup: {
-        'create_advertiser': false,
-        'edit_advertiser': false,
-        'edit_budget': false,
-        'edit_bid': false,
-        'update_form_cost': false,
-        'view_ad': false,
-        'create_rule': false,
-        'edit_rule': false,
-        'bulk_edit_rule': false,
-        'campaign_ids': false,
-      },
-
-      editingObject: '',
-      editingAdvertiser: null,
-      advertiser: {
-        id: '',
-        name: '',
-        access_token: '',
-      },
-
-      updateFormId: '',
-      updateFormTotalCost: 0,
-      updateFormAssociate: false,
-      updateFormDate: '',
-
-      formsLoaded: false,
-      forms: [],
-
-      ad: {},
-      adImage: {},
+      currAdAccId: null,
 
       ruleFrequencyOptions: [
         { value: 'every_five_minutes',    label: 'Every 5 minutes' },
@@ -1710,16 +1652,8 @@ export default {
 
       ruleMetricOptions: [
         { value: 'impressions',         label: 'Impressions' },
-        { value: 'lifetime_spend',      label: 'Lifetime spent' },
         { value: 'spend',               label: 'Spent' },
-        { value: 'cost_per_conversion', label: 'Cost per conversion' },
-        { value: 'conversion',          label: 'Conversions' },
-        { value: 'conversion_rate',     label: 'CR' },
-        //{ value: 'clicks',      label: 'clicks' }, // TODO: We don't have clicks metric right now
-
-        // Special metrics
-        { value: 'profit',              label: 'Profit' },
-        { value: 'roi',                 label: 'ROI' },
+        { value: 'cmp',                 label: 'CPM' },
       ],
 
       ruleComparisonOptions: [
@@ -1757,15 +1691,13 @@ export default {
         this.gridApi.paginationGoToPage(val - 1)
       }
     },
-    canViewStats() {
-      return (this.$store.getters.userHasRole('developer') || this.$store.getters.userHasRole('admin') ||
-              this.$store.getters.userHasRole('mediabuyer'))
-    },
-    objects() {
-      if (this.view == 'campaigns') {
+    objects () {
+      if (this.view == 'ad_accounts') {
+        return this.adAccounts
+      } else if (this.view == 'campaigns') {
         return this.campaigns
-      } else if (this.view == 'adgroups') {
-        return this.adgroups
+      } else if (this.view == 'adsets') {
+        return this.adsets
       } else if (this.view == 'ads') {
         return this.ads
       } else {
@@ -1773,89 +1705,145 @@ export default {
       }
     },
     selectedObjects() {
-      if (this.view == 'campaigns') {
+      if (this.view == 'ad_accounts') {
+        return this.selectedAdAccounts
+      } else if (this.view == 'campaigns') {
         return this.selectedCampaigns
-      } else if (this.view == 'adgroups') {
-        return this.selectedAdgroups
+      } else if (this.view == 'adsets') {
+        return this.selectedAdsets
       } else if (this.view == 'ads') {
         return this.selectedAds
       } else {
         return []
       }
     },
-    statusOptions() {
-      if (this.view == 'campaigns') {
-        return this.campaignStatuses
-      } else if (this.view == 'adgroups') {
-        return this.adgroupStatuses
-      } else if (this.view == 'ads') {
-        return this.adStatuses
-      } else {
-        return []
-      }
+    fbApiUrl() {
+      return 'https://graph.facebook.com/' + this.fbApiVersion
     },
   },
   methods: {
-    getObjectIndexById(objects, id) {
-      var index = -1
-      for (let i = 0; i < objects.length; i++) {
-        if (objects[i].id == id) {
-          index = i
-          break
+    onPageChanged(val) {
+      this.currentPage = val
+    },
+    async changeView(view, parent = null) {
+      this.parent = parent
+      if (view == 'ad_accounts') {
+        this.view = view
+        this.$vs.loading()
+        this.selectedAdAccounts = []
+        this.adAccounts = await this.fetchAdAccounts()
+        this.$vs.loading.close()
+      } else if (view == 'campaigns') {
+        this.view = view
+        if (parent !== null) {
+          this.$vs.loading()
+          this.selectedCampaigns = []
+          this.campaigns = await this.fetchCampaigns(parent.id)
+          this.$vs.loading.close()
+        }
+        this.calculateStats()
+      } else if (view == 'adsets') {
+        this.view = view
+        if (parent !== null) {
+          this.$vs.loading()
+          this.selectedAdsets = []
+          this.adsets = await this.fetchAdsets(parent.id)
+          this.$vs.loading.close()
+        }
+        this.calculateStats()
+      } else if (view == 'ads') {
+        this.view = view
+        if (parent !== null) {
+          this.$vs.loading()
+          this.selectedAds = []
+          this.ads = await this.fetchAds(parent.id)
+          this.$vs.loading.close()
+        }
+        this.calculateStats()
+      } else if (view == 'rules') {
+        this.view = view
+        this.$vs.loading()
+        this.rules = await this.fetchRules()
+        this.$vs.loading.close()
+      }
+    },
+    getObjectIndexById(id) {
+      for (let i = 0; i < this.objects.length; i++) {
+        if (this.objects[i].id == id) {
+          return i
         }
       }
-      return index
+      return -1
+    },
+    openNewTab(url) {
+      if (url != '') {
+        window.open(url)
+      }
     },
     calculateStats() {
-      /*
-       * TODO: BUG:
-       * How to correctly calculate CR, CPM etc..?
-       */
-      let spent = 0
-      let conversion = 0
-      let cpa = 0
+      let spent = 0.0
       let impressions = 0
-      let clicks = 0
-      let cr = 0
-      let cpm = 0
-      let ctr = 0
-      let cpc = 0
-      let budget = 0.0
+      let cpm = 0.0
+      let value = 0.0
       let profit = 0.0
       let roi = 0.0
 
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
-        spent += obj.spent
-        conversion += obj.conversion
-        impressions += obj.impressions
-        //clicks += obj.clicks
-        budget += obj.budget
-      }
-      cpa = (conversion > 0) ? (spent/conversion) : spent
-      cr  = (clicks > 0) ? ((conversion/clicks)*100) : ((conversion > 0) ? 9999.99 : 0)
-      // TODO
-      //cpm = (impressions > 0) ? ((spent*1000)/impressions) : (spent*1000)
-      ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
-      cpc = (clicks > 0) ? (spent/clicks) : spent
 
-      this.total_stats = {
+        spent += obj.spent
+        impressions += obj.impressions
+        value += obj.value
+      }
+      cpm = (impressions > 0) ? (spent*1000/impressions) : (spent*1000)
+      profit = value - spent
+      roi = ((spent > 0) ? ((profit/spent)*100.0) : (profit > 0 ? 9999.99 : 0.0))
+
+      this.totalStats = {
         spent: spent,
-        conversion: conversion,
-        cpa: cpa,
         impressions: impressions,
-        clicks: clicks,
-        cr: cr,
         cpm: cpm,
-        ctr: ctr,
-        cpc: cpc,
-        budget: budget,
+        value: value,
         profit: profit,
         roi: roi,
       }
     },
-    onPageChanged(val) {
-      this.currentPage = val
+    isValidForm(type) {
+      if (type == 'edit_bid') {
+        if (this.editingObject.hasOwnProperty('bid_strategy') &&
+            this.editingObject.bid_strategy != '') {
+          return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
+                  (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingObject.bid_amount > 0)
+        }
+      } else if (type == 'duplicate_adset') {
+        if (this.editingObject.adsetNumber > 0 && this.editingObject.adsetBudget > 0) {
+          return true
+        }
+      } else if (type == 'duplicate_adset_bidder') {
+        if (this.editingObject.hasOwnProperty('adsets') && this.editingObject.adsets.length > 0) {
+          for (let i = 0; i < this.editingObject.adsets.length; i++) {
+            let obj = this.editingObject.adsets[i]
+            if (obj.budget == 0 || obj.bid == '') return false
+          }
+          return true
+        }
+      } else if (type == 'create_rule' || type == 'edit_rule') {
+        if (this.rule.name != '' && this.rule.frequency != '' &&
+            this.rule.ad_account_id != '' &&
+            this.rule.campaign_ids.length >= 0 &&
+            this.rule.rules.length > 0 && this.rule.time != '') {
+          return true
+        }
+      } else if (type == 'bulk_edit_rule') {
+        if (this.rule.ad_account_id != '' &&
+            this.rule.campaign_ids.length >= 0) {
+          return true
+        }
+      }
+      return false
+    },
+    applyFilters() {
+      this.changeView(this.view, this.parent)
     },
     resetFilters() {
       this.filters = {
@@ -1864,273 +1852,6 @@ export default {
         status: '',
       }
       this.filterDatesShortcut('this_month')
-    },
-    async loadAdvertisers() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-      }
-
-      this.advertisers = []
-      const response = await this.$http.get('/api/3rd/facebook/advertisers', { headers: headers, params: params })
-      this.advertisers = response.data.data
-
-      this.advertisersLoaded = true
-
-      this.$vs.loading.close()
-    },
-    async loadCampaigns() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-      }
-
-      if (this.filters.date_from != '') {
-        params.filter_date_from = this.filters.date_from
-      }
-      if (this.filters.date_to != '') {
-        params.filter_date_to = this.filters.date_to
-      }
-
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
-      this.campaigns = []
-      const response = await this.$http.get('/api/3rd/facebook/campaigns', { headers: headers, params: params })
-
-      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
-        let object = response.data.data[objectIndex]
-
-        if (this.filters.status != '' && object.status != this.filters.status) {
-          continue
-        }
-
-        let objectToPush  = object
-        //objectToPush.effective_status = this.effectiveStatus[object.status]
-
-        let spent = 0.0
-        let conversion = 0
-        let cpa = 0.0
-        let cr = 0.0
-        let cpm = 0.0
-        let impressions = 0
-        let profit = 0.0
-        let roi = 0.0
-
-        if (object.hasOwnProperty('spent')) {
-          spent = parseInt(object.spent)/100
-        }
-        if (object.hasOwnProperty('result')) {
-          conversion = parseInt(object.result)
-        }
-        if (object.hasOwnProperty('impressions')) {
-          impressions = parseFloat(object.impressions)
-        }
-
-        objectToPush.spent  = spent
-        objectToPush.conversion = conversion
-        objectToPush.cpa    = cpa
-        objectToPush.cr     = cr
-        objectToPush.cpm    = cpm
-        objectToPush.profit = profit
-        objectToPush.roi    = roi
-
-        this.campaigns.push(objectToPush)
-      }
-
-      this.campaignsLoaded = true
-
-      this.$vs.loading.close()
-    },
-    async loadAdsets() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-      }
-
-      if (this.filters.date_from != '') {
-        params.filter_date_from = this.filters.date_from
-      }
-      if (this.filters.date_to != '') {
-        params.filter_date_to = this.filters.date_to
-      }
-
-      if (this.currentCampaignId !== null) {
-        params.filter_campaign = this.currentCampaignId
-      }
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
-      this.adgroups = []
-      const response = await this.$http.get('/api/3rd/facebook/adsets', { headers: headers, params: params })
-
-      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
-        let object = response.data.data[objectIndex]
-
-        if (this.filters.status != '' && object.status != this.filters.status) {
-          continue
-        }
-
-        let objectToPush      = object
-        //objectToPush.effective_status = this.effectiveStatus[object.status]
-
-        let spent = 0.0
-        let conversion = 0
-        let cpa = 0.0
-        let cr = 0.0
-        let cpm = 0.0
-        let impressions = 0
-        let profit = 0.0
-        let roi = 0.0
-
-        if (object.hasOwnProperty('spent')) {
-          spent = parseInt(object.spent)/100
-        }
-        if (object.hasOwnProperty('result')) {
-          conversion = parseInt(object.result)
-        }
-        if (object.hasOwnProperty('impressions')) {
-          impressions = parseFloat(object.impressions)
-        }
-
-        objectToPush.spent  = spent
-        objectToPush.conversion = conversion
-        objectToPush.cpa    = cpa
-        objectToPush.cr     = cr
-        objectToPush.cpm    = cpm
-        objectToPush.profit = profit
-        objectToPush.roi    = roi
-
-        this.adgroups.push(objectToPush)
-      }
-
-      this.adgroupsLoaded = true
-
-      this.$vs.loading.close()
-    },
-    async loadAds() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-      }
-
-      if (this.filters.date_from != '') {
-        params.filter_date_from = this.filters.date_from
-      }
-      if (this.filters.date_to != '') {
-        params.filter_date_to = this.filters.date_to
-      }
-
-      if (this.currentAdgroupId !== null) {
-        params.filter_adset = this.currentAdgroupId
-      }
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
-      this.ads = []
-      const response = await this.$http.get('/api/3rd/facebook/ads', { headers: headers, params: params })
-
-      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
-        let object = response.data.data[objectIndex]
-
-        if (this.filters.status != '' && object.status != this.filters.status) {
-          continue
-        }
-
-        let objectToPush    = object
-        //objectToPush.effective_status = this.effectiveStatus[object.status]
-
-        let spent = 0.0
-        let conversion = 0
-        let cpa = 0.0
-        let cr = 0.0
-        let cpm = 0.0
-        let impressions = 0
-        let profit = 0.0
-        let roi = 0.0
-
-        if (object.hasOwnProperty('spent')) {
-          spent = parseInt(object.spent)/100
-        }
-        if (object.hasOwnProperty('result')) {
-          conversion = parseInt(object.result)
-        }
-        if (object.hasOwnProperty('impressions')) {
-          impressions = parseFloat(object.impressions)
-        }
-
-        objectToPush.spent  = spent
-        objectToPush.conversion = conversion
-        objectToPush.cpa    = cpa
-        objectToPush.cr     = cr
-        objectToPush.cpm    = cpm
-        objectToPush.profit = profit
-        objectToPush.roi    = roi
-
-        this.ads.push(objectToPush)
-      }
-
-      this.adsLoaded = true
-
-      this.$vs.loading.close()
-    },
-    async loadRules() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      this.rules = []
-      const response = await this.$http.get('/api/3rd/facebook/rules', { headers: headers })
-      this.rules = response.data.data
-
-      // Sort rules by name (by defaul)
-      this.rules.sort(function (a, b) {
-        if (a.name < b.name) {
-          return -1
-        } else if (a.name > b.name) {
-          return 1
-        } else {
-          return 0
-        }
-      })
-
-      this.rulesLoaded = true
-
-      this.$vs.loading.close()
-    },
-    async applyFilters() {
-      this.selectedAdvertisers = []
-      this.selectedCampaigns = []
-      this.selectedAdgroups = []
-      this.selectedAds = []
-      this.selectedRules = []
-
-      this.advertisersLoaded = false
-      this.campaignsLoaded = false
-      this.adgroupsLoaded = false
-      this.adsLoaded = false
-      this.rulesLoaded = false
-
-      this.changeView(this.view, this.currentAdvertiserId)
-
-      this.calculateStats()
     },
     filterDatesShortcut(period) {
       let invalidPeriod = false
@@ -2172,7 +1893,7 @@ export default {
     },
     formatDate(dateObj) {
       let dd = String(dateObj.getDate()).padStart(2, '0')
-      let mm = String(dateObj.getMonth() + 1).padStart(2, '0') //January is 0!
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
       let yyyy = dateObj.getFullYear()
       
       let formattedDate = yyyy + '-' + mm + '-' + dd
@@ -2188,114 +1909,532 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    async changeView(view, parentId = null) {
-      // TODO: to fix
-      //this.onPageChanged(1)
-      //this.gridApi.paginationGoToPage(0)
 
-      if ((view == 'adgroups' || view == 'ads') &&
-        (this.currentAdvertiserId == null)) {
-        return
-      }
-      if ((view == 'campaigns') && (parentId == null && this.currentAdvertiserId == null)) {
-        return
-      }
-
-      this.view = view
-
-      if (view == 'advertisers') {
-        if (!this.advertisersLoaded) {
-          await this.loadAdvertisers()
-        }
-      } else if (view == 'campaigns') {
-        if (!this.campaignsLoaded || this.currentAdvertiserId != parentId) {
-          if (parentId != null) {
-            this.currentAdvertiserId = parentId
-            this.advertiserSwitch = this.currentAdvertiserId
-          }
-          await this.loadCampaigns()
-        }
-      } else if (view == 'adgroups') {
-        if (!this.adgroupsLoaded || this.currentCampaignId != parentId) {
-          this.currentCampaignId = parentId
-          await this.loadAdsets()
-        }
-      } else if (view == 'ads') {
-        if (!this.adsLoaded || this.currentAdgroupId != parentId) {
-          this.currentAdgroupId = parentId
-          await this.loadAds()
-        }
-      } else if (view == 'rules') {
-        if (!this.rulesLoaded) await this.loadRules()
-      }
-
-      this.calculateStats()
-    },
-    async switchStatus(type, id) {
-      this.$vs.loading()
-
-      let newStatus = 'DISABLE'
-
-      let objIndex = this.getObjectIndexById(this.objects, id)
-      let obj = this.objects[objIndex]
-      if (obj.effective_status != 'ACTIVE') {
-        newStatus = 'ENABLE'
-      }
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-        status: newStatus,
-      }
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
+    async getCurrentAccessToken() {
+      let currentToken = null
       try {
-        if(type == 'campaign') {
-          const response = await this.$http.put('/api/3rd/facebook/campaigns/' + id, params, { headers: headers })
-        } else if(type == 'adgroup') {
-          const response = await this.$http.put('/api/3rd/facebook/adgroups/' + id, params, { headers: headers })
-        } else if(type == 'ad') {
-          const response = await this.$http.put('/api/3rd/facebook/ads/' + id, params, { headers: headers })
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/3rd/facebook/token', { headers: headers })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('access_token')) {
+          currentToken = response.data.access_token
         }
       } catch (error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot switch status',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
+        // Nothing
       }
-
-      this.$vs.loading.close()
-
-      this.applyFilters()
+      return currentToken
     },
-    async loadAdImage(id) {
+    async checkToken(fbAccessToken) {
+      try {
+        let params = {
+          access_token: fbAccessToken,
+          fields: 'id,name',
+        }
+        const response = await this.$http.get(this.fbApiUrl + '/me', { params: params })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('id')) {
+          return true
+        } else {
+          return false
+        }
+      } catch (error) {
+        return false
+      }
+      return false
+    },
+    async autoLogin() {
+      // Check if user is already logged in
+      let fbAccessToken = await this.getCurrentAccessToken()
+      if (fbAccessToken !== null) {
+        // Check if current access token is valid
+        let isValid = await this.checkToken(fbAccessToken)
+        if (isValid) {
+          this.accessToken = fbAccessToken
+          this.loggedIn = true
+          this.changeView('ad_accounts')
+        } else {
+          this.loggedIn = false
+        }
+      } else {
+        this.loggedIn = false
+      }
+    },
+    login() {
+      this.FB.login(async (response) => {
+        if (response.authResponse) {
+          this.accessToken = response.authResponse.accessToken
+          this.accessToken = await this.getLongLivedAccessToken()
+          this.loggedIn = true
+          this.changeView('ad_accounts')
+
+          // DEBUG TODO: to delete
+          console.log("Logged in")
+        } else {
+          this.loggedIn = false
+
+          // DEBUG TODO: to delete
+          console.log("Not logged in")
+        }
+      })
+    },
+    async logout() {
       this.$vs.loading()
 
-      let result = false
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.delete('/api/3rd/facebook/token', { headers: headers })
+      } catch (error) {
+        // Nothing
+      }
+      this.loggedIn = false
+
+      this.$vs.loading.close()
+    },
+    async getLongLivedAccessToken() {
+      let newToken = ''
+
       try {
         let headers = {
           Authorization: 'Bearer ' + localStorage.getItem('accessToken')
         }
         let params = {
-          image_id: id,
+          access_token: this.accessToken,
         }
-        if (this.currentAdvertiserId !== null) {
-          params.advertiser_id = this.currentAdvertiserId
+        const response = await this.$http.get('/api/3rd/facebook/token/refresh', { headers: headers, params: params })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('access_token')) {
+          newToken = response.data.access_token
         }
-        const response = await this.$http.get('/api/3rd/facebook/images', { headers: headers, params: params })
-        this.adImage = response.data.data
-        result = true
+      } catch (error) {
+        newToken = ''
+      }
+
+      return newToken
+    },
+    async fetchAdAccounts(insights = true) {
+      let adAccounts = []
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,adaccounts{id,name}',
+      }
+      const response = await this.$http.get(this.fbApiUrl + '/me', { params: params })
+      if (response !== null && !response.hasOwnProperty('error')) {
+          adAccounts = response.data.adaccounts.data
+      }
+
+      for (let i = 0; i < adAccounts.length; i++) {
+        let obj = adAccounts[i]
+        obj.object_type = 'ad_account'
+
+        let hasAdRules = false
+        try {
+          let adRulesParams = {
+            access_token: this.accessToken,
+          }
+          const adRulesResponse = await this.$http.get(this.fbApiUrl + '/' + obj.id + '/adrules_library', { params: params })
+          if (adRulesResponse.data.data.length > 0) {
+            hasAdRules = true
+          }
+        } catch (error) {
+          hasAdRules = false
+        }
+
+        adAccounts[i] = obj
+      }
+
+      return adAccounts
+    },
+    async fetchCampaigns(adAccountId, insights = true) {
+      let campaigns = []
+
+      // TEST DEBUG TODO: Only for debug purposes
+      let timeRange = {
+        since: '2020-09-28',
+        until: '2021-09-28',
+      }
+
+      // TODO: to uncomment
+      // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
+        time_range: timeRange,
+        //date_preset: 'maximum', // TODO: What about this
+      }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
+      }
+      const response = await this.$http.get(this.fbApiUrl + '/' + adAccountId + '/campaigns', { params: params })
+      if (response !== null && !response.hasOwnProperty('error')) {
+          campaigns = response.data.data
+      }
+
+      for (let i = 0; i < campaigns.length; i++) {
+        let obj = campaigns[i]
+        obj.object_type = 'campaign'
+
+        obj.cbo = (obj.hasOwnProperty('daily_budget') && obj.hasOwnProperty('bid_strategy'))
+
+        let daily_budget = 0.0
+        let bid_amount = 0.0
+        let bid_strategy = ''
+        if (obj.hasOwnProperty('daily_budget')) {
+          daily_budget = parseInt(obj.daily_budget)/100
+        }
+        if (obj.hasOwnProperty('bid_amount')) {
+          bid_amount = parseInt(obj.bid_amount)/100
+        }
+        if (obj.hasOwnProperty('bid_strategy')) {
+          bid_strategy = obj.bid_strategy
+        }
+        obj.daily_budget = daily_budget
+        obj.bid_amount = bid_amount
+        obj.bid_strategy = bid_strategy
+        obj.new_daily_budget = daily_budget
+
+        let spent = 0.0
+        let impressions = 0
+        let cpm = 0.0
+        let value = 0.0
+
+        if (obj.hasOwnProperty('insights')) {
+          let stats = obj.insights.data[0]
+
+          spent = parseFloat(stats.spend)
+          impressions = parseInt(stats.impressions)
+          cpm = parseFloat(stats.cpm)
+        }
+
+        // TODO: get value
+        value = 0.0
+
+        obj.spent = spent
+        obj.impressions = impressions
+        obj.cpm = cpm
+        obj.value = value
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
+
+        campaigns[i] = obj
+      }
+
+      if (this.filters.status !== '') {
+        campaigns = campaigns.filter(campaign => (campaign.status == this.filters.status))
+      }
+
+      return campaigns
+    },
+    async fetchAdsets(campaignId, insights = true) {
+      let adsets = []
+
+      // TEST DEBUG TODO: Only for debug purposes
+      let timeRange = {
+        since: '2020-09-28',
+        until: '2021-09-28',
+      }
+
+      // TODO: to uncomment
+      // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,status,effective_status,objective,daily_budget,bid_strategy,bid_amount',
+        time_range: timeRange,
+        //date_preset: 'maximum',
+      }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
+      }
+      const response = await this.$http.get(this.fbApiUrl + '/' + campaignId + '/adsets', { params: params })
+      if (response !== null && !response.hasOwnProperty('error')) {
+          adsets = response.data.data
+      }
+
+      for (let i = 0; i < adsets.length; i++) {
+        let obj = adsets[i]
+        obj.object_type = 'adset'
+
+        obj.cbo = !(obj.hasOwnProperty('daily_budget'))
+
+        let daily_budget = 0.0
+        let bid_amount = 0.0
+        let bid_strategy = ''
+        if (obj.hasOwnProperty('daily_budget')) {
+          daily_budget = parseInt(obj.daily_budget)/100
+        }
+        if (obj.hasOwnProperty('bid_amount')) {
+          bid_amount = parseInt(obj.bid_amount)/100
+        }
+        if (obj.hasOwnProperty('bid_strategy')) {
+          bid_strategy = obj.bid_strategy
+        }
+        obj.daily_budget = daily_budget
+        obj.bid_amount = bid_amount
+        obj.bid_strategy = bid_strategy
+        obj.new_daily_budget = daily_budget
+
+        // TODO: to delete
+        /*
+        console.log('obj', obj)
+        console.log('daily_budget', daily_budget)
+        */
+
+        let spent = 0.0
+        let impressions = 0
+        let cpm = 0.0
+        let value = 0.0
+
+        if (obj.hasOwnProperty('insights')) {
+          let stats = obj.insights.data[0]
+
+          spent = parseFloat(stats.spend)
+          impressions = parseInt(stats.impressions)
+          cpm = parseFloat(stats.cpm)
+        }
+
+        // TODO: get value
+        value = 0.0
+
+        obj.spent = spent
+        obj.impressions = impressions
+        obj.cpm = cpm
+        obj.value = value
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
+
+        adsets[i] = obj
+      }
+
+      if (this.filters.status !== '') {
+        adsets = adsets.filter(adset => (adset.status == this.filters.status))
+      }
+
+      return adsets
+    },
+    async fetchAds(adsetId, insights = true) {
+      let ads = []
+
+      // TEST DEBUG TODO: Only for debug purposes
+      let timeRange = {
+        since: '2020-09-28',
+        until: '2021-09-28',
+      }
+
+      // TODO: to uncomment
+      // TODO: What about date_preset??
+      /*
+      let timeRange = {}
+      if (this.filters.date_from != '') {
+        timeRange['since'] = this.filters.date_from
+      }
+      if (this.filters.date_to != '') {
+        timeRange['until'] = this.filters.date_to
+      }
+      */
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,creative',
+        time_range: timeRange,
+        //date_preset: 'maximum',
+      }
+      if (insights) {
+        params.fields += ',insights.time_range(' + JSON.stringify(timeRange) + '){spend,impressions,cpm,actions,action_values,conversions,conversion_values,cost_per_conversion}'
+      }
+      const response = await this.$http.get(this.fbApiUrl + '/' + adsetId + '/ads', { params: params })
+      if (response !== null && !response.hasOwnProperty('error')) {
+          ads = response.data.data
+      }
+
+      for (let i = 0; i < ads.length; i++) {
+        let obj = ads[i]
+        obj.object_type = 'adset'
+
+        let spent = 0.0
+        let impressions = 0
+        let cpm = 0.0
+        let value = 0.0
+
+        if (obj.hasOwnProperty('insights')) {
+          let stats = obj.insights.data[0]
+
+          spent = parseFloat(stats.spend)
+          impressions = parseInt(stats.impressions)
+          cpm = parseFloat(stats.cpm)
+        }
+
+        // TODO: get value
+        value = 0.0
+
+        obj.spent = spent
+        obj.impressions = impressions
+        obj.cpm = cpm
+        obj.value = value
+
+        obj.profit = obj.value - obj.spent
+        obj.roi = ((obj.spent > 0) ? ((obj.profit/obj.spent)*100.0) : (obj.profit > 0 ? 9999.99 : 0.0))
+
+        ads[i] = obj
+      }
+
+      if (this.filters.status !== '') {
+        ads = ads.filter(ads => (ads.status == this.filters.status))
+      }
+
+      return ads
+    },
+    async switchStatus(objectType, obj) {
+      let oldStatus = obj.status
+      if (oldStatus == 'DISABLED') return
+
+      let newStatus = 'PAUSED'
+      if (oldStatus == 'REVIEW' || oldStatus == 'ACTIVE') {
+        newStatus = 'PAUSED'
+      } else if (oldStatus == 'PAUSED') {
+        newStatus = 'ACTIVE'
+      } else {
+        return
+      }
+
+      this.$vs.loading()
+      try {
+        let params = {
+          access_token: this.accessToken,
+          status: newStatus,
+        }
+        const response = await this.$http.post(this.fbApiUrl + '/' + obj.id, params)
+
+        let objIndex = this.getObjectIndexById(obj.id)
+        if (objIndex >= 0) {
+          obj.status = newStatus
+          if (objectType == 'campaign') {
+            this.campaigns[objIndex] = obj
+          } else if (objectType == 'adset') {
+            this.adsets[objIndex] = obj
+          } else if (objectType == 'ad') {
+            this.ads[objIndex] = obj
+          }
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: objectType.charAt(0).toUpperCase() + objectType.slice(1) + ' status updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
       } catch(error) {
-        result = false
         this.$vs.notify({
           title: 'Error',
-          text: 'Cannot load ad image',
+          text: error.message,
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+      this.$vs.loading.close()
+    },
+    async viewAd(ad) {
+      if (!ad.hasOwnProperty('creative') ||
+          !ad.creative.hasOwnProperty('id')) {
+        return
+      }
+
+      this.$vs.loading()
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,call_to_action_type,title,body,image_url,link_url,object_url',
+      }
+      const response = await this.$http.get(this.fbApiUrl + '/' + ad.creative.id, { params: params })
+
+      this.ad = ad
+
+      if (response.data.hasOwnProperty('call_to_action_type')) {
+        this.ad.call_to_action_type = response.data.call_to_action_type
+      }
+      if (response.data.hasOwnProperty('title')) {
+        this.ad.title = response.data.title
+      }
+      if (response.data.hasOwnProperty('body')) {
+        this.ad.body = response.data.body
+      }
+      if (response.data.hasOwnProperty('image_url')) {
+        this.ad.image_url = response.data.image_url
+      }
+      if (response.data.hasOwnProperty('link_url')) {
+        this.ad.link_url = response.data.link_url
+      }
+      if (response.data.hasOwnProperty('object_url')) {
+        this.ad.object_url = response.data.object_url
+      }
+
+      // TODO: How to get url and post url??
+      this.ad.url = ''
+      this.ad.post_url = ''
+
+      this.showPopup['view_ad'] = true
+
+      this.$vs.loading.close()
+    },
+    async updateBudget(type, obj) {
+      this.$vs.loading()
+
+      try {
+        let newDailyBudget = parseInt(parseFloat(obj.new_daily_budget.replace(',', '.'))*100)
+
+        let params = {
+          access_token: this.accessToken,
+          daily_budget: newDailyBudget,
+        }
+        if (type == 'campaign') {
+          if (obj.cbo) {
+            await this.$http.post(this.fbApiUrl + '/' + obj.id, params)
+          } else {
+            let adsets = await this.fetchAdsets(obj.id, false)
+            for (let i = 0; i < adsets.length; i++) {
+              let adset = adsets[i]
+              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            }
+          }
+        } else if (type == 'adset') {
+          await this.$http.post(this.fbApiUrl + '/' + obj.id, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Daily budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Daily budget cannot be modified',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'danger'
@@ -2303,303 +2442,801 @@ export default {
       }
 
       this.$vs.loading.close()
-      return result
     },
-    async viewAdPopup(ad) {
-      const adImageLoaded = await this.loadAdImage(ad.image_ids[0])
-      if(adImageLoaded) {
-        this.ad = ad
-        this.showPopup['view_ad'] = true
+    editBidPopup(obj) {
+      this.editingObject = obj
+      this.showPopup['edit_bid'] = true
+    },
+    async updateBid() {
+      this.$vs.loading()
+
+      try {
+        let bidAmount = parseInt(this.editingObject.bid_amount * 100)
+        let bidStrategy = this.editingObject.bid_strategy
+
+        let params = {
+          access_token: this.accessToken,
+          bid_strategy: bidStrategy,
+        }
+        if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+          params.bid_amount = bidAmount
+        }
+
+        let adsets = []
+        if (this.editingObject.object_type == 'campaign') {
+          adsets = await this.fetchAdsets(this.editingObject.id, false)
+          if (this.editingObject.cbo) {
+            if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+              params.adset_bid_amounts = {}
+              for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+                let adset = adsets[adsetIndex]
+                params.adset_bid_amounts[adset.id] = bidAmount
+              }
+            }
+            await this.$http.post(this.fbApiUrl + '/' + this.editingObject.id, params)
+          } else {
+            for (let i = 0; i < adsets.length; i++) {
+              let adset = adsets[i]
+              await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            }
+          }
+        } else if (this.editingObject.object_type == 'adset') {
+          let adset = this.editingObject
+          await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+        } else {
+          throw 'Invalid object type'
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Bid amount updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch(error) {
+        console.error(error)
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Bid amount cannot be modified',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.showPopup['edit_bid'] = false
+      this.$vs.loading.close()
+    },
+    duplicateAdsetPopup(obj) {
+      this.editingObject = {
+        id: obj.id,
+        adsetNumber: 1,
+        adsetBudget: 1,
+      }
+      this.showPopup['duplicate_adset'] = true
+    },
+    async duplicateAdset(id, n) {
+      let adsets = []
+
+      // Make a batch request to create N adsets (copying from id)
+      let batch = []
+      for (let i = 0; i < n; i++) {
+        batch.push({
+          method: 'POST',
+          relative_url: '/' + this.fbApiVersion + '/' + id + '/copies',
+          name: 'duplicate_adset_' + i,
+          body: 'deep_copy=true',
+        })
+      }
+
+      let params = {
+        access_token: this.accessToken,
+        asyncbatch: batch,
+      }
+      const responseAsyncBatch = await this.$http.post(this.fbApiUrl, params)
+
+      params = {
+        access_token: this.accessToken,
+        fields: 'id,name,status,result',
+      }
+      let sessions = responseAsyncBatch.data.async_sessions
+      for (let sessionIndex = 0; sessionIndex < sessions.length; sessionIndex++) {
+        let session = sessions[sessionIndex]
+        let notCompleted = true
+        while (notCompleted) {
+          await sleep(1000)
+          const response = await this.$http.get(this.fbApiUrl + '/' + session.id, { params: params })
+
+          if (response.data.status !== 'COMPLETED' && response.data.status !== 'FAILED') {
+            notCompleted = true
+            continue
+          }
+
+          notCompleted = false
+          if (response.data.status === 'COMPLETED') {
+            let result = JSON.parse(response.data.result)
+            if (result.hasOwnProperty('copied_adset_id')) {
+              adsets.push(result.copied_adset_id)
+            }
+          }
+        }
+      }
+
+      // DEBUG TODO: to delete
+      console.log('adsets', adsets)
+
+      return adsets
+    },
+    async duplicateAdsetNormal(obj) {
+      this.$vs.loading()
+
+      try {
+        // Duplicate N times
+        let adsets = await this.duplicateAdset(obj.id, obj.adsetNumber)
+
+        // TODO: Check if adsets.length == obj.adsetNumber
+
+        // Edit adset name and daily budget
+        let params = {
+          access_token: this.accessToken,
+          name: 'Duplicate - €' + parseFloat(obj.adsetBudget).toFixed(2),
+          daily_budget: parseInt(obj.adsetBudget)*100,
+        }
+        for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+          let adsetId = adsets[adsetIndex]
+          await this.$http.post(this.fbApiUrl + '/' + adsetId, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Adset duplicated ' + obj.adsetNumber + ' times.',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while duplicating adset',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    duplicateAdsetBidderPopup(obj) {
+      this.editingObject = {
+        adsets: [{
+          budget: 0.0,
+          bid: 'COST_CAP',
+          bid_amount: 0.0,
+          accelerated: false,
+        }],
+      }
+      this.showPopup['duplicate_adset_bidder'] = true
+    },
+    removeBidderAdset(index) {
+      this.editingObject.adsets.splice(index, 1)
+    },
+    addBidderAdset() {
+      this.editingObject.adsets.push({
+        budget: 0.0,
+        bid: 'COST_CAP',
+        bid_amount: 0.0,
+        accelerated: false,
+      })
+    },
+    async duplicateAdsetBidder(obj) {
+      this.$vs.loading()
+
+      try {
+        // Duplicate N times
+        let adsets = await this.duplicateAdset(obj.id, obj.adsets.length)
+
+        // TODO: Check if adsets.length == obj.adsets.length
+
+        // Edit adset name, daily budget, bid strategy and bid amount
+        for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+          let adsetId = adsets[adsetIndex]
+          let adset = obj.adsets[adsetIndex]
+
+          let bidType = 'Unknown'
+          if (adset.bid == 'LOWEST_COST_WITH_BID_CAP') {
+            bidType = 'BID_CAP'
+          } else if (adset.bid == 'COST_CAP') {
+            bidType = 'COST_CAP'
+          }
+          let params = {
+            access_token: this.accessToken,
+            name: 'BIDDER - ' + bidType + ' - €' + parseFloat(adset.bid_amount).toFixed(2),
+            daily_budget: parseInt(adset.budget*100),
+            bid_strategy: adset.bid,
+            bid_amount: parseInt(adset.bid_amount*100),
+          }
+          if (adset.accelerated) {
+            params.name += ' - Acc.'
+          }
+          await this.$http.post(this.fbApiUrl + '/' + adsetId, params)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Adset duplicated ' + obj.adsetNumber + ' times (bidder).',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while duplicating adset (bidder)',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+    },
+    async fetchProductMedias() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      const productMediasResponse = await this.$http.get('/api/v1/product-medias', { headers })
+      this.productMedias = productMediasResponse.data.data
+      this.productMediasFiltered = []
+      for (let i = 0; i < this.productMedias.length; i++) {
+        if (this.productMedias[i].product.id == this.productMediasFilterProductId) {
+          this.productMediasFiltered.push(this.productMedias[i])
+        }
       }
     },
-    async showUpdateFormCost() {
-      if (this.selectedCampaigns.length == 0) {
+    async adLauncherPopup(ad) {
+      this.ad = {
+        view: 'normal',
+        pageId: '',
+
+        campaignName: '',
+        campaignStatus: 'ACTIVE',
+        campaignObjective: 'LINK_CLICKS',
+        pixelId: 'AUTOMATIC',
+        
+        conversionEvent: 'PURCHASE',
+
+        campaignBudgetStrategy: 'Adset',
+        campaignBudget: 0,
+        campaignBidStrategy: 'LOWEST_COST_WITHOUT_CAP',
+        campaignBid: 1,
+        splitAdset: "false",
+
+        targetingGender: 'All',
+        targetingAgeMin: 25,
+        targetingAgeMax: 0,
+
+        targetingCountry: 'IT',
+        targetingDevice: '',
+        targetingWifi: true,
+        targetingPlatformFacebook: true,
+        targetingPlatformInstagram: true,
+        targetingPlatformAudience: true,
+        targetingPlatformMessenger: true,
+
+        title: '',
+        text: '',
+        url: '',
+        conversionDomain: '',
+
+        filesToUpload: [],
+
+      }
+
+      await this.fetchAdTemplates()
+
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      // Retrieve product medias
+      await this.fetchProductMedias()
+
+      // Retrieve facebook pages of this account
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,name,is_published',
+        is_promotable: true,
+      }
+      this.fbAccountPages = []
+      const fbPagesResponse = await this.$http.get(this.fbApiUrl + '/me/accounts', { params: params })
+      fbPagesResponse.data.data.forEach((page) => {
+        if (page.hasOwnProperty('is_published') && page.is_published) {
+          this.fbAccountPages.push({
+            id: page.id,
+            name: page.name,
+          })
+        }
+      })
+
+      this.$vs.loading.close()
+      this.showPopup['ad_launcher'] = true
+    },
+    async launchAd() {
+      this.$vs.loading()
+
+      let adAccount = this.adAccount
+
+      let currentAdUrl = this.ad.url
+      if (currentAdUrl.includes('?')) {
+        currentAdUrl = currentAdUrl + '&'
+      } else {
+        currentAdUrl = currentAdUrl + '?'
+      }
+      currentAdUrl = currentAdUrl + 'pi=' + adAccount.pixel
+
+      // Create campaign
+      let campaign = null
+      let campaignParams = {
+        access_token: this.accessToken,
+        name: this.ad.campaignName,
+        objective: this.ad.campaignObjective,
+        status: this.ad.campaignStatus,
+        special_ad_categories: [],
+      }
+      if (this.ad.campaignBudgetStrategy == 'CBO') {
+        campaignParams.bid_strategy = this.ad.campaignBidStrategy
+        campaignParams.daily_budget = parseInt(parseFloat(this.ad.campaignBudget)*100)
+      }
+
+      let params = {
+        access_token: this.accessToken,
+        fields: 'id,username',
+      }
+      const pagesResponse = await this.$http.get(this.fbApiUrl + '/' + this.ad.pageId + '/page_backed_instagram_accounts', { params: params })
+      if (pagesResponse.hasOwnProperty('data') && pagesResponse.data.data.length == 0) {
+        this.$vs.loading.close()
+        console.log('Page backed instagram account (PBIA) error')
+        return
+      }
+      let pbiaId = pagesResponse.data.data[0].id
+
+      const campaignResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/campaigns', campaignParams)
+      if (campaignResponse.hasOwnProperty('data') && campaignResponse.data.hasOwnProperty('id')) {
+        campaign = campaignResponse.data
+      } else {
+        this.$vs.loading.close()
+        console.log('Error: cannot create campaign')
         return
       }
 
-      this.updateFormTotalCost = 0
-      for (let i = 0; i < this.selectedCampaigns.length; i++) {
-        let campaign = this.selectedCampaigns[i]
-        this.updateFormTotalCost += parseFloat(campaign.spent)
+      // Create adset
+      let adsets = []
+      let adsetParams = {
+        access_token: this.accessToken,
+        name: 'Adset',
+        optimization_goal: this.ad.campaignObjective,
+        billing_event: 'IMPRESSIONS', // TODO: What about this?
+        campaign_id: campaign.id,
+        targeting: {},
+        status: this.ad.campaignStatus,
       }
-      this.updateFormDate = this.filters.date_to
+      if (this.ad.campaignBidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+        adsetParams.bid_amount = parseInt(parseFloat(this.ad.campaignBid)*100)
+      }
+      if (this.ad.campaignBudgetStrategy != 'CBO') {
+        adsetParams.bid_strategy = this.ad.campaignBidStrategy
+        adsetParams.daily_budget = parseInt(parseFloat(this.ad.campaignBudget)*100)
+      }
+      if (this.ad.targetingAgeMin > 0) {
+        adsetParams.targeting.age_min = this.ad.targetingAgeMin
+      }
+      if (this.ad.targetingAgeMax > 0) {
+        adsetParams.targeting.age_max = this.ad.targetingAgeMax
+      }
+      adsetParams.targeting.geo_locations = { countries: [] }
+      adsetParams.targeting.geo_locations.countries.push(this.ad.targetingCountry)
+      if (this.ad.targetingGender == 'Male') {
+        adsetParams.targeting.genders = [1]
+      } else if (this.ad.targetingGender == 'Female') {
+        adsetParams.targeting.genders = [2]
+      }
 
-      if (!this.formsLoaded) {
-        this.$vs.loading()
-        let headers = {
-          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      if (this.ad.targetingDevice != '') {
+        adsetParams.targeting.device_platforms = []
+        adsetParams.targeting.device_platforms.push(this.ad.targetingDevice)
+      }
+      if (this.ad.targetingWifi) {
+        adsetParams.targeting.wireless_carrier = []
+        adsetParams.targeting.wireless_carrier.push('Wifi')
+      }
+
+      if (this.ad.targetingPlatformFacebook ||
+        this.ad.targetingPlatformInstagram ||
+        this.ad.targetingPlatformAudience ||
+        this.ad.targetingPlatformMessenger) {
+        adsetParams.targeting.publisher_platforms = []
+        if (this.ad.targetingPlatformFacebook) {
+          adsetParams.targeting.publisher_platforms.push('facebook')
+        }
+        if (this.ad.targetingPlatformInstagram) {
+          adsetParams.targeting.publisher_platforms.push('instagram')
+        }
+        if (this.ad.targetingPlatformMessenger) {
+          adsetParams.targeting.publisher_platforms.push('messenger')
+        }
+        if (this.ad.targetingPlatformAudience) {
+          adsetParams.targeting.publisher_platforms.push('audience_network')
+        }
+      }
+
+      let trackingSpecs = ''
+      if (this.ad.campaignObjective == 'CONVERSIONS') {
+        adsetParams.promoted_object = {
+          custom_event_type: this.ad.conversionEvent,
+          pixel_id: adAccount.pixel,
+        }
+        adsetParams.optimization_goal = 'OFFSITE_CONVERSIONS'
+        trackingSpecs = [
+          { 'action.type': 'offsite_conversion', 'fb_pixel': adAccount.pixel },
+        ]
+        adsetParams.tracking_specs = trackingSpecs
+      }
+
+      let adsetIds = []
+
+      let adsetsToCreate = 1
+      if (this.ad.splitAdset == "true") {
+        adsetsToCreate = this.selectedProductMedias.length
+      }
+      for (let adsetIndexTmp = 0; adsetIndexTmp < adsetsToCreate; adsetIndexTmp++) {
+        const adsetResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adsets', adsetParams)
+
+        if (adsetResponse.hasOwnProperty('data') && adsetResponse.data.hasOwnProperty('id')) {
+          adsets.push(adsetResponse.data)
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create adset')
+          return
+        }
+      }
+
+      let previewHash = ''
+      if (this.selectedPreview.length > 0) {
+        // Create ad preview (upload media on facebook)
+        let productMediaPreview = this.productMediasFiltered[this.selectedPreview[0]] // TODO: For now there's only one preview
+        let previewBytes = await convertImgToBase64Raw(productMediaPreview.url)
+        let adPreviewParams = {
+          access_token: this.accessToken,
+          name: 'testimg.png',
+          bytes: previewBytes,
+        }
+        const adPreviewResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adimages', adPreviewParams)
+        if (adPreviewResponse.hasOwnProperty('data') && adPreviewResponse.data.hasOwnProperty('images')) {
+          for (const [key, value] of Object.entries(adPreviewResponse.data.images)) {
+            previewHash = value.hash
+          }
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create ad preview image')
+          return
+        }
+      }
+
+      let adsetIndex = 0
+      for (let productMediaIndex = 0; productMediaIndex < this.selectedProductMedias.length; productMediaIndex++) {
+        let pmIndex = this.selectedProductMedias[productMediaIndex]
+        let productMedia = this.productMediasFiltered[pmIndex]
+
+        let adsetId = adset[adsetIndex].id
+        adsetIndex++
+
+        // Create ad images and ad videos
+        let conversionDomain = this.ad.conversionDomain
+        let pageId = this.ad.pageId // TODO: Better
+        let adParams = {
+          access_token: this.accessToken,
+          adset_id: adsetId,
+          name: 'ad',
+          status: this.ad.campaignStatus,
+          conversion_domain: conversionDomain,
         }
 
-        // Retrieve forms
-        const response = await this.$http.get('/api/v1/forms', { headers })
-        this.$vs.loading.close()
-        this.forms = response.data.data
-        if (this.forms.length > 0) {
-          this.updateFormId = this.forms[0].id
+        if (productMedia.type == 'image') {
+          let bytes = await convertImgToBase64Raw(productMedia.url)
+          let adImageParams = {
+            access_token: this.accessToken,
+            name: 'testimg.png',
+            bytes: result,
+          }
+          const adImageResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/adimages', adImageParams)
+          let imageHash = ''
+          if (adImageResponse.hasOwnProperty('data') && adImageResponse.data.hasOwnProperty('images')) {
+            for (const [key, value] of Object.entries(adImageResponse.data.images)) {
+              imageHash = value.hash
+            }
+          } else {
+            this.$vs.loading.close()
+            console.log('Error: cannot create ad image')
+            return
+          }
+          adParams.creative = {
+            name: 'ad creative',
+            object_story_spec: {
+              link_data: {
+                call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                link: currentAdUrl,
+                name: this.ad.title,
+                message: this.ad.text,
+                image_hash: imageHash,
+              },
+              page_id: pageId,
+              instagram_actor_id: pbiaId,
+            },
+            instagram_actor_id: pbiaId,
+          }
+          if (trackingSpecs != '') {
+            data.tracking_specs = trackingSpecs
+          }
+        } else if (productMedia.type == 'video') {
+          let videoData = {
+            access_token: this.accessToken,
+            file_url: productMedia.url,
+          }
+          const videoResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/advideos', videoData)
+          let videoId = null
+          if (videoResponse.hasOwnProperty('data') && videoResponse.data.hasOwnProperty('id')) {
+            let videoId = response.data.id
+          } else {
+            this.$vs.loading.close()
+            console.log('Error: cannot create ad video')
+            return
+          }
+          adParams.creative = {
+            name: 'ad creative',
+            object_story_spec: {
+              video_data: {
+                call_to_action: { type: 'LEARN_MORE', value: { link: currentAdUrl } },
+                link: currentAdUrl,
+                title: this.ad.title,
+                message: this.ad.text,
+                video_id: videoId,
+              },
+              page_id: pageId,
+              instagram_actor_id: pbiaId,
+            },
+            instagram_actor_id: pbiaId,
+          }
+          if (previewHash !== '') {
+            adParams.creative.object_story_spec.video_data.image_hash = previewHash
+          }
         }
-        this.formsLoaded = true
-        this.showPopup['update_form_cost'] = true
-      } else {
-        this.showPopup['update_form_cost'] = true
+        // Create ad
+        const adResponse = await this.$http.post(this.fbApiUrl + '/' + adAccount.id + '/ads', adParams)
+        if (adResponse.hasOwnProperty('data') && adResponse.data.hasOwnProperty('id')) {
+          // Ad created
+        } else {
+          this.$vs.loading.close()
+          console.log('Error: cannot create ad')
+          return
+        }
       }
     },
-    isValidForm(type) {
-      if (type == 'create_advertiser' || type == 'edit_advertiser') {
-        if (this.advertiser.id != '' && this.advertiser.name != '' && this.advertiser.access_token != '') {
-          return true
+    getAdObject() {
+      return {
+        campaign_name: this.ad.campaignName,
+        campaign_status: this.ad.campaignStatus,
+        campaign_objective: this.ad.campaignObjective,
+        pixel_id: this.ad.pixelId,
+        conversion_event: this.ad.conversionEvent,
+        campaign_budget_strategy: this.ad.campaignBudgetStrategy,
+        campaign_budget: this.ad.campaignBudget,
+        campaign_bid_strategy: this.ad.campaignBidStrategy,
+        campaign_bid: this.ad.campaignBid,
+        split_adset: this.ad.splitAdset,
+
+        targeting_gender: this.ad.targetingGender,
+        targeting_age_min: this.ad.targetingAgeMin,
+        targeting_age_max: this.ad.targetingAgeMax,
+        targeting_country: this.ad.targetingCountry,
+        targeting_device: this.ad.targetingDevice,
+        targeting_wifi: this.ad.targetingWifi,
+        targeting_platform_facebook: this.ad.targetingPlatformFacebook,
+        targeting_platform_instagram: this.ad.targetingPlatformInstagram,
+        targeting_platform_audience: this.ad.targetingPlatformAudience,
+        targeting_platform_messenger: this.ad.targetingPlatformMessenger,
+
+        title: this.ad.title,
+        text: this.ad.text,
+        url: this.ad.url,
+        conversion_domain: this.ad.conversionDomain,
+      }
+    },
+    loadAdTemplate(adTemplate) {
+      this.ad.campaignName = adTemplate.value.campaign_name
+      this.ad.campaignStatus = adTemplate.value.campaign_status
+      this.ad.campaignObjective = adTemplate.value.campaign_objective
+      this.ad.pixelId = adTemplate.value.pixel_id
+      this.ad.conversionEvent = adTemplate.value.conversion_event
+      this.ad.campaignBudgetStrategy = adTemplate.value.campaign_budget_strategy
+      this.ad.campaignBudget = adTemplate.value.campaign_budget
+      this.ad.campaignBidStrategy = adTemplate.value.campaign_bid_strategy
+      this.ad.campaignBid = adTemplate.value.campaign_bid
+      this.ad.splitAdset = adTemplate.value.split_adset
+
+      this.ad.targetingGender = adTemplate.value.targeting_gender
+      this.ad.targetingAgeMin = adTemplate.value.targeting_age_min
+      this.ad.targetingAgeMax = adTemplate.value.targeting_age_max
+      this.ad.targetingCountry = adTemplate.value.targeting_country
+      this.ad.targetingDevice = adTemplate.value.targeting_device
+      this.ad.targetingWifi = adTemplate.value.targeting_wifi
+      this.ad.targetingPlatformFacebook = adTemplate.value.targeting_platform_facebook
+      this.ad.targetingPlatformInstagram = adTemplate.value.targeting_platform_instagram
+      this.ad.targetingPlatformAudience = adTemplate.value.targeting_platform_audience
+      this.ad.targetingPlatformMessenger = adTemplate.value.targeting_platform_messenger
+
+      this.ad.title = adTemplate.value.title
+      this.ad.text = adTemplate.value.text
+      this.ad.url = adTemplate.value.url
+      this.ad.conversionDomain = adTemplate.value.conversion_domain
+
+      this.newAdTemplateName = adTemplate.name
+    },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+    },
+    async saveAdTemplate() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let value = this.getAdObject()
+
+      let data = {
+        name: this.newAdTemplateName,
+        value: JSON.stringify(value),
+      }
+
+      let alreadyExists = false
+      let adTemplateId = ''
+      for (let i = 0; i < this.adTemplates.length; i++) {
+        if (this.adTemplates[i].name == this.newAdTemplateName) {
+          alreadyExists = true
+          adTemplateId = this.adTemplates[i].id
         }
-      } else if (type == 'edit_budget') {
-        if (this.editingObject.hasOwnProperty('budget') &&
-            this.editingObject.budget > 0) {
-          return true
+      }
+
+      try {
+        if (!alreadyExists) {
+          const response = await this.$http.post('/api/3rd/fb-ad-templates', data, { headers })
+        } else {
+          const response = await this.$http.put('/api/3rd/fb-ad-templates/' + adTemplateId, data, { headers })
         }
-      } else if (type == 'edit_bid') {
-        if (this.editingObject.hasOwnProperty('conversion_bid') &&
-            this.editingObject.conversion_bid > 0) {
-          return true
-        }
-      } else if (type == 'update_form_cost') {
-        if (this.updateFormId != '' && this.updateFormId > 0 &&
-            this.updateFormTotalCost > 0 && this.updateFormDate != '') {
-          return true
-        }
-      } else if (type == 'create_rule' || type == 'edit_rule') {
-        if (this.rule.name != '' && this.rule.frequency != '' &&
-            this.rule.advertiser_id != '' &&
-            this.rule.campaign_ids.length >= 0 &&
-            this.rule.rules.length > 0 && this.rule.time != '') {
-          return true
-        }
-      } else if (type == 'bulk_edit_rule') {
-        if (this.rule.advertiser_id != '' &&
-            this.rule.campaign_ids.length >= 0) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad template saved',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        await this.fetchAdTemplates()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Unknown error while saving ad template',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async deleteAdTemplate() {
+      this.$vs.loading()
+
+      let id = this.adTemplate.id
+
+      if (id <= 0) return
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      await this.$http.delete('/api/3rd/fb-ad-templates/' + id, { headers })
+
+      this.$vs.loading.close()
+
+      await this.fetchAdTemplates()
+    },
+    showAdAccountPopup(adAccount) {
+      this.adAccount = adAccount
+      this.showForm('ad_account')
+    },
+    selectedProductMediasHaveVideo() {
+      for (let i = 0; i < this.selectedProductMedias.length; i++) {
+        if (this.productMediasFiltered[this.selectedProductMedias[i]].type == 'video') {
           return true
         }
       }
       return false
     },
-    async updateFormCost() {
+
+    // Rules methods
+    async fetchRules() {
+      let rules = []
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/api/3rd/facebook/rules', { headers: headers })
+        if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+          rules = response.data.data
+        }
+      } catch (error) {
+        // Nothing
+      }
+      return rules
+    },
+    showCampaignList(rule) {
+      // TODO:
+    },
+    async runRule(rule) {
       this.$vs.loading()
+
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-
-      let data = {
-        day: this.updateFormDate,
-        cost_to_add: this.updateFormTotalCost,
+      try {
+        const response = await this.$http.post('/api/3rd/facebook/rules/' + rule.id + '/run', {}, { headers })
+      } catch(error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot run the rule',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$vs.loading.close()
+        return
       }
 
-      // Form cost update
-      await this.$http.put('/api/v1/forms/' + this.updateFormId + '/stats-add', data, { headers })
-
-      // Form association
-      /*
-      if (this.updateFormAssociate) {
-        let fbCampaigns = []
-        for (let i = 0; i < this.selectedCampaigns.length; i++) {
-          fbCampaigns.push(this.selectedCampaigns[i].id)
-        }
-        data = {
-          fb_campaigns: fbCampaigns,
-          form_id: this.updateFormId,
-        }
-        const fbCampaignsResponse = await this.$http.post('/api/3rd/fb-campaigns/associate', data, { headers })
-        for (let fbCampaignIndex = 0; fbCampaignIndex < fbCampaignsResponse.data.data.length; fbCampaignIndex++) {
-          let fbCampaign = fbCampaignsResponse.data.data[fbCampaignIndex]
-          this.campaigns[this.getObjectIndexById(this.campaigns, fbCampaign.id)].form = fbCampaign.form
-        }
-      }
-      */
-
-      this.$vs.loading.close()
       this.$vs.notify({
         title: 'Success',
-        text: 'Form total cost updated',
+        text: 'Rule executed',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'success'
       })
-      this.showPopup['update_form_cost'] = false
-    },
-    editBudgetPopup(data) {
-      this.editingObject = data
-      this.showPopup['edit_budget'] = true
-    },
-    editBidPopup(data) {
-      this.editingObject = data
-      if (!this.editingObject.hasOwnProperty('conversion_bid'))
-        this.editingObject.conversion_bid = 0.0
-      this.editingObject.bid_strategy = 'BID_TYPE_CUSTOM'
-      this.showPopup['edit_bid'] = true
-    },
-    async editBudget() {
-      this.$vs.loading()
-
-      let budget = parseInt(this.editingObject.budget)
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-        budget: budget,
-      }
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
-      try {
-        const response = await this.$http.put('/api/3rd/facebook/adgroups/' + this.editingObject.id, params, { headers: headers })
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Budget updated',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'success'
-        })
-        this.showPopup['edit_budget'] = false
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot update budget',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
-      this.$vs.loading.close()
-    },
-    async editBid() {
-      this.$vs.loading()
-
-      let bid = parseInt(this.editingObject.conversion_bid)
-      let bidStrategy = this.editingObject.bid_strategy
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-        bid: bid,
-        bid_strategy: bidStrategy,
-      }
-      if (this.currentAdvertiserId !== null) {
-        params.advertiser_id = this.currentAdvertiserId
-      }
-
-      try {
-        const response = await this.$http.put('/api/3rd/facebook/adgroups/' + this.editingObject.id, params, { headers: headers })
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Budget updated',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'success'
-        })
-        this.showPopup['edit_bid'] = false
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot update bid',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
-
-      this.$vs.loading.close()
-    },
-    showCreateRuleForm() {
-      this.rule = {
-        name: '',
-        advertiser_id: '',
-        all_campaigns: false,
-        campaign_ids: [],
-        rules: [],
-        actions: [],
-        frequency: 'hourly',
-        time: 'lifetime',
-      }
-      this.addRule()
-      this.addAction()
-      this.showPopup['create_rule'] = true
-    },
-    showEditRuleForm(rule) {
-      if (this.advertisers.length == 0) {
-        return
-      }
-
-      let ruleTime = 'lifetime'
-      if (rule.value.hasOwnProperty('time')) {
-        ruleTime = rule.value.time
-      }
-
-      this.rule = {
-        id: rule.id,
-        name: rule.name,
-        advertiser_id: rule.value.advertiser_id,
-        all_campaigns: (rule.value.hasOwnProperty('all_campaigns') ? rule.value.all_campaigns : false),
-        campaign_ids: forceJson(rule.value.campaign_ids),
-        rules: forceJson(rule.value.rules),
-        actions: forceJson(rule.value.actions),
-        frequency: rule.frequency,
-        time: ruleTime,
-      }
-      this.currAdvId = rule.value.advertiser_id
-
-      this.showPopup['edit_rule'] = true
-      this.refreshCampaignsOptions()
-    },
-    addRule() {
-      this.rule.rules.push({
-        metric: 'impressions',
-        comparison: '<',
-        value: 10,
-      })
-    },
-    removeRule(index) {
-      this.rule.rules.splice(index, 1)
-    },
-    addAction() {
-      this.rule.actions.push({
-        type: 'inc_bid',
-        value: 1,
-        max_value: 10,
-      })
-    },
-    removeAction(index) {
-      this.rule.actions.splice(index, 1)
-    },
-    async refreshCampaignsOptions() {
-      this.$vs.loading()
-
-      if (this.rule.advertiser_id != this.currAdvId) {
-        this.rule.campaign_ids = []
-      }
-
-      this.campaignsOptions = []
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let params = {
-        reports: 0,
-        advertiser_id: this.rule.advertiser_id,
-      }
-
-      this.campaignsOptions = []
-      const response = await this.$http.get('/api/3rd/facebook/campaigns', { headers: headers, params: params })
-
-      for (let objectIndex = 0; objectIndex < response.data.data.length; objectIndex++) {
-        let object = response.data.data[objectIndex]
-
-        if (this.filters.status != '' && object.status != this.filters.status) {
-          continue
-        }
-
-        let objectToPush  = object
-
-        this.campaignsOptions.push(objectToPush)
-      }
-
-      this.currAdvId = this.rule.advertiser_id
+      this.applyFilters()
 
       this.$vs.loading.close()
     },
@@ -2611,7 +3248,8 @@ export default {
       }
       let data = {
         name: this.rule.name,
-        advertiser_id: this.rule.advertiser_id,
+        access_token: this.accessToken,
+        ad_account_id: this.rule.ad_account_id,
         all_campaigns: this.rule.all_campaigns,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
@@ -2652,7 +3290,7 @@ export default {
       }
 
       let name = rule.name + ' - Copy'
-      let advertiserId = value.advertiser_id
+      let adAccountId = value.ad_account_id
       let campaignIds = value.campaign_ids
       if (typeof(campaignIds) == 'string') {
         campaignIds = JSON.parse(campaignIds)
@@ -2673,7 +3311,7 @@ export default {
 
       this.rule = {
         name: name,
-        advertiser_id: advertiserId,
+        ad_account_id: adAccountId,
         all_campaigns: this.rule.all_campaigns,
         campaign_ids: campaignIds,
         rules: rules,
@@ -2694,7 +3332,8 @@ export default {
       }
       let data = {
         name: this.rule.name,
-        advertiser_id: this.rule.advertiser_id,
+        access_token: this.accessToken,
+        ad_account_id: this.rule.ad_account_id,
         all_campaigns: this.rule.all_campaigns,
         campaign_ids: this.rule.campaign_ids,
         rules: JSON.stringify(this.rule.rules),
@@ -2800,167 +3439,76 @@ export default {
 
       this.$vs.loading()
     },
-    async runRule(rule) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      try {
-        const response = await this.$http.post('/api/3rd/facebook/rules/' + rule.id + '/run', {}, { headers })
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot run the rule',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-        this.$vs.loading.close()
-        return
-      }
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Rule executed',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
+    addRule() {
+      this.rule.rules.push({
+        metric: 'impressions',
+        comparison: '<',
+        value: 10,
       })
-      this.applyFilters()
-
+    },
+    removeRule(index) {
+      this.rule.rules.splice(index, 1)
+    },
+    addAction() {
+      this.rule.actions.push({
+        type: 'inc_bid',
+        value: 1,
+        max_value: 10,
+      })
+    },
+    removeAction(index) {
+      this.rule.actions.splice(index, 1)
+    },
+    async refreshCampaignsOptions() {
+      this.$vs.loading()
+      this.campaignsOptions = await this.fetchCampaigns(this.rule.ad_account_id, false)
       this.$vs.loading.close()
     },
-    showCreateAdvertiserForm() {
-      this.advertiser = {
-        id: '',
+    showCreateRuleForm() {
+      this.rule = {
         name: '',
-        access_token: '',
+        ad_account_id: '',
+        all_campaigns: false,
+        campaign_ids: [],
+        rules: [],
+        actions: [],
+        frequency: 'hourly',
+        time: 'lifetime',
       }
-      this.showPopup['create_advertiser'] = true
+      this.addRule()
+      this.addAction()
+      this.showPopup['create_rule'] = true
     },
-    showEditAdvertiserForm(adv) {
-      this.advertiser = {
-        id: adv.id,
-        name: adv.name,
-        access_token: adv.access_token,
-      }
-      this.editingAdvertiser = adv
-      this.showPopup['edit_advertiser'] = true
-    },
-    async createAdvertiser() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      let data = {
-        id: this.advertiser.id,
-        name: this.advertiser.name,
-        access_token: this.advertiser.access_token,
-      }
-      try {
-        const response = await this.$http.post('/api/3rd/facebook/advertisers', data, { headers })
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot create advertiser',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-        this.$vs.loading.close()
-        return
+    showEditRuleForm(rule) {
+      let ruleTime = 'lifetime'
+      if (rule.value.hasOwnProperty('time')) {
+        ruleTime = rule.value.time
       }
 
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Advertiser created',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-      this.showPopup['create_advertiser'] = false
-      this.applyFilters()
-
-      this.$vs.loading.close()
-    },
-    async updateAdvertiser() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      this.rule = {
+        id: rule.id,
+        name: rule.name,
+        ad_account_id: rule.value.ad_account_id,
+        all_campaigns: (rule.value.hasOwnProperty('all_campaigns') ? rule.value.all_campaigns : false),
+        campaign_ids: forceJson(rule.value.campaign_ids),
+        rules: forceJson(rule.value.rules),
+        actions: forceJson(rule.value.actions),
+        frequency: rule.frequency,
+        time: ruleTime,
       }
-      let data = {
-        id: this.advertiser.id,
-        name: this.advertiser.name,
-        access_token: this.advertiser.access_token,
-      }
-      try {
-        const response = await this.$http.put('/api/3rd/facebook/advertisers/' + this.editingAdvertiser.id, data, { headers })
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot update advertiser',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-        this.$vs.loading.close()
-        return
-      }
+      this.currAdAccId = rule.value.ad_account_id
 
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Advertiser updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-      this.showPopup['edit_advertiser'] = false
-      this.applyFilters()
-
-      this.$vs.loading.close()
-    },
-    async deleteAdvertiser(adv) {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-      try {
-        const response = await this.$http.delete('/api/3rd/facebook/advertisers/' + adv.id, { headers })
-      } catch(error) {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot delete the advertiser',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-        this.$vs.loading.close()
-        return
-      }
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Advertiser deleted successfully',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-      this.applyFilters()
-
-      this.$vs.loading.close()
+      this.showPopup['edit_rule'] = true
+      this.refreshCampaignsOptions()
     },
     showBulkEditRuleForm() {
       if (this.selectedRules.length <= 0) {
         return
       }
 
-      let advId = this.selectedRules[0].value.advertiser_id
+      let adAccId = this.selectedRules[0].value.ad_account_id
       for (let i = 0; i < this.selectedRules.length; i++) {
-        if (this.selectedRules[0].value.advertiser_id != advId) {
+        if (this.selectedRules[0].value.ad_account_id != adAccId) {
           return
         }
       }
@@ -2972,14 +3520,14 @@ export default {
 
       this.rule = {
         name: '',
-        advertiser_id: advId,
+        ad_account_id: adAccId,
         campaign_ids: bulkCampaignIds,
         rules: [],
         actions: [],
         frequency: 'hourly',
         time: 'lifetime',
       }
-      this.currAdvId = advId
+      this.currAdAccId = adAccId
 
       this.showPopup['bulk_edit_rule'] = true
       this.refreshCampaignsOptions()
@@ -2991,7 +3539,7 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
       let data = {
-        advertiser_id: this.rule.advertiser_id,
+        ad_account_id: this.rule.ad_account_id,
         campaign_ids: this.rule.campaign_ids,
       }
       for (let i = 0; i < this.selectedRules.length; i++) {
@@ -3025,9 +3573,9 @@ export default {
       this.applyFilters()
     },
     async showCampaignList(rule) {
-      this.currAdvId = null
+      this.currAdAccId = null
       this.rule.id = rule.id
-      this.rule.advertiser_id = rule.value.advertiser_id
+      this.rule.ad_account_id = rule.value.ad_account_id
       await this.refreshCampaignsOptions()
 
       this.campaignsList = []
@@ -3049,12 +3597,12 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
       let data = {
-        advertiser_id: this.rule.advertiser_id,
+        ad_account_id: this.rule.ad_account_id,
         campaign_ids: this.campaignsListUpdated,
       }
 
       try {
-        const response = await this.$http.put('/api/3rd/facebook/rules/' + this.rule.id, data, { headers })
+        const response = await this.$http.put('/api/3rd/tiktok/rules/' + this.rule.id, data, { headers })
       } catch(error) {
         this.$vs.notify({
           title: 'Error',
@@ -3080,9 +3628,6 @@ export default {
 
       this.applyFilters()
     },
-    onAdvertiserSwitch() {
-      this.changeView('campaigns', this.advertiserSwitch)
-    },
     async copyIds() {
       let stringToCopy = ''
       let objs = this.selectedObjects
@@ -3100,9 +3645,31 @@ export default {
     },
   },
   async created() {
-    this.resetFilters()
-  },
-  mounted () {
+    await this.autoLogin()
+
+    let _this = this
+    this.$nextTick(() => {
+      window.fbAsyncInit = function () {
+        window.FB.init({
+          appId: '1031757410984629',
+          xfbml: true,
+          version: _this.fbApiVersion
+        })
+        window.FB.AppEvents.logPageView()
+        _this.FB = window.FB
+
+        // DEBUG TODO: to delete
+        console.log('FB SDK initialized')
+      };
+
+      (function (d, s, id) {
+        let js, fjs = d.getElementsByTagName(s)[0]
+        if (d.getElementById(id)) { return }
+        js = d.createElement(s); js.id = id
+        js.src = '//connect.facebook.net/en_US/sdk.js'
+        fjs.parentNode.insertBefore(js, fjs)
+      }(document, 'script', 'facebook-jssdk'));
+    })
   }
 }
 
