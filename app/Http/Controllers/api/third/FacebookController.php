@@ -528,8 +528,8 @@ class FacebookController extends Controller
             $reports = [
                 'metrics' => [
                     'spend',
-                    'conversions',
                     'cpm',
+                    'actions',
                 ],
             ];
         }
@@ -638,8 +638,8 @@ class FacebookController extends Controller
             $reports = [
                 'metrics' => [
                     'spend',
-                    'conversions',
                     'cpm',
+                    'actions',
                 ],
             ];
         }
@@ -696,8 +696,8 @@ class FacebookController extends Controller
             $reports = [
                 'metrics' => [
                     'spend',
-                    'conversions',
                     'cpm',
+                    'actions',
                 ],
             ];
         }

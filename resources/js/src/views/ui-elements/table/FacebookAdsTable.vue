@@ -126,6 +126,45 @@
             </li>
         </vue-context>
 
+        <vue-context ref="campaign_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();changeView('adsets', data.id);" class="flex items-center text-sm">
+                <feather-icon icon="UserIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Adsets</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
+        <vue-context ref="adset_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
+                <feather-icon icon="UserIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Ads</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
+        <vue-context ref="ad_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.ad_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <div>
             <vs-dropdown vs-trigger-click class="cursor-pointer">
                 <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
@@ -184,6 +223,8 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="spend">Spend</vs-th>
                     <vs-th sort-key="conversions">Conversions</vs-th>
+                    <vs-th sort-key="cpa">CPA</vs-th>
+                    <vs-th sort-key="cr">CR</vs-th>
                     <vs-th sort-key="cpm">CPM</vs-th>
                 </template>
 
@@ -192,7 +233,10 @@
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
                             <div @contextmenu.prevent="$refs.adaccount_context_menu.open($event, data[indextr])">
-                                <vs-chip transparent>
+                                <vs-chip
+                                    transparent
+                                    class="disabled-object"
+                                    :color="adAccountStatusColor[data[indextr].status]">
                                     <vs-avatar icon-pack="feather" icon="icon-user" />
                                     {{data[indextr].name}}
                                 </vs-chip>
@@ -205,6 +249,14 @@
 
                         <vs-td class="column-no-padding" :data="data[indextr].conversions">
                             {{data[indextr].conversions}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].cpa">
+                            € {{data[indextr].cpa.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].cr">
+                            {{data[indextr].cr.toFixed(2)}}%
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].cpm">
@@ -221,6 +273,12 @@
                     </vs-td>
                     <vs-td class="column-no-padding">
                         {{total_stats.conversions}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{total_stats.cpa.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        {{total_stats.cr.toFixed(2)}}%
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{total_stats.cpm.toFixed(2)}}
@@ -250,7 +308,7 @@
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.advertiser_context_menu.open($event, data[indextr])">
+                            <div @contextmenu.prevent="$refs.campaign_context_menu.open($event, data[indextr])">
                                 <vs-chip transparent>
                                     <vs-avatar icon-pack="feather" icon="icon-user" />
                                     {{data[indextr].name}}
@@ -259,7 +317,19 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
-                            STATUS (TODO)
+                            <fast-editable-value-select
+                                class="font-bold"
+                                :options="campaignStatuses"
+                                v-model="newStatus"
+                                @onEdit="newStatus = data[indextr].status"
+                                @onUpdate="updateStatus(data[indextr])">
+                                  <vs-chip
+                                      transparent
+                                      class="disabled-object"
+                                      :color="campaignStatusColor[data[indextr].status]">
+                                      {{data[indextr].status}}
+                                  </vs-chip>
+                            </fast-editable-value-select>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].spend">
@@ -291,7 +361,12 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
-                            € {{data[indextr].budget.toFixed(2)}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = data[indextr].budget.toFixed(2)"
+                                @onUpdate="updateCampaignBudget(data[indextr])">
+                                  € {{ data[indextr].budget.toFixed(2) }}
+                            </fast-editable-value>
                         </vs-td>
 
                     </vs-tr>
@@ -349,7 +424,7 @@
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.advertiser_context_menu.open($event, data[indextr])">
+                            <div @contextmenu.prevent="$refs.adset_context_menu.open($event, data[indextr])">
                                 <vs-chip transparent>
                                     <vs-avatar icon-pack="feather" icon="icon-user" />
                                     {{data[indextr].name}}
@@ -358,7 +433,19 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
-                            STATUS (TODO)
+                            <fast-editable-value-select
+                                class="font-bold"
+                                :options="adsetStatuses"
+                                v-model="newStatus"
+                                @onEdit="newStatus = data[indextr].status"
+                                @onUpdate="updateStatus(data[indextr])">
+                                  <vs-chip
+                                      transparent
+                                      class="disabled-object"
+                                      :color="adsetStatusColor[data[indextr].status]">
+                                      {{data[indextr].status}}
+                                  </vs-chip>
+                            </fast-editable-value-select>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].spend">
@@ -390,7 +477,12 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].budget">
-                            € {{data[indextr].budget.toFixed(2)}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = data[indextr].budget.toFixed(2)"
+                                @onUpdate="updateAdsetBudget(data[indextr])">
+                                  € {{ data[indextr].budget.toFixed(2) }}
+                            </fast-editable-value>
                         </vs-td>
 
                     </vs-tr>
@@ -441,14 +533,13 @@
                     <vs-th sort-key="cpm">CPM</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
-                    <vs-th sort-key="budget">Budget</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="tr" :key="indextr" v-for="(tr, indextr) in data">
 
                         <vs-td class="column-no-padding" :data="data[indextr].name">
-                            <div @contextmenu.prevent="$refs.advertiser_context_menu.open($event, data[indextr])">
+                            <div @contextmenu.prevent="$refs.ads_context_menu.open($event, data[indextr])">
                                 <vs-chip transparent>
                                     <vs-avatar icon-pack="feather" icon="icon-user" />
                                     {{data[indextr].name}}
@@ -457,7 +548,19 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].status">
-                            STATUS (TODO)
+                            <fast-editable-value-select
+                                class="font-bold"
+                                :options="adStatuses"
+                                v-model="newStatus"
+                                @onEdit="newStatus = data[indextr].status"
+                                @onUpdate="updateStatus(data[indextr])">
+                                  <vs-chip
+                                      transparent
+                                      class="disabled-object"
+                                      :color="adStatusColor[data[indextr].status]">
+                                      {{data[indextr].status}}
+                                  </vs-chip>
+                            </fast-editable-value-select>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="data[indextr].spend">
@@ -488,10 +591,6 @@
                             {{data[indextr].roi.toFixed(2)}}%
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="data[indextr].budget">
-                            € {{data[indextr].budget.toFixed(2)}}
-                        </vs-td>
-
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
@@ -518,9 +617,6 @@
                     </vs-td>
                     <vs-td class="column-no-padding">
                         {{total_stats.roi.toFixed(2)}}%
-                    </vs-td>
-                    <vs-td class="column-no-padding">
-                        € {{total_stats.budget.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
 
@@ -678,6 +774,81 @@ export default {
         name: '',
         accessToken: '',
       },
+
+      adAccountStatuses: [
+        1,   // Active
+        2,   // Disabled
+        3,   // Unsettled
+        7,   // Pending Review
+        9,   // In Grace Period
+        101, // temporarily unavailable
+        100, // pending closure
+      ],
+      adAccountStatusColor: {
+        1  : 'success', // Active
+        2  : 'danger', // Disabled
+        3  : 'warning', // Unsettled
+        7  : 'warning', // Pending Review
+        9  : 'warning', // In Grace Period
+        101: 'danger', // temporarily unavailable
+        100: 'danger', // pending closure
+      },
+
+      campaignStatuses: [
+        'ACTIVE',
+        'PAUSED',
+        'DELETED',
+        'ARCHIVED',
+      ],
+      campaignStatusColor: {
+        'ACTIVE'         : 'success',
+        'PAUSED'         : 'warning',
+        'DELETED'        : 'danger',
+        'ARCHIVED'       : 'danger',
+        'IN_PROCESS'     : 'warning',
+        'WITH_ISSUES'    : 'warning',
+      },
+
+      adsetStatuses: [
+        'ACTIVE',
+        'PAUSED',
+        'DELETED',
+        'ARCHIVED',
+      ],
+      adsetStatusColor: {
+        'ACTIVE'         : 'success',
+        'PAUSED'         : 'warning',
+        'DELETED'        : 'danger',
+        'CAMPAIGN_PAUSED': 'warning',
+        'ARCHIVED'       : 'danger',
+        'IN_PROCESS'     : 'warning',
+        'WITH_ISSUES'    : 'warning',
+      },
+
+      adStatuses: [
+        'ACTIVE',
+        'PAUSED',
+        'DELETED',
+        'ARCHIVED',
+      ],
+      adStatusColor: {
+        'ACTIVE'              : 'success',
+        'PAUSED'              : 'warning',
+        'DELETED'             : 'danger',
+        'PENDING_REVIEW'      : 'warning',
+        'DISAPPROVED'         : 'danger',
+        'PREAPPROVED'         : 'success',
+        'PENDING_BILLING_INFO': 'danger',
+        'CAMPAIGN_PAUSED'     : 'warning',
+        'ARCHIVED'            : 'danger',
+        'ADSET_PAUSED'        : 'warning',
+        'IN_PROCESS'          : 'warning',
+        'WITH_ISSUES'         : 'warning',
+      },
+
+      newStatus: '',
+      newValue: '',
+
     }
   },
   computed: {
@@ -705,6 +876,14 @@ export default {
     objects() {
       if (this.view == 'advertisers') {
         return this.advertisers
+      } else if (this.view == 'adaccounts') {
+        return this.adAccounts
+      } else if (this.view == 'campaigns') {
+        return this.campaigns
+      } else if (this.view == 'adsets') {
+        return this.adsets
+      } else if (this.view == 'ads') {
+        return this.ads
       } else {
         return []
       }
@@ -712,6 +891,14 @@ export default {
     selectedObjects() {
       if (this.view == 'advertisers') {
         return this.selectedAdvertisers
+      } else if (this.view == 'adaccounts') {
+        return this.selectedAdAccounts
+      } else if (this.view == 'campaigns') {
+        return this.selectedCampaigns
+      } else if (this.view == 'adsets') {
+        return this.selectedAdsets
+      } else if (this.view == 'ads') {
+        return this.selectedAds
       } else {
         return []
       }
@@ -731,20 +918,18 @@ export default {
     calculateStats() {
       /*
        * TODO: BUG:
-       * How to correctly calculate CR, CPM etc..?
+       * How to correctly calculate CPM etc..?
        */
       let spend = 0
+      let link_clicks = 0
       let conversions = 0
+      let conversions_value = 0
       let cpa = 0
-      let impressions = 0
-      let clicks = 0
       let cr = 0
       let cpm = 0
-      let ctr = 0
-      let cpc = 0
-      let budget = 0.0
       let profit = 0.0
       let roi = 0.0
+      let budget = 0.0
 
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
@@ -752,36 +937,39 @@ export default {
         if (obj.hasOwnProperty('spend')) {
           spend += obj.spend
         }
+        if (obj.hasOwnProperty('link_clicks')) {
+          link_clicks += obj.link_clicks
+        }
         if (obj.hasOwnProperty('conversions')) {
           conversions += obj.conversions
         }
-        if (obj.hasOwnProperty('impressions')) {
-          impressions += obj.impressions
+        if (obj.hasOwnProperty('conversions_value')) {
+          conversions_value += obj.conversions_value
+        }
+        if (obj.hasOwnProperty('profit')) {
+          profit += obj.profit
         }
         if (obj.hasOwnProperty('budget')) {
           budget += obj.budget
         }
       }
+
       cpa = (conversions > 0) ? (spend/conversions) : spend
-      cr  = (clicks > 0) ? ((conversions/clicks)*100) : ((conversions > 0) ? 9999.99 : 0)
-      // TODO
-      //cpm = (impressions > 0) ? ((spend*1000)/impressions) : (spend*1000)
-      ctr = (impressions > 0) ? ((clicks/impressions)*100) : ((clicks > 0) ? 9999.99 : 0)
-      cpc = (clicks > 0) ? (spend/clicks) : spend
+      cr = (link_clicks > 0) ? (100*conversions/link_clicks) : 0
+      // TODO: Calculate CPM
+      roi = (spend > 0) ? (((profit/spend)-1)*100) : 0
 
       this.total_stats = {
         spend: spend,
+        link_clicks: link_clicks,
         conversions: conversions,
+        conversions_value: conversions_value,
         cpa: cpa,
-        impressions: impressions,
-        clicks: clicks,
         cr: cr,
         cpm: cpm,
-        ctr: ctr,
-        cpc: cpc,
-        budget: budget,
         profit: profit,
         roi: roi,
+        budget: budget,
       }
     },
     onPageChanged(val) {
@@ -824,7 +1012,7 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      this.adAccounts = await this.facebook.fetchAdAccounts(this.currentAdvertiserId, this.filters)
+      this.adAccounts = await this.facebook.fetchAdAccounts(this.filters)
 
       this.adAccountsLoaded = true
       this.advertiserSwitch = this.currentAdvertiserId
@@ -838,7 +1026,7 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
-      this.campaigns = await this.facebook.fetchCampaigns(this.currentAdvertiserId, parentId, this.filters)
+      this.campaigns = await this.facebook.fetchCampaigns(parentId, this.filters)
 
       this.campaignsLoaded = true
       this.advertiserSwitch = this.currentAdvertiserId
@@ -853,7 +1041,7 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      this.adsets = await this.facebook.fetchAdsets(this.currentAdvertiserId, parentId, this.filters)
+      this.adsets = await this.facebook.fetchAdsets(parentId, this.filters)
 
       this.adsetsLoaded = true
       this.advertiserSwitch = this.currentAdvertiserId
@@ -868,7 +1056,7 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      this.ads = await this.facebook.fetchAds(this.currentAdvertiserId, parentId, this.filters)
+      this.ads = await this.facebook.fetchAds(parentId, this.filters)
 
       this.adsLoaded = true
       this.advertiserSwitch = this.currentAdvertiserId
@@ -985,6 +1173,16 @@ export default {
             this.adAccountsLoaded = false
           }
           this.currentAdvertiserId = parentId
+
+          // Set Facebook access token
+          let adv = null
+          let advIndex = this.getObjectIndexById(this.advertisers, this.currentAdvertiserId)
+          if (advIndex >= 0) {
+            adv = this.advertisers[advIndex]
+          }
+          if (adv !== null) {
+            this.facebook.setAccessToken(adv.access_token)
+          }
         }
         if (!this.adAccountsLoaded) {
           await this.loadAdAccounts()
@@ -1104,15 +1302,114 @@ export default {
 
       this.$vs.loading.close()
     },
-
-    // TODO: From now on
     onAdvertiserSwitch() {
       this.changeView('adaccounts', this.advertiserSwitch)
+    },
+    async updateStatus(obj) {
+      this.$vs.loading()
+
+      const result = await this.facebook.updateObject(obj.id, {
+        status: this.newStatus,
+      })
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Status updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update status',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async updateCampaignBudget(campaign) {
+      this.$vs.loading()
+
+      let result = false
+      if (campaign.cbo) {
+        result = await this.facebook.updateObject(campaign.id, {
+          daily_budget: parseInt(parseFloat(this.newValue)*100)
+        })
+      } else {
+        let adsets = await this.facebook.fetchAdsets(campaign.id, this.filters)
+        result = true
+        for (let i = 0; i < adsets.length; i++) {
+          let adset = adsets[i]
+          let tmp = await this.facebook.updateObject(adset.id, {
+            daily_budget: parseInt(parseFloat(this.newValue)*100)
+          })
+          if (!tmp) {
+            result = false
+          }
+        }
+      }
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update budget',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async updateAdsetBudget(adset) {
+      this.$vs.loading()
+
+      const result = await this.facebook.updateObject(adset.id, {
+        daily_budget: parseInt(parseFloat(this.newValue)*100)
+      })
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Budget updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update budget',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
     },
   },
   async created() {
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
     this.resetFilters()
+
+    // DEBUG TODO: to delete
+    // DEBUG: This is only for debug purposes
+    this.filters.date_from = this.formatDate(new Date(2021, 0, 1))
+    this.filters.date_to = this.formatDate(new Date(2022, 0, 19))
+    this.applyFilters()
   },
   mounted () {
   }

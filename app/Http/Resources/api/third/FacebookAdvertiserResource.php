@@ -17,6 +17,7 @@ class FacebookAdvertiserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'access_token' => $this->access_token,
         ];
     }
 }

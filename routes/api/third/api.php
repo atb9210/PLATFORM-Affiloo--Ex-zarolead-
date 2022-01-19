@@ -86,6 +86,7 @@ Route::put('/facebook/advertisers/{id}', 'api\third\FacebookController@updateAdv
     ->name('facebook.advertisers.update');
 Route::delete('/facebook/advertisers/{id}', 'api\third\FacebookController@destroyAdvertiser')->middleware('auth:api')
     ->name('facebook.advertisers.destroy');
+/*
 Route::get('/facebook/adaccounts', 'api\third\FacebookController@adAccounts')->middleware('auth:api')
     ->name('facebook.adaccounts');
 Route::get('/facebook/campaigns', 'api\third\FacebookController@campaigns')->middleware('auth:api')
@@ -94,7 +95,6 @@ Route::get('/facebook/adsets', 'api\third\FacebookController@adsets')->middlewar
     ->name('facebook.adsets');
 Route::get('/facebook/ads', 'api\third\FacebookController@ads')->middleware('auth:api')
     ->name('facebook.ads');
-/*
 Route::put('/facebook/campaigns/{id}', 'api\third\FacebookController@updateCampaign')->middleware('auth:api')
     ->name('facebook.campaigns.update');
 Route::put('/facebook/adsets/{id}', 'api\third\FacebookController@updateAdset')->middleware('auth:api')
