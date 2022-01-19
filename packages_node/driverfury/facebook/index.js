@@ -216,7 +216,7 @@ class Facebook {
 
       let params = {
         access_token: this.accessToken,
-        fields: 'id,name,effective_status,daily_budget,' + insightsParam,
+        fields: 'id,name,effective_status,daily_budget,bid_amount,bid_strategy,' + insightsParam,
       }
       
       const response = await this.$http.get(this.apiUrl + '/' + parentId + '/' + type + 's', { params })
@@ -240,13 +240,8 @@ class Facebook {
           if (obj.hasOwnProperty('daily_budget') && obj.daily_budget !== null) {
             obj.budget = parseInt(obj.daily_budget)/100
           }
-          obj.bid_amount = 0.0
           if (obj.hasOwnProperty('bid_amount') && obj.bid_amount !== null) {
-            bid_amount = parseInt(obj.bid_amount)/100
-          }
-          obj.bid_strategy = ''
-          if (obj.hasOwnProperty('bid_strategy') && obj.bid_strategy !== null) {
-            bid_strategy = obj.bid_strategy
+            obj.bid_amount = parseInt(obj.bid_amount)/100
           }
 
           obj.spend = 0.0
@@ -314,9 +309,6 @@ class Facebook {
       }
     } catch (error) {
       // Nothing
-
-      // DEBUG TODO: to delete
-      console.log(error)
     }
 
     return objects
@@ -324,10 +316,6 @@ class Facebook {
 
   async fetchCampaigns(parentId, filters = {}) {
     const result = await this.fetchObjects('campaign', parentId, filters)
-
-    // TODO: to delete
-    console.log('result', result)
-
     return result
   }
 

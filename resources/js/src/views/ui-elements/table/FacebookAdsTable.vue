@@ -1330,6 +1330,8 @@ export default {
       }
 
       this.$vs.loading.close()
+
+      this.applyFilters()
     },
     async updateCampaignBudget(campaign) {
       this.$vs.loading()
@@ -1372,6 +1374,8 @@ export default {
       }
 
       this.$vs.loading.close()
+
+      this.applyFilters()
     },
     async updateAdsetBudget(adset) {
       this.$vs.loading()
@@ -1399,6 +1403,8 @@ export default {
       }
 
       this.$vs.loading.close()
+
+      this.applyFilters()
     },
   },
   async created() {
