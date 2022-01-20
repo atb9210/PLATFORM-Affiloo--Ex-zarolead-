@@ -7,7 +7,7 @@ class Facebook {
 
     this.accessToken = ''
 
-    this.apiUrl = 'https://graph.facebook.com/v9.0'
+    this.apiUrl = 'https://graph.facebook.com/v12.0'
   }
 
   setAccessToken(accessToken) {
@@ -239,9 +239,16 @@ class Facebook {
           obj.budget = 0.0
           if (obj.hasOwnProperty('daily_budget') && obj.daily_budget !== null) {
             obj.budget = parseInt(obj.daily_budget)/100
+          } else {
+            obj.daily_budget = 0
           }
           if (obj.hasOwnProperty('bid_amount') && obj.bid_amount !== null) {
             obj.bid_amount = parseInt(obj.bid_amount)/100
+          } else {
+            obj.bid_amount = 0
+          }
+          if (!obj.hasOwnProperty('bid_strategy')) {
+            obj.bid_strategy = ''
           }
 
           obj.spend = 0.0
