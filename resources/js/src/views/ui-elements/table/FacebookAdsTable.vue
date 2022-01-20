@@ -1507,13 +1507,15 @@ export default {
           }
           result = await this.facebook.updateObject(this.editingObject.id, params)
         } else {
+          result = true
           for (let i = 0; i < adsets.length; i++) {
             let adset = adsets[i]
-            await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+            let tmp = await this.facebook.updateObject(adset.id, params)
+            result = result && tmp
           }
         }
       } else if (this.editingObject.type == 'adset') {
-        result = await this.facebook.updateObject(this.fbApiUrl + '/' + this.editingObject.id, params)
+        result = await this.facebook.updateObject(this.editingObject.id, params)
       } else {
         let result = true
         await sleep(100)
