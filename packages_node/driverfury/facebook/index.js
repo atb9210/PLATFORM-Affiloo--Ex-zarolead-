@@ -7,7 +7,7 @@ class Facebook {
 
     this.accessToken = ''
 
-    this.apiUrl = 'https://graph.facebook.com/v12.0'
+    this.apiUrl = 'https://graph.facebook.com/v9.0'
   }
 
   setAccessToken(accessToken) {
