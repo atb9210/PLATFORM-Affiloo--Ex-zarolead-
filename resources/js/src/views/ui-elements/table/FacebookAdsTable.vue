@@ -134,6 +134,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Bid</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.campaign_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
@@ -146,6 +152,12 @@
               <a href="#" @click="$refs.adset_context_menu.close();changeView('ads', data.id);" class="flex items-center text-sm">
                 <feather-icon icon="UserIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Show Ads</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.adset_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Bid</span>
               </a>
             </li>
             <li>
@@ -674,6 +686,46 @@
             </div>
         </vs-popup>
 
+        <!-- Edit bid popup -->
+        <vs-popup title="Edit bid" :active.sync="showPopup['edit_bid']">
+                <div class="vx-row mb-6 flex items-center">
+                    <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
+                </div>
+
+                <div class="vx-row mb-6" v-if="(editingObject.type == 'adset' && editingObject.hasOwnProperty('cbo') && editingObject.cbo)">
+                    <div class="vx-col w-full mt-2">
+                        <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
+                    </div>
+                </div>
+                <div class="vx-row mb-6" v-else>
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Type</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <my-select v-model="editingObject.bid_strategy" :options="bidOptions" class="w-full" />
+                    </div>
+                </div>
+                
+                <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                    <div class="vx-col sm:w-1/3 w-full">
+                        <span>Bid Amount</span>
+                    </div>
+                    <div class="vx-col sm:w-2/3 w-full">
+                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid_amount" />
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full mt-2" v-if="(editingObject.type == 'campaign' && editingObject.hasOwnProperty('cbo') && !editingObject.cbo)">
+                        <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+                </div>
+            </vs-popup>
+
     </vx-card>
 </template>
 
@@ -767,6 +819,7 @@ export default {
       showPopup: {
         'create_advertiser': false,
         'edit_advertiser': false,
+        'edit_bid': false,
       },
 
       advertiser: {
@@ -849,6 +902,19 @@ export default {
       newStatus: '',
       newValue: '',
 
+      editingObject: {
+        name: '',
+        type: '',
+        cbo: false,
+        bid_amount: 0,
+        bid_strategy: '',
+      },
+
+      bidOptions: [
+        { value:'LOWEST_COST_WITHOUT_CAP',  label: 'Lowest cost' },
+        { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
+        { value:'COST_CAP',                 label: 'Cost cap' },
+      ],
     }
   },
   computed: {
@@ -1208,6 +1274,12 @@ export default {
         if (this.advertiser.accessToken != '') {
           return true
         }
+      } else if (type == 'edit_bid') {
+        if (this.editingObject.hasOwnProperty('bid_strategy') &&
+            this.editingObject.bid_strategy != '') {
+          return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
+                  (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingObject.bid_amount > 0)
+        }
       }
       return false
     },
@@ -1405,6 +1477,67 @@ export default {
       this.$vs.loading.close()
 
       this.applyFilters()
+    },
+    editBidPopup(obj) {
+      this.editingObject = obj
+      this.showPopup['edit_bid'] = true
+    },
+    async updateBid() {
+      this.$vs.loading()
+
+      let bidAmount = parseInt(this.editingObject.bid_amount * 100)
+      let bidStrategy = this.editingObject.bid_strategy
+      let params = {
+        bid_strategy: bidStrategy,
+      }
+      if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+        params.bid_amount = bidAmount
+      }
+
+      let result = false
+      if (this.editingObject.type == 'campaign') {
+        let adsets = await this.facebook.fetchAdsets(this.editingObject.id, this.filters)
+        if (this.editingObject.cbo) {
+          if (bidStrategy != 'LOWEST_COST_WITHOUT_CAP') {
+            params.adset_bid_amounts = {}
+            for (let adsetIndex = 0; adsetIndex < adsets.length; adsetIndex++) {
+              let adset = adsets[adsetIndex]
+              params.adset_bid_amounts[adset.id] = bidAmount
+            }
+          }
+          result = await this.facebook.updateObject(this.editingObject.id, params)
+        } else {
+          for (let i = 0; i < adsets.length; i++) {
+            let adset = adsets[i]
+            await this.$http.post(this.fbApiUrl + '/' + adset.id, params)
+          }
+        }
+      } else if (this.editingObject.type == 'adset') {
+        result = await this.facebook.updateObject(this.fbApiUrl + '/' + this.editingObject.id, params)
+      } else {
+        let result = true
+        await sleep(100)
+      }
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Bid updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update bid',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
     },
   },
   async created() {

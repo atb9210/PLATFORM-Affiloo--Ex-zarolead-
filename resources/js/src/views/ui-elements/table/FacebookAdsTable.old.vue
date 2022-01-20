@@ -610,7 +610,7 @@
             </vs-table>
 
             <!-- Edit bid popup -->
-            <vs-popup title="Edit budget" :active.sync="showPopup['edit_bid']">
+            <vs-popup title="Edit bid" :active.sync="showPopup['edit_bid']">
                 <div class="vx-row mb-6 flex items-center">
                     <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
                 </div>
