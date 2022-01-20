@@ -735,7 +735,7 @@ import VueApexCharts from 'vue-apexcharts'
 
 import { VueContext } from 'vue-context'
 
-import Facebook from 'Facebook'
+import Facebook from 'facebook'
 
 // TODO: Move this function into a utilities package?
 function sleep(ms) {
