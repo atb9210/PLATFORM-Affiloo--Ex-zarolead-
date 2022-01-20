@@ -134,7 +134,7 @@
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.campaign_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit Bid</span>
               </a>
@@ -155,7 +155,7 @@
               </a>
             </li>
             <li>
-              <a href="#" @click="$refs.adset_context_menu.close();editBidPopup(data.id);" class="flex items-center text-sm">
+              <a href="#" @click="$refs.adset_context_menu.close();editBidPopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit Bid</span>
               </a>
