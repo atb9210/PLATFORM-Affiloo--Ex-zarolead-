@@ -218,101 +218,117 @@ class Facebook {
         access_token: this.accessToken,
         fields: 'id,name,effective_status,daily_budget,bid_amount,bid_strategy,' + insightsParam,
       }
-      
-      const response = await this.$http.get(this.apiUrl + '/' + parentId + '/' + type + 's', { params })
-      if (response !== null && response.hasOwnProperty('data') &&
-          response.data !== null && response.data.hasOwnProperty('data') && response.data.data !== null) {
-        objects = response.data.data
 
-        for (let i = 0; i < objects.length; i++) {
-          let obj = objects[i]
-
-          obj.type = type
-
-          obj.status = 'ARCHIVED'
-          if (obj.hasOwnProperty('effective_status') && obj.effective_status !== null) {
-            obj.status = obj.effective_status
+      let apiCallUrl = this.apiUrl + '/' + parentId + '/' + type + 's'
+      let endLoop = false
+      do {
+        const response = await this.$http.get(apiCallUrl, { params })
+        if (response !== null && response.hasOwnProperty('data') && response.data !== null) {
+          if (response.data.hasOwnProperty('data') && response.data.data !== null) {
+            let tmpObjects = response.data.data
+            for (let i = 0; i < tmpObjects.length; i++) {
+              objects.push(tmpObjects[i])
+            }
           }
 
-          obj.cbo = (obj.hasOwnProperty('daily_budget') && obj.hasOwnProperty('bid_strategy'))
-
-          obj.budget = 0.0
-          if (obj.hasOwnProperty('daily_budget') && obj.daily_budget !== null) {
-            obj.budget = parseInt(obj.daily_budget)/100
+          if (response.data.hasOwnProperty('paging') && response.data.paging !== null &&
+              response.data.paging.hasOwnProperty('next') && response.data.paging.next !== null && response.data.paging.next !== '') {
+            apiCallUrl = response.data.paging.next
+            params = {}
           } else {
-            obj.daily_budget = 0
+            endLoop = true
           }
-          if (obj.hasOwnProperty('bid_amount') && obj.bid_amount !== null) {
-            obj.bid_amount = parseInt(obj.bid_amount)/100
-          } else {
-            obj.bid_amount = 0
-          }
-          if (!obj.hasOwnProperty('bid_strategy')) {
-            obj.bid_strategy = ''
-          }
-
-          obj.spend = 0.0
-          obj.link_clicks = 0.0
-          obj.conversions = 0
-          obj.conversions_value = 0.0
-          obj.cpa = 0.0
-          obj.cr = 0.0
-          obj.cpm = 0.0
-          obj.profit = 0.0
-          obj.roi = 0.0
-
-          if (obj.hasOwnProperty('insights') && obj.insights !== null &&
-              obj.insights.hasOwnProperty('data') && obj.insights.data !== null &&
-              obj.insights.data.length > 0) {
-            let insights = obj.insights.data[0]
-
-            if (insights.hasOwnProperty('spend')) {
-              obj.spend = parseFloat(insights.spend)
-            }
-            if (insights.hasOwnProperty('actions') && insights.actions !== null) {
-              for (let i = 0; i < insights.actions.length; i++) {
-                let a = insights.actions[i]
-                if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
-                  if (a.action_type === 'omni_purchase') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.conversions += parseInt(a.value)
-                    }
-                  } else if (a.action_type === 'link_click') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.link_clicks += parseInt(a.value)
-                    }
-                  }
-                }
-              }
-              obj.cpm = parseFloat(insights.cpm)
-            }
-            if (insights.hasOwnProperty('action_values') && insights.action_values !== null) {
-              for (let i = 0; i < insights.action_values.length; i++) {
-                let a = insights.action_values[i]
-                if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
-                  if (a.action_type === 'omni_purchase') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.conversions_value += parseFloat(a.value)
-                    }
-                  }
-                }
-              }
-              obj.cpm = parseFloat(insights.cpm)
-            }
-
-            if (insights.hasOwnProperty('cpm')) {
-              obj.cpm = parseFloat(insights.cpm)
-            }
-
-          }
-
-          obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
-          obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
-          obj.profit = obj.conversions_value - obj.spend
-          obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
-
-          objects[i] = obj
         }
+      } while (!endLoop)
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        obj.type = type
+
+        obj.status = 'ARCHIVED'
+        if (obj.hasOwnProperty('effective_status') && obj.effective_status !== null) {
+          obj.status = obj.effective_status
+        }
+
+        obj.cbo = (obj.hasOwnProperty('daily_budget') && obj.hasOwnProperty('bid_strategy'))
+
+        obj.budget = 0.0
+        if (obj.hasOwnProperty('daily_budget') && obj.daily_budget !== null) {
+          obj.budget = parseInt(obj.daily_budget)/100
+        } else {
+          obj.daily_budget = 0
+        }
+        if (obj.hasOwnProperty('bid_amount') && obj.bid_amount !== null) {
+          obj.bid_amount = parseInt(obj.bid_amount)/100
+        } else {
+          obj.bid_amount = 0
+        }
+        if (!obj.hasOwnProperty('bid_strategy')) {
+          obj.bid_strategy = ''
+        }
+
+        obj.spend = 0.0
+        obj.link_clicks = 0.0
+        obj.conversions = 0
+        obj.conversions_value = 0.0
+        obj.cpa = 0.0
+        obj.cr = 0.0
+        obj.cpm = 0.0
+        obj.profit = 0.0
+        obj.roi = 0.0
+
+        if (obj.hasOwnProperty('insights') && obj.insights !== null &&
+            obj.insights.hasOwnProperty('data') && obj.insights.data !== null &&
+            obj.insights.data.length > 0) {
+          let insights = obj.insights.data[0]
+
+          if (insights.hasOwnProperty('spend')) {
+            obj.spend = parseFloat(insights.spend)
+          }
+          if (insights.hasOwnProperty('actions') && insights.actions !== null) {
+            for (let i = 0; i < insights.actions.length; i++) {
+              let a = insights.actions[i]
+              if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
+                if (a.action_type === 'omni_purchase') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.conversions += parseInt(a.value)
+                  }
+                } else if (a.action_type === 'link_click') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.link_clicks += parseInt(a.value)
+                  }
+                }
+              }
+            }
+            obj.cpm = parseFloat(insights.cpm)
+          }
+          if (insights.hasOwnProperty('action_values') && insights.action_values !== null) {
+            for (let i = 0; i < insights.action_values.length; i++) {
+              let a = insights.action_values[i]
+              if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
+                if (a.action_type === 'omni_purchase') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.conversions_value += parseFloat(a.value)
+                  }
+                }
+              }
+            }
+            obj.cpm = parseFloat(insights.cpm)
+          }
+
+          if (insights.hasOwnProperty('cpm')) {
+            obj.cpm = parseFloat(insights.cpm)
+          }
+
+        }
+
+        obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
+        obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
+        obj.profit = obj.conversions_value - obj.spend
+        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
+
+        objects[i] = obj
       }
     } catch (error) {
       // Nothing
