@@ -37,6 +37,23 @@ class Facebook {
     return objects
   }
 
+  async fetchAdvertiser(id) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/facebook/advertisers/' + id, { headers })
+      if (response !== null && response.hasOwnProperty('data') &&
+          response.data !== null && response.data.hasOwnProperty('data') && response.data.data !== null) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
   async createAdvertiser(accessToken, name = null) {
     let object = null
 
@@ -97,6 +114,36 @@ class Facebook {
     return result
   }
 
+  async getRequestAllPages(path, params = {}) {
+    let objects = []
+
+    params.access_token = this.accessToken
+
+    let apiCallUrl = this.apiUrl + path
+    let endLoop = false
+    do {
+      const response = await this.$http.get(apiCallUrl, { params })
+      if (response !== null && response.hasOwnProperty('data') && response.data !== null) {
+        if (response.data.hasOwnProperty('data') && response.data.data !== null) {
+          let tmpObjects = response.data.data
+          for (let i = 0; i < tmpObjects.length; i++) {
+            objects.push(tmpObjects[i])
+          }
+        }
+
+        if (response.data.hasOwnProperty('paging') && response.data.paging !== null &&
+            response.data.paging.hasOwnProperty('next') && response.data.paging.next !== null && response.data.paging.next !== '') {
+          apiCallUrl = response.data.paging.next
+          params = {}
+        } else {
+          endLoop = true
+        }
+      }
+    } while (!endLoop)
+
+    return objects
+  }
+
   async fetchAdAccounts(filters = {}) {
     let objects = []
 
@@ -111,87 +158,98 @@ class Facebook {
       let insightsParam = 'insights.time_range(' + JSON.stringify(timeRange) + ')'
       insightsParam += '{spend,cpm,actions,action_values}'
 
+      if (!filters.hasOwnProperty('date_from') && !filters.hasOwnProperty('date_to')) {
+        insightsParam = ''
+      }
+
+      let fields = 'id,name,account_status,adspixels{id,name}'
+      if (insightsParam != '') {
+        fields += ',' + insightsParam
+      }
+
       let params = {
         access_token: this.accessToken,
-        fields: 'id,name,account_status,' + insightsParam,
+        fields: fields,
       }
       
-      const response = await this.$http.get(this.apiUrl + '/me/adaccounts', { params })
-      if (response !== null && response.hasOwnProperty('data') &&
-          response.data !== null && response.data.hasOwnProperty('data') && response.data.data !== null) {
-        objects = response.data.data
+      objects = await this.getRequestAllPages('/me/adaccounts', params)
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
 
-        for (let i = 0; i < objects.length; i++) {
-          let obj = objects[i]
-
-          obj.status = 2
-          if (obj.hasOwnProperty('account_status') && obj.account_status !== null) {
-            obj.status = obj.account_status
-          }
-
-          obj.spend = 0.0
-          obj.link_clicks = 0.0
-          obj.conversions = 0
-          obj.conversions_value = 0.0
-          obj.cpa = 0.0
-          obj.cr = 0.0
-          obj.cpm = 0.0
-          obj.profit = 0.0
-          obj.roi = 0.0
-          obj.budget = 0.0
-
-          if (obj.hasOwnProperty('insights') && obj.insights !== null &&
-              obj.insights.hasOwnProperty('data') && obj.insights.data !== null &&
-              obj.insights.data.length > 0) {
-            let insights = obj.insights.data[0]
-
-            if (insights.hasOwnProperty('spend')) {
-              obj.spend = parseFloat(insights.spend)
-            }
-            if (insights.hasOwnProperty('actions') && insights.actions !== null) {
-              for (let i = 0; i < insights.actions.length; i++) {
-                let a = insights.actions[i]
-                if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
-                  if (a.action_type === 'omni_purchase') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.conversions += parseInt(a.value)
-                    }
-                  } else if (a.action_type === 'link_click') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.link_clicks += parseInt(a.value)
-                    }
-                  }
-                }
-              }
-              obj.cpm = parseFloat(insights.cpm)
-            }
-            if (insights.hasOwnProperty('action_values') && insights.action_values !== null) {
-              for (let i = 0; i < insights.action_values.length; i++) {
-                let a = insights.action_values[i]
-                if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
-                  if (a.action_type === 'omni_purchase') {
-                    if (a.hasOwnProperty('value') && a.value !== null) {
-                      obj.conversions_value += parseFloat(a.value)
-                    }
-                  }
-                }
-              }
-              obj.cpm = parseFloat(insights.cpm)
-            }
-
-            if (insights.hasOwnProperty('cpm')) {
-              obj.cpm = parseFloat(insights.cpm)
-            }
-
-          }
-
-          obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
-          obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
-          obj.profit = obj.conversions_value - obj.spend
-          obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
-
-          objects[i] = obj
+        obj.status = 2
+        if (obj.hasOwnProperty('account_status') && obj.account_status !== null) {
+          obj.status = obj.account_status
         }
+
+        if (obj.hasOwnProperty('adspixels') && obj.adspixels !== null &&
+            obj.adspixels.hasOwnProperty('data') && obj.adspixels.data !== null) {
+          obj.adspixels = obj.adspixels.data
+        } else {
+          obj.adspixels = []
+        }
+
+        obj.spend = 0.0
+        obj.link_clicks = 0.0
+        obj.conversions = 0
+        obj.conversions_value = 0.0
+        obj.cpa = 0.0
+        obj.cr = 0.0
+        obj.cpm = 0.0
+        obj.profit = 0.0
+        obj.roi = 0.0
+        obj.budget = 0.0
+
+        if (obj.hasOwnProperty('insights') && obj.insights !== null &&
+            obj.insights.hasOwnProperty('data') && obj.insights.data !== null &&
+            obj.insights.data.length > 0) {
+          let insights = obj.insights.data[0]
+
+          if (insights.hasOwnProperty('spend')) {
+            obj.spend = parseFloat(insights.spend)
+          }
+          if (insights.hasOwnProperty('actions') && insights.actions !== null) {
+            for (let i = 0; i < insights.actions.length; i++) {
+              let a = insights.actions[i]
+              if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
+                if (a.action_type === 'omni_purchase') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.conversions += parseInt(a.value)
+                  }
+                } else if (a.action_type === 'link_click') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.link_clicks += parseInt(a.value)
+                  }
+                }
+              }
+            }
+            obj.cpm = parseFloat(insights.cpm)
+          }
+          if (insights.hasOwnProperty('action_values') && insights.action_values !== null) {
+            for (let i = 0; i < insights.action_values.length; i++) {
+              let a = insights.action_values[i]
+              if (a.hasOwnProperty('action_type') && typeof(a.action_type) === 'string') {
+                if (a.action_type === 'omni_purchase') {
+                  if (a.hasOwnProperty('value') && a.value !== null) {
+                    obj.conversions_value += parseFloat(a.value)
+                  }
+                }
+              }
+            }
+            obj.cpm = parseFloat(insights.cpm)
+          }
+
+          if (insights.hasOwnProperty('cpm')) {
+            obj.cpm = parseFloat(insights.cpm)
+          }
+
+        }
+
+        obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
+        obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
+        obj.profit = obj.conversions_value - obj.spend
+        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
+
+        objects[i] = obj
       }
     } catch (error) {
       // Nothing
@@ -200,7 +258,7 @@ class Facebook {
     return objects
   }
 
-  async fetchObjects(type, parentId, filters = {}) {
+  async fetchObjects(type, parentId = null, filters = {}) {
     let objects = []
 
     try {
@@ -214,33 +272,27 @@ class Facebook {
       let insightsParam = 'insights.time_range(' + JSON.stringify(timeRange) + ')'
       insightsParam += '{spend,cpm,actions,action_values}'
 
-      let params = {
-        access_token: this.accessToken,
-        fields: 'id,name,effective_status,daily_budget,bid_amount,bid_strategy,' + insightsParam,
+      if (!filters.hasOwnProperty('date_from') && !filters.hasOwnProperty('date_to')) {
+        insightsParam = ''
       }
 
-      let apiCallUrl = this.apiUrl + '/' + parentId + '/' + type + 's'
-      let endLoop = false
-      do {
-        const response = await this.$http.get(apiCallUrl, { params })
-        if (response !== null && response.hasOwnProperty('data') && response.data !== null) {
-          if (response.data.hasOwnProperty('data') && response.data.data !== null) {
-            let tmpObjects = response.data.data
-            for (let i = 0; i < tmpObjects.length; i++) {
-              objects.push(tmpObjects[i])
-            }
-          }
+      let fields = 'id,name,effective_status,daily_budget,bid_amount,bid_strategy'
+      if (insightsParam != '') {
+        fields += ',' + insightsParam
+      }
 
-          if (response.data.hasOwnProperty('paging') && response.data.paging !== null &&
-              response.data.paging.hasOwnProperty('next') && response.data.paging.next !== null && response.data.paging.next !== '') {
-            apiCallUrl = response.data.paging.next
-            params = {}
-          } else {
-            endLoop = true
-          }
-        }
-      } while (!endLoop)
+      let params = {
+        access_token: this.accessToken,
+        fields: fields,
+      }
 
+      let apiCallUrl = '/'
+      if (parentId !== null && parentId != '') {
+        apiCallUrl += parentId + '/'
+      }
+      apiCallUrl += type + 's'
+
+      objects = await this.getRequestAllPages(apiCallUrl, params)
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
@@ -352,6 +404,46 @@ class Facebook {
     return result
   }
 
+  async createObject(type, parentId, params) {
+    let object = null
+
+    try {
+      params.access_token = this.accessToken
+
+      let apiCallUrl = this.apiUrl + '/'
+      if (parentId != '') {
+        apiCallUrl += parentId + '/'
+      }
+      apiCallUrl += type + 's'
+      const response = await this.$http.post(apiCallUrl, params)
+      if (response.hasOwnProperty('data') && response.data !== null &&
+          response.data.hasOwnProperty('id') && response.data.id !== null) {
+        object = {
+          id: response.data.id,
+        }
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async createCampaign(adAccountId, params) {
+    const result = await this.createObject('campaign', adAccountId, params)
+    return result
+  }
+
+  async createAdset(adAccountId, params) {
+    const result = await this.createObject('adset', adAccountId, params)
+    return result
+  }
+
+  async createAd(adAccountId, params) {
+    const result = await this.createObject('ad', adAccountId, params)
+    return result
+  }
+
   async updateObject(id, params) {
     let result = false
 
@@ -367,6 +459,11 @@ class Facebook {
     }
 
     return result
+  }
+
+  async fetchPages() {
+    let objects = await this.getRequestAllPages('/me/accounts')
+    return objects
   }
 
 }
