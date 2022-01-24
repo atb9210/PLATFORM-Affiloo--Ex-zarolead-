@@ -466,6 +466,29 @@ class Facebook {
     return objects
   }
 
+  async fetchPageBackedInstagramAccounts(pageId) {
+    let objects = await this.getRequestAllPages('/' + pageId + '/page_backed_instagram_accounts', { fields: 'id,username'})
+    return objects
+  }
+
+  async uploadAdImage(adAccountId, params) {
+    let object = null
+
+    try {
+      const response = await this.$http.post(this.apiUrl + '/' + adAccountId + '/adimages', params)
+      if (response.hasOwnProperty('data') && response.data !== null &&
+          response.data.hasOwnProperty('images') && response.data.images !== null) {
+        for (const [key, value] of Object.entries(response.data.images)) {
+          object = value
+        }
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
 }
 
 export default Facebook

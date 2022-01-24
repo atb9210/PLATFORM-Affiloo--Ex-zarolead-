@@ -1785,6 +1785,20 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/facebook/:facebook_advertiser_id/ad-launcher',
+          name: 'facebook-ad-launcher',
+          component: () => import('./views/forms/FacebookAdLauncher.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Facebook Ad Launcher', active: true }
+            ],
+            pageTitle: 'Facebook Ad Launcher',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/ecommerce',
           props: true,
           name: 'ecommerce',

@@ -69,6 +69,21 @@ class ProductMediaController extends Controller
     }
 
     /**
+     * Get product media's informations.
+     *
+     * @urlParam id int required ProductMedia's id
+     *
+     * @response {
+     *  "data": product_media,
+     * }
+     */
+    public function getSingleProduct($id)
+    {
+        $product_medias = ProductMedia::where('product_id', $id);
+        return ProductMediaResource::collection($product_medias->get());
+    }
+
+    /**
      * Create a new product media.
      *
      * @bodyParam product_id int required ProductMedia's form id

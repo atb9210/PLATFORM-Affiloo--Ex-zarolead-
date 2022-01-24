@@ -80,6 +80,8 @@ Route::post('/facebook/rules/{id}/run', 'api\third\FacebookController@runRule')-
 
 Route::get('/facebook/advertisers', 'api\third\FacebookController@advertisers')->middleware('auth:api')
     ->name('facebook.advertisers');
+Route::get('/facebook/advertisers/{id}', 'api\third\FacebookController@getAdvertiser')->middleware('auth:api')
+    ->name('facebook.advertisers.show');
 Route::post('/facebook/advertisers', 'api\third\FacebookController@storeAdvertiser')->middleware('auth:api')
     ->name('facebook.advertisers.store');
 Route::put('/facebook/advertisers/{id}', 'api\third\FacebookController@updateAdvertiser')->middleware('auth:api')

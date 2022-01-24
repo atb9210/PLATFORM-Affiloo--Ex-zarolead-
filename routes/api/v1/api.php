@@ -62,6 +62,8 @@ Route::post('products/{id}', 'api\v1\ProductController@update')->middleware('aut
     ->name('products.update');
 Route::get('products/{id}/info', 'api\v1\ProductController@info')
     ->name('products.info');
+Route::get('products/{id}/medias', 'api\v1\ProductMediaController@getSingleProduct')
+    ->name('products.medias');
 
 /* Tags routes */
 Route::apiResource('tags', 'api\v1\TagController')->except([

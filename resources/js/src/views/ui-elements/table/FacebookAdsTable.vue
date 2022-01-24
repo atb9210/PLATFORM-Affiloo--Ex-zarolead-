@@ -37,7 +37,8 @@
             </span>
 
             <vs-button v-if="view == 'advertisers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateAdvertiserForm"></vs-button>
-            <vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
+            <!--<vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>-->
+            <vs-button v-if="['adaccounts','campaigns','adsets','ads'].includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-play" @click="goToAdLauncher(currentAdvertiserId)"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -95,6 +96,12 @@
               <a href="#" @click="$refs.advertiser_context_menu.close();showEditAdvertiserForm(data);" class="flex items-center text-sm">
                 <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Edit</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.advertiser_context_menu.close();goToAdLauncher(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="PlayIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Ad Launcher</span>
               </a>
             </li>
             <li>
@@ -768,6 +775,8 @@ export default {
   data () {
     return {
       view: 'advertisers',
+
+      facebook: null,
 
       maxItems: 20,
 
@@ -1540,6 +1549,12 @@ export default {
       }
 
       this.$vs.loading.close()
+    },
+    goToAdLauncher(advertiserId) {
+      this.$router.push({name: 'facebook-ad-launcher', params: {facebook_advertiser_id: advertiserId}})
+        .catch(error => {
+          this.$router.push({name: 'facebook-ad-launcher', params: {facebook_advertiser_id: advertiserId}})
+        })
     },
   },
   async created() {

@@ -389,6 +389,21 @@ class FacebookController extends Controller
     }
 
     /**
+     * Get advertiser
+     *
+     * @response {
+     *  "data": advertiser,
+     * }
+     */
+    public function getAdvertiser($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $advertiser = FacebookAdvertiser::findOrFail($id);
+        return new FacebookAdvertiserResource($advertiser);
+    }
+
+    /**
      * Create advertiser
      *
      * @bodyParam name string Advertiser's name
