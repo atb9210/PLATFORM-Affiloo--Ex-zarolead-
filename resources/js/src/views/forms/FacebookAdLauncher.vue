@@ -749,9 +749,7 @@ export default {
       }
       for (let i = 0; i < campaignCount; i++) {
         params.name = this.campaign.name + ' - ' + i
-        // DEBUG TODO: to uncomment
         const campaign = await this.facebook.createCampaign(this.adAccount.id, params)
-        //const campaign = null // TODO: to delete
         if (campaign !== null && campaign.hasOwnProperty('id') && campaign.id !== null) {
           this.campaigns.push(campaign.id)
         } else {
@@ -760,9 +758,6 @@ export default {
       }
 
       this.creatingCampaigns = false
-
-      // TODO: to delete
-      console.log('campaigns created', this.campaigns)
     },
     async createAdsets() {
       // Wait for campaigns to be created
@@ -821,9 +816,7 @@ export default {
         params.campaign_id = campaignId
         for (let aIndex = 0; aIndex < adsetCount; aIndex++) {
           params.name = 'Adset ' + aIndex // TODO:
-          // DEBUG TODO: to uncomment
           const adset = await this.facebook.createAdset(this.adAccount.id, params)
-          //const adset = null // TODO: to delete
           if (adset !== null && adset.hasOwnProperty('id') && adset.id !== null) {
             this.adsets.push(adset.id)
           } else {
@@ -833,9 +826,6 @@ export default {
       }
 
       this.creatingAdsets = false
-
-      // TODO: to delete
-      console.log('adsets created', this.adsets)
     },
     async createAds() {
       this.$vs.loading()
@@ -853,9 +843,6 @@ export default {
         // TODO: Log error
       }
       const pbiAccountId = pbiAccounts[0].id
-
-      // TODO: to delete
-      console.log('pbiAccounts', pbiAccounts)
 
       /*
       let preview = null
