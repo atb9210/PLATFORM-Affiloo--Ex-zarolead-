@@ -361,7 +361,9 @@ export default {
       } else {
         finalLink += '?'
       }
-      finalLink += 'pi=' + this.campaign.pixel.id
+      if (typeof(this.campaign.pixel) === 'object' && this.campaign.pixel.hasOwnProperty('id')) {
+        finalLink += 'pi=' + this.campaign.pixel.id
+      }
       return finalLink
     },
   },
@@ -872,12 +874,19 @@ export default {
       */
 
       let medias = []
-      /*
       for (let i = 0; i < this.ad.medias.length; i++) {
         let media = null
 
         let mediaType = this.ad.medias[i].type
-        if (mediaType === 'image') {
+        if (mediaType === 'video') {
+          let params = {
+            file_url: this.ad.medias[i].url,
+          }
+          media = await this.facebook.createObject('advideo', this.adAccount.id, params)
+          if (media !== null) { media.type = 'video' }
+        } else if (mediaType === 'image') {
+          // Nothing
+          /*
           let media64 = await this.convertImgToBase64(this.ad.medias[i].url)
           let params = {
             name: this.ad.medias[i].pathname.replace('/', '_'),
@@ -888,19 +897,13 @@ export default {
           for (const [key, value] of Object.entries(media.images)) {
             media.hash = value.hash
           }
-        } else if (mediaType === 'video') {
-          let params = {
-            file_url: this.ad.medias[i].url,
-          }
-          media = await this.facebook.createObject('advideo', this.adAccount.id, params)
-          if (media !== null) { media.type = 'video' }
+          */
         }
 
         if (media === null) {
           // TODO: Log error
         }
       }
-      */
       for (let i = 0; i < this.ad.medias.length; i++) {
         medias.push(this.ad.medias[i])
       }
@@ -929,8 +932,7 @@ export default {
                   link: this.ad.link,
                   name: this.ad.title,
                   message: this.ad.text,
-                  //image_hash: media.hash, // TODO: What about this? Hashes do not work anymore?
-                  image_url: media.url,
+                  picture: media.url,
                 },
                 page_id: this.page.id,
                 instagram_actor_id: pbiAccountId,
@@ -1086,9 +1088,9 @@ export default {
 
     // TODO: to delete
     // DEBUG: This is only for debug
-    this.product = this.products[2]
+    this.product = this.products[3]
     this.page = this.pages[0]
-    this.adAccount = this.adAccounts[1]
+    this.adAccount = this.adAccounts[3]
     this.onChangeAdAccount()
     this.campaign.name = 'test campaign'
     this.campaign.pixel = this.pixelOptions[0]
