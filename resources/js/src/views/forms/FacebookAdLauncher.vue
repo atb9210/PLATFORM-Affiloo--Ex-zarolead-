@@ -921,6 +921,7 @@ export default {
           let params = {
             adset_id: this.adsets[aIndex],
             name: 'Ad ' + i,
+            conversion_domain: this.ad.conversionDomain,
           }
 
           // Creative

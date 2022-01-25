@@ -9,7 +9,7 @@ class WarehouseLead extends Model
     protected $table = 'third_warehouse_leads';
 
     protected $fillable = [
-        'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes', 'hash', 'created_at',
+        'first_name', 'last_name', 'phone', 'email', 'status', 'info', 'notes', 'hash',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class WarehouseLead extends Model
         'abandoned',
     ];
 
-    public static function findByHash(string $hash): WarehouseLead|null
+    public static function findByHash(string $hash)
     {
         $results = WarehouseLead::where('hash', $hash)->get();
         if ($results->count() > 0) {
