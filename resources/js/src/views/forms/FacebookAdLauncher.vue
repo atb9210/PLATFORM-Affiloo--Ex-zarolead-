@@ -882,10 +882,11 @@ export default {
           let params = {
             file_url: this.ad.medias[i].url,
           }
-          media = await this.facebook.createObject('advideo', this.adAccount.id, params)
+          media = await this.facebook.uploadAdVideo(this.adAccount.id, params)
           if (media !== null) { media.type = 'video' }
         } else if (mediaType === 'image') {
-          // Nothing
+          // TODO: We don't need to upload the image anymore since we directly pass the url
+          // to facebook
           /*
           let media64 = await this.convertImgToBase64(this.ad.medias[i].url)
           let params = {
@@ -973,8 +974,15 @@ export default {
 
       this.$vs.loading.close()
 
-      // TODO: to delete
-      console.log('ads created', this.ads)
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Ads successfully launched',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      this.$router.push({ path:'/dashboard/facebook-ads' })
     },
     onChangeAdAccount() {
       this.campaign.pixel = ''

@@ -489,6 +489,22 @@ class Facebook {
     return object
   }
 
+  async uploadAdVideo(adAccountId, params) {
+    let object = null
+
+    try {
+      const response = await this.$http.post(this.apiUrl + '/' + adAccountId + '/advideos', params)
+      if (response.hasOwnProperty('data') && response.data !== null &&
+          response.data.hasOwnProperty('id') && response.data.id !== null) {
+        object = response.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
 }
 
 export default Facebook
