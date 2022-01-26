@@ -154,21 +154,33 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'"></vs-button>
             </div>
-            <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="productMediaIsSelected(item) ? 'selected-product-media' : ''" v-for="(item, index) in productMedias" @click="selectProductMedia(item)" @dblclick="openProductMedia(item)">
+            <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
               <center>{{item.type}} ({{item.pathname}})</center>
             </div>
           </div>
 
-          <div class="vx-row" v-else-if="view == 'preview'">
+          <div class="vx-row" v-else-if="view == 'medias_search'">
             <div class="vx-col w-full flex items-center mb-8">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(mediaSearchQuery)" />
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(mediaSearchQuery)"></vs-button>
+            </div>
+            <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openNewPage(item.url)">
+              <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+            </div>
+          </div>
+
+          <div class="vx-row" v-else-if="view == 'preview'">
+            <div class="vx-col w-full flex items-center mb-8">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
             </div>
-            <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-product-media' : ''" v-for="(item, index) in productMedias" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
-              <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+            <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in productMedias" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
+              <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
               <center>{{item.type}} ({{item.pathname}})</center>
             </div>
           </div>
@@ -242,6 +254,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
+      debug: false,
+
       facebook: null,
       advertiserId: '',
       advertiser: {},
@@ -351,6 +365,9 @@ export default {
       creatingAds: false,
 
       trackingSpecs: null,
+
+      mediaSearchQuery: '',
+      searchImageResults: [],
     }
   },
   computed: {
@@ -365,6 +382,12 @@ export default {
         finalLink += 'pi=' + this.campaign.pixel.id
       }
       return finalLink
+    },
+    mediasOptions() {
+      if (this.view === 'medias_search') {
+        return this.searchImageResults
+      }
+      return this.productMedias
     },
   },
   methods: {
@@ -521,7 +544,10 @@ export default {
             reject('correct all values')
           } else {
             this.fetchProductMedias(this.product.id)
-            this.createCampaigns()
+            // TODO: to delete the if condition
+            if (!this.debug) {
+              this.createCampaigns()
+            }
             resolve(true)
           }
         })
@@ -637,7 +663,10 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
-            this.createAdsets()
+            // TODO: to delete the if condition
+            if (!this.debug) {
+              this.createAdsets()
+            }
             resolve(true)
           }
         })
@@ -720,7 +749,10 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
-            this.createAds()
+            // TODO: to delete the if condition
+            if (!this.debug) {
+              this.createAds()
+            }
             resolve(true)
           }
         })
@@ -976,7 +1008,10 @@ export default {
       this.campaign.pixel = ''
       this.pixelOptions = this.adAccount.adspixels
     },
-    selectProductMedia(pm) {
+    openNewPage(url) {
+      window.open(url, '_blank')
+    },
+    selectMedia(pm) {
       if (this.ad.medias.includes(pm)) {
         let toRemove = this.ad.medias.indexOf(pm)
         this.ad.medias.splice(toRemove, 1);
@@ -984,15 +1019,15 @@ export default {
         this.ad.medias.push(pm)
       }
     },
-    productMediaIsSelected(pm) {
+    mediaIsSelected(pm) {
       return this.ad.medias.includes(pm)
-    },
+    }, 
     openProductMedia(pm) {
-      window.open(pm.url, '_blank')
+      this.openNewPage(pm.url)
     },
     openProductMediaPage() {
       let routeData = this.$router.resolve({name: 'product-medias'});
-      window.open(routeData.href, '_blank');
+      this.openNewPage(routeData.href)
     },
     selectPreview(pm) {
       if (this.ad.preview === null) {
@@ -1030,6 +1065,38 @@ export default {
       let toSearch = 'base64,'
       result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
       return result
+    },
+    async searchImage(query) {
+      this.ad.medias = []
+      let searchImageResults = []
+      try {
+        let apiCallUrl = 'https://api.bing.microsoft.com/v7.0/images/search'
+        let params = {
+          q: query,
+          minWidth: 600,
+          minHeight: 600,
+          aspect: 'Square',
+        }
+        let headers = {
+          'Ocp-Apim-Subscription-Key': 'e38ac9a09baa4264becfe21f7dc17211',
+        }
+        const response = await this.$http.get(apiCallUrl, { headers, params })
+        for (let i = 0; i < response.data.value.length; i++) {
+          let res = response.data.value[i]
+          searchImageResults.push({
+            type: 'image',
+            thumbnailUrl: res.thumbnailUrl,
+            url: res.contentUrl,
+          })
+        }
+      } catch (error) {
+        // Nothing
+
+        // TODO: to delete
+        console.log(error)
+      }
+      this.searchImageResults = searchImageResults
+      return this.searchImageResults
     },
   },
   components: {
@@ -1084,18 +1151,20 @@ export default {
 
     // TODO: to delete
     // DEBUG: This is only for debug
-    this.product = this.products[3]
-    this.page = this.pages[0]
-    this.adAccount = this.adAccounts[3]
-    this.onChangeAdAccount()
-    this.campaign.name = 'test campaign'
-    this.campaign.pixel = this.pixelOptions[0]
+    if (this.debug) {
+      this.product = this.products[3]
+      this.page = this.pages[0]
+      this.adAccount = this.adAccounts[2]
+      this.onChangeAdAccount()
+      this.campaign.name = 'test campaign'
+      this.campaign.pixel = this.pixelOptions[0]
+    }
   },
 }
 </script>
 
 <style>
-.selected-product-media {
+.selected-media {
     border: 3px solid red;
 }
 </style>
