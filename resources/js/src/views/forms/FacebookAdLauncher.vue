@@ -178,10 +178,22 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'"></vs-button>
             </div>
-            <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in productMedias" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
+            <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
               <center>{{item.type}} ({{item.pathname}})</center>
+            </div>
+          </div>
+
+          <div class="vx-row" v-else-if="view == 'preview_search'">
+            <div class="vx-col w-full flex items-center mb-8">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(mediaSearchQuery)" />
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(mediaSearchQuery)"></vs-button>
+            </div>
+            <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openNewPage(item.url)">
+              <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
             </div>
           </div>
 
@@ -254,7 +266,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      debug: true,
 
       facebook: null,
       advertiserId: '',
@@ -1039,7 +1051,7 @@ export default {
       }
     },
     previewIsSelected(pm) {
-      return (this.ad.preview !== null && this.ad.preview.id === pm.id)
+      return (this.ad.preview !== null && this.ad.preview === pm)
     },
     hasVideo() {
       for (let i = 0; i < this.ad.medias.length; i++) {
@@ -1154,7 +1166,7 @@ export default {
     if (this.debug) {
       this.product = this.products[3]
       this.page = this.pages[0]
-      this.adAccount = this.adAccounts[2]
+      this.adAccount = this.adAccounts[0]
       this.onChangeAdAccount()
       this.campaign.name = 'test campaign'
       this.campaign.pixel = this.pixelOptions[0]
