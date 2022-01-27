@@ -919,6 +919,9 @@ export default {
         params.tracking_specs = this.trackingSpecs
       }
 
+      let bidRef = this.getBidReference(this.campaign.bid_strategy, this.campaign.bid_amount)
+      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders)
+
       for (let cIndex = 0; cIndex < this.campaigns.length; cIndex++) {
         let campaignId = this.campaigns[cIndex]
         params.campaign_id = campaignId
