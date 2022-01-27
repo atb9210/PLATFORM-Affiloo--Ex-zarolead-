@@ -1023,6 +1023,7 @@ export default {
           } else {
             // TODO: What if the media is taken from google?
           }
+          adName += ' - ' + '#' + i
           let params = {
             adset_id: this.adsets[aIndex],
             name: adName,
