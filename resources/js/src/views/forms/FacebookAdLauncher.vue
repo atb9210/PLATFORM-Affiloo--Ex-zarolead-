@@ -115,13 +115,23 @@
 
           <div class="vx-row" v-if="view == 'normal'">
             <div class="vx-col md:w-full w-full mt-5">
-              <vs-input type="text" v-model="ad.title" class="w-full" label="Title" />
+
+              <vx-input-group prependClasses="border border-solid border-grey border-r-0" label="Copy">
+                <template slot="prepend">
+                  <div class="prepend-text bg-primary">
+                    <span>Copy</span>
+                  </div>
+                </template>
+                <vs-input type="number" min="0" step="1" v-model="ad.copyId" class="w-full" placeholder="Copy ID (Ex. 28)" />
+                <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" />
+                <vs-textarea v-model="ad.text" class="w-full" placeholder="Title"></vs-textarea>
+              </vx-input-group>
+
+              <span class="text-danger">{{ errors.first('step-3.ad_copy_id') }}</span>
               <span class="text-danger">{{ errors.first('step-3.ad_title') }}</span>
-            </div>
-            <div class="vx-col md:w-full w-full mt-5">
-              <vs-textarea v-model="ad.text" class="w-full" label="Text"></vs-textarea>
               <span class="text-danger">{{ errors.first('step-3.ad_text') }}</span>
             </div>
+
             <div class="vx-col md:w-1/2 w-full mt-5">
               <vs-input type="url" v-model="ad.link" class="w-full" label="URL Link" />
               <span>Final URL: {{finalAdLink}}</span>
@@ -238,6 +248,7 @@ function createImageFromUrl(url) {
   })
 }
 
+// TODO: to delete??? We don't use this code
 // For custom error message
 import { Validator } from 'vee-validate'
 const dict = {
@@ -298,6 +309,7 @@ export default {
       },
       ad: {
         count: 1,
+        copyId: '',
         title: 'Title Example',
         text: 'Text Example',
         link: 'http://domain.com',
@@ -555,11 +567,6 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
-            this.fetchProductMedias(this.product.id)
-            // TODO: to delete the if condition
-            if (!this.debug) {
-              this.createCampaigns()
-            }
             resolve(true)
           }
         })
@@ -675,6 +682,12 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
+            this.fetchProductMedias(this.product.id)
+            // TODO: to delete the if condition
+            if (!this.debug) {
+              this.createCampaigns()
+            }
+
             // TODO: to delete the if condition
             if (!this.debug) {
               this.createAdsets()
@@ -693,6 +706,15 @@ export default {
             this.view = 'normal'
             this.errors.clear()
             reject('view must be normal')
+          }
+
+          if (this.ad.copyId.length <= 0) {
+            hasError = true
+            this.errors.add({
+              scope: 'step-3',
+              field: 'ad_copy_id',
+              msg: 'Invalid copy id'
+            })
           }
 
           this.view = 'normal'
@@ -778,6 +800,44 @@ export default {
       this.productMedias = productMediasResponse.data.data
       this.ad.medias = []
     },
+    getBidReference(bidStrategy, bidAmount) {
+      let bidRef = ''
+      if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
+        bidRef = 'Auto'
+      } else if (bidStrategy === 'LOWEST_COST_WITH_BID_CAP') {
+        bidRef = 'BC' + parseInt(bidAmount*100)
+      } else if (bidStrategy === 'COST_CAP') {
+        bidRef = 'CC' + parseInt(bidAmount*100)
+      }
+      return bidRef
+    },
+    getTargetReference(ageMin, ageMax, genders) {
+      let targetRef = ''
+      if (ageMin == '' || parseInt(ageMin) === 0) {
+        if (ageMax == '' || parseInt(ageMax) === 0) {
+          targetRef += '0+'
+        } else {
+          targetRef += parseInt(ageMax) + '-'
+        }
+      } else if (ageMax == '' || parseInt(ageMax) === 0) {
+        if (ageMin == '' || parseInt(ageMin) === 0) {
+          targetRef += '0+'
+        } else {
+          targetRef += parseInt(ageMin) + '+'
+        }
+      } else {
+        targetRef += parseInt(ageMin) + '-' + parseInt(ageMax)
+      }
+      if (genders.length === 1) {
+        if (genders[0] === 1) {
+          targetRef += ' M'
+        } else if (genders[0] === 2) {
+          targetRef += ' F'
+        }
+      } else if (genders.length === 2) {
+          targetRef += ' M/F'
+      }
+    },
     async createCampaigns() {
       this.creatingCampaigns = true
 
@@ -791,8 +851,12 @@ export default {
         params.daily_budget = parseInt(this.campaign.daily_budget*100)
         params.bid_strategy = this.campaign.bid_strategy
       }
+
+      let bidRef = this.getBidReference(this.campaign.bid_strategy, this.campaign.bid_amount)
+      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders)
+
       for (let i = 0; i < campaignCount; i++) {
-        params.name = this.campaign.name + ' - ' + i
+        params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - ' + '#' + i
         const campaign = await this.facebook.createCampaign(this.adAccount.id, params)
         if (campaign !== null && campaign.hasOwnProperty('id') && campaign.id !== null) {
           this.campaigns.push(campaign.id)
@@ -859,7 +923,7 @@ export default {
         let campaignId = this.campaigns[cIndex]
         params.campaign_id = campaignId
         for (let aIndex = 0; aIndex < adsetCount; aIndex++) {
-          params.name = 'Adset ' + aIndex // TODO:
+          params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - ' + '#' + aIndex
           const adset = await this.facebook.createAdset(this.adAccount.id, params)
           if (adset !== null && adset.hasOwnProperty('id') && adset.id !== null) {
             this.adsets.push(adset.id)
@@ -914,7 +978,10 @@ export default {
             file_url: this.ad.medias[i].url,
           }
           media = await this.facebook.uploadAdVideo(this.adAccount.id, params)
-          if (media !== null) { media.type = 'video' }
+          if (media !== null) {
+            media.type = 'video'
+            media.pathname = this.ad.medias[i].pathname
+          }
         } else if (mediaType === 'image') {
           // TODO: We don't need to upload the image anymore since we directly pass the url
           // to facebook
@@ -949,9 +1016,16 @@ export default {
       for (let aIndex = 0; aIndex < this.adsets.length; aIndex++) {
         for (let i = 0; i < medias.length; i++) {
           let media = medias[i]
+          let adName = this.product.name + ' - ' + 'C' + parseInt(this.ad.copyId)
+          if (media.hasOwnProperty('pathname')) {
+            let fileNameNoExtension = media.pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
+            adName += ' - ' + fileNameNoExtension
+          } else {
+            // TODO: What if the media is taken from google?
+          }
           let params = {
             adset_id: this.adsets[aIndex],
-            name: 'Ad ' + i,
+            name: adName,
             conversion_domain: this.ad.conversionDomain,
           }
 

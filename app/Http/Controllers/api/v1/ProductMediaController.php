@@ -121,6 +121,8 @@ class ProductMediaController extends Controller
         $product_media = ProductMedia::create($params);
 
         $file_name = '';
+        // TODO: We don't need to compute the name anymore, we take the filename just as it is */
+        /*
         $productMedias = ProductMedia::where('product_id', $params['product_id'])->where('type', $params['type']);
         $num = $productMedias->count();
         if ($params['type'] == 'image') {
@@ -135,6 +137,10 @@ class ProductMediaController extends Controller
         $i = pathinfo($to_find_extension);
         $ext = $i['extension'];
         $file_name = $file_name . '.' . $ext;
+        */
+        $originalFileName = $params['original_file_name'];
+        $i = pathinfo($originalFileName);
+        $file_name = $i['basename'];
 
         // File(s) upload
         $path = Storage::putFileAs($product_media->getStoragePath(), $file, $file_name);
