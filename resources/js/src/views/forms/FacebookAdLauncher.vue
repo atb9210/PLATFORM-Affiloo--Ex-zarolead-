@@ -181,6 +181,10 @@
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openNewPage(item.url)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
             </div>
+            <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(mediaSearchQuery, bing.nextOffset)"></vs-button>
+            </div>
           </div>
 
           <div class="vx-row" v-else-if="view == 'preview'">
@@ -193,6 +197,10 @@
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
               <center>{{item.type}} ({{item.pathname}})</center>
+            </div>
+            <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(mediaSearchQuery, bing.nextOffset)"></vs-button>
             </div>
           </div>
 
@@ -392,6 +400,13 @@ export default {
 
       mediaSearchQuery: '',
       searchImageResults: [],
+
+      bing: {
+        count: 50,
+        prevOffset: 0,
+        currentOffset: 0,
+        nextOffset: 0,
+      },
     }
   },
   computed: {
@@ -801,6 +816,11 @@ export default {
       this.ad.medias = []
     },
     getBidReference(bidStrategy, bidAmount) {
+      // TODO: to delete
+      console.log('getBidReference()')
+      console.log('bidStrategy', bidStrategy)
+      console.log('bidAmount', bidAmount)
+
       let bidRef = ''
       if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
         bidRef = 'Auto'
@@ -812,6 +832,12 @@ export default {
       return bidRef
     },
     getTargetReference(ageMin, ageMax, genders) {
+      // TODO: to delete
+      console.log('getTargetReference()')
+      console.log('ageMin', ageMin)
+      console.log('ageMax', ageMax)
+      console.log('genders', genders)
+
       let targetRef = ''
       if (ageMin == '' || parseInt(ageMin) === 0) {
         if (ageMax == '' || parseInt(ageMax) === 0) {
@@ -837,6 +863,8 @@ export default {
       } else if (genders.length === 2) {
           targetRef += ' M/F'
       }
+
+      return targetRef
     },
     async createCampaigns() {
       this.creatingCampaigns = true
@@ -1156,9 +1184,18 @@ export default {
       result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
       return result
     },
-    async searchImage(query) {
+    async searchImage(query, offset = 0) {
+      this.$vs.loading()
+
       this.ad.medias = []
       let searchImageResults = []
+
+      if (offset === 0) {
+        this.bing.prevOffset = 0
+        this.bing.currentOffset = 0
+        this.bing.nextOffset = 0
+      }
+
       try {
         let apiCallUrl = 'https://api.bing.microsoft.com/v7.0/images/search'
         let params = {
@@ -1166,11 +1203,16 @@ export default {
           minWidth: 600,
           minHeight: 600,
           aspect: 'Square',
+          offset: offset,
+          count: this.bing.count,
         }
         let headers = {
           'Ocp-Apim-Subscription-Key': 'e38ac9a09baa4264becfe21f7dc17211',
         }
         const response = await this.$http.get(apiCallUrl, { headers, params })
+        this.bing.prevOffset = Math.max(0, this.bing.currentOffset - this.bing.count)
+        this.bing.currentOffset = response.data.currentOffset
+        this.bing.nextOffset = response.data.nextOffset
         for (let i = 0; i < response.data.value.length; i++) {
           let res = response.data.value[i]
           searchImageResults.push({
@@ -1186,6 +1228,9 @@ export default {
         console.log(error)
       }
       this.searchImageResults = searchImageResults
+
+      this.$vs.loading.close()
+
       return this.searchImageResults
     },
   },
