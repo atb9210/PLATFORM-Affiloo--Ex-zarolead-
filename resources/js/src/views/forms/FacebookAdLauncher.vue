@@ -823,9 +823,9 @@ export default {
       if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
         bidRef = 'Auto'
       } else if (bidStrategy === 'LOWEST_COST_WITH_BID_CAP') {
-        bidRef = 'BC' + parseInt(bidAmount*100)
+        bidRef = 'BC' + parseFloat(bidAmount).toFixed(2)
       } else if (bidStrategy === 'COST_CAP') {
-        bidRef = 'CC' + parseInt(bidAmount*100)
+        bidRef = 'CC' + parseFloat(bidAmount).toFixed(2)
       }
       return bidRef
     },
