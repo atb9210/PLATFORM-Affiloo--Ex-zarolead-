@@ -164,7 +164,7 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'" :disabled="bing.apiKey === ''"></vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
@@ -192,7 +192,7 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'" :disabled="bing.apiKey === ''"></vs-button>
             </div>
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
@@ -286,6 +286,8 @@ export default {
   data () {
     return {
       debug: false,
+
+      settings: {},
 
       facebook: null,
       advertiserId: '',
@@ -402,6 +404,7 @@ export default {
       searchImageResults: [],
 
       bing: {
+        apiKey: '',
         count: 50,
         prevOffset: 0,
         currentOffset: 0,
@@ -816,11 +819,6 @@ export default {
       this.ad.medias = []
     },
     getBidReference(bidStrategy, bidAmount) {
-      // TODO: to delete
-      console.log('getBidReference()')
-      console.log('bidStrategy', bidStrategy)
-      console.log('bidAmount', bidAmount)
-
       let bidRef = ''
       if (bidStrategy === 'LOWEST_COST_WITHOUT_CAP') {
         bidRef = 'Auto'
@@ -832,12 +830,6 @@ export default {
       return bidRef
     },
     getTargetReference(ageMin, ageMax, genders) {
-      // TODO: to delete
-      console.log('getTargetReference()')
-      console.log('ageMin', ageMin)
-      console.log('ageMax', ageMax)
-      console.log('genders', genders)
-
       let targetRef = ''
       if (ageMin == '' || parseInt(ageMin) === 0) {
         if (ageMax == '' || parseInt(ageMax) === 0) {
@@ -1207,7 +1199,7 @@ export default {
           count: this.bing.count,
         }
         let headers = {
-          'Ocp-Apim-Subscription-Key': 'e38ac9a09baa4264becfe21f7dc17211',
+          'Ocp-Apim-Subscription-Key': this.bing.apiKey,
         }
         const response = await this.$http.get(apiCallUrl, { headers, params })
         this.bing.prevOffset = Math.max(0, this.bing.currentOffset - this.bing.count)
@@ -1223,9 +1215,6 @@ export default {
         }
       } catch (error) {
         // Nothing
-
-        // TODO: to delete
-        console.log(error)
       }
       this.searchImageResults = searchImageResults
 
@@ -1294,6 +1283,25 @@ export default {
       this.campaign.name = 'test campaign'
       this.campaign.pixel = this.pixelOptions[0]
     }
+
+    // Fetch settings
+    try {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      const response = await this.$http.get('/api/v1/settings', { headers })
+      if (response !== null && response.hasOwnProperty('data') && response.data !== null &&
+          response.data.hasOwnProperty('data') && response.data.data !== null) {
+        this.settings = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+    if (this.settings.hasOwnProperty('bing') && this.settings.bing !== null &&
+        this.settings.bing.hasOwnProperty('api_key') && this.settings.bing.api_key !== null) {
+      this.bing.apiKey = this.settings.bing.api_key
+    }
+
   },
 }
 </script>

@@ -40,6 +40,22 @@
 
     </vs-row>
 
+    <!-- Bing popup -->
+    <vs-popup title="Bing" :active.sync="showPopup['bing']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="bing.api_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateBingSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
     <!-- ChatAPI popup -->
     <vs-popup title="Chat API" :active.sync="showPopup['chatapi']">
       <div class="vx-row mb-6">
@@ -340,6 +356,7 @@ export default {
       settings: {},
 
       showPopup: {
+        'bing': false,
         'chatapi': false,
         'stripe': false,
 
@@ -354,6 +371,12 @@ export default {
       },
 
       apps: [
+        {
+          name: 'Bing',
+          image: '/images/3rd_party/bing.png',
+          description: 'Search Engine',
+          callback: this.showBingSettings,
+        },
         {
           name: 'Chat API',
           image: '/images/3rd_party/chatapi.png',
@@ -457,6 +480,10 @@ export default {
           callback: this.showFraudFilterSettings,
         },
       ],
+
+      bing: {
+        api_key: '',
+      },
 
       chatapi: {
         api_instance: '',
@@ -590,6 +617,25 @@ export default {
       for (const [key, value] of Object.entries(src)) {
         dest[key] = value
       }
+    },
+
+    /* Bing */
+    async showBingSettings() {
+      let bingSettingsDefault = {
+        api_key: '',
+      }
+      if (!this.settings.hasOwnProperty('bing')) {
+        this.settings['bing'] = bingSettingsDefault
+      }
+      this.adjustSettings(this.settings['bing'], bingSettingsDefault)
+      this.copySettings(this.settings['bing'], this.bing)
+
+      this.showPopup['bing'] = true
+    },
+    async updateBingSettings() {
+      this.settings['bing'] = this.bing
+      await this.updateSettingsWithLoading()
+      this.showPopup['bing'] = false
     },
 
     /* ChatAPI */
