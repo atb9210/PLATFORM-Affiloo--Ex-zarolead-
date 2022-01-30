@@ -1338,6 +1338,16 @@ export default {
       this.campaign = adTemplate.value.campaign
       this.adset = adTemplate.value.adset
       this.ad = adTemplate.value.ad
+      this.ad.medias = []
+      for (pmIndex = 0; pmIndex < adTemplate.value.medias; pmIndex++) {
+        let media = adTemplate.value.medias[pmIndex]
+        for (let i = 0; i < this.productMedias.length; i++) {
+          if (this.productMedias[i].id == media.id) {
+            this.ad.medias.push(this.productMedias[i])
+          }
+        }
+      }
+      // TODO: HERE (Preview)
       this.target = adTemplate.value.target
       this.newAdTemplateName = adTemplate.name
     },
