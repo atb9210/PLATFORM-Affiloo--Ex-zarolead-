@@ -1330,7 +1330,11 @@ export default {
       }
     },
     loadAdTemplate(adTemplate) {
-      this.product =  adTemplate.value.product
+      for (let i = 0; i < this.products.length; i++) {
+        if (adTemplate.value.product.id == this.products[i].id) {
+          this.prduct = this.products[i]
+        }
+      }
       this.campaign = adTemplate.value.campaign
       this.adset = adTemplate.value.adset
       this.ad = adTemplate.value.ad
