@@ -16,6 +16,13 @@
         <tab-content title="Campaign" class="mb-5" icon="feather icon-facebook" :before-change="validateStep1">
           <form data-vv-scope="step-1">
           <div class="vx-row">
+            <div class="vx-col w-full">
+              <my-select v-model="adTemplate" :options="adTemplates" class="w-full select-large" label="Choose Ad Template" :autocomplete="true" />
+              <p class="flex items-center w-full">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="loadAdTemplate(adTemplate)"></vs-button>
+                <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate)"></vs-button>
+              </p>
+            </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
               <my-select v-model="product" :options="products" class="w-full select-large" label="Product" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.product') }}</span>
@@ -156,6 +163,11 @@
                 <span class="ml-auto mr-auto">{{ (ad.preview === null) ? 'No preview selected' : 'Preview selected' }}</span>
               </div>
               <span class="text-danger">{{ errors.first('step-3.ad_medias_preview') }}</span>
+            </div>
+
+            <div class="vx-col w-full">
+              <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newAdTemplateName" label="New ad template name" />
+              <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate(newAdTemplateName)" color="primary" type="filled">Save Ad Template</vs-button>
             </div>
           </div>
 
@@ -410,6 +422,10 @@ export default {
         currentOffset: 0,
         nextOffset: 0,
       },
+
+      adTemplates: [],
+      adTemplate: {},
+      newAdTemplateName: '',
     }
   },
   computed: {
@@ -1112,7 +1128,8 @@ export default {
         color: 'success'
       })
 
-      this.$router.push({ path:'/dashboard/facebook-ads' })
+      // TODO: uncomment this?
+      //this.$router.push({ path:'/dashboard/facebook-ads' })
     },
     onChangeAdAccount() {
       this.campaign.pixel = ''
@@ -1222,6 +1239,104 @@ export default {
 
       return this.searchImageResults
     },
+    async fetchAdTemplates() {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      this.adTemplates = []
+      const response = await this.$http.get('/api/3rd/fb-ad-templates', { headers })
+      this.adTemplates = response.data.data
+
+      this.$vs.loading.close()
+
+      return this.adTemplates
+    },
+    async saveAdTemplate(adTemplateName) {
+      this.$vs.loading()
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      let value = this.getAdObject()
+
+      let data = {
+        name: adTemplateName,
+        value: JSON.stringify(value),
+      }
+
+      let alreadyExists = false
+      let adTemplateId = ''
+      for (let i = 0; i < this.adTemplates.length; i++) {
+        if (this.adTemplates[i].name == this.adTemplateName) {
+          alreadyExists = true
+          adTemplateId = this.adTemplates[i].id
+        }
+      }
+
+      try {
+        if (!alreadyExists) {
+          const response = await this.$http.post('/api/3rd/fb-ad-templates', data, { headers })
+        } else {
+          const response = await this.$http.put('/api/3rd/fb-ad-templates/' + adTemplateId, data, { headers })
+        }
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Ad template saved',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        await this.fetchAdTemplates()
+      } catch (error) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Unknown error while saving ad template',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    async deleteAdTemplate(adTemplateId) {
+      this.$vs.loading()
+
+      let id = adTemplateId
+
+      if (id <= 0) return
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+
+      await this.$http.delete('/api/3rd/fb-ad-templates/' + id, { headers })
+
+      this.$vs.loading.close()
+
+      await this.fetchAdTemplates()
+    },
+    getAdObject() {
+      return {
+        product: this.product,
+        campaign: this.campaign,
+        adset: this.adset,
+        ad: this.ad,
+        target: this.target,
+      }
+    },
+    loadAdTemplate(adTemplate) {
+      this.product =  adTemplate.value.product
+      this.campaign = adTemplate.value.campaign
+      this.adset = adTemplate.value.adset
+      this.ad = adTemplate.value.ad
+      this.target = adTemplate.value.target
+      this.newAdTemplateName = adTemplate.name
+    },
   },
   components: {
     FormWizard,
@@ -1272,6 +1387,8 @@ export default {
     }
 
     this.$vs.loading.close()
+
+    await this.fetchAdTemplates()
 
     // TODO: to delete
     // DEBUG: This is only for debug
