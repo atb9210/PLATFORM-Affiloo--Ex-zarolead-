@@ -88,6 +88,17 @@ Route::put('/facebook/advertisers/{id}', 'api\third\FacebookController@updateAdv
     ->name('facebook.advertisers.update');
 Route::delete('/facebook/advertisers/{id}', 'api\third\FacebookController@destroyAdvertiser')->middleware('auth:api')
     ->name('facebook.advertisers.destroy');
+
+Route::get('/facebook/copys', 'api\third\FacebookController@getCopys')->middleware('auth:api')
+    ->name('facebook.copys');
+Route::get('/facebook/copys/{id}', 'api\third\FacebookController@getCopy')->middleware('auth:api')
+    ->name('facebook.copys.show');
+Route::post('/facebook/copys', 'api\third\FacebookController@createCopy')->middleware('auth:api')
+    ->name('facebook.copys.store');
+Route::put('/facebook/copys/{id}', 'api\third\FacebookController@updateCopy')->middleware('auth:api')
+    ->name('facebook.copys.update');
+Route::delete('/facebook/copys/{id}', 'api\third\FacebookController@deleteCopy')->middleware('auth:api')
+    ->name('facebook.copys.delete');
 /*
 Route::get('/facebook/adaccounts', 'api\third\FacebookController@adAccounts')->middleware('auth:api')
     ->name('facebook.adaccounts');

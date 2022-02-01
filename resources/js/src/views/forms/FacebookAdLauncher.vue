@@ -67,16 +67,20 @@
               <vs-input v-show="campaign.bid_strategy !== 'LOWEST_COST_WITHOUT_CAP'" type="number" min="0.01" step="0.01" v-model="campaign.bid_amount" class="w-full" label="Bid Amount" />
               <span class="text-danger">{{ errors.first('step-1.campaign_bid_amount') }}</span>
             </div>
+            <div class="vx-col w-full mt-5">
+              <vs-checkbox v-model="adset.splitMode" @change="onChangeSplitMode">Split mode (only one ad per adset)</vs-checkbox>
+              <span class="text-danger">{{ errors.first('step-1.adset_splitMode') }}</span>
+            </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
               <vs-input type="number" min="1" step="1" v-model="campaign.count" class="w-full" label="How many campaigns?" />
               <span class="text-danger">{{ errors.first('step-1.campaign_count') }}</span>
             </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
-              <vs-input type="number" min="1" step="1" v-model="adset.count" class="w-full" label="How many adsets per campaign?" />
+              <vs-input type="number" min="1" step="1" v-model="adset.count" class="w-full" label="How many adsets per campaign?" :disabled="adset.splitMode" />
               <span class="text-danger">{{ errors.first('step-1.adset_count') }}</span>
             </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
-              <vs-input type="number" min="1" step="1" v-model="ad.count" class="w-full" label="How many ads per adset?" />
+              <vs-input type="number" min="1" step="1" v-model="ad.count" class="w-full" :label="'How many ads per ' + ((adset.splitMode) ? 'campaign' : 'adset') + '?'" />
               <span class="text-danger">{{ errors.first('step-1.ad_count') }}</span>
             </div>
           </div>
@@ -122,21 +126,31 @@
 
           <div class="vx-row" v-if="view == 'normal'">
             <div class="vx-col md:w-full w-full mt-5">
+              <vs-checkbox v-model="ad.useExistingCopy" @change="onChangeUseExistingCopy">Use an existing copy</vs-checkbox>
+            </div>
 
+            <div class="vx-col md:w-full w-full mt-5" v-if="ad.useExistingCopy">
+              <my-select v-model="ad.copy" :options="copys" class="w-full select-large" label="Copys" :autocomplete="true" @change="onChangeCopy" />
+            </div>
+
+            <div class="vx-col md:w-full w-full mt-5">
               <vx-input-group prependClasses="border border-solid border-grey border-r-0" label="Copy">
                 <template slot="prepend">
                   <div class="prepend-text bg-primary">
                     <span>Copy</span>
                   </div>
                 </template>
-                <vs-input type="number" min="0" step="1" v-model="ad.copyId" class="w-full" placeholder="Copy ID (Ex. 28)" />
-                <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" />
-                <vs-textarea v-model="ad.text" class="w-full" placeholder="Title"></vs-textarea>
+                <vs-input type="number" min="0" step="1" v-model="ad.copyId" class="w-full" placeholder="Copy ID (Ex. 28)" :disabled="ad.copy !== null" />
+                <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" :disabled="ad.copy !== null" />
+                <vs-textarea v-model="ad.text" class="w-full" placeholder="Title" :disabled="ad.copy !== null"></vs-textarea>
               </vx-input-group>
 
               <span class="text-danger">{{ errors.first('step-3.ad_copy_id') }}</span>
               <span class="text-danger">{{ errors.first('step-3.ad_title') }}</span>
               <span class="text-danger">{{ errors.first('step-3.ad_text') }}</span>
+            </div>
+            <div class="vx-col md:w-full w-full flex items-center" v-if="ad.copy === null">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveCopy(ad.title, ad.text)" :disabled="ad.copy !== null || (ad.title == '' || ad.text == '')"></vs-button>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
@@ -180,7 +194,7 @@
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
-              <center>{{item.type}} ({{item.pathname}})</center>
+              <center>{{item.filename}} ({{item.type}})</center>
             </div>
           </div>
 
@@ -208,7 +222,7 @@
             </div>
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
-              <center>{{item.type}} ({{item.pathname}})</center>
+              <center>{{item.filename}} ({{item.type}})</center>
             </div>
             <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
@@ -246,6 +260,14 @@ import Facebook from 'facebook'
 // TODO: Move this function into a utilities package?
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getFilename(pathname) {
+  return media.pathname.replace(/^.*[\\\/]/, '')
+}
+
+function getFilenameNoExtension(pathname) {
+  return media.pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
 }
 
 function isValidHttpUrl(s) {
@@ -297,7 +319,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      debug: true,
 
       settings: {},
 
@@ -327,11 +349,14 @@ export default {
         pixel: '',
       },
       adset: {
+        splitMode: false,
         count: 1,
       },
       ad: {
         count: 1,
         copyId: '',
+        useExistingCopy: false,
+        copy: null,
         title: 'Title Example',
         text: 'Text Example',
         link: 'http://domain.com',
@@ -426,6 +451,8 @@ export default {
       adTemplates: [],
       adTemplate: {},
       newAdTemplateName: '',
+
+      copys: [],
     }
   },
   computed: {
@@ -716,16 +743,13 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
+            this.fetchCopys()
             this.fetchProductMedias(this.product.id)
             // TODO: to delete the if condition
             if (!this.debug) {
               this.createCampaigns()
             }
 
-            // TODO: to delete the if condition
-            if (!this.debug) {
-              this.createAdsets()
-            }
             resolve(true)
           }
         })
@@ -796,13 +820,25 @@ export default {
               msg: 'You must choose at least one media'
             })
           }
-          if (this.ad.medias.length != 1 && this.ad.medias.length != parseInt(this.ad.count)) {
-            hasError = true
-            this.errors.add({
-              scope: 'step-3',
-              field: 'ad_medias',
-              msg: 'The number of medias selected must be either 1 or ' + this.ad.count + ' (number of ads per adset)'
-            })
+          if (this.adset.splitMode) {
+            let requiredNumOfMedias = parseInt(this.ad.count) * parseInt(this.campaign.count)
+            if (this.ad.medias.length != requiredNumOfMedias) {
+              hasError = true
+              this.errors.add({
+                scope: 'step-3',
+                field: 'ad_medias',
+                msg: 'In split mode the number of medias selected must be either ' + requiredNumOfMedias + ' (#ads per campaign x #campaigns)'
+              })
+            }
+          } else {
+            if (this.ad.medias.length != 1 && this.ad.medias.length != parseInt(this.ad.count)) {
+              hasError = true
+              this.errors.add({
+                scope: 'step-3',
+                field: 'ad_medias',
+                msg: 'In normal mode the number of medias selected must be either 1 or ' + this.ad.count + ' (number of ads per adset)'
+              })
+            }
           }
 
           if (this.hasVideo() && this.ad.preview === null) {
@@ -819,6 +855,11 @@ export default {
           } else {
             // TODO: to delete the if condition
             if (!this.debug) {
+              this.createAdsets()
+            }
+
+            // TODO: to delete the if condition
+            if (!this.debug) {
               this.createAds()
             }
             resolve(true)
@@ -832,7 +873,73 @@ export default {
       }
       const productMediasResponse = await this.$http.get('/api/v1/products/' + productId + '/medias', { headers })
       this.productMedias = productMediasResponse.data.data
+      for (let i = 0; i < this.productMedias.length; i++) {
+        let pm = this.productMedias[i]
+        pm.filename = getFilenameNoExtension(pm.pathname)
+        this.productMedias[i] = pm
+      }
       this.ad.medias = []
+    },
+    async fetchCopys() {
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      const response = await this.$http.get('/api/3rd/facebook/copys', { headers })
+      this.copys = response.data.data
+      for (let i = 0; i < this.copys.length; i++) {
+        let copy = this.copys[i]
+        copy.name = 'C' + copy.id
+        this.copys[i] = copy
+      }
+      return this.copys
+    },
+    async saveCopyNoLoading(adTitle, adText) {
+      if (adTitle == '' || adText == '') {
+        return null
+      }
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        ad_title: adTitle,
+        ad_text: adText,
+      }
+      const response = await this.$http.post('/api/3rd/facebook/copys', params, { headers })
+      let copy = response.data.data
+      return copy
+    },
+    async saveCopy(adTitle, adText) {
+      this.$vs.loading()
+
+      if (adTitle == '' || adText == '') {
+        return
+      }
+      let copy = await this.saveCopyNoLoading(adTitle, adText)
+      this.ad.copyId = copy.id
+
+      await this.fetchCopys()
+
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Copy successfully created',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
+    onChangeUseExistingCopy() {
+      if (!this.ad.useExistingCopy) {
+        this.ad.copy = null
+      }
+    },
+    onChangeCopy() {
+      if (this.ad.copy !== null && this.ad.copy != '') {
+        this.ad.copyId = this.ad.copy.id
+        this.ad.title = this.ad.copy.ad_title
+        this.ad.text  = this.ad.copy.ad_text
+      }
     },
     getBidReference(bidStrategy, bidAmount) {
       let bidRef = ''
@@ -892,7 +999,11 @@ export default {
       let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders)
 
       for (let i = 0; i < campaignCount; i++) {
-        params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - ' + '#' + i
+        params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - '
+        if (this.campaign.name.length > 0) {
+          params.name += this.campaign.name + ' - '
+        }
+        params.name += '#' + i
         const campaign = await this.facebook.createCampaign(this.adAccount.id, params)
         if (campaign !== null && campaign.hasOwnProperty('id') && campaign.id !== null) {
           this.campaigns.push(campaign.id)
@@ -913,6 +1024,9 @@ export default {
 
       this.adsets = []
       let adsetCount = parseInt(this.adset.count)
+      if (this.adset.splitMode) {
+        adsetCount = parseInt(this.ad.count)
+      }
       let params = {
         optimization_goal: this.campaign.objective,
         billing_event: 'IMPRESSIONS', // TODO: What about this?
@@ -962,7 +1076,11 @@ export default {
         let campaignId = this.campaigns[cIndex]
         params.campaign_id = campaignId
         for (let aIndex = 0; aIndex < adsetCount; aIndex++) {
-          params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - ' + '#' + aIndex
+          params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - '
+          if (this.campaign.name.length > 0) {
+            params.name += this.campaign.name + ' - '
+          }
+          params.name += '#' + aIndex
           const adset = await this.facebook.createAdset(this.adAccount.id, params)
           if (adset !== null && adset.hasOwnProperty('id') && adset.id !== null) {
             this.adsets.push(adset.id)
@@ -1021,6 +1139,7 @@ export default {
             media.type = 'video'
             media.pathname = this.ad.medias[i].pathname
           }
+          this.ad.medias[i] = media
         } else if (mediaType === 'image') {
           // TODO: We don't need to upload the image anymore since we directly pass the url
           // to facebook
@@ -1052,69 +1171,40 @@ export default {
         }
       }
 
+      // DEBUG TODO: to delete
+      console.log('assert(adsets.length === medias.length)', this.adsets.length === medias.length)
+
       for (let aIndex = 0; aIndex < this.adsets.length; aIndex++) {
         for (let i = 0; i < medias.length; i++) {
           let media = medias[i]
           let adName = this.product.name + ' - ' + 'C' + parseInt(this.ad.copyId)
           if (media.hasOwnProperty('pathname')) {
-            let fileNameNoExtension = media.pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
+            let fileNameNoExtension = getFilenameNoExtension(media.pathname)
             adName += ' - ' + fileNameNoExtension
           } else {
-            // TODO: What if the media is taken from google?
+            // TODO: What if the media is taken from bing images?
+          }
+          if (this.campaign.name.length > 0) {
+            adName += ' - ' + this.campaign.name
           }
           adName += ' - ' + '#' + i
-          let params = {
-            adset_id: this.adsets[aIndex],
-            name: adName,
-            conversion_domain: this.ad.conversionDomain,
-          }
 
-          // Creative
-          if (media.type === 'image') {
-            params.creative = {
-              name: 'ad creative',
-              object_story_spec: {
-                link_data: {
-                  call_to_action: { type: 'LEARN_MORE', value: { link: this.ad.link } },
-                  link: this.ad.link,
-                  name: this.ad.title,
-                  message: this.ad.text,
-                  picture: media.url,
-                },
-                page_id: this.page.id,
-                instagram_actor_id: pbiAccountId,
-              },
-              instagram_actor_id: pbiAccountId,
-            }
-            if (this.trackingSpecs !== null) {
-              params.tracking_specs = this.trackingSpecs
-            }
-          } else if (media.type === 'video') {
-            params.creative = {
-              name: 'ad creative',
-              object_story_spec: {
-                video_data: {
-                  call_to_action: { type: 'LEARN_MORE', value: { link: this.ad.link } },
-                  link: this.ad.link,
-                  title: this.ad.title,
-                  message: this.ad.text,
-                  video_id: media.id,
-                  image_url: this.ad.preview.url,
-                },
-                page_id: this.page.id,
-                instagram_actor_id: pbiAccountId,
-              },
-              instagram_actor_id: pbiAccountId,
-            }
-          }
-
-          const ad = await this.facebook.createAd(this.adAccount.id, params)
+          const ad = await this.createAd(
+            this.adAccount.id, this.adsets[aIndex], adName,
+            this.ad.link, this.ad.conversionDomain, this.ad.title, this.ad.text,
+            media, this.page.id, pbiAccountId,
+            this.ad.preview, this.trackingSpecs)
           if (ad === null) {
             // TODO: Log error
           }
           this.ads.push(ad.id)
+
+          if (this.adset.splitMode) {
+            aIndex++
+          }
         }
       }
+      
 
       this.creatingAds = false
 
@@ -1130,6 +1220,58 @@ export default {
 
       // TODO: uncomment this?
       //this.$router.push({ path:'/dashboard/facebook-ads' })
+    },
+    async createAd(
+      adAccountId, adsetId, adName,
+      adLink, conversionDomain, adTitle, adText,
+      media, pageId, pbiAccountId,
+      preview = null, trackingSpecs = null) {
+
+      let params = {
+        adset_id: adsetId,
+        name: adName,
+        conversion_domain: conversionDomain,
+      }
+      if (media.type === 'image') {
+        params.creative = {
+          name: 'ad creative',
+          object_story_spec: {
+            link_data: {
+              call_to_action: { type: 'LEARN_MORE', value: { link: adLink } },
+              link: adlink,
+              name: adtitle,
+              message: adtext,
+              picture: media.url,
+            },
+            page_id: pageId,
+            instagram_actor_id: pbiAccountId,
+          },
+          instagram_actor_id: pbiAccountId,
+        }
+        if (trackingSpecs !== null) {
+          params.tracking_specs = trackingSpecs
+        }
+      } else if (media.type === 'video') {
+        params.creative = {
+          name: 'ad creative',
+          object_story_spec: {
+            video_data: {
+              call_to_action: { type: 'LEARN_MORE', value: { link: adlink } },
+              link: adlink,
+              title: adtitle,
+              message: adtext,
+              video_id: media.id,
+              image_url: preview.url,
+            },
+            page_id: pageId,
+            instagram_actor_id: pbiAccountId,
+          },
+          instagram_actor_id: pbiAccountId,
+        }
+      }
+
+      const ad = await this.facebook.createAd(adAccountId, params)
+      return ad
     },
     onChangeAdAccount() {
       this.campaign.pixel = ''
@@ -1339,17 +1481,34 @@ export default {
       this.adset = adTemplate.value.adset
       this.ad = adTemplate.value.ad
       this.ad.medias = []
+
       for (pmIndex = 0; pmIndex < adTemplate.value.medias; pmIndex++) {
         let media = adTemplate.value.medias[pmIndex]
-        for (let i = 0; i < this.productMedias.length; i++) {
-          if (this.productMedias[i].id == media.id) {
-            this.ad.medias.push(this.productMedias[i])
+        if (media !== null && media.hasOwnProperty('id')) {
+          for (let i = 0; i < this.productMedias.length; i++) {
+            if (this.productMedias[i].id == media.id) {
+              this.ad.medias.push(this.productMedias[i])
+            }
           }
         }
       }
-      // TODO: HERE (Preview)
+      let preview = adTemplate.value.ad.preview
+      if (preview !== null && preview.hasOwnProperty('id')) {
+        for (let i = 0; i < this.productMedias.length; i++) {
+          if (this.productMedias[i].id == preview.id) {
+            this.ad.preview = this.productMedias[i]
+            break
+          }
+        }
+      }
+
       this.target = adTemplate.value.target
       this.newAdTemplateName = adTemplate.name
+    },
+    onChangeSplitMode(value) {
+      if (this.adset.splitMode) {
+        this.adset.count = 1
+      }
     },
   },
   components: {
@@ -1388,7 +1547,7 @@ export default {
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')
     }
-
+    
     // Fetch products
     try {
       const productsResponse = await this.$http.get('/api/v1/products', { headers })

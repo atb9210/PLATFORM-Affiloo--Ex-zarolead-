@@ -17,6 +17,9 @@ use App\Http\Resources\api\third\FacebookRuleResource;
 use App\third\FacebookAdvertiser;
 use App\Http\Resources\api\third\FacebookAdvertiserResource;
 
+use App\third\FacebookCopy;
+use App\Http\Resources\api\third\FacebookCopyResource;
+
 class FacebookController extends Controller
 {
     /**
@@ -735,6 +738,107 @@ class FacebookController extends Controller
 
         return response([
             'data' => $ads,
+        ]);
+    }
+
+    /**
+     * Get copys list
+     *
+     * @response {
+     *  "data": [copys],
+     * }
+     */
+    public function getCopys(Request $request)
+    {
+        // TODO: Authorization
+        $copys = FacebookCopy::all();
+        return FacebookCopyResource::collection($copys);
+    }
+
+    /**
+     * Get copy
+     *
+     * @response {
+     *  "data": copy,
+     * }
+     */
+    public function getCopy($id, Request $request)
+    {
+        // TODO: Authorization
+        $copy = FacebookCopy::findOrFail($id);
+        return new FacebookCopyResource($copy);
+    }
+
+    /**
+     * Get copy
+     *
+     * @bodyParam ad_title string required Ad's title
+     * @bodyParam ad_text  string required Ad's text
+     *
+     * @response {
+     *  "data": copy,
+     * }
+     */
+    public function createCopy(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'ad_title' => 'required|string|min:1',
+            'ad_text'  => 'required|string|min:1',
+        ]);
+
+        $copy = FacebookCopy::create($params);
+        return new FacebookCopyResource($copy);
+    }
+
+    /**
+     * Update copy
+     *
+     * @urlParam id int required Copy's id
+     *
+     * @bodyParam ad_title string Ad's title
+     * @bodyParam ad_text  string Ad's text
+     *
+     * @response {
+     *  "data": copy,
+     * }
+     */
+    public function updateCopy($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'ad_title' => 'string|min:1',
+            'ad_text'  => 'string|min:1',
+        ]);
+
+        $copy = FacebookCopy::findOrFail($id);
+        $copy->update($params);
+
+        return new FacebookCopyResource($copy);
+    }
+
+    /**
+     * Delete copy
+     *
+     * @urlParam id int required Copy's id
+     *
+     * @response {
+     *  "message": "Copy deleted",
+     * }
+     */
+    public function deleteCopy($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $copy = FacebookCopy::findOrFail($id);
+        $copy->delete();
+
+        return response([
+            'message' => 'Copy deleted',
         ]);
     }
 }
