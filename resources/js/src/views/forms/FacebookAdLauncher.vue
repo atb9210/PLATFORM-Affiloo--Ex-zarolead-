@@ -194,7 +194,7 @@
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
-              <center>{{item.filename}} ({{item.type}})</center>
+              <center class="text-xl font-bold">{{item.filename}} ({{item.type}})</center>
             </div>
           </div>
 
@@ -222,7 +222,7 @@
             </div>
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
-              <center>{{item.filename}} ({{item.type}})</center>
+              <center class="text-xl font-bold">{{item.filename}} ({{item.type}})</center>
             </div>
             <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
@@ -263,11 +263,11 @@ function sleep(ms) {
 }
 
 function getFilename(pathname) {
-  return media.pathname.replace(/^.*[\\\/]/, '')
+  return pathname.replace(/^.*[\\\/]/, '')
 }
 
 function getFilenameNoExtension(pathname) {
-  return media.pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
+  return pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
 }
 
 function isValidHttpUrl(s) {
@@ -319,7 +319,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: true,
+      debug: false,
 
       settings: {},
 
@@ -876,6 +876,10 @@ export default {
       for (let i = 0; i < this.productMedias.length; i++) {
         let pm = this.productMedias[i]
         pm.filename = getFilenameNoExtension(pm.pathname)
+
+        // TODO: to delete
+        console.log('pm.filename', pm.filename)
+
         this.productMedias[i] = pm
       }
       this.ad.medias = []
