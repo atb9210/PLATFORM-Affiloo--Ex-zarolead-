@@ -67,7 +67,10 @@
               <vs-input v-show="campaign.bid_strategy !== 'LOWEST_COST_WITHOUT_CAP'" type="number" min="0.01" step="0.01" v-model="campaign.bid_amount" class="w-full" label="Bid Amount" />
               <span class="text-danger">{{ errors.first('step-1.campaign_bid_amount') }}</span>
             </div>
-            <div class="vx-col w-full mt-5">
+            <div class="vx-col md:w-1/2 w-full mt-5">
+              <vs-checkbox v-model="campaign.accelerated">Accelerated</vs-checkbox>
+            </div>
+            <div class="vx-col md:w-1/2 w-full mt-5">
               <vs-checkbox v-model="adset.splitMode" @change="onChangeSplitMode">Split mode (only one ad per adset)</vs-checkbox>
               <span class="text-danger">{{ errors.first('step-1.adset_splitMode') }}</span>
             </div>
@@ -319,7 +322,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      // TODO: put to false
+      debug: true,
 
       settings: {},
 
@@ -347,6 +351,7 @@ export default {
         bid_strategy: 'LOWEST_COST_WITH_BID_CAP',
         bid_amount: 0.01,
         pixel: '',
+        accelerated: false,
       },
       adset: {
         splitMode: false,
@@ -997,6 +1002,9 @@ export default {
       if (this.campaign.cbo) {
         params.daily_budget = parseInt(this.campaign.daily_budget*100)
         params.bid_strategy = this.campaign.bid_strategy
+        if (this.campaign.accelerated) {
+          params.pacing_type = ['no_pacing']
+        }
       }
 
       let bidRef = this.getBidReference(this.campaign.bid_strategy, this.campaign.bid_amount)
@@ -1057,6 +1065,9 @@ export default {
       if (!this.campaign.cbo) {
         params.bid_strategy = this.campaign.bid_strategy
         params.daily_budget = parseInt(this.campaign.daily_budget*100)
+        if (this.campaign.accelerated) {
+          params.pacing_type = ['no_pacing']
+        }
       }
       if (this.campaign.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') {
         params.bid_amount = parseInt(this.campaign.bid_amount*100)
