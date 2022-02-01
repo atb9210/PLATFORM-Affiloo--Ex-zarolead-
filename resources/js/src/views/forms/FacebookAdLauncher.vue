@@ -880,10 +880,6 @@ export default {
       for (let i = 0; i < this.productMedias.length; i++) {
         let pm = this.productMedias[i]
         pm.filename = getFilenameNoExtension(pm.pathname)
-
-        // TODO: to delete
-        console.log('pm.filename', pm.filename)
-
         this.productMedias[i] = pm
       }
       this.ad.medias = []
@@ -1252,9 +1248,9 @@ export default {
           object_story_spec: {
             link_data: {
               call_to_action: { type: 'LEARN_MORE', value: { link: adLink } },
-              link: adlink,
-              name: adtitle,
-              message: adtext,
+              link: adLink,
+              name: adTitle,
+              message: adText,
               picture: media.url,
             },
             page_id: pageId,
@@ -1270,10 +1266,10 @@ export default {
           name: 'ad creative',
           object_story_spec: {
             video_data: {
-              call_to_action: { type: 'LEARN_MORE', value: { link: adlink } },
-              link: adlink,
-              title: adtitle,
-              message: adtext,
+              call_to_action: { type: 'LEARN_MORE', value: { link: adLink } },
+              link: adLink,
+              title: adTitle,
+              message: adText,
               video_id: media.id,
               image_url: preview.url,
             },
