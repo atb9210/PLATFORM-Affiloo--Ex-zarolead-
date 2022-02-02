@@ -1228,6 +1228,12 @@ export default {
 
       for (let aIndex = 0; aIndex < this.adsets.length; aIndex++) {
         for (let i = 0; i < medias.length; i++) {
+          if (this.campaign.mode === 'split creative') {
+            if (i > 0 && (i % parseInt(this.ad.count)) === 0) {
+              aIndex++
+            }
+          }
+
           let media = medias[i]
           let adName = this.product.name + ' - ' + 'C' + parseInt(this.ad.copyId)
           if (media.hasOwnProperty('pathname')) {
@@ -1253,10 +1259,6 @@ export default {
 
           if (this.campaign.mode === 'split adset') {
             aIndex++
-          } else if (this.campaign.mode === 'split creative') {
-            if (i > 0 && (i % parseInt(this.ad.count)) === 0) {
-              aIndex++
-            }
           }
         }
       }
