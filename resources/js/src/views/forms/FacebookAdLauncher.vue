@@ -322,8 +322,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      // TODO: Set to false
-      debug: true,
+      debug: false,
 
       settings: {},
 
