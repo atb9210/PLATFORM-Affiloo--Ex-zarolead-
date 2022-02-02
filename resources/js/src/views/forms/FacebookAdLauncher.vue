@@ -1021,7 +1021,7 @@ export default {
         'messenger': 'MG',
       }
       targetRef += ' (' + platformRef[platforms[0]]
-      for (let i = 0; i < platforms.length; i++) {
+      for (let i = 1; i < platforms.length; i++) {
         targetRef += ',' + platformRef[platforms[i]]
       }
       targetRef += ')'
@@ -1254,7 +1254,7 @@ export default {
           if (this.campaign.mode === 'split adset') {
             aIndex++
           } else if (this.campaign.mode === 'split creative') {
-            if ((i + 1) % this.ad.count) {
+            if (i > 0 && (i % parseInt(this.ad.count)) === 0) {
               aIndex++
             }
           }
