@@ -20,7 +20,7 @@
               <my-select v-model="adTemplate" :options="adTemplates" class="w-full select-large" label="Choose Ad Template" :autocomplete="true" />
               <p class="flex items-center w-full">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="loadAdTemplate(adTemplate)"></vs-button>
-                <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate)"></vs-button>
+                <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="deleteAdTemplate(adTemplate.id)"></vs-button>
               </p>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
@@ -67,23 +67,23 @@
               <vs-input v-show="campaign.bid_strategy !== 'LOWEST_COST_WITHOUT_CAP'" type="number" min="0.01" step="0.01" v-model="campaign.bid_amount" class="w-full" label="Bid Amount" />
               <span class="text-danger">{{ errors.first('step-1.campaign_bid_amount') }}</span>
             </div>
-            <div class="vx-col md:w-1/2 w-full mt-5">
+            <div class="vx-col md:w-full w-full mt-5">
               <vs-checkbox v-model="campaign.accelerated">Accelerated</vs-checkbox>
             </div>
-            <div class="vx-col md:w-1/2 w-full mt-5">
-              <vs-checkbox v-model="adset.splitMode" @change="onChangeSplitMode">Split mode (only one ad per adset)</vs-checkbox>
-              <span class="text-danger">{{ errors.first('step-1.adset_splitMode') }}</span>
+            <div class="vx-col md:w-full w-full mt-5">
+              <my-select v-model="campaign.mode" :options="modeOptions" class="w-full select-large" label="Split mode" :autocomplete="true" @change="onChangeMode" />
+              <span class="text-danger">{{ errors.first('step-1.campaign_mode') }}</span>
             </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
               <vs-input type="number" min="1" step="1" v-model="campaign.count" class="w-full" label="How many campaigns?" />
               <span class="text-danger">{{ errors.first('step-1.campaign_count') }}</span>
             </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
-              <vs-input type="number" min="1" step="1" v-model="adset.count" class="w-full" label="How many adsets per campaign?" :disabled="adset.splitMode" />
+              <vs-input type="number" min="1" step="1" v-model="adset.count" class="w-full" label="How many adsets per campaign?" :disabled="campaign.mode === 'split adset' || campaign.mode === 'split creative'" />
               <span class="text-danger">{{ errors.first('step-1.adset_count') }}</span>
             </div>
             <div class="vx-col md:w-1/3 w-full mt-5">
-              <vs-input type="number" min="1" step="1" v-model="ad.count" class="w-full" :label="'How many ads per ' + ((adset.splitMode) ? 'campaign' : 'adset') + '?'" />
+              <vs-input type="number" min="1" step="1" v-model="ad.count" class="w-full" :label="'How many ads per ' + ((campaign.mode === 'split adset') ? 'campaign' : 'adset') + '?'" />
               <span class="text-danger">{{ errors.first('step-1.ad_count') }}</span>
             </div>
           </div>
@@ -153,7 +153,7 @@
               <span class="text-danger">{{ errors.first('step-3.ad_text') }}</span>
             </div>
             <div class="vx-col md:w-full w-full flex items-center" v-if="ad.copy === null">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveCopy(ad.title, ad.text)" :disabled="ad.copy !== null || (ad.title == '' || ad.text == '')"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveCopy(product.id, ad.title, ad.text)" :disabled="ad.copy !== null || (ad.title == '' || ad.text == '')"></vs-button>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
@@ -169,7 +169,7 @@
             <div class="vx-col w-full mt-5">
               <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="view = 'medias'">Choose medias</vs-button>
               <div class="text-center">
-                <span class="ml-auto mr-auto">{{ (ad.medias.length == 0) ? 'No media selected' : ad.medias.length + ' media(s) selected' }}</span>
+                <span class="ml-auto mr-auto">{{ (ad.medias.length == 0) ? 'No media selected' : ad.medias.length + ' media(s) selected / ' + getRequiredNumberOfMedias() + ' required' }}</span>
               </div>
               <span class="text-danger">{{ errors.first('step-3.ad_medias') }}</span>
             </div>
@@ -322,7 +322,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      // TODO: Set to false
+      debug: true,
 
       settings: {},
 
@@ -351,9 +352,9 @@ export default {
         bid_amount: 0.01,
         pixel: '',
         accelerated: false,
+        mode: 'duplicate',
       },
       adset: {
-        splitMode: false,
         count: 1,
       },
       ad: {
@@ -368,6 +369,8 @@ export default {
         medias: [],
         preview: null,
       },
+
+      modeOptions: [ 'duplicate', 'split adset', 'split creative' ],
 
       target: {
         genders: [1, 2],
@@ -602,6 +605,15 @@ export default {
             })
           }
 
+          if (!this.modeOptions.includes(this.campaign.mode)) {
+            hasError = true
+            this.errors.add({
+              scope: 'step-1',
+              field: 'campaign_mode',
+              msg: 'Invalid mode'
+            })
+          }
+
           if (parseInt(this.campaign.count) <= 0) {
             hasError = true
             this.errors.add({
@@ -824,23 +836,24 @@ export default {
               msg: 'You must choose at least one media'
             })
           }
-          if (this.adset.splitMode) {
-            let requiredNumOfMedias = parseInt(this.ad.count) * parseInt(this.campaign.count)
-            if (this.ad.medias.length != requiredNumOfMedias) {
+
+          let requiredNumOfMedias = this.getRequiredNumberOfMedias()
+          if (this.campaign.mode === 'duplicate') {
+            if (this.ad.medias.length !== 1 && this.ad.medias.length !== requiredNumOfMedias) {
               hasError = true
               this.errors.add({
                 scope: 'step-3',
                 field: 'ad_medias',
-                msg: 'In split mode the number of medias selected must be either ' + requiredNumOfMedias + ' (#ads per campaign x #campaigns)'
+                msg: 'In normal mode the number of medias selected must be either 1 or ' + requiredNumOfMedias + ' (number of ads per adset)'
               })
             }
           } else {
-            if (this.ad.medias.length != 1 && this.ad.medias.length != parseInt(this.ad.count)) {
+            if (this.ad.medias.length !== requiredNumOfMedias) {
               hasError = true
               this.errors.add({
                 scope: 'step-3',
                 field: 'ad_medias',
-                msg: 'In normal mode the number of medias selected must be either 1 or ' + this.ad.count + ' (number of ads per adset)'
+                msg: 'In split mode the number of medias selected must be ' + requiredNumOfMedias + ' (#ads per campaign x #campaigns)'
               })
             }
           }
@@ -888,7 +901,10 @@ export default {
       let headers = {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
-      const response = await this.$http.get('/api/3rd/facebook/copys', { headers })
+      let params = {
+        filter_product: this.product.id,
+      }
+      const response = await this.$http.get('/api/3rd/facebook/copys', { headers, params })
       this.copys = response.data.data
       for (let i = 0; i < this.copys.length; i++) {
         let copy = this.copys[i]
@@ -897,7 +913,7 @@ export default {
       }
       return this.copys
     },
-    async saveCopyNoLoading(adTitle, adText) {
+    async saveCopyNoLoading(productId, adTitle, adText) {
       if (adTitle == '' || adText == '') {
         return null
       }
@@ -905,6 +921,7 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
       let params = {
+        product_id: productId,
         ad_title: adTitle,
         ad_text: adText,
       }
@@ -912,13 +929,13 @@ export default {
       let copy = response.data.data
       return copy
     },
-    async saveCopy(adTitle, adText) {
+    async saveCopy(productId, adTitle, adText) {
       this.$vs.loading()
 
       if (adTitle == '' || adText == '') {
         return
       }
-      let copy = await this.saveCopyNoLoading(adTitle, adText)
+      let copy = await this.saveCopyNoLoading(productId, adTitle, adText)
       this.ad.copyId = copy.id
 
       await this.fetchCopys()
@@ -956,7 +973,7 @@ export default {
       }
       return bidRef
     },
-    getTargetReference(ageMin, ageMax, genders) {
+    getTargetReference(ageMin, ageMax, genders, countries, devices, platforms) {
       let targetRef = ''
       if (ageMin == '' || parseInt(ageMin) === 0) {
         if (ageMax == '' || parseInt(ageMax) === 0) {
@@ -983,6 +1000,33 @@ export default {
           targetRef += ' M/F'
       }
 
+      targetRef += ' ' + countries[0]
+      for (let i = 1; i < countries.length; i++) {
+        targetRef += ',' + countries[i]
+      }
+
+      let deviceRef = 'All'
+      if (devices.length === 1) {
+        if (devices[0] === 'mobile') {
+          deviceRef = 'Mob'
+        } else if (devices[0] === 'desktop') {
+          deviceRef = 'Desk'
+        }
+      }
+      targetRef += ' ' + deviceRef
+
+      let platformRef = {
+        'facebook': 'FB',
+        'instagram': 'IG',
+        'audience_network': 'AN',
+        'messenger': 'MG',
+      }
+      targetRef += ' (' + platformRef[platforms[0]]
+      for (let i = 0; i < platforms.length; i++) {
+        targetRef += ',' + platformRef[platforms[i]]
+      }
+      targetRef += ')'
+
       return targetRef
     },
     async createCampaigns() {
@@ -1003,7 +1047,7 @@ export default {
       }
 
       let bidRef = this.getBidReference(this.campaign.bid_strategy, this.campaign.bid_amount)
-      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders)
+      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders, this.target.countries, this.target.devices, this.target.platforms)
 
       for (let i = 0; i < campaignCount; i++) {
         params.name = this.product.name + ' - ' + targetRef + ' - ' + bidRef + ' - '
@@ -1031,8 +1075,10 @@ export default {
 
       this.adsets = []
       let adsetCount = parseInt(this.adset.count)
-      if (this.adset.splitMode) {
+      if (this.campaign.mode === 'split adset') {
         adsetCount = parseInt(this.ad.count)
+      } else if (this.campaign.mode === 'split creative') {
+        adsetCount = 1
       }
       let params = {
         optimization_goal: this.campaign.objective,
@@ -1080,7 +1126,7 @@ export default {
       }
 
       let bidRef = this.getBidReference(this.campaign.bid_strategy, this.campaign.bid_amount)
-      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders)
+      let targetRef = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders, this.target.countries, this.target.devices, this.target.platforms)
 
       for (let cIndex = 0; cIndex < this.campaigns.length; cIndex++) {
         let campaignId = this.campaigns[cIndex]
@@ -1181,9 +1227,6 @@ export default {
         }
       }
 
-      // DEBUG TODO: to delete
-      console.log('assert(adsets.length === medias.length)', this.adsets.length === medias.length)
-
       for (let aIndex = 0; aIndex < this.adsets.length; aIndex++) {
         for (let i = 0; i < medias.length; i++) {
           let media = medias[i]
@@ -1209,8 +1252,12 @@ export default {
           }
           this.ads.push(ad.id)
 
-          if (this.adset.splitMode) {
+          if (this.campaign.mode === 'split adset') {
             aIndex++
+          } else if (this.campaign.mode === 'split creative') {
+            if ((i + 1) % this.ad.count) {
+              aIndex++
+            }
           }
         }
       }
@@ -1484,15 +1531,17 @@ export default {
     loadAdTemplate(adTemplate) {
       for (let i = 0; i < this.products.length; i++) {
         if (adTemplate.value.product.id == this.products[i].id) {
-          this.prduct = this.products[i]
+          this.product = this.products[i]
         }
       }
       this.campaign = adTemplate.value.campaign
+      this.onChangeMode()
+
       this.adset = adTemplate.value.adset
       this.ad = adTemplate.value.ad
       this.ad.medias = []
 
-      for (pmIndex = 0; pmIndex < adTemplate.value.medias; pmIndex++) {
+      for (let pmIndex = 0; pmIndex < adTemplate.value.medias; pmIndex++) {
         let media = adTemplate.value.medias[pmIndex]
         if (media !== null && media.hasOwnProperty('id')) {
           for (let i = 0; i < this.productMedias.length; i++) {
@@ -1512,13 +1561,28 @@ export default {
         }
       }
 
+      // TODO: to delete
+      console.log(adTemplate.value.target)
+
       this.target = adTemplate.value.target
       this.newAdTemplateName = adTemplate.name
     },
-    onChangeSplitMode(value) {
-      if (this.adset.splitMode) {
+    onChangeMode(value) {
+      if (this.campaign.mode === 'split adset') {
+        this.adset.count = this.ad.count
+      } else if (this.campaign.mode === 'split creative' ) {
         this.adset.count = 1
       }
+    },
+    getRequiredNumberOfMedias() {
+      if (this.campaign.mode === 'duplicate') {
+        return parseInt(this.ad.count)
+      } else if (this.campaign.mode === 'split adset') {
+        return parseInt(this.ad.count)*parseInt(this.campaign.count)
+      } else if (this.campaign.mode === 'split creative' ) {
+        return parseInt(this.ad.count)*parseInt(this.campaign.count)
+      }
+      return 0
     },
   },
   components: {

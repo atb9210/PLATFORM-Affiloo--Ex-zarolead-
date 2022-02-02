@@ -744,6 +744,8 @@ class FacebookController extends Controller
     /**
      * Get copys list
      *
+     * @bodyParam filter_product int Product's d
+     *
      * @response {
      *  "data": [copys],
      * }
@@ -751,7 +753,16 @@ class FacebookController extends Controller
     public function getCopys(Request $request)
     {
         // TODO: Authorization
-        $copys = FacebookCopy::all();
+
+        // Param validation
+        $params = $request->validate([
+            'filter_product' => 'numeric|exists:products,id',
+        ]);
+        $copys = FacebookCopy::query();
+        if (isset($params['filter_product'])) {
+            $copys = $copys->where('product_id', $params['filter_product']);
+        }
+        $copys = $copys->get();
         return FacebookCopyResource::collection($copys);
     }
 
@@ -785,8 +796,9 @@ class FacebookController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'ad_title' => 'required|string|min:1',
-            'ad_text'  => 'required|string|min:1',
+            'ad_title'   => 'required|string|min:1',
+            'ad_text'    => 'required|string|min:1',
+            'product_id' => 'required|numeric|exists:products,id',
         ]);
 
         $copy = FacebookCopy::create($params);
@@ -811,8 +823,9 @@ class FacebookController extends Controller
 
         // Param validation
         $params = $request->validate([
-            'ad_title' => 'string|min:1',
-            'ad_text'  => 'string|min:1',
+            'ad_title'   => 'string|min:1',
+            'ad_text'    => 'string|min:1',
+            'product_id' => 'numeric|exists:products,id',
         ]);
 
         $copy = FacebookCopy::findOrFail($id);
