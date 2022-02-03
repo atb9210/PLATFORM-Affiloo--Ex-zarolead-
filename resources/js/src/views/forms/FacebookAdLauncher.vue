@@ -172,7 +172,7 @@
             <div class="vx-col w-full mt-5">
               <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-image" class="w-full" @click="view = 'medias'">Choose medias</vs-button>
               <div class="text-center">
-                <span class="ml-auto mr-auto">{{ (ad.medias.length == 0) ? 'No media selected' : ad.medias.length + ' media(s) selected / ' + getRequiredNumberOfMedias() + ' required' }}</span>
+                <span class="ml-auto mr-auto">{{ (ad.medias.length == 0) ? 'No media selected' : ad.medias.length + ' media(s) selected / ' + ((campaign.mode === 'duplicate') ? '1 or ' : ' ') + getRequiredNumberOfMedias()+ ' required' }}</span>
               </div>
               <span class="text-danger">{{ errors.first('step-3.ad_medias') }}</span>
             </div>
@@ -276,6 +276,15 @@ function getFilename(pathname) {
 function getFilenameNoExtension(pathname) {
   return pathname.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "")
 }
+
+function getFileExtension(pathname) {
+  let ext = pathname.split('.').pop()
+  if (ext === undefined) {
+    ext = ''
+  }
+  return ext
+}
+
 
 function isValidHttpUrl(s) {
   let url = null
@@ -440,6 +449,11 @@ export default {
 
       productMedias: [],
       videoThumbnail: 'data:image/png;base64,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',
+      videoExtensions: [
+        '3gp','3gpp','3gpp2','3g2','asf','avi','dv','dvi','flv','m2t','mp4',
+        'm4v','mkv','mov','mpeg','mpg','mts','ogv','ogx','rm','rmvb','ts',
+        'vob','webm','wm',
+      ],
 
       creatingCampaigns: false,
       creatingAdsets: false,
@@ -1249,7 +1263,7 @@ export default {
           }
           this.ad.medias[i] = media
         } else if (mediaType === 'image') {
-          // TODO: We don't need to upload the image anymore since we directly pass the url
+          // TODO: We no longer need to upload the image since we directly pass the url
           // to facebook
           /*
           let media64 = await this.convertImgToBase64(this.ad.medias[i].url)
@@ -1449,7 +1463,9 @@ export default {
     async searchImage(query, offset = 0) {
       this.$vs.loading()
 
-      this.ad.medias = []
+      // TODO: We lose previous medias on a new search
+      //this.ad.medias = []
+
       let searchImageResults = []
 
       if (offset === 0) {
@@ -1641,20 +1657,40 @@ export default {
       return 0
     },
     chooseMediasFromDropbox() {
-      // DEBUG TEST
-      // TODO: To move somewhere else?
+      this.$vs.loading()
+
       let options = {
         success: function(files) {
-          console.log('files', files)
-          //alert("Here's the file link: " + files[0].link)
-        },
-        cancel: function() {},
+          for (let i = 0; i < files.length; i++) {
+            let file = files[i]
+            let fileType = 'image'
+            let ext = getFileExtension(file.name)
+            if (this.videoExtensions.includes(ext)) {
+              fileType = 'video'
+            }
+            this.ad.medias.push({
+              id: file.id,
+              pathname: 'dropbox.com/' + file.name,
+              url: file.link,
+              type: fileType,
+            })
+          }
+
+          // TODO: to delete
+          console.log('this.ad.medias', this.ad.medias)
+
+          this.view = 'normal'
+          this.$vs.loading.close()
+        }.bind(this),
+        cancel: function() {
+          this.$vs.loading.close()
+        }.bind(this),
 
         linkType: "direct", // or "direct"
         multiselect: true, // or true
         // NOTE: You may also specify file types, such as "video" or "images" in the list. For more information,
         // see File types below. By default, all extensions are allowed.
-        extensions: ['.png', '.jpg', '.jpeg'],
+        extensions: ['images', 'video'],//['.png', '.jpg', '.jpeg'],
         folderselect: false,
       }
       this.$dropbox.choose(options)
