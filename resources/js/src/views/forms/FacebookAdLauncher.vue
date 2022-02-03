@@ -1670,25 +1670,25 @@ export default {
 
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
 
+    // Fetch advertiser
+    this.advertiserId = parseInt(this.$route.params.facebook_advertiser_id)
+    let advertiser = await this.facebook.fetchAdvertiser(this.advertiserId)
+    if (advertiser !== null) {
+      this.advertiser = advertiser
+      this.facebook.setAccessToken(this.advertiser.access_token)
+    } else {
+      this.$vs.notify({
+        title: 'Error',
+        text: 'Invalid advertiser',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'danger'
+      })
+      this.$router.push({path:'/'})
+    }
+
     let validAccessToken = await this.facebook.isAccessTokenValid()
     if (validAccessToken) {
-      // Fetch advertiser
-      this.advertiserId = parseInt(this.$route.params.facebook_advertiser_id)
-      let advertiser = await this.facebook.fetchAdvertiser(this.advertiserId)
-      if (advertiser !== null) {
-        this.advertiser = advertiser
-        this.facebook.setAccessToken(this.advertiser.access_token)
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Invalid advertiser',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-        this.$router.push({path:'/'})
-      }
-
       // Fetch ad accounts
       this.adAccounts = await this.facebook.fetchAdAccounts()
 

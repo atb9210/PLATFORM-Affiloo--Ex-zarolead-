@@ -23,7 +23,7 @@ class Facebook {
   async isAccessTokenValid() {
     try {
       let params = {
-        access_token: accessToken,
+        access_token: this.accessToken,
       }
       const response = await this.$http.get(this.apiUrl + '/me', { params })
       if (response !== null && response.data !== null) {
