@@ -10,6 +10,10 @@ class FacebookCopy extends Model
     protected $table = 'third_facebook_copys';
 
     protected $fillable = [
-        'ad_title', 'ad_text', 'product_id',
+        'number', 'ad_title', 'ad_text', 'product_id',
+    ];
+
+    protected $casts = [
+        'number' => 'integer',
     ];
 }

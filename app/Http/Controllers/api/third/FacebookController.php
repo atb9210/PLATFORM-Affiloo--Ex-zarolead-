@@ -801,6 +801,17 @@ class FacebookController extends Controller
             'product_id' => 'required|numeric|exists:products,id',
         ]);
 
+        $number = 0;
+        $copys = FacebookCopy::where('product_id', $params['product_id'])->get();
+        for ($copyIndex = 0; $copyIndex < count($copys); $copyIndex++) {
+            $num = intval($copys[$copyIndex]->number);
+            if ($num > $number) {
+                $number = $num;
+            }
+        }
+        $number += 1;
+        $params['number'] = $number;
+
         $copy = FacebookCopy::create($params);
         return new FacebookCopyResource($copy);
     }

@@ -16,6 +16,7 @@ class CreateFacebookCopys extends Migration
         Schema::create('third_facebook_copys', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('product_id')->unsigned();
+            $table->integer('number')->unsigned();
             $table->text('ad_title');
             $table->text('ad_text');
             $table->timestamps();

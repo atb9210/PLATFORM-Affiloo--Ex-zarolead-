@@ -143,17 +143,20 @@
                     <span>Copy</span>
                   </div>
                 </template>
-                <vs-input type="number" min="0" step="1" v-model="ad.copyId" class="w-full" placeholder="Copy ID (Ex. 28)" :disabled="ad.copy !== null" />
-                <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" :disabled="ad.copy !== null" />
-                <vs-textarea v-model="ad.text" class="w-full" placeholder="Title" :disabled="ad.copy !== null"></vs-textarea>
+                <vs-input type="number" min="0" step="1" v-model="ad.copyNumber" class="w-full" placeholder="Copy ID (Ex. 28)" />
+                <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" />
+                <vs-textarea v-model="ad.text" class="w-full" placeholder="Title" ></vs-textarea>
               </vx-input-group>
 
-              <span class="text-danger">{{ errors.first('step-3.ad_copy_id') }}</span>
+              <span class="text-danger">{{ errors.first('step-3.ad_copy_number') }}</span>
               <span class="text-danger">{{ errors.first('step-3.ad_title') }}</span>
               <span class="text-danger">{{ errors.first('step-3.ad_text') }}</span>
             </div>
             <div class="vx-col md:w-full w-full flex items-center" v-if="ad.copy === null">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveCopy(product.id, ad.title, ad.text)" :disabled="ad.copy !== null || (ad.title == '' || ad.text == '')"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveCopy(product.id, ad.title, ad.text)" :disabled="ad.copy !== null || (ad.title === '' || ad.text === '')"></vs-button>
+            </div>
+            <div class="vx-col md:w-full w-full flex items-center" v-else>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateCopy(ad.copy.id, ad.title, ad.text)" :disabled="ad.copy === null || (ad.title == '' || ad.text == '')"></vs-button>
             </div>
 
             <div class="vx-col md:w-1/2 w-full mt-5">
@@ -184,7 +187,7 @@
 
             <div class="vx-col w-full">
               <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="newAdTemplateName" label="New ad template name" />
-              <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate(newAdTemplateName)" color="primary" type="filled">Save Ad Template</vs-button>
+              <vs-button class="mt-12 mr-auto ml-auto" @click="saveAdTemplate(newAdTemplateName)" color="primary" type="filled" :disabled="newAdTemplateName == ''">Save Ad Template</vs-button>
             </div>
           </div>
 
@@ -358,7 +361,7 @@ export default {
       },
       ad: {
         count: 1,
-        copyId: '',
+        copyNumber: '',
         useExistingCopy: false,
         copy: null,
         title: 'Title Example',
@@ -559,6 +562,8 @@ export default {
             })
           }
 
+          // TODO: Not required for now
+          /*
           if (this.campaign.name.length == 0) {
             hasError = true
             this.errors.add({
@@ -567,6 +572,7 @@ export default {
               msg: 'Campaign name is required'
             })
           }
+          */
 
           if (typeof(this.campaign.cbo) !== 'boolean') {
             hasError = true
@@ -781,11 +787,11 @@ export default {
             reject('view must be normal')
           }
 
-          if (this.ad.copyId.length <= 0) {
+          if (this.ad.copyNumber.length <= 0) {
             hasError = true
             this.errors.add({
               scope: 'step-3',
-              field: 'ad_copy_id',
+              field: 'ad_copy_number',
               msg: 'Invalid copy id'
             })
           }
@@ -907,7 +913,7 @@ export default {
       this.copys = response.data.data
       for (let i = 0; i < this.copys.length; i++) {
         let copy = this.copys[i]
-        copy.name = 'C' + copy.id
+        copy.name = 'C' + copy.number
         this.copys[i] = copy
       }
       return this.copys
@@ -935,7 +941,7 @@ export default {
         return
       }
       let copy = await this.saveCopyNoLoading(productId, adTitle, adText)
-      this.ad.copyId = copy.id
+      this.ad.copyNumber = copy.number
 
       await this.fetchCopys()
 
@@ -949,6 +955,42 @@ export default {
         color: 'success'
       })
     },
+    async updateCopy(copyId, adTitle, adText) {
+      this.$vs.loading()
+
+      if (adTitle == '' || adText == '') {
+        return
+      }
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+      }
+      let params = {
+        ad_title: adTitle,
+        ad_text: adText,
+      }
+      const response = await this.$http.put('/api/3rd/facebook/copys/' + copyId, params, { headers })
+      let copy = response.data.data
+
+      await this.fetchCopys()
+
+      for (let i = 0; i < this.copys.length; i++) {
+        if (copy.id == this.copys[i].id) {
+          this.ad.copy = this.copys[i]
+          break
+        }
+      }
+      this.onChangeCopy()
+
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Copy successfully updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
     onChangeUseExistingCopy() {
       if (!this.ad.useExistingCopy) {
         this.ad.copy = null
@@ -956,7 +998,7 @@ export default {
     },
     onChangeCopy() {
       if (this.ad.copy !== null && this.ad.copy != '') {
-        this.ad.copyId = this.ad.copy.id
+        this.ad.copyNumber = this.ad.copy.number
         this.ad.title = this.ad.copy.ad_title
         this.ad.text  = this.ad.copy.ad_text
       }
@@ -974,6 +1016,13 @@ export default {
     },
     getTargetReference(ageMin, ageMax, genders, countries, devices, platforms) {
       let targetRef = ''
+
+      targetRef += countries[0]
+      for (let i = 1; i < countries.length; i++) {
+        targetRef += ',' + countries[i]
+      }
+
+      targetRef += ' - '
       if (ageMin == '' || parseInt(ageMin) === 0) {
         if (ageMax == '' || parseInt(ageMax) === 0) {
           targetRef += '0+'
@@ -998,12 +1047,10 @@ export default {
       } else if (genders.length === 2) {
           targetRef += ' M/F'
       }
+      
 
-      targetRef += ' ' + countries[0]
-      for (let i = 1; i < countries.length; i++) {
-        targetRef += ',' + countries[i]
-      }
-
+      // TODO: Just remove this for now
+      /*
       let deviceRef = 'All'
       if (devices.length === 1) {
         if (devices[0] === 'mobile') {
@@ -1013,18 +1060,23 @@ export default {
         }
       }
       targetRef += ' ' + deviceRef
+      */
 
-      let platformRef = {
-        'facebook': 'FB',
-        'instagram': 'IG',
-        'audience_network': 'AN',
-        'messenger': 'MG',
+      targetRef += ' - '
+      if (platforms.length === this.platformOptions.length) {
+        targetRef += ' ' + All
+      } else {
+        let platformRef = {
+          'facebook': 'FB',
+          'instagram': 'IG',
+          'audience_network': 'AN',
+          'messenger': 'MG',
+        }
+        targetRef += ' ' + platformRef[platforms[0]]
+        for (let i = 1; i < platforms.length; i++) {
+          targetRef += ',' + platformRef[platforms[i]]
+        }
       }
-      targetRef += ' (' + platformRef[platforms[0]]
-      for (let i = 1; i < platforms.length; i++) {
-        targetRef += ',' + platformRef[platforms[i]]
-      }
-      targetRef += ')'
 
       return targetRef
     },
@@ -1235,7 +1287,7 @@ export default {
           }
 
           let media = medias[i]
-          let adName = this.product.name + ' - ' + 'C' + parseInt(this.ad.copyId)
+          let adName = this.product.name + ' - ' + 'C' + parseInt(this.ad.copyNumber)
           if (media.hasOwnProperty('pathname')) {
             let fileNameNoExtension = getFilenameNoExtension(media.pathname)
             adName += ' - ' + fileNameNoExtension
@@ -1463,8 +1515,10 @@ export default {
 
       let value = this.getAdObject()
 
+      let fullName = this.getTargetReference(this.target.ageMin, this.target.ageMax, this.target.genders, this.target.countries, this.target.devices, this.target.platforms)
+      fullName += ' - ' + adTemplateName
       let data = {
-        name: adTemplateName,
+        name: fullName,
         value: JSON.stringify(value),
       }
 

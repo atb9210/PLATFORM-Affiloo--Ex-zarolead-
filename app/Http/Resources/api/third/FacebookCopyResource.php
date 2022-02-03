@@ -16,6 +16,7 @@ class FacebookCopyResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'number' => $this->number,
             'ad_title' => $this->ad_title,
             'ad_text' => $this->ad_text,
         ];
