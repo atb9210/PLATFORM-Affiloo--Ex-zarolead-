@@ -20,6 +20,21 @@ class Facebook {
     }
   }
 
+  async isAccessTokenValid() {
+    try {
+      let params = {
+        access_token: accessToken,
+      }
+      const response = await this.$http.get(this.apiUrl + '/me', { params })
+      if (response !== null && response.data !== null) {
+        return true
+      }
+    } catch (error) {
+      return false
+    }
+    return false
+  }
+
   async fetchAdvertisers() {
     let objects = []
 
@@ -122,22 +137,26 @@ class Facebook {
     let apiCallUrl = this.apiUrl + path
     let endLoop = false
     do {
-      const response = await this.$http.get(apiCallUrl, { params })
-      if (response !== null && response.hasOwnProperty('data') && response.data !== null) {
-        if (response.data.hasOwnProperty('data') && response.data.data !== null) {
-          let tmpObjects = response.data.data
-          for (let i = 0; i < tmpObjects.length; i++) {
-            objects.push(tmpObjects[i])
+      try {
+        const response = await this.$http.get(apiCallUrl, { params })
+        if (response !== null && response.hasOwnProperty('data') && response.data !== null) {
+          if (response.data.hasOwnProperty('data') && response.data.data !== null) {
+            let tmpObjects = response.data.data
+            for (let i = 0; i < tmpObjects.length; i++) {
+              objects.push(tmpObjects[i])
+            }
+          }
+
+          if (response.data.hasOwnProperty('paging') && response.data.paging !== null &&
+              response.data.paging.hasOwnProperty('next') && response.data.paging.next !== null && response.data.paging.next !== '') {
+            apiCallUrl = response.data.paging.next
+            params = {}
+          } else {
+            endLoop = true
           }
         }
-
-        if (response.data.hasOwnProperty('paging') && response.data.paging !== null &&
-            response.data.paging.hasOwnProperty('next') && response.data.paging.next !== null && response.data.paging.next !== '') {
-          apiCallUrl = response.data.paging.next
-          params = {}
-        } else {
-          endLoop = true
-        }
+      } catch (error) {
+        endLoop = true
       }
     } while (!endLoop)
 

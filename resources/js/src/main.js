@@ -20,6 +20,9 @@ Vue.use(Vuesax)
 import axios from './axios.js'
 Vue.prototype.$http = axios
 
+// Dropbox
+Vue.prototype.$dropbox = window.Dropbox
+
 // API Calls
 import './http/requests'
 

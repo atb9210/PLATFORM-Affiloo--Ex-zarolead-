@@ -197,6 +197,7 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'" :disabled="bing.apiKey === ''"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" id="dropbox-btn" @click="chooseMediasFromDropbox()">From Dropbox</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
@@ -325,7 +326,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      // DEBUG TODO: put to false
+      debug: true,
 
       settings: {},
 
@@ -1064,7 +1066,7 @@ export default {
 
       targetRef += ' - '
       if (platforms.length === this.platformOptions.length) {
-        targetRef += ' ' + All
+        targetRef += ' All'
       } else {
         let platformRef = {
           'facebook': 'FB',
@@ -1639,6 +1641,25 @@ export default {
       }
       return 0
     },
+    chooseMediasFromDropbox() {
+      // DEBUG TEST
+      // TODO: To move somewhere else?
+      let options = {
+        success: function(files) {
+          console.log('files', files)
+          //alert("Here's the file link: " + files[0].link)
+        },
+        cancel: function() {},
+
+        linkType: "direct", // or "direct"
+        multiselect: true, // or true
+        // NOTE: You may also specify file types, such as "video" or "images" in the list. For more information,
+        // see File types below. By default, all extensions are allowed.
+        extensions: ['.png', '.jpg', '.jpeg'],
+        folderselect: false,
+      }
+      this.$dropbox.choose(options)
+    },
   },
   components: {
     FormWizard,
@@ -1649,29 +1670,40 @@ export default {
 
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
 
-    // Fetch advertiser
-    this.advertiserId = parseInt(this.$route.params.facebook_advertiser_id)
-    let advertiser = await this.facebook.fetchAdvertiser(this.advertiserId)
-    if (advertiser !== null) {
-      this.advertiser = advertiser
-      this.facebook.setAccessToken(this.advertiser.access_token)
+    let validAccessToken = await this.facebook.isAccessTokenValid()
+    if (validAccessToken) {
+      // Fetch advertiser
+      this.advertiserId = parseInt(this.$route.params.facebook_advertiser_id)
+      let advertiser = await this.facebook.fetchAdvertiser(this.advertiserId)
+      if (advertiser !== null) {
+        this.advertiser = advertiser
+        this.facebook.setAccessToken(this.advertiser.access_token)
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Invalid advertiser',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+        this.$router.push({path:'/'})
+      }
+
+      // Fetch ad accounts
+      this.adAccounts = await this.facebook.fetchAdAccounts()
+
+      // Fetch pages
+      this.pages = await this.facebook.fetchPages()
+      this.pages.filter(page => (page.hasOwnProperty('is_published') && page.is_published))
     } else {
       this.$vs.notify({
         title: 'Error',
-        text: 'Invalid advertiser',
+        text: 'Invalid facebook access token',
         iconPack: 'feather',
         icon: 'icon-alert-circle',
         color: 'danger'
       })
-      this.$router.push({path:'/'})
     }
-
-    // Fetch ad accounts
-    this.adAccounts = await this.facebook.fetchAdAccounts()
-
-    // Fetch pages
-    this.pages = await this.facebook.fetchPages()
-    this.pages.filter(page => (page.hasOwnProperty('is_published') && page.is_published))
 
     let headers = {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken')

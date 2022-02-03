@@ -26,6 +26,9 @@
     <div id="app">
     </div>
 
+    <!-- Dropbox -->
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="jgycgybm56xs99r"></script>
+
     <!-- <script src="js/app.js"></script> -->
     <script src="{{ asset(mix('js/app.js')) }}"></script>
 
