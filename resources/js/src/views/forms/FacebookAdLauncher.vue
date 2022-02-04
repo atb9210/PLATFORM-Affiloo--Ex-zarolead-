@@ -143,7 +143,7 @@
                     <span>Copy</span>
                   </div>
                 </template>
-                <vs-input type="number" min="0" step="1" v-model="ad.copyNumber" class="w-full" placeholder="Copy ID (Ex. 28)" />
+                <vs-input type="number" min="1" step="1" v-model="ad.copyNumber" class="w-full" placeholder="Copy ID (Ex. 28)" />
                 <vs-input type="text" v-model="ad.title" class="w-full" placeholder="Title" />
                 <vs-textarea v-model="ad.text" class="w-full" placeholder="Title" ></vs-textarea>
               </vx-input-group>
@@ -196,7 +196,7 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'" :disabled="bing.apiKey === ''"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" id="dropbox-btn" @click="chooseMediasFromDropbox()">From Dropbox</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
@@ -208,15 +208,15 @@
           <div class="vx-row" v-else-if="view == 'medias_search'">
             <div class="vx-col w-full flex items-center mb-8">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
-              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(mediaSearchQuery)" />
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(mediaSearchQuery)"></vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(searchEngine, mediaSearchQuery)" />
+              <vs-button v-for="(obj, se, index) in searchEngines" :key="'se_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openNewPage(item.url)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
             </div>
             <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(mediaSearchQuery, bing.nextOffset)"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
             </div>
           </div>
 
@@ -225,26 +225,26 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'" :disabled="bing.apiKey === ''"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'"></vs-button>
             </div>
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
               <center class="text-xl font-bold">{{item.filename}} ({{item.type}})</center>
-            </div>
-            <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(mediaSearchQuery, bing.prevOffset)" :disabled="bing.currentOffset === 0"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(mediaSearchQuery, bing.nextOffset)"></vs-button>
             </div>
           </div>
 
           <div class="vx-row" v-else-if="view == 'preview_search'">
             <div class="vx-col w-full flex items-center mb-8">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
-              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(mediaSearchQuery)" />
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(mediaSearchQuery)"></vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(searchEngine, mediaSearchQuery)" />
+              <vs-button v-for="(obj, se, index) in searchEngines" :key="'sep_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openNewPage(item.url)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
+            </div>
+            <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
             </div>
           </div>
 
@@ -335,7 +335,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      // DEBUG TODO: Put to false
+      debug: true,
 
       settings: {},
 
@@ -464,13 +465,22 @@ export default {
       mediaSearchQuery: '',
       searchImageResults: [],
 
-      bing: {
-        apiKey: '',
-        count: 50,
-        prevOffset: 0,
-        currentOffset: 0,
-        nextOffset: 0,
+      searchEngines: {
+        'bing': {
+          apiKey: '',
+          count: 50,
+          prevOffset: 0,
+          currentOffset: 0,
+          nextOffset: 0,
+        },
+        'google': {
+          apiKey: '',
+          prevOffset: 0,
+          currentOffset: 0,
+          nextOffset: 0,
+        },
       },
+      searchEngine: 'bing',
 
       adTemplates: [],
       adTemplate: {},
@@ -802,7 +812,7 @@ export default {
             reject('view must be normal')
           }
 
-          if (this.ad.copyNumber.length <= 0) {
+          if (this.ad.copyNumber == '' || parseInt(this.ad.copyNumber) < 0) {
             hasError = true
             this.errors.add({
               scope: 'step-3',
@@ -1460,7 +1470,10 @@ export default {
       result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
       return result
     },
-    async searchImage(query, offset = 0) {
+    async searchImage(searchEngine, query, offset = 0) {
+      // DEBUG TODO: to delete
+      console.log('searchImage()')
+
       this.$vs.loading()
 
       // TODO: We lose previous medias on a new search
@@ -1468,40 +1481,75 @@ export default {
 
       let searchImageResults = []
 
-      if (offset === 0) {
-        this.bing.prevOffset = 0
-        this.bing.currentOffset = 0
-        this.bing.nextOffset = 0
-      }
+      this.searchEngine = searchEngine
+      let se = this.searchEngines[searchEngine]
+      if (searchEngine === 'bing') {
+        if (offset === 0) {
+          se.prevOffset = 0
+          se.currentOffset = 0
+          se.nextOffset = 0
+        }
 
-      try {
-        let apiCallUrl = 'https://api.bing.microsoft.com/v7.0/images/search'
-        let params = {
-          q: query,
-          minWidth: 600,
-          minHeight: 600,
-          aspect: 'Square',
-          offset: offset,
-          count: this.bing.count,
+        try {
+          let apiCallUrl = 'https://api.bing.microsoft.com/v7.0/images/search'
+          let params = {
+            q: query,
+            minWidth: 600,
+            minHeight: 600,
+            aspect: 'Square',
+            offset: offset,
+            count: se.count,
+          }
+          let headers = {
+            'Ocp-Apim-Subscription-Key': se.apiKey,
+          }
+          const response = await this.$http.get(apiCallUrl, { headers, params })
+          se.prevOffset = Math.max(0, se.currentOffset - se.count)
+          se.currentOffset = response.data.currentOffset
+          se.nextOffset = response.data.nextOffset
+          for (let i = 0; i < response.data.value.length; i++) {
+            let res = response.data.value[i]
+            searchImageResults.push({
+              type: 'image',
+              thumbnailUrl: res.thumbnailUrl,
+              url: res.contentUrl,
+            })
+          }
+        } catch (error) {
+          // Nothing
         }
-        let headers = {
-          'Ocp-Apim-Subscription-Key': this.bing.apiKey,
+      } else if (searchEngine === 'google') {
+        try {
+          let apiCallUrl = 'https://serpapi.com/search.json'
+          let params = {
+            engine: 'google',
+            q: query,
+            google_domain: 'google.it', // TODO: .it or .com?
+            tbm: 'isch',
+            ijn: parseInt(offset),
+            async: 'true',
+          }
+          const response = await this.$http.get(apiCallUrl, { params })
+          for (let i = 0; i < response.data.images_results.length; i++) {
+            let res = response.data.images_results[i]
+            searchImageResults.push({
+              type: 'image',
+              thumbnailUrl: res.thumbnail,
+              url: res.original,
+            })
+          }
+          se.currentOffset = offset
+          se.prevOffset = Math.max(0, se.currentOffset - 1)
+          se.nextOffset = se.currentOffset + 1
+        } catch (error) {
+          // Nothing
+
+          // TODO: to delete
+          console.log(error)
         }
-        const response = await this.$http.get(apiCallUrl, { headers, params })
-        this.bing.prevOffset = Math.max(0, this.bing.currentOffset - this.bing.count)
-        this.bing.currentOffset = response.data.currentOffset
-        this.bing.nextOffset = response.data.nextOffset
-        for (let i = 0; i < response.data.value.length; i++) {
-          let res = response.data.value[i]
-          searchImageResults.push({
-            type: 'image',
-            thumbnailUrl: res.thumbnailUrl,
-            url: res.contentUrl,
-          })
-        }
-      } catch (error) {
-        // Nothing
       }
+      this.searchEngine[searchEngine] = se
+
       this.searchImageResults = searchImageResults
 
       this.$vs.loading.close()
@@ -1611,8 +1659,17 @@ export default {
 
       this.adset = adTemplate.value.adset
       this.ad = adTemplate.value.ad
-      this.ad.medias = []
 
+      if (this.ad.hasOwnProperty('useExistingCopy') && this.ad.useExistingCopy) {
+        for (let i = 0; i < this.copys.length; i++) {
+          if (this.copys[i].number == this.ad.copyNumber) {
+            this.ad.copy = this.copys[i]
+            break
+          }
+        }
+      }
+
+      this.ad.medias = []
       for (let pmIndex = 0; pmIndex < adTemplate.value.medias; pmIndex++) {
         let media = adTemplate.value.medias[pmIndex]
         if (media !== null && media.hasOwnProperty('id')) {
@@ -1701,6 +1758,15 @@ export default {
     TabContent,
   },
   async created() {
+    // DEBUG TODO: to delete
+    this.searchEngines.google.apiKey = '0b604535f7fa0b9b28c6a487039b877c36344d03c343538b6371d2f4b93dca87'
+    // TODO: Load API Key from settings
+
+    // TODO: to delete
+    for (let se in this.searchEngines) {
+      console.log(se)
+    }
+
     this.$vs.loading()
 
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
