@@ -56,6 +56,22 @@
       </div>
     </vs-popup>
 
+    <!-- SerpAPI popup -->
+    <vs-popup title="Bing" :active.sync="showPopup['serpapi']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>API Key</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="serpapi.api_key" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateSerpAPISettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
     <!-- ChatAPI popup -->
     <vs-popup title="Chat API" :active.sync="showPopup['chatapi']">
       <div class="vx-row mb-6">
@@ -357,6 +373,7 @@ export default {
 
       showPopup: {
         'bing': false,
+        'serpapi': false,
         'chatapi': false,
         'stripe': false,
 
@@ -376,6 +393,12 @@ export default {
           image: '/images/3rd_party/bing.png',
           description: 'Search Engine',
           callback: this.showBingSettings,
+        },
+        {
+          name: 'SerpAPI',
+          image: '/images/3rd_party/serpapi.png',
+          description: 'Search Engines API',
+          callback: this.showSerpAPISettings,
         },
         {
           name: 'Chat API',
@@ -482,6 +505,10 @@ export default {
       ],
 
       bing: {
+        api_key: '',
+      },
+
+      serpapi: {
         api_key: '',
       },
 
@@ -636,6 +663,25 @@ export default {
       this.settings['bing'] = this.bing
       await this.updateSettingsWithLoading()
       this.showPopup['bing'] = false
+    },
+
+    /* SerpAPI */
+    async showSerpAPISettings() {
+      let serpApiSettingsDefault = {
+        api_key: '',
+      }
+      if (!this.settings.hasOwnProperty('serpapi')) {
+        this.settings['serpapi'] = serpApiSettingsDefault
+      }
+      this.adjustSettings(this.settings['serpapi'], serpApiSettingsDefault)
+      this.copySettings(this.settings['serpapi'], this.serpapi)
+
+      this.showPopup['serpapi'] = true
+    },
+    async updateSerpAPISettings() {
+      this.settings['serpapi'] = this.serpapi
+      await this.updateSettingsWithLoading()
+      this.showPopup['serpapi'] = false
     },
 
     /* ChatAPI */

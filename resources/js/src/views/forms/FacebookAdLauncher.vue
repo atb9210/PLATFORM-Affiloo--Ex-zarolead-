@@ -1476,6 +1476,8 @@ export default {
       // TODO: We lose previous medias on a new search
       //this.ad.medias = []
 
+      query = query.split(' ').join('+')
+
       let searchImageResults = []
 
       this.searchEngine = searchEngine
@@ -1836,6 +1838,10 @@ export default {
     if (this.settings.hasOwnProperty('bing') && this.settings.bing !== null &&
         this.settings.bing.hasOwnProperty('api_key') && this.settings.bing.api_key !== null) {
       this.searchEngines.bing.apiKey = this.settings.bing.api_key
+    }
+    if (this.settings.hasOwnProperty('serpapi') && this.settings.serpapi !== null &&
+        this.settings.serpapi.hasOwnProperty('api_key') && this.settings.serpapi.api_key !== null) {
+      this.searchEngines.google.apiKey = this.settings.serpapi.api_key
     }
 
   },
