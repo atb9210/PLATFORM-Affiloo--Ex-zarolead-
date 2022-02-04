@@ -335,8 +335,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      // DEBUG TODO: Put to false
-      debug: true,
+      debug: false,
 
       settings: {},
 
@@ -1471,9 +1470,6 @@ export default {
       return result
     },
     async searchImage(searchEngine, query, offset = 0) {
-      // DEBUG TODO: to delete
-      console.log('searchImage()')
-
       this.$vs.loading()
 
       // TODO: We lose previous medias on a new search
@@ -1543,9 +1539,6 @@ export default {
           se.nextOffset = se.currentOffset + 1
         } catch (error) {
           // Nothing
-
-          // TODO: to delete
-          console.log(error)
         }
       }
       this.searchEngine[searchEngine] = se
@@ -1690,9 +1683,6 @@ export default {
         }
       }
 
-      // TODO: to delete
-      console.log(adTemplate.value.target)
-
       this.target = adTemplate.value.target
       this.newAdTemplateName = adTemplate.name
     },
@@ -1733,9 +1723,6 @@ export default {
             })
           }
 
-          // TODO: to delete
-          console.log('this.ad.medias', this.ad.medias)
-
           this.view = 'normal'
           this.$vs.loading.close()
         }.bind(this),
@@ -1761,11 +1748,6 @@ export default {
     // DEBUG TODO: to delete
     this.searchEngines.google.apiKey = '0b604535f7fa0b9b28c6a487039b877c36344d03c343538b6371d2f4b93dca87'
     // TODO: Load API Key from settings
-
-    // TODO: to delete
-    for (let se in this.searchEngines) {
-      console.log(se)
-    }
 
     this.$vs.loading()
 
@@ -1851,7 +1833,7 @@ export default {
     }
     if (this.settings.hasOwnProperty('bing') && this.settings.bing !== null &&
         this.settings.bing.hasOwnProperty('api_key') && this.settings.bing.api_key !== null) {
-      this.bing.apiKey = this.settings.bing.api_key
+      this.searchEngines.bing.apiKey = this.settings.bing.api_key
     }
 
   },
