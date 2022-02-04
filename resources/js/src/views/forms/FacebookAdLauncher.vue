@@ -335,8 +335,7 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      // DEBUG TODO: Put to false
-      debug: true,
+      debug: false,
 
       settings: {},
 
@@ -1749,10 +1748,6 @@ export default {
     TabContent,
   },
   async created() {
-    // DEBUG TODO: to delete
-    this.searchEngines.google.apiKey = '0b604535f7fa0b9b28c6a487039b877c36344d03c343538b6371d2f4b93dca87'
-    // TODO: Load API Key from settings
-
     this.$vs.loading()
 
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
@@ -1843,6 +1838,9 @@ export default {
         this.settings.serpapi.hasOwnProperty('api_key') && this.settings.serpapi.api_key !== null) {
       this.searchEngines.google.apiKey = this.settings.serpapi.api_key
     }
+
+    // DEBUG TODO: to delete
+    //this.searchImagesRelated('https://cdn.webshopapp.com/shops/273775/files/310323894/image.jpg')
 
   },
 }
