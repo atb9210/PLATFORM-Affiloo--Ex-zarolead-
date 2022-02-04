@@ -335,7 +335,8 @@ Validator.localize('en', dict)
 export default {
   data () {
     return {
-      debug: false,
+      // DEBUG TODO: Put to false
+      debug: true,
 
       settings: {},
 
@@ -1518,12 +1519,13 @@ export default {
         try {
           let apiCallUrl = 'https://serpapi.com/search.json'
           let params = {
+            api_key: se.apiKey,
             engine: 'google',
             q: query,
             google_domain: 'google.it', // TODO: .it or .com?
             tbm: 'isch',
             ijn: parseInt(offset),
-            async: 'true',
+            async: false,
           }
           const response = await this.$http.get(apiCallUrl, { params })
           for (let i = 0; i < response.data.images_results.length; i++) {
@@ -1541,7 +1543,7 @@ export default {
           // Nothing
         }
       }
-      this.searchEngine[searchEngine] = se
+      this.searchEngines[searchEngine] = se
 
       this.searchImageResults = searchImageResults
 
