@@ -134,7 +134,7 @@ class FacebookController extends Controller
             'pixel' => 'required|string|min:1',
             'event' => 'required|string|min:1|in:' . $eventsList,
             'event_source_url' => 'string',
-            'fbc' => 'string',
+            'fbc' => 'nullable|string',
             'custom_data' => 'json',
         ]);
 
@@ -151,7 +151,7 @@ class FacebookController extends Controller
             'client_ip_address' => request()->ip(),
             'client_user_agent' => request()->server('HTTP_USER_AGENT'),
         ];
-        if (isset($params['fbc']) && $params['fbc'] != '') {
+        if (isset($params['fbc']) && $params['fbc'] !== null && $params['fbc'] != '') {
             $fbc = 'fb.1.' . strval(time()) . '.' . $params['fbc'];
             $userData['fbc'] = $fbc;
         }
