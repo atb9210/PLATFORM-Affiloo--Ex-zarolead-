@@ -127,7 +127,7 @@ FacebookConversionsAPIPlugin.prototype.fbTriggerEvent = function(eventName, cust
         event: eventName,
         custom_data: JSON.stringify(customData),
     };
-    if (this.fbc != null) {
+    if (this.fbc != null && this.fbc != '') {
         data.fbc = this.fbc
     }
     $.ajax({
