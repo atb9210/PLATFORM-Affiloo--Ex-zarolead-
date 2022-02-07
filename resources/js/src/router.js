@@ -1920,6 +1920,21 @@ const router = new Router({
           }
         },
 
+        {
+          path: '/dashboard/image-editor',
+          name: '3rd-party',
+          component: () => import('./views/ImageEditor.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Image Editor', active: true }
+            ],
+            pageTitle: 'Image Editor',
+            rule: 'admin'
+          }
+        },
+
         /* TODO: TEST FIVERR */
         {
           path: '/dashboard/fiverr/test',

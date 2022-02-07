@@ -231,4 +231,60 @@ class ProductMediaController extends Controller
             'message' => 'Product media has been deleted'
         ]);
     }
+
+    private function generateRandomString($length = 10) {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    /**
+     * Store a temporary image.
+     *
+     * @bodyParam file file required Image
+     *
+     * @response 201 {
+     *  "message": "Temporary image stored",
+     *  "data": temp_image,
+     * }
+     */
+    public function storeTemporaryImage(Request $request)
+    {
+        // TODO: Authorization
+        $this->authorize('create', 'App\ProductMedia');
+
+        // Params validation
+        $params = $request->validate([
+            'file' => 'required|mimes:jpeg,jpg,png,bmp',
+        ]);
+
+        // File(s) check
+        $file = '';
+        if (!$request->hasFile('file')) {
+            return response([
+                'errors' => 'Image not uploaded'
+            ], 400);
+        }
+        $file = $request->file('file');
+        $pathInfo = pathinfo($file->getClientOriginalName());
+        $file_name = $this->generateRandomString(16) . '.' . $pathInfo['extension'];
+
+        // File(s) upload
+        $path = Storage::putFileAs('public/tmp/', $file, $file_name);
+        $public_url = str_replace("public/", "storage/", $path);
+        $public_url = asset($public_url);
+
+        $tempImage = [
+            'url' => $public_url,
+        ];
+
+        return response([
+            "message" => "Temporary image stored",
+            "data" => $tempImage,
+        ], 201);
+    }
 }

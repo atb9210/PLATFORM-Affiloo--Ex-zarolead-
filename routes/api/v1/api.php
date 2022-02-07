@@ -194,8 +194,9 @@ Route::apiResource('product-medias', 'api\v1\ProductMediaController')->except([
 /*
 Route::post('product-medias/{id}/update', 'api\v1\ProductMediaController@update')->middleware('auth:api')
     ->name('product-medias.update'); // This must be declared this way because the put method
-                                     // has some problems when uploading a file
 */
+Route::post('product-medias/temp', 'api\v1\ProductMediaController@storeTemporaryImage')->middleware('auth:api')
+    ->name('product-medias.temp');
 
 /* Ads routes */
 Route::apiResource('ads', 'api\v1\AdController')->except([

@@ -208,15 +208,15 @@
           <div class="vx-row" v-else-if="view == 'medias_search'">
             <div class="vx-col w-full flex items-center mb-8">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.medias.length > 0) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
-              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(searchEngine, mediaSearchQuery)" />
-              <vs-button v-for="(obj, se, index) in searchEngines" :key="'se_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImages(searchEngine, mediaSearchQuery)" />
+              <vs-button v-for="(obj, se, index) in searchEngines" :key="'se_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImages(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openNewPage(item.url)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
             </div>
             <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImages(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImages(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
             </div>
           </div>
 
@@ -236,15 +236,15 @@
           <div class="vx-row" v-else-if="view == 'preview_search'">
             <div class="vx-col w-full flex items-center mb-8">
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="(ad.preview !== null) ? 'icon-check' : 'icon-arrow-left'" @click="view = 'normal'"></vs-button>
-              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImage(searchEngine, mediaSearchQuery)" />
-              <vs-button v-for="(obj, se, index) in searchEngines" :key="'sep_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImage(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
+              <vs-input type="text" v-model="mediaSearchQuery" @keydown.enter="searchImages(searchEngine, mediaSearchQuery)" />
+              <vs-button v-for="(obj, se, index) in searchEngines" :key="'sep_' + index" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="searchImages(se, mediaSearchQuery)" :disabled="searchEngines[se].apiKey == ''">{{ se }}</vs-button>
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openNewPage(item.url)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
             </div>
             <div class="vx-col w-full flex items-center mt-4 mb-8" v-if="searchImageResults.length > 0">
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImage(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="searchImages(searchEngine, mediaSearchQuery, searchEngines[searchEngine].prevOffset)" :disabled="searchEngines[searchEngine].currentOffset === 0"></vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-right" @click="searchImages(searchEngine, mediaSearchQuery, searchEngines[searchEngine].nextOffset)"></vs-button>
             </div>
           </div>
 
@@ -306,6 +306,28 @@ function createImageFromUrl(url) {
   })
 }
 
+function createFileFromBase64DataURL(base64DataUrl, fileName = null) {
+  if (fileName === null) {
+    let tmp = (base64DataUrl.split(';'))[0]
+    tmp = (tmp.split('/'))[1]
+    let extension = tmp
+    if (extension == 'jpeg') {
+      extension = 'jpg'
+    }
+    fileName = 'test.' + extension
+  }
+
+  let arr = base64DataUrl.split(',')
+  let mime = arr[0].match(/:(.*?);/)[1]
+  let bstr = atob(arr[1])
+  let n = bstr.length
+  let u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], fileName, {type:mime})
+}
+
 // TODO: to delete??? We don't use this code
 // For custom error message
 import { Validator } from 'vee-validate'
@@ -333,6 +355,10 @@ Validator.localize('en', dict)
 // ...
 
 export default {
+  components: {
+    FormWizard,
+    TabContent,
+  },
   data () {
     return {
       debug: false,
@@ -1240,21 +1266,35 @@ export default {
       }
       const pbiAccountId = pbiAccounts[0].id
 
+      // We need to resize preview choosen from Google/Bing/etc...
+      let preview = null
+      if (this.ad.preview !== null && this.ad.preview.hasOwnProperty('to_resize') && this.ad.preview.to_resize) {
+        let previewBase64 = await this.resizeImageUrl(this.ad.preview.url)
+        let imageFile = await createFileFromBase64DataURL(previewBase64)
+        preview = await this.createTemporaryImage(imageFile)
+      }
+
       /*
       let preview = null
       let previewBase64 = ''
       if (this.ad.preview !== null) {
-        previewBase64 = await this.convertImgToBase64(this.ad.preview.url)
+        let img = await createImageFromUrl(this.ad.preview.url)
+        previewBase64 = await this.convertImageToBase64(img)
+        let toSearch = 'base64,'
+        previewBase64 = previewBase64.substring(previewBase64.indexOf(toSearch) + toSearch.length, previewBase64.length)
         let params = {
           name: this.ad.preview.pathname.replace('/', '_'),
           bytes: previewBase64,
         }
         preview = await this.facebook.uploadAdImage(this.adAccount.id, params)
-        if (preview === null) {
-          // TODO: Log error
-        }
       }
       */
+
+      if (preview !== null) {
+        this.ad.preview = preview
+      } else {
+        // TODO: Log error
+      }
 
       let medias = []
       for (let i = 0; i < this.ad.medias.length; i++) {
@@ -1270,12 +1310,14 @@ export default {
             media.type = 'video'
             media.pathname = this.ad.medias[i].pathname
           }
-          this.ad.medias[i] = media
         } else if (mediaType === 'image') {
           // TODO: We no longer need to upload the image since we directly pass the url
           // to facebook
           /*
-          let media64 = await this.convertImgToBase64(this.ad.medias[i].url)
+          let img = await createImageFromUrl(this.ad.medias[i].url)
+          let media64 = await this.convertImageToBase64(img)
+          let toSearch = 'base64,'
+          media64 = media64.substring(media64.indexOf(toSearch) + toSearch.length, media64.length)
           let params = {
             name: this.ad.medias[i].pathname.replace('/', '_'),
             bytes: media64,
@@ -1286,9 +1328,18 @@ export default {
             media.hash = value.hash
           }
           */
+
+          // We need to resize images choosen from Google/Bing/etc...
+          if (this.ad.medias[i].hasOwnProperty('to_resize') && this.ad.medias[i].to_resize) {
+            let dataUrl64 = await this.resizeImageUrl(this.ad.medias[i].url)
+            let imageFile = await createFileFromBase64DataURL(dataUrl64)
+            media = await this.createTemporaryImage(imageFile)
+          }
         }
 
-        if (media === null) {
+        if (media !== null) {
+          this.ad.medias[i] = media
+        } else {
           // TODO: Log error
         }
       }
@@ -1453,23 +1504,24 @@ export default {
       }
       return false
     },
-    async convertImgToBase64(url, outputFormat = null) {
+    async convertImageToBase64(image, outputFormat = null) {
       let result = ''
 
-      let img = await createImageFromUrl(url)
       let canvas = document.createElement('CANVAS');
       let ctx = canvas.getContext('2d');
-      canvas.height = img.height
-      canvas.width = img.width
-      ctx.drawImage(img,0,0)
+      canvas.height = image.height
+      canvas.width = image.width
+      ctx.drawImage(image,0,0)
       result = canvas.toDataURL(outputFormat || 'image/png')
       canvas = null // Cleanup
 
-      let toSearch = 'base64,'
-      result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+      // TODO: to delete
+      //let toSearch = 'base64,'
+      //result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
+
       return result
     },
-    async searchImage(searchEngine, query, offset = 0) {
+    async searchImages(searchEngine, query, offset = 0) {
       this.$vs.loading()
 
       // TODO: We lose previous medias on a new search
@@ -1507,14 +1559,102 @@ export default {
           se.nextOffset = response.data.nextOffset
           for (let i = 0; i < response.data.value.length; i++) {
             let res = response.data.value[i]
+            let width = parseInt(res.width)
+            let height = parseInt(res.height)
+            if (width < 700 || height < 700) {
+              continue
+            }
+            searchImageResults.push({
+              type: 'image',
+              thumbnailUrl: res.thumbnailUrl,
+              url: res.contentUrl,
+              to_resize: true,
+              width: width,
+              height: height,
+            })
+          }
+        } catch (error) {
+          // Nothing
+        }
+      } else if (searchEngine === 'google') {
+        try {
+          let apiCallUrl = 'https://serpapi.com/search.json'
+          let params = {
+            api_key: se.apiKey,
+            engine: 'google',
+            q: query,
+            google_domain: 'google.it', // TODO: .it or .com?
+            tbm: 'isch',
+            ijn: parseInt(offset),
+            async: false,
+          }
+          const response = await this.$http.get(apiCallUrl, { params })
+          for (let i = 0; i < response.data.images_results.length; i++) {
+            let res = response.data.images_results[i]
+            // TODO: Remove images too small
+            // NOTE: SerpAPI does not give us the image size
+            searchImageResults.push({
+              type: 'image',
+              thumbnailUrl: res.thumbnail,
+              url: res.original,
+              to_resize: true,
+            })
+          }
+          se.currentOffset = offset
+          se.prevOffset = Math.max(0, se.currentOffset - 1)
+          se.nextOffset = se.currentOffset + 1
+        } catch (error) {
+          // Nothing
+        }
+      }
+      this.searchEngines[searchEngine] = se
+
+      this.searchImageResults = searchImageResults
+
+      this.$vs.loading.close()
+
+      return this.searchImageResults
+    },
+    async searchImagesRelated(imageUrl) {
+      this.$vs.loading()
+
+      // TODO: We lose previous medias on a new search
+      //this.ad.medias = []
+
+      let searchImageResults = []
+
+      let searchEngine = 'bing'
+      this.searchEngine = searchEngine
+      let se = this.searchEngines[searchEngine]
+      if (searchEngine === 'bing') {
+        try {
+          let apiCallUrl = 'https://api.bing.microsoft.com/v7.0/images/visualsearch'
+          let params = {
+            imageInfo: {
+              url : imageUrl,
+            },
+          }
+          let headers = {
+            'Ocp-Apim-Subscription-Key': se.apiKey,
+          }
+          const response = await this.$http.post(apiCallUrl, params, { headers })
+          // TODO: to delete
+          console.log('response.data', response.data)
+          /*
+          for (let i = 0; i < response.data.value.length; i++) {
+            let res = response.data.value[i]
             searchImageResults.push({
               type: 'image',
               thumbnailUrl: res.thumbnailUrl,
               url: res.contentUrl,
             })
           }
+          */
         } catch (error) {
           // Nothing
+
+          // DEBUG TODO: to delete
+          console.log('error', error)
         }
       } else if (searchEngine === 'google') {
         try {
@@ -1742,12 +1882,69 @@ export default {
       }
       this.$dropbox.choose(options)
     },
-  },
-  components: {
-    FormWizard,
-    TabContent,
+    async resizeImage(image) {
+      let canvas = document.createElement('CANVAS');
+      let newImageSize = parseInt(Math.min(image.width, image.height))
+      canvas.width = newImageSize
+      canvas.height = newImageSize
+      if (canvas.width < 700) {
+        canvas.width = 700
+      }
+      if (canvas.height < 700) {
+        canvas.height = 700
+      }
+
+      let newImageSizeHalf = parseInt(newImageSize / 2)
+      let halfWidth  = parseInt(image.width / 2)
+      let halfHeight = parseInt(image.height / 2)
+
+      // TODO: Also add option of stretching instead of only cropping?
+
+      // NOTE: Point of interest should be the center because we can maximize
+      // the image size (it must be square).
+      let POI = {
+        x: halfWidth,
+        y: halfHeight,
+      }
+
+      let startX = POI.x - newImageSizeHalf
+      let startY = POI.y - newImageSizeHalf
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(image, startX, startY, newImageSize, newImageSize, 0, 0, canvas.width, canvas.height)
+
+      let resultBase64 = canvas.toDataURL()
+      return resultBase64
+    },
+    async resizeImageUrl(url) {
+      let image = await createImageFromUrl(url)
+      let result = await this.resizeImage(image)
+      return result
+    },
+    async createTemporaryImage(imageFile) {
+      let temporaryImage = null
+
+      try {
+        let headers = {
+          'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+          'Content-Type': 'multipart/form-data',
+        }
+        let formData = new FormData()
+        formData.append('file', imageFile)
+        const response = await this.$http.post('/api/v1/product-medias/temp', formData, { headers })
+        temporaryImage = response.data.data
+        temporaryImage.type = 'image'
+      } catch (error) {
+        // Nothing
+      }
+
+      return temporaryImage
+    },
   },
   async created() {
+    // TODO: What about visual search??
+    //this.searchImagesRelated('https://cdn.webshopapp.com/shops/273775/files/310323894/image.jpg')
+
     this.$vs.loading()
 
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
@@ -1838,10 +2035,6 @@ export default {
         this.settings.serpapi.hasOwnProperty('api_key') && this.settings.serpapi.api_key !== null) {
       this.searchEngines.google.apiKey = this.settings.serpapi.api_key
     }
-
-    // DEBUG TODO: to delete
-    //this.searchImagesRelated('https://cdn.webshopapp.com/shops/273775/files/310323894/image.jpg')
-
   },
 }
 </script>

@@ -681,6 +681,15 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name (empty = name on Facebook)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="advertiser.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Access Token</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -1335,7 +1344,7 @@ export default {
     async updateAdvertiser() {
       this.$vs.loading()
 
-      let advertiser = await this.facebook.updateAdvertiser(this.advertiser.id, this.advertiser.accessToken.trim())
+      let advertiser = await this.facebook.updateAdvertiser(this.advertiser.id, this.advertiser.accessToken.trim(), this.advertiser.name.trim())
       if (advertiser !== null) {
         this.$vs.notify({
           title: 'Success',
