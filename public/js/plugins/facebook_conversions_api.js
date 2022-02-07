@@ -125,9 +125,11 @@ FacebookConversionsAPIPlugin.prototype.fbTriggerEvent = function(eventName, cust
         test_code: this.testCode,
         pixel: this.pixel,
         event: eventName,
-        fbc: this.fbc,
         custom_data: JSON.stringify(customData),
     };
+    if (this.fbc != null) {
+        data.fbc = this.fbc
+    }
     $.ajax({
         url: form.API_URL_3RD + 'facebook/events',
         method: 'POST',
