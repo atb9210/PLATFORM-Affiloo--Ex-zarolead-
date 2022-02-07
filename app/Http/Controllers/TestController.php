@@ -1015,7 +1015,9 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        dd(sys_get_temp_dir());
+        dd([
+            'time' => strval(time()),
+        ]);
         exit();
 
         dd(strval(82));
