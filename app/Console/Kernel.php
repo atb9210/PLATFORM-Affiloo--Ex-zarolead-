@@ -6,6 +6,8 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Log;
 
+use Illuminate\Support\Facades\Storage;
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -25,6 +27,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // Product medias temporary images (delete the whole folder every day
+        // at night)
+        $schedule->call(function () {
+            Storage::deleteDirectory('public/tmp');
+        })->dailyAt('01:00');
+
         // Tiktok Rules
         $schedule->call(function () {
             $rules = \App\third\TikTokRule::where('status', 'active')

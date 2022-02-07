@@ -504,6 +504,12 @@ export default {
           currentOffset: 0,
           nextOffset: 0,
         },
+        'yandex': {
+          apiKey: '',
+          prevOffset: 0,
+          currentOffset: 0,
+          nextOffset: 0,
+        },
       },
       searchEngine: 'bing',
 
@@ -816,7 +822,6 @@ export default {
           } else {
             this.fetchCopys()
             this.fetchProductMedias(this.product.id)
-            // TODO: to delete the if condition
             if (!this.debug) {
               this.createCampaigns()
             }
@@ -925,12 +930,10 @@ export default {
           if (hasError) {
             reject('correct all values')
           } else {
-            // TODO: to delete the if condition
             if (!this.debug) {
               this.createAdsets()
             }
 
-            // TODO: to delete the if condition
             if (!this.debug) {
               this.createAds()
             }
@@ -1460,7 +1463,13 @@ export default {
     },
     onChangeAdAccount() {
       this.campaign.pixel = ''
-      this.pixelOptions = this.adAccount.adspixels
+      this.pixelOptions = []
+      if (this.adAccount !== null && this.adAccount != '' &&
+          this.adAccount.hasOwnProperty('adspixels') && this.adAccount.adspixels !== null) {
+        for (let i = 0; i < this.adAccount.adspixels.length; i++) {
+          this.pixelOptions.push(this.adAccount.adspixels[i])
+        }
+      }
     },
     openNewPage(url) {
       window.open(url, '_blank')
@@ -1514,10 +1523,6 @@ export default {
       ctx.drawImage(image,0,0)
       result = canvas.toDataURL(outputFormat || 'image/png')
       canvas = null // Cleanup
-
-      // TODO: to delete
-      //let toSearch = 'base64,'
-      //result = result.substring(result.indexOf(toSearch) + toSearch.length, result.length)
 
       return result
     },
@@ -1606,6 +1611,38 @@ export default {
         } catch (error) {
           // Nothing
         }
+      } else if (searchEngine === 'yandex') {
+        try {
+          let apiCallUrl = 'https://serpapi.com/search.json'
+          let params = {
+            api_key: se.apiKey,
+            engine: 'yandex_images',
+            text: query,
+            yandex_domain: 'yandex.com',
+            p: parseInt(offset),
+            async: false,
+          }
+          const response = await this.$http.get(apiCallUrl, { params })
+          for (let i = 0; i < response.data.images_results.length; i++) {
+            let res = response.data.images_results[i]
+            let width = parseInt(res.size.width)
+            let height = parseInt(res.size.height)
+            if (width < 700 || height < 700) {
+              continue
+            }
+            searchImageResults.push({
+              type: 'image',
+              thumbnailUrl: res.thumbnail,
+              url: res.original,
+              to_resize: true,
+            })
+          }
+          se.currentOffset = offset
+          se.prevOffset = Math.max(0, se.currentOffset - 1)
+          se.nextOffset = se.currentOffset + 1
+        } catch (error) {
+          // Nothing
+        }
       }
       this.searchEngines[searchEngine] = se
 
@@ -1638,8 +1675,6 @@ export default {
             'Ocp-Apim-Subscription-Key': se.apiKey,
           }
           const response = await this.$http.post(apiCallUrl, params, { headers })
-          // TODO: to delete
-          console.log('response.data', response.data)
           /*
           for (let i = 0; i < response.data.value.length; i++) {
             let res = response.data.value[i]
@@ -1652,9 +1687,6 @@ export default {
           */
         } catch (error) {
           // Nothing
-
-          // DEBUG TODO: to delete
-          console.log('error', error)
         }
       } else if (searchEngine === 'google') {
         try {
@@ -2008,7 +2040,7 @@ export default {
     if (this.debug) {
       this.product = this.products[3]
       this.page = this.pages[0]
-      this.adAccount = this.adAccounts[0]
+      this.adAccount = this.adAccounts[2]
       this.onChangeAdAccount()
       this.campaign.name = 'test campaign'
       this.campaign.pixel = this.pixelOptions[0]
@@ -2034,6 +2066,7 @@ export default {
     if (this.settings.hasOwnProperty('serpapi') && this.settings.serpapi !== null &&
         this.settings.serpapi.hasOwnProperty('api_key') && this.settings.serpapi.api_key !== null) {
       this.searchEngines.google.apiKey = this.settings.serpapi.api_key
+      this.searchEngines.yandex.apiKey = this.settings.serpapi.api_key
     }
   },
 }
