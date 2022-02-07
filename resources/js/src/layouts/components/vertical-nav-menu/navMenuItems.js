@@ -392,14 +392,6 @@ export default [
             i18n: 'Ads',
             roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
           },
-          {
-            url: '/dashboard/image-editor',
-            name: 'Image Editor',
-            slug: 'image-editor',
-            icon: 'PenToolIcon',
-            i18n: 'Image Editor',
-            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-          },
         ]
       },
     ],
