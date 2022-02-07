@@ -164,6 +164,13 @@ class FacebookController extends Controller
             $customData = json_decode($params['custom_data'], true);
         }
 
+        // DEBUG: TODO: to delete
+        Log::channel('facebook')->info([
+            'event' => $event,
+            'userData' => $userData,
+            'customData' => $customData,
+        ]);
+
         $fb = new \Driverfury\Facebook\Facebook($token);
 
         // TODO DEBUG
