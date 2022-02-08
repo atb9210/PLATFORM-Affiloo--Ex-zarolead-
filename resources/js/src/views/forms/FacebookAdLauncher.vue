@@ -1272,7 +1272,7 @@ export default {
       // We need to resize preview choosen from Google/Bing/etc...
       let preview = null
       if (this.ad.preview !== null && this.ad.preview.hasOwnProperty('to_resize') && this.ad.preview.to_resize) {
-        let previewBase64 = await this.resizeImageUrl(encodeURI(this.ad.preview.url))
+        let previewBase64 = await this.resizeImageUrl(this.ad.preview.url)
         let imageFile = await createFileFromBase64DataURL(previewBase64)
         preview = await this.createTemporaryImage(imageFile)
       }
@@ -1281,7 +1281,7 @@ export default {
       let preview = null
       let previewBase64 = ''
       if (this.ad.preview !== null) {
-        let img = await createImageFromUrl(encodeURI(this.ad.preview.url))
+        let img = await createImageFromUrl(this.ad.preview.url)
         previewBase64 = await this.convertImageToBase64(img)
         let toSearch = 'base64,'
         previewBase64 = previewBase64.substring(previewBase64.indexOf(toSearch) + toSearch.length, previewBase64.length)
@@ -1306,7 +1306,7 @@ export default {
         let mediaType = this.ad.medias[i].type
         if (mediaType === 'video') {
           let params = {
-            file_url: encodeURI(this.ad.medias[i].url),
+            file_url: this.ad.medias[i].url,
           }
           media = await this.facebook.uploadAdVideo(this.adAccount.id, params)
           if (media !== null) {
@@ -1317,7 +1317,7 @@ export default {
           // TODO: We no longer need to upload the image since we directly pass the url
           // to facebook
           /*
-          let img = await createImageFromUrl(encodeURI(this.ad.medias[i].url))
+          let img = await createImageFromUrl(this.ad.medias[i].url)
           let media64 = await this.convertImageToBase64(img)
           let toSearch = 'base64,'
           media64 = media64.substring(media64.indexOf(toSearch) + toSearch.length, media64.length)
@@ -1334,7 +1334,7 @@ export default {
 
           // We need to resize images choosen from Google/Bing/etc...
           if (this.ad.medias[i].hasOwnProperty('to_resize') && this.ad.medias[i].to_resize) {
-            let dataUrl64 = await this.resizeImageUrl(encodeURI(this.ad.medias[i].url))
+            let dataUrl64 = await this.resizeImageUrl(this.ad.medias[i].url)
             let imageFile = await createFileFromBase64DataURL(dataUrl64)
             media = await this.createTemporaryImage(imageFile)
           }
@@ -1429,7 +1429,7 @@ export default {
               link: adLink,
               name: adTitle,
               message: adText,
-              picture: encodeURI(media.url),
+              picture: media.url,
             },
             page_id: pageId,
             instagram_actor_id: pbiAccountId,
@@ -1449,7 +1449,7 @@ export default {
               title: adTitle,
               message: adText,
               video_id: media.id,
-              image_url: encodeURI(preview.url),
+              image_url: preview.url,
             },
             page_id: pageId,
             instagram_actor_id: pbiAccountId,
