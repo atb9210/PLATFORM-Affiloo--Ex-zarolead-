@@ -197,7 +197,9 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="fetchProductMedias(product.id)"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="openProductMediaPage"></vs-button>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'medias_search'"></vs-button>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" id="dropbox-btn" @click="chooseMediasFromDropbox()">From Dropbox</vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseMediasFromDropbox()">From Dropbox</vs-button>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-hard-drive" @click="chooseMediasFromLocal()">From Your PC</vs-button>
+              <input type="file" ref="mediaUploadFileInput" class="hidden" accept="image/png, image/jpeg" multiple @change="onLocalMediasChosen">
             </div>
             <div class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="mediaIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectMedia(item)" @dblclick="openProductMedia(item)">
               <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
@@ -1886,10 +1888,15 @@ export default {
           for (let i = 0; i < files.length; i++) {
             let file = files[i]
 
-            // Upload temporary image
+            // NOTE: Facebook does not accept images from DropBox (go wonder).
+            // So we need to upload the dropbox image(s) temporarily on our server
+            // and give our links to facebook.
             let imageBase64 = await this.resizeImageUrl(file.link)
             let imageFile = await createFileFromBase64DataURL(imageBase64)
             let uploadedImage = await this.createTemporaryImage(imageFile)
+
+            let imageUrl = uploadedImage.url
+            //let imageUrl = file.link
 
             let fileType = 'image'
             let ext = getFileExtension(file.name)
@@ -1899,8 +1906,7 @@ export default {
             this.ad.medias.push({
               id: file.id,
               pathname: 'dropbox.com/' + file.name,
-              url: uploadedImage.url,
-              //url: file.link,
+              url: imageUrl,
               type: fileType,
             })
           }
@@ -1920,6 +1926,30 @@ export default {
         folderselect: false,
       }
       this.$dropbox.choose(options)
+    },
+    chooseMediasFromLocal() {
+      this.$refs.mediaUploadFileInput.click()
+    },
+    async onLocalMediasChosen(event) {
+      this.$vs.loading()
+
+      let files = event.target.files
+
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i]
+        let fileName = file.name
+        let uploadedImage = await this.createTemporaryImage(imageFile)
+        let imageUrl = uploadedImage.url
+        let fileType = 'image'
+        this.ad.medias.push({
+          id: 'local' + i,
+          pathname: 'local/' + fileName,
+          url: imageUrl,
+          type: fileType,
+        })
+      }
+
+      this.$vs.loading.close()
     },
     async resizeImage(image) {
       let canvas = document.createElement('CANVAS');
