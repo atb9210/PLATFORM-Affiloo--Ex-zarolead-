@@ -1884,13 +1884,12 @@ export default {
       let options = {
         success: async function(files) {
           for (let i = 0; i < files.length; i++) {
-            // DEBUG TODO: to delete
-            console.log(files)
-
             let file = files[i]
 
-            // TODO: HERE
             // Upload temporary image
+            let imageBase64 = await this.resizeImageUrl(file.link)
+            let imageFile = await createFileFromBase64DataURL(imageBase64)
+            let uploadedImage = await this.createTemporaryImage(imageFile)
 
             let fileType = 'image'
             let ext = getFileExtension(file.name)
@@ -1900,7 +1899,8 @@ export default {
             this.ad.medias.push({
               id: file.id,
               pathname: 'dropbox.com/' + file.name,
-              url: file.link,
+              url: uploadedImage.url,
+              //url: file.link,
               type: fileType,
             })
           }
