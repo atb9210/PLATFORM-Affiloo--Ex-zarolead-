@@ -420,12 +420,16 @@ class Facebook
         ];
 
         $response = $this->postRequest('/' . $pixel . '/events', $params, $params);
+
+        // DEBUG
+        Log::channel('facebook')->info('[OK] Event sent. Response: ' . json_encode($response));
+
         if (isset($response['events_received']) && $response['events_received'] > 0) {
             return true;
         }
 
         // DEBUG
-        Log::channel('facebook')->info('Event not sent. Response: ' . json_encode($response));
+        Log::channel('facebook')->info('[ER] Event not sent. Response: ' . json_encode($response));
 
         return false;
     }
@@ -453,12 +457,16 @@ class Facebook
         ];
 
         $response = $this->postRequest('/' . $pixel . '/events', $params, $params);
+
+        // DEBUG
+        Log::channel('facebook')->info('[OK] Event sent. Response: ' . json_encode($response));
+
         if (isset($response['events_received']) && $response['events_received'] > 0) {
             return true;
         }
 
         // DEBUG
-        Log::channel('facebook')->info('Event not sent. Response: ' . json_encode($response));
+        Log::channel('facebook')->info('[ER] Event not sent. Response: ' . json_encode($response));
 
         return false;
     }
