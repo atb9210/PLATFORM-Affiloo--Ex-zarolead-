@@ -17,8 +17,8 @@ class FacebookMonitorResource extends JsonResource
         // Param validation
         $params = $request->validate([
             'reports'          => 'boolean',
-            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
-            'filter_date_to'   =>   'nullable|date|date_format:Y-m-d',
+            'filter_date_from' => 'date|date_format:Y-m-d',
+            'filter_date_to'   => 'date|date_format:Y-m-d',
         ]);
 
         $toReturn = [
