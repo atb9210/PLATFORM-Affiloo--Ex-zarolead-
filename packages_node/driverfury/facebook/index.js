@@ -266,7 +266,7 @@ class Facebook {
         obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
         obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
         obj.profit = obj.conversions_value - obj.spend
-        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
+        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend))*100) : 0
 
         objects[i] = obj
       }
@@ -397,7 +397,7 @@ class Facebook {
         obj.cpa = (obj.conversions > 0) ? (obj.spend/obj.conversions) : obj.spend
         obj.cr = (obj.link_clicks > 0) ? (100*obj.conversions/obj.link_clicks) : 0
         obj.profit = obj.conversions_value - obj.spend
-        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend)-1)*100) : 0
+        obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend))*100) : 0
 
         objects[i] = obj
       }
@@ -522,6 +522,111 @@ class Facebook {
     }
 
     return object
+  }
+
+  async fetchMonitors(filters = {}) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      let params = filters
+      const response = await this.$http.get('/api/3rd/facebook/monitors', { headers, params })
+      objects = response.data.data
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        obj.views = 0
+        obj.spent = 0.0
+        obj.conversions = 0
+        obj.conversions_value = 0.0
+        if (obj.hasOwnProperty('reports') && obj.reports !== null) {
+          if (obj.reports.hasOwnProperty('views') && obj.reports.views !== null) {
+            obj.views = parseInt(obj.reports.views)
+          }
+          if (obj.reports.hasOwnProperty('spent') && obj.reports.spent !== null) {
+            obj.spent = parseFloat(obj.reports.spent)
+          }
+          if (obj.reports.hasOwnProperty('conversions') && obj.reports.conversions !== null) {
+            obj.conversions = parseInt(obj.reports.conversions)
+          }
+          if (obj.reports.hasOwnProperty('conversions_value') && obj.reports.conversions_value !== null) {
+            obj.conversions_value = parseFloat(obj.reports.conversions_value)
+          }
+        }
+
+        obj.profit = obj.conversions_value - obj.spent
+        obj.roi = (obj.spent > 0) ? (((obj.profit/obj.spent))*100) : 0
+
+        objects[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
+  async fetchMonitor(id) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/facebook/monitors/' + id, { headers })
+      if (response !== null && response.hasOwnProperty('data') &&
+          response.data !== null && response.data.hasOwnProperty('data') && response.data.data !== null) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async createMonitor(params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.post('/api/3rd/facebook/monitors', params, { headers })
+      object = response.data.data
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async updateMonitor(id, params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/facebook/monitors/' + id, params, { headers })
+      if (response !== null && response.hasOwnProperty('data') &&
+          response.data !== null && response.data.hasOwnProperty('data') && response.data.data !== null) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async deleteMonitor(id) {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.delete('/api/3rd/facebook/monitors/' + id, { headers })
+      result = true
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
   }
 
 }

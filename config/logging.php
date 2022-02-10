@@ -98,6 +98,13 @@ return [
         ],
 
         // DEBUG
+        'facebook.monitor' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/facebook.monitor.log'),
+            'level' => 'debug',
+        ],
+
+        // DEBUG
         'tiktok' => [
             'driver' => 'single',
             'path' => storage_path('logs/tiktok.log'),

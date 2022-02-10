@@ -30,6 +30,7 @@ Route::post('/test', 'TestController@post')->name('test');
 Route::get('/psw-maker', 'TestController@hash')->name('psw-maker');
 // DEBUG TODO: to delete
 Route::get('/test_checkout', 'TestController@testCheckout')->name('test.checkout');
+Route::get('/test/monitor', 'TestController@facebookMonitor')->name('test.monitor');
 
 /*
 Route::get('/mobile-form', function () {

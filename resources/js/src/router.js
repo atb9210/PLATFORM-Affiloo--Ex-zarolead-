@@ -1799,6 +1799,21 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/facebook-monitors',
+          props: true,
+          name: 'facebook-monitors',
+          component: () => import('./views/FacebookMonitors.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Facebook Monitors', active: true }
+            ],
+            pageTitle: 'Facebook Monitors',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/ecommerce',
           props: true,
           name: 'ecommerce',
@@ -1916,22 +1931,6 @@ const router = new Router({
               { title: '3rd Party', active: true }
             ],
             pageTitle: '3rd Party',
-            rule: 'admin'
-          }
-        },
-
-        /* TODO: TEST FIVERR */
-        {
-          path: '/dashboard/fiverr/test',
-          name: '3rd-party',
-          component: () => import('./views/FormBuilder.vue'),
-          meta: {
-            authRequired: true,
-            breadcrumb: [
-              { title: 'Home', url: '/' },
-              { title: 'Test Fiverr', active: true }
-            ],
-            pageTitle: 'Test Fiverr',
             rule: 'admin'
           }
         },

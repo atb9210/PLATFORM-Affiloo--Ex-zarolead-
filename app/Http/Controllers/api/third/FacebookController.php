@@ -20,6 +20,9 @@ use App\Http\Resources\api\third\FacebookAdvertiserResource;
 use App\third\FacebookCopy;
 use App\Http\Resources\api\third\FacebookCopyResource;
 
+use App\third\FacebookMonitor;
+use App\Http\Resources\api\third\FacebookMonitorResource;
+
 class FacebookController extends Controller
 {
     /**
@@ -756,7 +759,7 @@ class FacebookController extends Controller
     /**
      * Get copys list
      *
-     * @bodyParam filter_product int Product's d
+     * @bodyParam filter_product int Product's id
      *
      * @response {
      *  "data": [copys],
@@ -793,7 +796,7 @@ class FacebookController extends Controller
     }
 
     /**
-     * Get copy
+     * Create copy
      *
      * @bodyParam ad_title string required Ad's title
      * @bodyParam ad_text  string required Ad's text
@@ -877,4 +880,140 @@ class FacebookController extends Controller
             'message' => 'Copy deleted',
         ]);
     }
+
+    /**
+     * Get monitors list
+     *
+     * @bodyParam filter_advertiser int Advertiser's id
+     * @bodyParam filter_form int Form's id
+     * @bodyParam filter_date_from int From date
+     * @bodyParam filter_date_to int To date
+     * @bodyParam reports boolean To date
+     *
+     * @response {
+     *  "data": [monitor],
+     * }
+     */
+    public function getMonitors(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'filter_advertiser' => 'numeric|exists:third_facebook_advertisers,id',
+            'filter_form'       => 'numeric|exists:forms,id',
+            'filter_date_from'  => 'date|date_format:Y-m-d',
+            'filter_date_to'    => 'date|date_format:Y-m-d',
+            'reports'           => 'boolean',
+        ]);
+        $monitors = FacebookMonitor::query();
+        if (isset($params['filter_advertiser'])) {
+            $monitors = $monitors->where('advertiser_id', $params['filter_advertiser']);
+        }
+        if (isset($params['filter_form'])) {
+            $monitors = $monitors->where('form_id', $params['filter_form']);
+        }
+        $monitors = $monitors->get();
+
+        return FacebookMonitorResource::collection($monitors);
+    }
+
+    /**
+     * Get monitor
+     *
+     * @response {
+     *  "data": monitor,
+     * }
+     */
+    public function getMonitor($id, Request $request)
+    {
+        // TODO: Authorization
+        $monitor = FacebookMonitor::findOrFail($id);
+        return new FacebookMonitorResource($monitor);
+    }
+
+    /**
+     * Create monitor
+     *
+     * @bodyParam name string required Name
+     * @bodyParam advertiser_id int required Facebook advertiser's id
+     * @bodyParam form_id int required Form's id
+     * @bodyParam campaigns json required Campaigns
+     *
+     * @response {
+     *  "data": monitor,
+     * }
+     */
+    public function createMonitor(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'name'          => 'required|string|min:1|unique:third_facebook_monitors,name',
+            'advertiser_id' => 'required|numeric|exists:third_facebook_advertisers,id',
+            'form_id'       => 'required|numeric|exists:forms,id',
+            'campaigns'     => 'required|json',
+        ]);
+        $params['campaigns'] = json_decode($params['campaigns'], true);
+
+        // TODO: Check campaigns field?
+
+        $monitor = FacebookMonitor::create($params);
+        return new FacebookMonitorResource($monitor);
+    }
+
+    /**
+     * Update monitor
+     *
+     * @urlParam id int required Monitor's id
+     *
+     * @bodyParam name string Name
+     * @bodyParam advertiser_id int Facebook advertiser's id
+     * @bodyParam form_id int Form's id
+     * @bodyParam campaigns json Campaigns
+     *
+     * @response {
+     *  "data": monitor,
+     * }
+     */
+    public function updateMonitor($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'name'          => 'string|min:1|unique:third_facebook_monitors,name',
+            'advertiser_id' => 'numeric|exists:third_facebook_advertisers,id',
+            'form_id'       => 'numeric|exists:forms,id',
+            'campaigns'     => 'json',
+        ]);
+
+        $monitor = FacebookMonitor::findOrFail($id);
+        $monitor->update($params);
+
+        return new FacebookMonitorResource($monitor);
+    }
+
+    /**
+     * Delete monitor
+     *
+     * @urlParam id int required Monitor's id
+     *
+     * @response {
+     *  "message": "Monitor deleted",
+     * }
+     */
+    public function deleteMonitor($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $monitor = FacebookMonitor::findOrFail($id);
+        $monitor->delete();
+
+        return response([
+            'message' => 'Monitor deleted',
+        ]);
+    }
+
 }

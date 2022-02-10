@@ -99,6 +99,19 @@ Route::put('/facebook/copys/{id}', 'api\third\FacebookController@updateCopy')->m
     ->name('facebook.copys.update');
 Route::delete('/facebook/copys/{id}', 'api\third\FacebookController@deleteCopy')->middleware('auth:api')
     ->name('facebook.copys.delete');
+
+Route::get('/facebook/monitors', 'api\third\FacebookController@getMonitors')->middleware('auth:api')
+    ->name('facebook.monitors');
+Route::get('/facebook/monitors/{id}', 'api\third\FacebookController@getMonitor')->middleware('auth:api')
+    ->name('facebook.monitors.show');
+Route::post('/facebook/monitors', 'api\third\FacebookController@createMonitor')->middleware('auth:api')
+    ->name('facebook.monitors.store');
+Route::put('/facebook/monitors/{id}', 'api\third\FacebookController@updateMonitor')->middleware('auth:api')
+    ->name('facebook.monitors.update');
+Route::delete('/facebook/monitors/{id}', 'api\third\FacebookController@deleteMonitor')->middleware('auth:api')
+    ->name('facebook.monitors.delete');
+
+
 /*
 Route::get('/facebook/adaccounts', 'api\third\FacebookController@adAccounts')->middleware('auth:api')
     ->name('facebook.adaccounts');

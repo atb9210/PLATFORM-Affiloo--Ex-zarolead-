@@ -224,12 +224,27 @@ export default [
       },
 
       {
-        url: '/dashboard/facebook-ads',
-        name: 'Facebook Ads',
-        slug: 'facebok-ads',
+        url: null,
+        name: 'Facebook',
         icon: 'FacebookIcon',
-        i18n: 'Facebook Ads',
+        i18n: 'Facebook',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager', 'facebook_test'],
+        submenu: [
+          {
+            url: '/dashboard/facebook-ads',
+            name: 'Ads Manager',
+            slug: 'facebok-ads',
+            i18n: 'Ads Manager',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager', 'facebook_test'],
+          },
+          {
+            url: '/dashboard/facebook-monitors',
+            name: 'Monitors',
+            slug: 'facebok-monitors',
+            i18n: 'Monitors',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager', 'facebook_test'],
+          },
+        ],
       },
 
       {

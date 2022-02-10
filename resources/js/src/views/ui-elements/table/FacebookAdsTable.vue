@@ -27,7 +27,10 @@
         </div>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vx-tooltip text="Filters" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            </vx-tooltip>
+
             <span class="btn-group flex items-center mr-2">
                 <vs-button @click="changeView('advertisers')" :color="(view == 'advertisers') ? 'success' : 'primary'">Advertisers</vs-button>
                 <vs-button @click="changeView('adaccounts')" :color="(view == 'adaccounts') ? 'success' : 'primary'">Ad Accounts</vs-button>
@@ -36,9 +39,23 @@
                 <vs-button @click="changeView('ads')" :color="(view == 'ads') ? 'success' : 'primary'">Ads</vs-button>
             </span>
 
-            <vs-button v-if="view == 'advertisers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateAdvertiserForm"></vs-button>
-            <!--<vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>-->
-            <vs-button v-if="['adaccounts','campaigns','adsets','ads'].includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-play" @click="goToAdLauncher(currentAdvertiserId)"></vs-button>
+            <vx-tooltip text="Add Advertiser" position="top">
+                <vs-button v-if="view == 'advertisers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateAdvertiserForm"></vs-button>
+            </vx-tooltip>
+
+            <!--
+            <vx-tooltip text="Copy Ids" position="top">
+                <vs-button v-if="['campaigns','adsets','ads'].includes(view)" :disabled="selectedObjects.length <= 0" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyIds()"></vs-button>
+            </vx-tooltip>
+            -->
+
+            <vx-tooltip text="Go To Ads Launcher" position="top">
+                <vs-button v-if="['adaccounts','campaigns','adsets','ads'].includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-play" @click="goToAdLauncher(currentAdvertiserId)"></vs-button>
+            </vx-tooltip>
+
+            <vx-tooltip text="Create new Monitor" position="top">
+                <vs-button v-if="view === 'campaigns'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-activity" @click="showCreateMonitorForm" :disabled="selectedCampaigns.length <= 0"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -704,43 +721,81 @@
 
         <!-- Edit bid popup -->
         <vs-popup title="Edit bid" :active.sync="showPopup['edit_bid']">
-                <div class="vx-row mb-6 flex items-center">
-                    <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
-                </div>
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{ editingObject.name }}</vs-button>
+            </div>
 
-                <div class="vx-row mb-6" v-if="(editingObject.type == 'adset' && editingObject.hasOwnProperty('cbo') && editingObject.cbo)">
-                    <div class="vx-col w-full mt-2">
-                        <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
-                    </div>
+            <div class="vx-row mb-6" v-if="(editingObject.type == 'adset' && editingObject.hasOwnProperty('cbo') && editingObject.cbo)">
+                <div class="vx-col w-full mt-2">
+                    <span>* The campaign of this adset is CBO: you cannot choose bid type for the adset.</span>
                 </div>
-                <div class="vx-row mb-6" v-else>
-                    <div class="vx-col sm:w-1/3 w-full">
-                        <span>Bid Type</span>
-                    </div>
-                    <div class="vx-col sm:w-2/3 w-full">
-                        <my-select v-model="editingObject.bid_strategy" :options="bidOptions" class="w-full" />
-                    </div>
+            </div>
+            <div class="vx-row mb-6" v-else>
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid Type</span>
                 </div>
-                
-                <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
-                    <div class="vx-col sm:w-1/3 w-full">
-                        <span>Bid Amount</span>
-                    </div>
-                    <div class="vx-col sm:w-2/3 w-full">
-                        <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid_amount" />
-                    </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <my-select v-model="editingObject.bid_strategy" :options="bidOptions" class="w-full" />
                 </div>
+            </div>
+            
+            <div class="vx-row mb-6" v-if="editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP'">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid Amount</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" min="0" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="editingObject.bid_amount" />
+                </div>
+            </div>
 
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full mt-2" v-if="(editingObject.type == 'campaign' && editingObject.hasOwnProperty('cbo') && !editingObject.cbo)">
-                        <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
-                    </div>
+            <div class="vx-row mb-6">
+                <div class="vx-col w-full mt-2" v-if="(editingObject.type == 'campaign' && editingObject.hasOwnProperty('cbo') && !editingObject.cbo)">
+                    <span>* This campaign is non-CBO: this bid will be assigned to every adset of this campaign.</span>
                 </div>
+            </div>
 
-                <div class="vx-row mb-6">
-                    <vs-button class="mt-12 mr-auto ml-auto" @click="updateBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateBid" color="primary" type="filled" :disabled="!isValidForm('edit_bid')">Update budget</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Create monitor popup -->
+        <vs-popup title="Create advertiser" :active.sync="showPopup['create_monitor']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{monitor.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Name</span>
                 </div>
-            </vs-popup>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="monitor.name" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Form</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <my-select v-model="monitor.form" :options="forms" class="w-full" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Campaigns</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    {{ selectedCampaigns.length }} selected
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="createMonitor" color="primary" type="filled" :disabled="!isValidForm('create_monitor')">Create monitor</vs-button>
+            </div>
+        </vs-popup>
 
     </vx-card>
 </template>
@@ -838,6 +893,7 @@ export default {
         'create_advertiser': false,
         'edit_advertiser': false,
         'edit_bid': false,
+        'create_monitor': false,
       },
 
       advertiser: {
@@ -933,6 +989,13 @@ export default {
         { value:'LOWEST_COST_WITH_BID_CAP', label: 'Lowest cost with bid cap' },
         { value:'COST_CAP',                 label: 'Cost cap' },
       ],
+
+      monitor: {
+        name: '',
+        form: '',
+      },
+      forms: [],
+      formsLoaded: false,
     }
   },
   computed: {
@@ -1041,7 +1104,7 @@ export default {
       cpa = (conversions > 0) ? (spend/conversions) : spend
       cr = (link_clicks > 0) ? (100*conversions/link_clicks) : 0
       // TODO: Calculate CPM
-      roi = (spend > 0) ? (((profit/spend)-1)*100) : 0
+      roi = (spend > 0) ? (((profit/spend))*100) : 0
 
       this.total_stats = {
         spend: spend,
@@ -1297,6 +1360,11 @@ export default {
             this.editingObject.bid_strategy != '') {
           return ((this.editingObject.bid_strategy == 'LOWEST_COST_WITHOUT_CAP') ||
                   (this.editingObject.bid_strategy != 'LOWEST_COST_WITHOUT_CAP') && this.editingObject.bid_amount > 0)
+        }
+      } else if (type == 'create_monitor') {
+        if (this.monitor.name != '' && this.monitor.name.length > 0 &&
+            this.monitor.form != '' && this.monitor.form.hasOwnProperty('id')) {
+          return true
         }
       }
       return false
@@ -1565,16 +1633,80 @@ export default {
           this.$router.push({name: 'facebook-ad-launcher', params: {facebook_advertiser_id: advertiserId}})
         })
     },
+    async showCreateMonitorForm() {
+      this.$vs.loading()
+
+      // Fetch forms
+      if (!this.formsLoaded) {
+        let forms = []
+        try {
+          let headers = {
+            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+          }
+          const response = await this.$http.get('/api/v1/forms', { headers })
+          forms = response.data.data
+          this.formsLoaded = true
+        } catch (error) {
+          // Nothing
+        }
+        this.forms = forms
+      }
+
+      this.$vs.loading.close()
+
+      this.showPopup['create_monitor'] = true
+    },
+    async createMonitor() {
+      this.$vs.loading()
+
+      let monitorCreated = false
+      try {
+        let advertiserId = parseInt(this.currentAdvertiserId)
+        let adAccountId = this.currentAdAccountId.toString()
+        let campaigns = {}
+        campaigns[adAccountId] = []
+        for (let i = 0; i < this.selectedCampaigns.length; i++) {
+          campaigns[adAccountId].push(this.selectedCampaigns[i].id)
+        }
+        let params = {
+          name: this.monitor.name,
+          advertiser_id: advertiserId,
+          form_id: this.monitor.form.id,
+          campaigns: JSON.stringify(campaigns),
+        }
+        const monitor = await this.facebook.createMonitor(params)
+        if (monitor !== null) {
+          monitorCreated = true
+        }
+      } catch (error) {
+        // Nothing
+      }
+
+      if (monitorCreated) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Facebook monitor created successfully',
+          iconPack: 'feather',
+          icon: 'icon-facebook',
+          color: 'success'
+        })
+        this.showPopup['create_monitor'] = false
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Error while creating the facebook monitor',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
   },
   async created() {
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
     this.resetFilters()
-
-    // DEBUG TODO: to delete
-    // DEBUG: This is only for debug purposes
-    this.filters.date_from = this.formatDate(new Date(2021, 0, 1))
-    this.filters.date_to = this.formatDate(new Date(2022, 0, 19))
-    this.applyFilters()
   },
   mounted () {
   }
