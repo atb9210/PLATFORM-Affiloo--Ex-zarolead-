@@ -293,7 +293,7 @@ class Elogy
         return $objects;
     }
 
-    public function getOrderByNumber(string $number): array|null
+    public function getOrderByNumber(string $number): ?array
     {
         $object = null;
 
@@ -308,7 +308,7 @@ class Elogy
         return $object;
     }
 
-    public function getOrder(string $orderId): array|null
+    public function getOrder(string $orderId): ?array
     {
         $object = null;
 

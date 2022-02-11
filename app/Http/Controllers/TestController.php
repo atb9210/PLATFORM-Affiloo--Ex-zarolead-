@@ -24,7 +24,11 @@ class TestController extends Controller
         $monitorId = $request->input('monitor');
         $day = $request->input('day');
         $monitor = \App\third\FacebookMonitor::findOrFail($monitorId);
-        dd($monitor->createReport($day));
+        $result = $monitor->createReport($day);
+        if ($result) {
+            return 'true';
+        }
+        return 'false';
     }
 
     public function test(Request $request)

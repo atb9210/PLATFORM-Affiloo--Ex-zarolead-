@@ -36,14 +36,18 @@
               <span class="text-danger">{{ errors.first('step-1.ad_account') }}</span>
             </div>
             <div class="vx-col md:w-1/2 w-full mt-5">
+              <my-select v-model="monitor" :options="monitorOptions" class="w-full select-large" label="Monitor" :autocomplete="true" />
+              <span class="text-danger">{{ errors.first('step-1.campaign_monitor') }}</span>
+            </div>
+            <div class="vx-col md:w-1/3 w-full mt-5">
               <my-select v-model="campaign.objective" :options="campaignObjectiveOptions" class="w-full select-large" label="Campaign objective" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.campaign_objective') }}</span>
             </div>
-            <div class="vx-col md:w-1/2 w-full mt-5">
+            <div class="vx-col md:w-1/3 w-full mt-5">
               <my-select v-model="campaign.conversionEvent" :options="campaignConversionEventOptions" class="w-full select-large" label="Conversion Event" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.campaign_conversionEvent') }}</span>
             </div>
-            <div class="vx-col md:w-1/2 w-full mt-5">
+            <div class="vx-col md:w-1/3 w-full mt-5">
               <my-select v-model="campaign.pixel" :options="pixelOptions" class="w-full select-large" label="Pixel" :autocomplete="true" />
               <span class="text-danger">{{ errors.first('step-1.campaign_pixel') }}</span>
             </div>
@@ -520,6 +524,10 @@ export default {
       newAdTemplateName: '',
 
       copys: [],
+
+      monitor: '',
+      monitors: [],
+      monitorOptions: [],
     }
   },
   computed: {
@@ -1170,6 +1178,20 @@ export default {
       }
 
       this.creatingCampaigns = false
+
+      // Add campaigns to monitor
+      if (this.monitor !== null && this.monitor != '') {
+        let monitorResult = await this.facebook.addCampaignsToMonitor(this.monitor.id, this.campaigns)
+        if (!monitorResult) {
+          this.$vs.notify({
+            title: 'Error',
+            text: 'Cannot add the campaigns to the Facebook Monitor',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        }
+      }
     },
     async createAdsets() {
       // Wait for campaigns to be created
@@ -1470,6 +1492,24 @@ export default {
           this.adAccount.hasOwnProperty('adspixels') && this.adAccount.adspixels !== null) {
         for (let i = 0; i < this.adAccount.adspixels.length; i++) {
           this.pixelOptions.push(this.adAccount.adspixels[i])
+        }
+      }
+
+      this.monitor = ''
+      this.monitorOptions = []
+      for (let i = 0; i < this.monitors.length; i++) {
+        let monitor = this.monitors[i]
+
+        let adAccountId = null
+        for (const [key, value] of Object.entries(monitor.campaigns)) {
+          adAccountId = key
+          break
+        }
+        if (adAccountId === null || adAccountId == '') {
+          continue
+        }
+        if (adAccountId == this.adAccount.id) {
+          this.monitorOptions.push(monitor)
         }
       }
     },
@@ -2105,6 +2145,9 @@ export default {
       this.searchEngines.google.apiKey = this.settings.serpapi.api_key
       this.searchEngines.yandex.apiKey = this.settings.serpapi.api_key
     }
+
+    this.monitors = await this.facebook.fetchMonitors({ reports: 0 })
+    this.monitorOptions = []
   },
 }
 </script>

@@ -102,6 +102,11 @@ class Facebook
     {
         $output = [];
 
+        // NOTE: This improves performances
+        if (!isset($params['limit'])) {
+            $params['limit'] = 2000;
+        }
+
         $next = [];
         $endLoop = false;
         do {

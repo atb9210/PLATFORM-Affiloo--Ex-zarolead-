@@ -12,8 +12,15 @@
     <vx-card title="Facebook Monitors" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+            <vx-tooltip text="Filters" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Refresh reports" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshMonitorsReports(selected)" :disabled="selected.length <= 0"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Delete Monitor" position="top">
+                <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -87,12 +94,16 @@
                     <vs-th sort-key="id">Id</vs-th>
                     <vs-th sort-key="advertiser.name">Advertiser</vs-th>
                     <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="numOfCampaigns">Campaigns</vs-th>
                     <vs-th sort-key="views">Views</vs-th>
                     <vs-th sort-key="spent">Spent</vs-th>
+                    <vs-th sort-key="averageSpent">S/C</vs-th>
                     <vs-th sort-key="conversions">Conversions</vs-th>
                     <vs-th sort-key="conversions_value">Commissions</vs-th>
                     <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="roi">ROI</vs-th>
+                    <vs-th sort-key="cpc">CPC</vs-th>
+                    <vs-th sort-key="epc">EPC</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -110,12 +121,20 @@
                             {{data[indextr].name}}
                         </vs-td>
 
+                        <vs-td :data="data[indextr].numOfCampaigns">
+                            {{data[indextr].numOfCampaigns}}
+                        </vs-td>
+
                         <vs-td :data="data[indextr].views">
                             {{data[indextr].views}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].spent">
                             € {{data[indextr].spent.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].averageSpent">
+                            € {{data[indextr].averageSpent.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].conversions">
@@ -134,6 +153,14 @@
                             {{data[indextr].roi.toFixed(2)}}%
                         </vs-td>
 
+                        <vs-td :data="data[indextr].cpc">
+                            € {{data[indextr].cpc.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td :data="data[indextr].epc">
+                            € {{data[indextr].epc.toFixed(2)}}
+                        </vs-td>
+
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
@@ -142,10 +169,16 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">{{data.length}}</vs-td>
                     <vs-td class="column-no-padding">
+                        {{totalStats.numOfCampaigns}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
                         {{totalStats.views}}
                     </vs-td>
                     <vs-td class="column-no-padding">
                         € {{totalStats.spent.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{totalStats.averageSpent.toFixed(2)}}
                     </vs-td>
                     <vs-td class="column-no-padding">
                         {{totalStats.conversions}}
@@ -158,6 +191,12 @@
                     </vs-td>
                     <vs-td class="column-no-padding">
                         {{totalStats.roi.toFixed(2)}}%
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{totalStats.cpc.toFixed(2)}}
+                    </vs-td>
+                    <vs-td class="column-no-padding">
+                        € {{totalStats.epc.toFixed(2)}}
                     </vs-td>
                     <!-- END TOTAL STATS-->
 
@@ -188,12 +227,16 @@ export default {
       },
 
       totalStats: {
+        numOfCampaigns: 0,
         views: 0,
         spent: 0.0,
+        averageSpent: 0.0,
         conversions: 0,
         conversions_value: 0.0,
         profit: 0.0,
         roi: 0.0,
+        cpc: 0.0,
+        epc: 0.0,
       },
 
       advertisers: [],
@@ -343,6 +386,8 @@ export default {
       }
 
       this.$vs.loading.close()
+
+      await this.applyFilters()
     },
     async fetchForms() {
       let objects = []
@@ -360,33 +405,96 @@ export default {
       return objects
     },
     calculateStats() {
+      let numOfCampaigns = 0
       let views = 0
       let spent = 0
+      let averageSpent = 0.0
       let conversions = 0
       let conversions_value = 0
       let profit = 0.0
       let roi = 0.0
+      let cpc = 0.0
+      let epc = 0.0
 
       for (let i = 0; i < this.objects.length; i++) {
         let obj = this.objects[i]
 
+        numOfCampaigns += obj.numOfCampaigns
         views += obj.views
         spent += obj.spent
         conversions += obj.conversions
         conversions_value += obj.conversions_value
         profit += obj.profit
       }
-
       roi = (spent > 0) ? (((profit/spent))*100) : 0
 
+      averageSpent = ((numOfCampaigns > 0) ? (spent/numOfCampaigns) : 0.0)
+      cpc = ((views > 0) ? (spent/views) : 0.0)
+      epc = ((views > 0) ? (conversions_value/views) : 0.0)
+
       this.totalStats = {
+        numOfCampaigns: numOfCampaigns,
         views: views,
         spent: spent,
+        averageSpent: averageSpent,
         conversions: conversions,
         conversions_value: conversions_value,
         profit: profit,
         roi: roi,
+        cpc: cpc,
+        epc: epc,
       }
+    },
+    async refreshMonitorsReports(monitors) {
+      this.$vs.loading()
+
+      let result = false
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        for (let i = 0; i < this.selected.length; i++) {
+          let m = this.selected[i]
+          let yesterday = new Date(new Date().setDate(new Date().getDate()-1))
+          let day = this.formatDate(yesterday)
+
+          let params = {
+            monitor: m.id,
+            day: day,
+          }
+          const response = await this.$http.get('/test/monitor', { headers, params })
+          let res = (response.data === 'true' || response.data === true)
+          if (!res) {
+            result = false
+            break
+          }
+        }
+        result = true
+      } catch (error) {
+        // Nothing
+      }
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Monitor(s) reports updated',
+          iconPack: 'feather',
+          icon: 'icon-facebook',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update monitors reports',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+
+      await this.applyFilters()
     },
   },
   async created() {

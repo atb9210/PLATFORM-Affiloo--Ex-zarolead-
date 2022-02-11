@@ -302,6 +302,7 @@ class Facebook {
 
       let params = {
         access_token: this.accessToken,
+        limit: 2000,
         fields: fields,
       }
 
@@ -311,15 +312,25 @@ class Facebook {
       }
       apiCallUrl += type + 's'
 
-      objects = await this.getRequestAllPages(apiCallUrl, params)
-      for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i]
+      let tmpObjects = await this.getRequestAllPages(apiCallUrl, params)
+      for (let i = 0; i < tmpObjects.length; i++) {
+        let obj = tmpObjects[i]
 
         obj.type = type
 
         obj.status = 'ARCHIVED'
         if (obj.hasOwnProperty('effective_status') && obj.effective_status !== null) {
           obj.status = obj.effective_status
+        }
+
+        // Filter by status
+        if (filters.hasOwnProperty('status') && filters.status !== null && filters.status !== '') {
+          if (obj.status != filters.status) {
+            // TODO: to delete
+            console.log(obj.status, '!==', filters.status)
+
+            continue
+          }
         }
 
         obj.cbo = (obj.hasOwnProperty('daily_budget') && obj.hasOwnProperty('bid_strategy'))
@@ -399,7 +410,7 @@ class Facebook {
         obj.profit = obj.conversions_value - obj.spend
         obj.roi = (obj.spend > 0) ? (((obj.profit/obj.spend))*100) : 0
 
-        objects[i] = obj
+        objects.push(obj)
       }
     } catch (error) {
       // Nothing
@@ -536,6 +547,17 @@ class Facebook {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
+        let campaigns = []
+        if (obj.hasOwnProperty('campaigns') && obj.campaigns !== null) {
+          for (const [key, value] of Object.entries(obj.campaigns)) {
+            campaigns = value
+          }
+        }
+        if (campaigns === null) {
+          campaigns = []
+        }
+        obj.numOfCampaigns = campaigns.length
+
         obj.views = 0
         obj.spent = 0.0
         obj.conversions = 0
@@ -554,9 +576,12 @@ class Facebook {
             obj.conversions_value = parseFloat(obj.reports.conversions_value)
           }
         }
-
         obj.profit = obj.conversions_value - obj.spent
         obj.roi = (obj.spent > 0) ? (((obj.profit/obj.spent))*100) : 0
+
+        obj.averageSpent = ((obj.numOfCampaigns > 0) ? (obj.spent/obj.numOfCampaigns) : 0.0)
+        obj.cpc = ((obj.views > 0) ? (obj.spent/obj.views) : 0.0)
+        obj.epc = ((obj.views > 0) ? (obj.conversions_value/obj.views) : 0.0)
 
         objects[i] = obj
       }
@@ -622,6 +647,40 @@ class Facebook {
       let headers = this.getHeaders()
       const response = await this.$http.delete('/api/3rd/facebook/monitors/' + id, { headers })
       result = true
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
+  }
+
+  async addCampaignsToMonitor(id, campaigns = []) {
+    let result = false
+
+    try {
+      let monitor = await this.fetchMonitor(id)
+
+      let adAccountId = null
+      let campaignsToAdd = null
+      for (const [key, value] of Object.entries(monitor.campaigns)) {
+        adAccountId = key
+        campaignsToAdd = value
+      }
+      if (adAccountId === null) {
+        return false
+      }
+      if (campaignsToAdd === null) {
+        campaignsToAdd = []
+      }
+
+      let newCampaigns = monitor.campaigns.concat(campaignsToAdd)
+      newCampaigns = [...new Set(newCampaigns)] // Unique value for campaigns
+
+      let paramCampaigns = {}
+      paramCampaigns[adAccountId.toString()] = newCampaigns
+      result = await this.updateMonitor(monitor.id, {
+        campaigns: JSON.stringify(paramCampaigns)
+      })
     } catch (error) {
       // Nothing
     }

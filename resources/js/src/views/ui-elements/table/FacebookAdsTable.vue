@@ -87,11 +87,7 @@
             <div class="vx-row mb-2">
                 <div class="vx-col md:w-1/3 w-full">
                     <label>Status</label>
-                    <!--
-                    <vs-select autocomplete v-model="filters.status" class="w-full select-large">
-                        <vs-select-item :key="index" :value="item" :text="item" v-for="(item, index) in statusOptions" class="w-full" />
-                    </vs-select>
-                    -->
+                    <my-select v-model="filters.status" :options="statusOptions" :autocomplete="true" class="w-full select-large" />
                 </div>
             </div>
             <div class="vx-row mt-6">
@@ -760,7 +756,7 @@
         </vs-popup>
 
         <!-- Create monitor popup -->
-        <vs-popup title="Create advertiser" :active.sync="showPopup['create_monitor']">
+        <vs-popup title="Create monitor" :active.sync="showPopup['create_monitor']">
             <div class="vx-row mb-6 flex items-center">
                 <vs-button class="mr-auto ml-auto">{{monitor.name}}</vs-button>
             </div>
@@ -779,7 +775,7 @@
                     <span>Form</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <my-select v-model="monitor.form" :options="forms" class="w-full" />
+                    <my-select v-model="monitor.form" :options="forms" class="w-full" :autocomplete="true" />
                 </div>
             </div>
 
@@ -902,23 +898,30 @@ export default {
         accessToken: '',
       },
 
+      statusOptions: [
+        'ACTIVE',
+        'PAUSED',
+        'DELETED',
+        'ARCHIVED',
+      ],
+
       adAccountStatuses: [
-        1,   // Active
-        2,   // Disabled
-        3,   // Unsettled
-        7,   // Pending Review
-        9,   // In Grace Period
-        101, // temporarily unavailable
-        100, // pending closure
+        { value: 1,   label: 'Active' },
+        { value: 2,   label: 'Disabled' },
+        { value: 3,   label: 'Unsettled' },
+        { value: 7,   label: 'Pending Review' },
+        { value: 9,   label: 'In Grace Period' },
+        { value: 101, label: 'temporarily unavailable' },
+        { value: 100, label: 'pending closure' },
       ],
       adAccountStatusColor: {
         1  : 'success', // Active
-        2  : 'danger', // Disabled
+        2  : 'danger',  // Disabled
         3  : 'warning', // Unsettled
         7  : 'warning', // Pending Review
         9  : 'warning', // In Grace Period
-        101: 'danger', // temporarily unavailable
-        100: 'danger', // pending closure
+        101: 'danger',  // temporarily unavailable
+        100: 'danger',  // pending closure
       },
 
       campaignStatuses: [
