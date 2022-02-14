@@ -989,6 +989,10 @@ class FacebookController extends Controller
             'campaigns'     => 'json',
         ]);
 
+        if (isset($params['campaigns'])) {
+            $params['campaigns'] = json_decode($params['campaigns'], true);
+        }
+
         $monitor = FacebookMonitor::findOrFail($id);
         $monitor->update($params);
 

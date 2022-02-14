@@ -139,6 +139,15 @@ class Facebook
         return $object;
     }
 
+    public function checkAccessToken()
+    {
+        $me = $this->getMe();
+        if ($me === null || empty($me) || isset($me['error'])) {
+            return false;
+        }
+        return true;
+    }
+
     public function getAdAccounts(
         array $reports = []): array
     {
@@ -342,46 +351,136 @@ class Facebook
         return($objects);
     }
 
+    public function getObject(
+        string $parentId,
+        string $objectId,
+        array $reports = []): array
+    {
+        $params = [
+            'fields' => [
+                'id',
+                'name',
+                'status',
+                'effective_status',
+                'objective',
+                'daily_budget',
+                'bid_strategy',
+                'bid_amount',
+            ],
+            'date_preset' => 'maximum',
+        ];
+
+        if (count($reports) > 0) {
+            if (isset($reports['start_date'])) {
+                $params['time_range']['since'] = $reports['start_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['end_date'])) {
+                $params['time_range']['until'] = $reports['end_date'];
+                unset($params['date_preset']);
+            }
+            if (isset($reports['metrics'])) {
+                $insights = 'insights';
+                if (isset($params['time_range'])) {
+                    $insights .= '.time_range(' . json_encode($params['time_range']) . ')';
+                } else if (isset($params['date_preset'])) {
+                    $insights .= '.date_preset(' . $params['date_preset'] . ')';
+                }
+                $insights .= '{';
+                $insights .= implode(',', $reports['metrics']);
+                $insights .= '}';
+                $params['fields'][] = $insights;
+            }
+        }
+
+        $objects = $this->getRequestAllPages('/' . $parentId . '/' . $objectId, $params);
+        for ($i = 0; $i < count($objects); $i++) {
+            if (isset($objects[$i]['insights']['data'][0])) {
+                $insights = $objects[$i]['insights']['data'][0];
+                unset($insights['date_start']);
+                unset($insights['date_stop']);
+                $objects[$i] = array_merge($objects[$i], $insights);
+            }
+        }
+
+        return($objects);
+    }
+
+    public function getCampaign(
+        string $adAccountId,
+        string $campaignId,
+        array $reports = []): array
+    {
+        return $this->getObject($adAccountId, $campaignId, $reports);
+    }
+
+    public function getAdset(
+        string $campaignId,
+        string $adsetId,
+        array $reports = []): array
+    {
+        return $this->getObject($campaignId, $adsetId, $reports);
+    }
+
+    public function getAd(
+        string $adsetId,
+        string $adId,
+        array $reports = []): array
+    {
+        return $this->getObject($adsetId, $adId, $reports);
+    }
+
+    public function updateObject(
+        string $objectId,
+        array $params): bool
+    {
+        $response = $this->postRequest('/' . $objectId, $params, $params);
+        if ($response === null || isset($response['error'])) {
+            return false;
+        }
+        return true;
+    }
+
     public function updateStatus(
         string $objectId,
         string $status): bool
     {
-        $params = [
-          'status' => $status,
-        ];
-        $response = $this->postRequest('/' . $objectId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
-        }
-        return true;
+        return $this->updateObject($objectId, [
+            'status' => $status
+        ]);
     }
 
     public function updateAdsetBudget(
         string $adsetId,
         float $budget): bool
     {
-        $params = [
-          'daily_budget' => intval($budget*100),
-        ];
-        $response = $this->postRequest('/' . $adsetId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
-        }
-        return true;
+        return $this->updateObject($adsetId, [
+            'daily_budget' => intval($budget*100),
+        ]);
     }
 
     public function updateAdsetBidAmount(
         string $adsetId,
         float $bidAmount): bool
     {
+        return $this->updateObject($adsetId, [
+            'bid_amount' => intval($bidAmount*100),
+        ]);
+    }
+
+    public function updateCampaignBidAmount(
+        string $campaignId,
+        float $bidAmount): bool
+    {
+        $result = true;
         $params = [
-          'bid_amount' => intval($bidAmount*100),
+            'bid_amount' => intval($bidAmount*100),
         ];
-        $response = $this->postRequest('/' . $adsetId, $params, $params);
-        if (isset($response['error'])) {
-            return false;
+        $adsets = $this->getAdsets($campaignId);
+        foreach ($adsets as $adset) {
+            $result = $result && $this->updateObject(strval($adset['id']), $params);
         }
-        return true;
+        return $result;
     }
 
     public function getLongLivedAccessToken(

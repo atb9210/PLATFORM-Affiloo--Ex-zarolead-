@@ -661,23 +661,22 @@ class Facebook {
       let monitor = await this.fetchMonitor(id)
 
       let adAccountId = null
-      let campaignsToAdd = null
       for (const [key, value] of Object.entries(monitor.campaigns)) {
         adAccountId = key
-        campaignsToAdd = value
       }
       if (adAccountId === null) {
         return false
       }
-      if (campaignsToAdd === null) {
-        campaignsToAdd = []
-      }
+      adAccountId = adAccountId.toString()
 
-      let newCampaigns = monitor.campaigns.concat(campaignsToAdd)
-      newCampaigns = [...new Set(newCampaigns)] // Unique value for campaigns
+
+      let oldCampaigns = monitor.campaigns[adAccountId]
+      let newCampaigns = oldCampaigns.concat(campaigns)
+      newCampaigns = new Set(newCampaigns)
+      newCampaigns = [...newCampaigns]
 
       let paramCampaigns = {}
-      paramCampaigns[adAccountId.toString()] = newCampaigns
+      paramCampaigns[adAccountId] = newCampaigns
       result = await this.updateMonitor(monitor.id, {
         campaigns: JSON.stringify(paramCampaigns)
       })

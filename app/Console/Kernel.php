@@ -33,13 +33,28 @@ class Kernel extends ConsoleKernel
             Storage::deleteDirectory('public/tmp');
         })->dailyAt('01:00');
 
-        // Facebook Monitors
+        // Facebook Monitors reports
         $schedule->call(function () {
             $monitors = \App\third\FacebookMonitor::all();
             foreach ($monitors as $monitor) {
                 $monitor->createReport();
             }
         })->dailyAt('00:05');
+
+        // Facebook Monitors strategies
+        $schedule->call(function () {
+            // TODO: HERE
+            /*
+            $params = [
+                'placeholder' => 'placeholder',
+            ];
+
+            $monitors = \App\third\FacebookMonitor::all();
+            foreach ($monitors as $monitor) {
+                $monitor->runStrategy($params);
+            }
+            */
+        })->everyThirtyMinutes();
 
 
         // Tiktok Rules

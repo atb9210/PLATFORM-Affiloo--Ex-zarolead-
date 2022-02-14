@@ -33,6 +33,12 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $monitor = \App\third\FacebookMonitor::find(4);
+        dd($monitor->runStrategy([
+            'action_type' => 'bid.down',
+            'variation' => -1,
+        ]));
+        exit();
         dd(\App\third\FacebookMonitor::find(3)->getReports('2022-02-09', '2022-02-10'));
         exit();
 
