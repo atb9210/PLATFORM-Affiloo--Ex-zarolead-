@@ -23,6 +23,8 @@ use App\Http\Resources\api\third\FacebookCopyResource;
 use App\third\FacebookMonitor;
 use App\Http\Resources\api\third\FacebookMonitorResource;
 
+use App\third\FacebookMonitorAction;
+
 class FacebookController extends Controller
 {
     /**
@@ -939,6 +941,7 @@ class FacebookController extends Controller
      * @bodyParam advertiser_id int required Facebook advertiser's id
      * @bodyParam form_id int required Form's id
      * @bodyParam campaigns json required Campaigns
+     * @bodyParam strategy json Campaigns
      *
      * @response {
      *  "data": monitor,
@@ -954,8 +957,12 @@ class FacebookController extends Controller
             'advertiser_id' => 'required|numeric|exists:third_facebook_advertisers,id',
             'form_id'       => 'required|numeric|exists:forms,id',
             'campaigns'     => 'required|json',
+            'strategy'      => 'json',
         ]);
         $params['campaigns'] = json_decode($params['campaigns'], true);
+        if (isset($params['strategy'])) {
+            $params['strategy'] = json_decode($params['strategy'], true);
+        }
 
         // TODO: Check campaigns field?
 
@@ -972,6 +979,7 @@ class FacebookController extends Controller
      * @bodyParam advertiser_id int Facebook advertiser's id
      * @bodyParam form_id int Form's id
      * @bodyParam campaigns json Campaigns
+     * @bodyParam strategy json Campaigns
      *
      * @response {
      *  "data": monitor,
@@ -987,10 +995,14 @@ class FacebookController extends Controller
             'advertiser_id' => 'numeric|exists:third_facebook_advertisers,id',
             'form_id'       => 'numeric|exists:forms,id',
             'campaigns'     => 'json',
+            'strategy'      => 'json',
         ]);
 
         if (isset($params['campaigns'])) {
             $params['campaigns'] = json_decode($params['campaigns'], true);
+        }
+        if (isset($params['strategy'])) {
+            $params['strategy'] = json_decode($params['strategy'], true);
         }
 
         $monitor = FacebookMonitor::findOrFail($id);
@@ -1017,6 +1029,52 @@ class FacebookController extends Controller
 
         return response([
             'message' => 'Monitor deleted',
+        ]);
+    }
+
+    /**
+     * Get monitor's actions list
+     *
+     * @urlParam id int required Monitor's id
+     *
+     * @bodyParam filter_date_from int From date
+     * @bodyParam filter_date_to int To date
+     * @bodyParam filter_action_type string Action type
+     * @bodyParam filter_campaign string Campaign's id
+     *
+     * @response {
+     *  "data": [actions],
+     * }
+     */
+    public function getMonitorActions($id, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from'   => 'date|date_format:Y-m-d',
+            'filter_date_to'     => 'date|date_format:Y-m-d',
+            'filter_action_type' => 'string',
+            'filter_campaign'    => 'string',
+        ]);
+        $actions = FacebookMonitorAction::query();
+        $actions = $actions->where('monitor_id', $id);
+        if (isset($params['filter_date_from'])) {
+            $actions = $actions->where('created_at', '>=', $params['filter_date_from'] . ' 00:00:00');
+        }
+        if (isset($params['filter_date_to'])) {
+            $actions = $actions->where('created_at', '<=', $params['filter_date_to'] . ' 23:59:59');
+        }
+        if (isset($params['filter_action_type'])) {
+            $actions = $actions->where('action_type', $params['filter_action_type']);
+        }
+        if (isset($params['filter_campaign'])) {
+            $actions = $actions->where('campaign_id', $params['filter_campaign']);
+        }
+        $actions = $actions->get();
+
+        return response([
+            'data' => $actions,
         ]);
     }
 

@@ -1814,6 +1814,23 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/facebook-monitors/:facebook_monitor_id/actions',
+          props: true,
+          name: 'facebook-monitor-actions',
+          component: () => import('./views/FacebookMonitorActions.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Facebook Monitors', url: '/dashboard/facebook-monitors' },
+              { title: 'Actions', active: true }
+            ],
+            pageTitle: 'Facebook Monitor Actions',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/ecommerce',
           props: true,
           name: 'ecommerce',

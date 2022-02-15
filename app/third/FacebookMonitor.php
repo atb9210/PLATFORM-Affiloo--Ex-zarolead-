@@ -15,11 +15,12 @@ class FacebookMonitor extends Model
     protected $table = 'third_facebook_monitors';
 
     protected $fillable = [
-        'name', 'advertiser_id', 'form_id', 'campaigns',
+        'name', 'advertiser_id', 'form_id', 'campaigns', 'strategy',
     ];
 
     protected $casts = [
         'campaigns' => 'array',
+        'strategy' => 'array',
     ];
 
     public function advertiser()
@@ -95,8 +96,8 @@ class FacebookMonitor extends Model
         }
         return [
             'views' => $views,
-            'conversions' => $conversions,
             'spent' => $spent,
+            'conversions' => $conversions,
             'conversions_value' => $conversions_value,
         ];
     }
@@ -227,6 +228,30 @@ class FacebookMonitor extends Model
         return $stats;
     }
 
+    public function getActions($dateFrom = null, $dateTo = null): array
+    {
+        $actions = [];
+
+        if ($dateFrom !== null && strpos($dateFrom, ' ') === false) {
+            $dateFrom .= ' 00:00:00';
+        }
+        if ($dateTo !== null && strpos($dateTo, ' ') === false) {
+            $dateTo .= ' 23:59:59';
+        }
+
+        $query = FacebookMonitorAction::where('monitor_id', $this->id);
+        if ($dateFrom !== null) {
+            $query = $query->where('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo !== null) {
+            $query = $query->where('created_at', '<=', $dateTo);
+        }
+
+        $actions = $query->get();
+
+        return $actions;
+    }
+
     private function logAction($campaignId, $actionType, $stats)
     {
         $params = $stats;
@@ -297,7 +322,7 @@ class FacebookMonitor extends Model
             // Check if action needs to be done
             $toDo = true;
             if (isset($params['spent'])) {
-                $toDo = $toDo && ($stats['spent'] > floatval($params['spent']));
+                $toDo = $toDo && ($stats['spent'] >= floatval($params['spent']));
             }
             if (isset($params['conversions'])) {
                 $toDo = $toDo && ($stats['conversions'] < floatval($params['conversions']));
@@ -313,7 +338,7 @@ class FacebookMonitor extends Model
                     ];
                     $campaignLifetime = $fb->getCampaign($adAccountId, $campaign['id'], $reportsFiltersLifetime);
                     $lifetimeStats = $this->getStatsFromObject($campaignLifetime);
-                    $toDo = $toDo && ($lifetimeStats['spent'] > floatval($params['lifetime_spent']));
+                    $toDo = $toDo && ($lifetimeStats['spent'] >= floatval($params['lifetime_spent']));
                 }
             }
 
@@ -375,5 +400,28 @@ class FacebookMonitor extends Model
         $bidAmount += $variation;
 
         return $fb->updateCampaignBidAmount($campaign['id'], $bidAmount);
+    }
+
+    public function completeStrategy(): bool
+    {
+        $result = false;
+
+        $yesterday = $this->yesterday();
+
+        $reports = $this->getReports($yesterday, $yesterday);
+        $endConversions = $reports['conversions'];
+        $endConversionsValue = $reports['conversions_value'];
+
+        $actions = $this->getActions($yesterday, $yesterday);
+        foreach ($actions as $action) {
+            $action->update([
+                'end_conversions' => $endConversions,
+                'end_conversions_value' => $endConversionsValue,
+            ]);
+        }
+
+        $result = true;
+
+        return $result;
     }
 }

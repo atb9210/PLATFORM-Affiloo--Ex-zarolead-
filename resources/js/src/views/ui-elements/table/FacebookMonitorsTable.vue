@@ -16,7 +16,7 @@
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Refresh reports" position="top">
-                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshMonitorsReports(selected)" :disabled="selected.length <= 0"></vs-button>
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshMonitorsReports(selectedMonitors)" :disabled="selectedMonitors.length <= 0"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Delete Monitor" position="top">
                 <vs-button class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
@@ -66,6 +66,39 @@
             </div>
         </div>
 
+        <vue-context ref="monitor_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.monitor_context_menu.close();goToActionsLog(data.id);" class="flex items-center text-sm">
+                <feather-icon icon="ListIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">View Actions Log</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.monitor_context_menu.close();showMonitorStrategyPopup(data);" class="flex items-center text-sm">
+                <feather-icon icon="TargetIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Strategy</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.monitor_context_menu.close();runStrategy(data);" class="flex items-center text-sm">
+                <feather-icon icon="PlayIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Run Strategy</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.monitor_context_menu.close();confirmSingleDeletePopup(data);" class="flex items-center text-sm">
+                <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Delete</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" @click="$refs.monitor_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
         <div>
             <vs-dropdown vs-trigger-click class="cursor-pointer">
                 <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
@@ -88,7 +121,8 @@
                 </vs-dropdown-menu>
             </vs-dropdown>
 
-            <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+            <!-- Monitors table -->
+            <vs-table v-if="view == 'monitors'" stripe multiple v-model="selectedMonitors" :max-items="maxItems" pagination search :data="monitors" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="id">Id</vs-th>
@@ -118,7 +152,12 @@
                         </vs-td>
 
                         <vs-td :data="data[indextr].name">
-                            {{data[indextr].name}}
+                            <div @contextmenu.prevent="$refs.monitor_context_menu.open($event, data[indextr])">
+                                <vs-chip transparent>
+                                    <vs-avatar icon-pack="feather" icon="icon-user" />
+                                    {{data[indextr].name}}
+                                </vs-chip>
+                            </div>
                         </vs-td>
 
                         <vs-td :data="data[indextr].numOfCampaigns">
@@ -204,19 +243,138 @@
             </vs-table>
         </div>
 
+        <vs-popup title="Monitor Strategy" :active.sync="showPopup['edit_monitor_strategy']">
+            <div class="vx-row mb-6 flex items-center">
+                <vs-button class="mr-auto ml-auto">{{monitor.name}}</vs-button>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Stop Bid</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-checkbox v-model="monitor.strategy['bid.stop'].enabled">{{monitor.strategy['bid.stop'].enabled ? 'Enabled' : 'Disabled'}}</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Today Spent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].spent" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Lifetime Spent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].lifetime_spent" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Conversions (number)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].conversions" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Time check (TODO: Does not work for now)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <my-select v-model="monitor.strategy['bid.stop'].time_check" :options="monitorStrategyTimeCheckOptions" class="w-full select-large" :autocomplete="true" />
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Down Bid</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-checkbox v-model="monitor.strategy['bid.down'].enabled">{{monitor.strategy['bid.down'].enabled ? 'Enabled' : 'Disabled'}}</vs-checkbox>
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Bid variation</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].variation" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Today Spent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].spent" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Lifetime Spent</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].lifetime_spent" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Conversions (number)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].conversions" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Time check (TODO: Does not work for now)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <my-select v-model="monitor.strategy['bid.down'].time_check" :options="monitorStrategyTimeCheckOptions" class="w-full select-large" :autocomplete="true" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <vs-button class="mt-12 mr-auto ml-auto" @click="updateMonitorStrategy(monitor)" color="primary" type="filled" :disabled="!isValidForm('edit_monitor_strategy')">Update strategy</vs-button>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
 <script>
+import { VueContext } from 'vue-context'
+
 import Facebook from 'facebook'
 
 export default {
+  name: 'FacebookMonitorsTable',
+  components: {
+    VueContext,
+  },
   data () {
     return {
       maxItems: 20,
 
-      objects: [],
-      selected: [],
+      view: 'monitors',
+
+      monitors: [],
+      selectedMonitors: [],
 
       showFilters: false,
       filters: {
@@ -224,6 +382,10 @@ export default {
         date_to: '',
         advertiser: '',
         form: '',
+      },
+
+      showPopup: {
+        'edit_monitor_strategy': false,
       },
 
       totalStats: {
@@ -241,6 +403,13 @@ export default {
 
       advertisers: [],
       forms: [],
+
+      monitor: {},
+      monitorStrategyTimeCheckOptions: [
+        'every_thirty_minutes',
+        'hourly',
+        'every_two_hours',
+      ],
     }
   },
   computed: {
@@ -261,11 +430,27 @@ export default {
         this.gridApi.paginationGoToPage(val - 1)
       }
     },
+    objects() {
+      if (this.view === 'monitors') {
+        return this.monitors
+      } else if (this.view === 'actions') {
+        return this.actions
+      }
+      return []
+    },
+    selectedObjects() {
+      if (this.view === 'monitors') {
+        return this.selectedMonitors
+      } else if (this.view === 'actions') {
+        return this.selectedActions
+      }
+      return []
+    },
   },
   methods: {
-    getObjectIndexById(id) {
+    getObjectIndexById(id, objects) {
       var index = -1;
-      this.objects.forEach((obj, i) => {
+      objects.forEach((obj, i) => {
         if (obj.id == id) {
           index = i
           return
@@ -279,8 +464,8 @@ export default {
     async applyFilters() {
       this.$vs.loading()
 
-      this.selected = []
-      this.objects = []
+      this.selectedMonitors = []
+      this.monitors = []
 
       let filters = {}
       if (this.filters.advertiser != '') {
@@ -297,7 +482,7 @@ export default {
       }
       filters.reports = 1
 
-      this.objects = await this.facebook.fetchMonitors(filters)
+      this.monitors = await this.facebook.fetchMonitors(filters)
 
       this.calculateStats()
 
@@ -366,23 +551,59 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    confirmDeletePopup() {
-      if (this.selected.length == 0) return
+    confirmSingleDeletePopup(monitor) {
       this.$vs.dialog({
         type: 'confirm',
         color: 'danger',
         title: 'Delete confirmation',
-        text: 'Are you sure you want to delete ' + this.selected.length + ' object(s)?',
+        text: 'Are you sure you want to delete the monitor "' + monitor.name + '"?',
+        accept: function () {
+          this.deleteMonitor(monitor)
+        }.bind(this),
+      })
+    },
+    async deleteMonitor(monitor) {
+      this.$vs.loading()
+
+      const result = await this.facebook.deleteMonitor(monitor.id)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Monitor deleted',
+          iconPack: 'feather',
+          icon: 'icon-trash',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot delete the monitor',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    confirmDeletePopup() {
+      if (this.selectedMonitors.length == 0) return
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'danger',
+        title: 'Delete confirmation',
+        text: 'Are you sure you want to delete ' + this.selectedMonitors.length + ' object(s)?',
         accept: this.deleteSelected
       })
     },
     async deleteSelected() {
-      if (this.selected.length == 0) return
+      if (this.selectedMonitors.length == 0) return
 
       this.$vs.loading()
 
-      for (let i = 0; i < this.selected.length; i++) {
-        await this.facebook.deleteMonitor(this.selected[i].id)
+      for (let i = 0; i < this.selectedMonitors.length; i++) {
+        await this.facebook.deleteMonitor(this.selectedMonitors[i].id)
       }
 
       this.$vs.loading.close()
@@ -416,8 +637,8 @@ export default {
       let cpc = 0.0
       let epc = 0.0
 
-      for (let i = 0; i < this.objects.length; i++) {
-        let obj = this.objects[i]
+      for (let i = 0; i < this.monitors.length; i++) {
+        let obj = this.monitors[i]
 
         numOfCampaigns += obj.numOfCampaigns
         views += obj.views
@@ -453,8 +674,8 @@ export default {
         let headers = {
           Authorization: 'Bearer ' + localStorage.getItem('accessToken')
         }
-        for (let i = 0; i < this.selected.length; i++) {
-          let m = this.selected[i]
+        for (let i = 0; i < this.selectedMonitors.length; i++) {
+          let m = this.selectedMonitors[i]
           let yesterday = new Date(new Date().setDate(new Date().getDate()-1))
           let day = this.formatDate(yesterday)
 
@@ -496,9 +717,100 @@ export default {
 
       await this.applyFilters()
     },
+    isValidForm(type) {
+      if (type === 'edit_monitor_strategy') {
+        return true
+      }
+      return false
+    },
+    showMonitorStrategyPopup(monitor) {
+      this.monitor = monitor
+      this.showPopup['edit_monitor_strategy'] = true
+    },
+    async updateMonitorStrategy(monitor) {
+      this.$vs.loading()
+
+      // NOTE: bid.down variation must always be negative because it is a
+      // decrease of the bid amount
+      if (monitor.strategy['bid.down'].variation > 0) {
+        monitor.strategy['bid.down'].variation *= -1
+      }
+
+      let params = {
+        strategy: JSON.stringify(monitor.strategy),
+      }
+      const updatedMonitor = await this.facebook.updateMonitor(monitor.id, params)
+
+      let result = (updatedMonitor !== null)
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Monitor strategy updated',
+          iconPack: 'feather',
+          icon: 'icon-target',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the monitor strategy',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.showPopup['edit_monitor_strategy'] = false
+
+      this.$vs.loading.close()
+
+      await this.applyFilters()
+    },
+    async runStrategy(monitor) {
+      this.$vs.loading()
+
+      let result = false
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+        }
+        const response = await this.$http.get('/test/monitor/' + monitor.id + '/run', { headers })
+        result = (response.data === 'true' || response.data === true)
+      } catch (error) {
+        // Nothing
+      }
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Monitor strategy applied',
+          iconPack: 'feather',
+          icon: 'icon-facebook',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot run monitor strategy',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
+    goToActionsLog(monitorId) {
+      this.$router.push({name: 'facebook-monitor-actions', params: {facebook_monitor_id: monitorId}})
+        .catch(error => {
+          this.$router.push({name: 'facebook-monitor-actions', params: {facebook_monitor_id: monitorId}})
+        })
+    },
   },
   async created() {
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
+    this.monitor.strategy = this.facebook.getMonitorDefaultStrategy()
+
     await this.resetFilters()
 
     this.$vs.loading()

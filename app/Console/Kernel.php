@@ -56,6 +56,14 @@ class Kernel extends ConsoleKernel
             */
         })->everyThirtyMinutes();
 
+        // Facebook Monitors complete strategy
+        $schedule->call(function () {
+            $monitors = \App\third\FacebookMonitor::all();
+            foreach ($monitors as $monitor) {
+                $monitor->completeStrategy();
+            }
+        })->dailyAt('00:05');
+
 
         // Tiktok Rules
         $schedule->call(function () {

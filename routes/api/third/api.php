@@ -110,6 +110,8 @@ Route::put('/facebook/monitors/{id}', 'api\third\FacebookController@updateMonito
     ->name('facebook.monitors.update');
 Route::delete('/facebook/monitors/{id}', 'api\third\FacebookController@deleteMonitor')->middleware('auth:api')
     ->name('facebook.monitors.delete');
+Route::get('/facebook/monitors/{id}/actions', 'api\third\FacebookController@getMonitorActions')->middleware('auth:api')
+    ->name('facebook.monitors.actions.index');
 
 
 /*

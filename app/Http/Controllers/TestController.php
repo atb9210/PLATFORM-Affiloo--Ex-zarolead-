@@ -31,6 +31,28 @@ class TestController extends Controller
         return 'false';
     }
 
+    public function facebookMonitorRunStrategy($id, Request $request)
+    {
+        $result = true;
+        $monitorId = $id;
+        $monitor = \App\third\FacebookMonitor::findOrFail($monitorId);
+        if ($monitor !== null) {
+            foreach ($monitor->strategy as $key => $value) {
+                $params = $value;
+                $params['action_type'] = $key;
+                if (isset($value['enabled']) && $value['enabled']) {
+                    $result = $result && $monitor->runStrategy($params);
+                }
+            }
+        } else {
+            $result = false;
+        }
+        if ($result) {
+            return 'true';
+        }
+        return 'false';
+    }
+
     public function test(Request $request)
     {
         $monitor = \App\third\FacebookMonitor::find(4);

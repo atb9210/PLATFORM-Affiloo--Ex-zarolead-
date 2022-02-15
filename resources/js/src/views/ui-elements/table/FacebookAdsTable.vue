@@ -824,7 +824,7 @@ function intersect(a, b) {
 }
 
 export default {
-  name: 'TikTokAdsTable',
+  name: 'FacebookAdsTable',
   components: {
     'v-select': vSelect,
     VueApexCharts,

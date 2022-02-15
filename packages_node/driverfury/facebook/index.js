@@ -1,6 +1,52 @@
 let axios = require('axios')
 
+function cloneObject(obj) {
+  if (obj == null || "object" != typeof(obj)) {
+    return obj
+  }
+
+  let copy = obj.constructor()
+  for (let attr in obj) {
+    if (obj.hasOwnProperty(attr)) {
+      copy[attr] = obj[attr]
+    }
+  }
+  return copy
+}
+
+function copyObject(sourceObj, destObj) {
+  for (let attr in sourceObj) {
+    destObj[attr] = sourceObj[attr]
+  }
+}
+
+function mergeObject(sourceObj, destObj) {
+  for (let attr in sourceObj) {
+    if (!destObj.hasOwnProperty(attr)) {
+      destObj[attr] = sourceObj[attr]
+    }
+  }
+}
+
 class Facebook {
+  monitorDefaultStrategy = {
+    'bid.stop': {
+      enabled: false,
+      spent: 0.0,
+      lifetime_spent: 0.0,
+      conversions: 0,
+      time_check: 'every_thirty_minutes',
+    },
+    'bid.down': {
+      enabled: false,
+      variation: 0.0,
+      spent: 0.0,
+      lifetime_spent: 0.0,
+      conversions: 0,
+      time_check: 'every_thirty_minutes',
+    },
+  }
+
   constructor(apiKey) {
     this.apiKey = apiKey
     this.$http = axios
@@ -535,6 +581,10 @@ class Facebook {
     return object
   }
 
+  getMonitorDefaultStrategy() {
+    return cloneObject(this.monitorDefaultStrategy)
+  }
+
   async fetchMonitors(filters = {}) {
     let objects = []
 
@@ -582,6 +632,12 @@ class Facebook {
         obj.averageSpent = ((obj.numOfCampaigns > 0) ? (obj.spent/obj.numOfCampaigns) : 0.0)
         obj.cpc = ((obj.views > 0) ? (obj.spent/obj.views) : 0.0)
         obj.epc = ((obj.views > 0) ? (obj.conversions_value/obj.views) : 0.0)
+
+        if (!obj.hasOwnProperty('strategy') || obj.strategy === null) {
+          obj.strategy = cloneObject(this.monitorDefaultStrategy)
+        } else {
+          mergeObject(this.monitorDefaultStrategy, obj.strategy)
+        }
 
         objects[i] = obj
       }
@@ -685,6 +741,58 @@ class Facebook {
     }
 
     return result
+  }
+
+  async fetchMonitorActions(monitorId, filters = {}) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      let params = filters
+      const response = await this.$http.get('/api/3rd/facebook/monitors/' + monitorId + '/actions', { headers, params })
+      objects = response.data.data
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        obj.spent = 0.0
+        obj.conversions = 0
+        obj.conversions_value = 0.0
+        if (obj.hasOwnProperty('spent') && obj.spent !== null) {
+          obj.spent = parseFloat(obj.spent)
+        } else {
+          obj.spent = 0.0
+        }
+        if (obj.hasOwnProperty('conversions') && obj.conversions !== null) {
+          obj.conversions = parseInt(obj.conversions)
+        } else {
+          obj.conversions = 0.0
+        }
+        if (obj.hasOwnProperty('conversions_value') && obj.conversions_value !== null) {
+          obj.conversions_value = parseFloat(obj.conversions_value)
+        } else {
+          obj.conversions_value = 0.0
+        }
+        obj.profit = obj.conversions_value - obj.spent
+
+        if (obj.hasOwnProperty('end_conversions') && obj.end_conversions !== null) {
+          obj.end_conversions = parseInt(obj.end_conversions)
+        } else {
+          obj.end_conversions = 0
+        }
+        if (obj.hasOwnProperty('end_conversions_value') && obj.end_conversions_value !== null) {
+          obj.end_conversions_value = parseFloat(obj.end_conversions_value)
+        } else {
+          obj.end_conversions_value = 0.0
+        }
+
+        objects[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
   }
 
 }

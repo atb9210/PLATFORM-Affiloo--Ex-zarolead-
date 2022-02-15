@@ -33,6 +33,7 @@ class FacebookMonitorResource extends JsonResource
                 'name' => $this->form->name,
             ],
             'campaigns' => $this->campaigns,
+            'strategy' => $this->strategy,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
