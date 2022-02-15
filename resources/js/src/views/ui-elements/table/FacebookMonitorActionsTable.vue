@@ -27,6 +27,9 @@
         </div>
 
         <p class="flex items-center mb-4">
+            <vx-tooltip text="Go Back" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="goToMonitorsPage()"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Filters" position="top">
                 <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             </vx-tooltip>
@@ -108,7 +111,6 @@
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="conversions">Conversions</vs-th>
                     <vs-th sort-key="conversions_value">Commissions</vs-th>
-                    <vs-th sort-key="profit">Profit</vs-th>
                     <vs-th sort-key="end_conversions">End Conversions</vs-th>
                     <vs-th sort-key="end_conversions_value">End Commissions</vs-th>
                 </template>
@@ -142,10 +144,6 @@
 
                         <vs-td :data="data[indextr].conversions_value">
                             € {{data[indextr].conversions_value.toFixed(2)}}
-                        </vs-td>
-
-                        <vs-td :data="data[indextr].profit">
-                            € {{data[indextr].profit.toFixed(2)}}
                         </vs-td>
 
                         <vs-td :data="data[indextr].end_conversions">
@@ -336,7 +334,7 @@ export default {
       let formattedTime = hh + ':' + ii + ':' + ss
       return formattedDate + ' ' + formattedTime
     },
-    goToMonitorsPage(advertiserId) {
+    goToMonitorsPage() {
       this.$router.push({name: 'facebook-monitors'})
         .catch(error => {
           this.$router.push({name: 'facebook-monitors'})
