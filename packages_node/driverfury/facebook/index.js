@@ -778,15 +778,15 @@ class Facebook {
         }
         obj.profit = obj.conversions_value - obj.spent
 
-        if (obj.hasOwnProperty('end_conversions') && obj.end_conversions !== null) {
-          obj.end_conversions = parseInt(obj.end_conversions)
+        if (obj.hasOwnProperty('end_roi') && obj.end_roi !== null) {
+          obj.end_roi = parseFloat(obj.end_roi)
         } else {
-          obj.end_conversions = 0
+          obj.end_roi = 0
         }
-        if (obj.hasOwnProperty('end_conversions_value') && obj.end_conversions_value !== null) {
-          obj.end_conversions_value = parseFloat(obj.end_conversions_value)
+        if (obj.hasOwnProperty('end_roi_campaign') && obj.end_roi_campaign !== null) {
+          obj.end_roi_campaign = parseFloat(obj.end_roi_campaign)
         } else {
-          obj.end_conversions_value = 0.0
+          obj.end_roi_campaign = 0.0
         }
 
         objects[i] = obj

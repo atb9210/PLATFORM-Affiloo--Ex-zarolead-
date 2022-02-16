@@ -111,8 +111,8 @@
                     <vs-th sort-key="spent">Spent</vs-th>
                     <vs-th sort-key="conversions">Conversions</vs-th>
                     <vs-th sort-key="conversions_value">Commissions</vs-th>
-                    <vs-th sort-key="end_conversions">End Conversions</vs-th>
-                    <vs-th sort-key="end_conversions_value">End Commissions</vs-th>
+                    <vs-th sort-key="end_roi">ROI</vs-th>
+                    <vs-th sort-key="end_roi_campaign">ROI Camp.</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -146,12 +146,12 @@
                             € {{data[indextr].conversions_value.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].end_conversions">
-                            {{data[indextr].end_conversions}}
+                        <vs-td :data="data[indextr].end_roi">
+                            € {{data[indextr].end_roi.toFixed(2)}}
                         </vs-td>
 
-                        <vs-td :data="data[indextr].end_conversions_value">
-                            € {{data[indextr].end_conversions_value.toFixed(2)}}
+                        <vs-td :data="data[indextr].end_roi_campaign">
+                            € {{data[indextr].end_roi_campaign.toFixed(2)}}
                         </vs-td>
 
                     </vs-tr>
