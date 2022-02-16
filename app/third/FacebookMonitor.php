@@ -326,7 +326,7 @@ class FacebookMonitor extends Model
             if (isset($params['times_per_day'])) {
                 $timesPerDay = intval($params['times_per_day']);
                 $todayActions = FacebookMonitorAction::where('action_type', $params['action_type'])
-                    ->where('created_at', '>=', $today . ' 00:00:00');
+                    ->where('created_at', '>=', $today . ' 00:00:00')
                     ->where('created_at', '<=', $today . ' 23:59:59');
                 $toDo = $toDo && ($todayActions->count() < $timesPerDay);
             }
