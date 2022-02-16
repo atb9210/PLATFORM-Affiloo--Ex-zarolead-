@@ -302,7 +302,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Time check (TODO: Does not work for now)</span>
+                    <span>Time check</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <my-select v-model="monitor.strategy['bid.stop'].time_check" :options="monitorStrategyTimeCheckOptions" class="w-full select-large" :autocomplete="true" />
@@ -376,7 +376,7 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
-                    <span>Time check (TODO: Does not work for now)</span>
+                    <span>Time check</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <my-select v-model="monitor.strategy['bid.down'].time_check" :options="monitorStrategyTimeCheckOptions" class="w-full select-large" :autocomplete="true" />
