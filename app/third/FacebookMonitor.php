@@ -15,7 +15,7 @@ class FacebookMonitor extends Model
     protected $table = 'third_facebook_monitors';
 
     protected $fillable = [
-        'name', 'advertiser_id', 'form_id', 'campaigns', 'strategy',
+        'name', 'advertiser_id', 'form_id', 'campaigns', 'strategy', 'archived',
     ];
 
     protected $casts = [
@@ -299,9 +299,11 @@ class FacebookMonitor extends Model
             return false;
         }
 
+        $today = $this->today();
+        $tomorrow = $this->tomorrow();
         $reportsFilters = [
-            'start_date' => $this->today(),
-            'end_date' => $this->tomorrow(),
+            'start_date' => $today,
+            'end_date' => $tomorrow,
             'metrics' => [
                 'spend',
                 'actions',
@@ -321,6 +323,13 @@ class FacebookMonitor extends Model
 
             // Check if action needs to be done
             $toDo = true;
+            if (isset($params['times_per_day'])) {
+                $timesPerDay = intval($params['times_per_day']);
+                $todayActions = FacebookMonitorAction::where('action_type', $params['action_type'])
+                    ->where('created_at', '>=', $today . ' 00:00:00');
+                    ->where('created_at', '<=', $today . ' 23:59:59');
+                $toDo = $toDo && ($todayActions->count() < $timesPerDay);
+            }
             if (isset($params['spent'])) {
                 $toDo = $toDo && ($stats['spent'] >= floatval($params['spent']));
             }
@@ -350,7 +359,16 @@ class FacebookMonitor extends Model
                     } break;
 
                     case 'bid.down': {
-                        $this->moveBid($campaign, floatval($params['variation']));
+                        $variation = floatval($params['variation']);
+                        $minBid = -1.0;
+                        if (isset($params['min_bid'])) {
+                            try {
+                                $minBid = floatval($params['min_bid']);
+                            } catch (Exception $e) {
+                                $minBid = -1.0;
+                            }
+                        }
+                        $this->moveBid($campaign, $variation, $minBid);
                     } break;
                 }
 
@@ -376,7 +394,7 @@ class FacebookMonitor extends Model
         return $fb->updateCampaignBidAmount($campaign['id'], $bidAmount);
     }
 
-    private function moveBid(array $campaign, float $variation): bool
+    private function moveBid(array $campaign, float $variation, float $minBid = -1.0): bool
     {
         // Check if access token is valid
         if (!$this->advertiser->checkAccessToken()) {
@@ -397,27 +415,110 @@ class FacebookMonitor extends Model
             return false;
         }
         $bidAmount = floatval($adsets[0]['bid_amount'])/100;
-        $bidAmount += $variation;
+        $changeBid = true;
+        if ($minBid >= 0.0) {
+            if ($bidAmount > $minBid) {
+                if ($bidAmount + $variation < $minBid) {
+                    $bidAmount = $minBid;
+                } else {
+                    $bidAmount = $bidAmount + $variation;
+                }
+            } else {
+                $changeBid = false;
+            }
+        } else {
+            $bidAmount = $bidAmount + $variation;
+        }
 
-        return $fb->updateCampaignBidAmount($campaign['id'], $bidAmount);
+        $result = true;
+        if ($changeBid) {
+            $result = $fb->updateCampaignBidAmount($campaign['id'], $bidAmount);
+        }
+
+        return $result;
     }
 
     public function completeStrategy(): bool
     {
         $result = false;
 
+        $actions = $this->getActions($yesterday, $yesterday);
+        if (count($actions) == 0) {
+            return true;
+        }
+
+        // Check if access token is valid
+        if (!$this->advertiser->checkAccessToken()) {
+            // DEBUG
+            $this->logError('Invalid access token');
+            return false;
+        }
+
+        // Create a facebook client instance
+        $fb = $this->advertiser->getClient();
+
         $yesterday = $this->yesterday();
+        $today = $this->today();
 
         $reports = $this->getReports($yesterday, $yesterday);
-        $endConversions = $reports['conversions'];
-        $endConversionsValue = $reports['conversions_value'];
 
-        $actions = $this->getActions($yesterday, $yesterday);
+        $spent = $reports['spent'];
+        $conversionsValue = $reports['conversions_value'];
+        $profit = $conversionsValue - $spent;
+        $roiTotal = (($spent > 0) ? ((($profit/$spent))*100) : 0);
+
+        $adAccountId = null;
+        $campaignIds = null;
+        foreach ($this->campaigns as $adAccId => $campIds) {
+            $adAccountId = $adAccId;
+            $campaignIds = $campIds;
+            // TODO: Only for one ad account for now
+            break;
+        }
+        if ($adAccountId === null || $campaignIds === null) {
+            // DEBUG
+            $this->logError('Invalid ad account and/or campaigns');
+            return false;
+        }
+
+        $campaignStats = [];
+
+        $reportsFilters = [
+            'start_date' => $yesterday,
+            'end_date' => $today,
+            'metrics' => [
+                'spend',
+                'actions',
+                'action_values',
+            ],
+        ];
+        $campaigns = $fb->getCampaigns($adAccountId, $reportsFilters);
+        foreach ($campaigns as $campaign) {
+            // TODO: HERE
+            if (!in_array($campaign['id'], $campaignIds)) {
+                continue;
+            }
+
+            $stats = $this->getStatsFromObject($campaign);
+
+            $spent = $stats['spent'];
+            $conversionsValue = $stats['conversions_value'];
+            $profit = $conversionsValue - $spent;
+            $roi = (($spent > 0) ? ((($profit/$spent))*100) : 0);
+
+            $campaignStats[$campaign['id']] = $stats;
+            $campaignStats[$campaign['id']]['profit'] = $profit;
+            $campaignStats[$campaign['id']]['roi'] = $roi;
+        }
+
         foreach ($actions as $action) {
-            $action->update([
-                'end_conversions' => $endConversions,
-                'end_conversions_value' => $endConversionsValue,
-            ]);
+            $params = [
+                'end_roi' => $roiTotal,
+            ];
+            if (isset($campaignStats[$action->campaign_id])) {
+                $params['end_roi_campaign'] = $campaignStats[$action->campaign_id]['roi'];
+            }
+            $action->update($params);
         }
 
         $result = true;

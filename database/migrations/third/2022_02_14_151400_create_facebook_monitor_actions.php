@@ -24,8 +24,8 @@ class CreateFacebookMonitorActions extends Migration
             $table->decimal('spent', 9, 2)->default(0.0);
             $table->integer('conversions')->unsigned()->default(0);
             $table->decimal('conversions_value', 9, 2)->default(0.0);
-            $table->integer('end_conversions')->unsigned()->default(0);
-            $table->decimal('end_conversions_value', 9, 2)->default(0.0);
+            $table->decimal('end_roi', 9, 2)->default(0.0);
+            $table->decimal('end_roi_campaign', 9, 2)->default(0.0);
             $table->timestamps();
 
 			$table->foreign('monitor_id')->references('id')->on('third_facebook_monitors');

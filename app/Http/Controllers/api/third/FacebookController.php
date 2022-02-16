@@ -908,7 +908,7 @@ class FacebookController extends Controller
             'filter_date_to'    => 'date|date_format:Y-m-d',
             'reports'           => 'boolean',
         ]);
-        $monitors = FacebookMonitor::query();
+        $monitors = FacebookMonitor::where('archived', 0);
         if (isset($params['filter_advertiser'])) {
             $monitors = $monitors->where('advertiser_id', $params['filter_advertiser']);
         }
@@ -931,6 +931,7 @@ class FacebookController extends Controller
     {
         // TODO: Authorization
         $monitor = FacebookMonitor::findOrFail($id);
+        // TODO: What about archived monitor?
         return new FacebookMonitorResource($monitor);
     }
 
@@ -1005,6 +1006,8 @@ class FacebookController extends Controller
             $params['strategy'] = json_decode($params['strategy'], true);
         }
 
+        // TODO: What about archived monitor?
+
         $monitor = FacebookMonitor::findOrFail($id);
         $monitor->update($params);
 
@@ -1025,7 +1028,8 @@ class FacebookController extends Controller
         // TODO: Authorization
 
         $monitor = FacebookMonitor::findOrFail($id);
-        $monitor->delete();
+        $monitor->archived = 1;
+        $monitor->save();
 
         return response([
             'message' => 'Monitor deleted',

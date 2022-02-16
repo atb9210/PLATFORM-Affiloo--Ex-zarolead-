@@ -21,6 +21,7 @@ class CreateFacebookMonitors extends Migration
             $table->json('campaigns')->nullable();
             $table->json('strategy')->nullable();
             $table->timestamps();
+            $table->boolean('archived')->default(0);
 
 			$table->foreign('advertiser_id')->references('id')->on('third_facebook_advertisers');
 			$table->foreign('form_id')->references('id')->on('forms');

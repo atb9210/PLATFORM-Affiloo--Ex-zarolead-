@@ -86,6 +86,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.monitor_context_menu.close();showMonitorCampaignsPopup(data);" class="flex items-center text-sm">
+                <feather-icon icon="LayoutIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Edit Campaigns</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.monitor_context_menu.close();confirmSingleDeletePopup(data);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
@@ -243,6 +249,7 @@
             </vs-table>
         </div>
 
+        <!-- Monitor strategy popup -->
         <vs-popup title="Monitor Strategy" :active.sync="showPopup['edit_monitor_strategy']">
             <div class="vx-row mb-6 flex items-center">
                 <vs-button class="mr-auto ml-auto">{{monitor.name}}</vs-button>
@@ -286,6 +293,15 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Times per day (max)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].times_per_day" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Time check (TODO: Does not work for now)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -310,6 +326,15 @@
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
                     <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].variation" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
+                    <span>Minimum Bid</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].min_bid" />
                 </div>
             </div>
 
@@ -342,6 +367,15 @@
 
             <div class="vx-row mb-6">
                 <div class="vx-col sm:w-1/3 w-full">
+                    <span>Times per day (max)</span>
+                </div>
+                <div class="vx-col sm:w-2/3 w-full">
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].times_per_day" />
+                </div>
+            </div>
+
+            <div class="vx-row mb-6">
+                <div class="vx-col sm:w-1/3 w-full">
                     <span>Time check (TODO: Does not work for now)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
@@ -351,6 +385,27 @@
 
             <div class="vx-row mb-6">
                 <vs-button class="mt-12 mr-auto ml-auto" @click="updateMonitorStrategy(monitor)" color="primary" type="filled" :disabled="!isValidForm('edit_monitor_strategy')">Update strategy</vs-button>
+            </div>
+        </vs-popup>
+
+        <!-- Edit monitor campaigns -->
+        <vs-popup title="Monitor campaigns" :active.sync="showPopup['edit_monitor_campaigns']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3 w-full font-bold">
+                    <div class="vx-col md:w-1/6 w-full">
+                    </div>
+                    <div class="vx-col md:w-5/6 w-full">
+                        Name
+                    </div>
+                </div>
+                <div class="vx-row mb-3 w-full text-sm" v-for="(campaign, cIndex) in campaigns" :key="'editCampaigns' + cIndex">
+                    <div class="vx-col md:w-1/6 w-full">
+                        <vs-checkbox v-model="campaigns[cIndex].selected" @change="updateMonitorCampaigns(monitor, campaigns)" />
+                    </div>
+                    <div class="vx-col md:w-5/6 w-full">
+                        {{campaign.name}}
+                    </div>
+                </div>
             </div>
         </vs-popup>
 
@@ -386,6 +441,7 @@ export default {
 
       showPopup: {
         'edit_monitor_strategy': false,
+        'edit_monitor_campaigns': false,
       },
 
       totalStats: {
@@ -410,6 +466,8 @@ export default {
         'hourly',
         'every_two_hours',
       ],
+
+      campaigns: [],
     }
   },
   computed: {
@@ -806,9 +864,98 @@ export default {
           this.$router.push({name: 'facebook-monitor-actions', params: {facebook_monitor_id: monitorId}})
         })
     },
+    async showMonitorCampaignsPopup(monitor) {
+      this.monitor = monitor
+
+      let adAccountId = null
+      let campaignIds = null
+      for (const [key, value] of Object.entries(monitor.campaigns)) {
+        adAccountId = key
+        campaignIds = value
+        break
+      }
+      if (adAccountId === null) {
+        return
+      }
+      if (campaignIds === null) {
+        campaignIds = []
+      }
+
+      this.$vs.loading()
+
+      let advertiser = await this.facebook.fetchAdvertiser(monitor.advertiser.id)
+      if (advertiser === null) {
+        // TODO: Log
+      }
+      this.facebook.setAccessToken(advertiser.access_token)
+
+      this.campaigns = await this.facebook.fetchCampaigns(adAccountId)
+      for (let i = 0; i < this.campaigns.length; i++) {
+        let campaign = this.campaigns[i]
+
+        campaign.selected = false
+        if (campaignIds.includes(campaign.id)) {
+          campaign.selected = true
+        }
+
+        this.campaigns[i] = campaign
+      }
+
+      this.$vs.loading.close()
+
+      this.showPopup['edit_monitor_campaigns'] = true
+    },
+    async updateMonitorCampaigns(monitor, campaigns) {
+      let adAccountId = null
+      for (const [key, value] of Object.entries(monitor.campaigns)) {
+        adAccountId = key
+        break
+      }
+      if (adAccountId === null) {
+        return
+      }
+
+      this.$vs.loading()
+
+      let campaignIds = []
+      for (let i = 0; i < this.campaigns.length; i++) {
+        let campaign = this.campaigns[i]
+        if (campaign.selected) {
+          campaignIds.push(campaign.id)
+        }
+      }
+      let paramsCampaigns = {}
+      paramsCampaigns[adAccountId] = campaignIds
+
+      let params = {
+        campaigns: JSON.stringify(paramsCampaigns)
+      }
+      const result = await this.facebook.updateMonitor(monitor.id, params)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Monitor campaigns updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update monitor campaigns',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
   },
   async created() {
     this.facebook = new Facebook(localStorage.getItem('accessToken'))
+
     this.monitor.strategy = this.facebook.getMonitorDefaultStrategy()
 
     await this.resetFilters()

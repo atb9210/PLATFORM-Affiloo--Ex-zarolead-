@@ -35,14 +35,17 @@ class Facebook {
       spent: 0.0,
       lifetime_spent: 0.0,
       conversions: 0,
+      times_per_day: 1,
       time_check: 'every_thirty_minutes',
     },
     'bid.down': {
       enabled: false,
       variation: 0.0,
+      min_bid: 0.0,
       spent: 0.0,
       lifetime_spent: 0.0,
       conversions: 0,
+      times_per_day: 1,
       time_check: 'every_thirty_minutes',
     },
   }
