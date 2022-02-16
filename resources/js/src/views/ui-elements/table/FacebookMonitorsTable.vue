@@ -269,7 +269,7 @@
                     <span>Today Spent</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].spent" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-chevron-right" icon-no-border v-model="monitor.strategy['bid.stop'].spent" />
                 </div>
             </div>
 
@@ -278,7 +278,7 @@
                     <span>Lifetime Spent</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].lifetime_spent" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-chevron-right" icon-no-border v-model="monitor.strategy['bid.stop'].lifetime_spent" />
                 </div>
             </div>
 
@@ -287,7 +287,7 @@
                     <span>Conversions (number)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].conversions" />
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-chevron-left" icon-no-border v-model="monitor.strategy['bid.stop'].conversions" />
                 </div>
             </div>
 
@@ -296,7 +296,7 @@
                     <span>Times per day (max)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.stop'].times_per_day" />
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-play" icon-no-border v-model="monitor.strategy['bid.stop'].times_per_day" />
                 </div>
             </div>
 
@@ -325,7 +325,7 @@
                     <span>Bid variation</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].variation" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="monitor.strategy['bid.down'].variation" />
                 </div>
             </div>
 
@@ -334,7 +334,7 @@
                     <span>Minimum Bid</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].min_bid" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="monitor.strategy['bid.down'].min_bid" />
                 </div>
             </div>
 
@@ -343,7 +343,7 @@
                     <span>Today Spent</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].spent" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-chevron-right" icon-no-border v-model="monitor.strategy['bid.down'].spent" />
                 </div>
             </div>
 
@@ -352,7 +352,7 @@
                     <span>Lifetime Spent</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].lifetime_spent" />
+                    <vs-input type="number" step="0.01" class="w-full" icon-pack="feather" icon="icon-chevron-right" icon-no-border v-model="monitor.strategy['bid.down'].lifetime_spent" />
                 </div>
             </div>
 
@@ -361,7 +361,7 @@
                     <span>Conversions (number)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].conversions" />
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-chevron-left" icon-no-border v-model="monitor.strategy['bid.down'].conversions" />
                 </div>
             </div>
 
@@ -370,7 +370,7 @@
                     <span>Times per day (max)</span>
                 </div>
                 <div class="vx-col sm:w-2/3 w-full">
-                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="monitor.strategy['bid.down'].times_per_day" />
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-play" icon-no-border v-model="monitor.strategy['bid.down'].times_per_day" />
                 </div>
             </div>
 
