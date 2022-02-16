@@ -35,7 +35,7 @@ class Kernel extends ConsoleKernel
 
         // Facebook Monitors reports
         $schedule->call(function () {
-            $monitors = \App\third\FacebookMonitor::all();
+            $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();
             foreach ($monitors as $monitor) {
                 $monitor->createReport();
             }
@@ -43,22 +43,63 @@ class Kernel extends ConsoleKernel
 
         // Facebook Monitors strategies
         $schedule->call(function () {
-            // TODO: HERE
-            /*
-            $params = [
-                'placeholder' => 'placeholder',
-            ];
-
-            $monitors = \App\third\FacebookMonitor::all();
+            $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();
             foreach ($monitors as $monitor) {
-                $monitor->runStrategy($params);
+                if ($monitor->strategy === null) {
+                    continue;
+                }
+                foreach ($monitor->strategy as $key => $value) {
+                    if (isset($value['time_check']) && $value['time_check'] != 'every_thirty_minutes') {
+                        continue;
+                    }
+                    $params = $value;
+                    $params['action_type'] = $key;
+                    if (isset($value['enabled']) && $value['enabled']) {
+                        $monitor->runStrategy($params);
+                    }
+                }
             }
-            */
         })->everyThirtyMinutes();
+        $schedule->call(function () {
+            $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();
+            foreach ($monitors as $monitor) {
+                if ($monitor->strategy === null) {
+                    continue;
+                }
+                foreach ($monitor->strategy as $key => $value) {
+                    if (isset($value['time_check']) && $value['time_check'] != 'hourly') {
+                        continue;
+                    }
+                    $params = $value;
+                    $params['action_type'] = $key;
+                    if (isset($value['enabled']) && $value['enabled']) {
+                        $monitor->runStrategy($params);
+                    }
+                }
+            }
+        })->hourly();
+        $schedule->call(function () {
+            $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();
+            foreach ($monitors as $monitor) {
+                if ($monitor->strategy === null) {
+                    continue;
+                }
+                foreach ($monitor->strategy as $key => $value) {
+                    if (isset($value['time_check']) && $value['time_check'] != 'every_two_hours') {
+                        continue;
+                    }
+                    $params = $value;
+                    $params['action_type'] = $key;
+                    if (isset($value['enabled']) && $value['enabled']) {
+                        $monitor->runStrategy($params);
+                    }
+                }
+            }
+        })->everyTwoHours();
 
         // Facebook Monitors complete strategy
         $schedule->call(function () {
-            $monitors = \App\third\FacebookMonitor::all();
+            $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();
             foreach ($monitors as $monitor) {
                 $monitor->completeStrategy();
             }
