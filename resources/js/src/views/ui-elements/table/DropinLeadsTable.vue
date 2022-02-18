@@ -8,6 +8,9 @@
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Copy selected leads CSV" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyLeadsCSV(selectedLeads)"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Send message (bulk)" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
             </vx-tooltip>
@@ -110,21 +113,9 @@
 
             <vue-context ref="lead_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.lead_context_menu.close();showLeadInfo(data)" class="flex items-center text-sm">
-                    <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Show info</span>
-                  </a>
-                </li>
-                <li>
                   <a href="#" @click="$refs.lead_context_menu.close();changeView('order_builder', data)" class="flex items-center text-sm">
                     <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Edit</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" v-if="data !== null && data.hasOwnProperty('info') && canCreateDelivery(data.info)" @click="$refs.lead_context_menu.close();fastCreateDelivery(data)"class="flex items-center text-sm">
-                    <feather-icon icon="PackageIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Create delivery</span>
                   </a>
                 </li>
                 <li>
@@ -147,40 +138,14 @@
                 </li>
             </vue-context>
 
-            <!--
-            <popover class="customer_popover" :name="'customer_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'leadPopover' + index">
-                <div><b>{{ lead.full_name }}</b></div>
-                <div v-if="lead.info !== null && lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null">
-                    <div v-if="lead.info.shipping.hasOwnProperty('street_address') && lead.info.shipping.hasOwnProperty('city') && lead.info.shipping.hasOwnProperty('province')">
-                        <div>{{ lead.info.shipping.street_address }}</div>
-                        <div>{{ lead.info.shipping.city }} ({{ lead.info.shipping.province }})</div>
-                    </div>
-                </div>
-                <div>{{ lead.phone }}</div>
-            </popover>
-            -->
-
-            <!--
-            <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'itemsPopover' + index">
-                <ul v-if="lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null && lead.info.products.length > 0">
-                    <li v-for="(item, pIndex) in lead.info.products" :key="'itemsPopoverElement' + pIndex">
-                        {{item.name}} (x{{item.quantity}})
-                    </li>
-                </ul>
-            </popover>
-            -->
-
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <!--<vs-th sort-key="id">ID</vs-th>-->
-                    <vs-th sort-key="order_number">Order Num</vs-th>
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
-                    <!--<vs-th sort-key="delivery.completed_at">Completed</vs-th>-->
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
-                    <!--<vs-th sort-key="sku">SKU</vs-th>-->
                     <vs-th sort-key="product_name">Product</vs-th>
                     <vs-th sort-key="gateway">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
@@ -190,9 +155,6 @@
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
-                    <!--<vs-th sort-key="delivery_status">Dlvry</vs-th>-->
-                    <vs-th sort-key="order_status">Order Status</vs-th>
-                    <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
                     <vs-th sort-key="notes">Notes</vs-th>
                     <vs-th>Actions</vs-th>
                 </template>
@@ -200,34 +162,17 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="item" :key="'tableRow' + indextr" v-for="(item, indextr) in data">
 
-                        <!--
                         <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
-                        </vs-td>
-                        -->
-
-                        <vs-td class="column-no-padding" :data="item.order_number">
-                            <span v-if="item.order_number != ''" @click="showLeadInfo(item)">
-                                <u>{{item.order_number}}</u>
-                            </span>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.created_at">
                             {{formatDateTime(new Date(item.created_at))}}
                         </vs-td>
 
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.delivery.completed_at">
-                            <span v-if="item.delivery.completed_at !== ''">
-                                {{formatDateTime(new Date(item.delivery.completed_at))}}
-                            </span>
-                        </vs-td>
-                        -->
-
                         <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
                                 <vx-tooltip :title="item.full_name" :text="hasAddressInfo(item) ? getAddress(item) : 'Address undefined'" position="left">
-                                    <!--<vs-chip v-popover="{name:'customer_popover_' + item.id}">-->
                                     <vs-chip>
                                         {{item.full_name}}
                                     </vs-chip>
@@ -242,12 +187,6 @@
                                 </span>
                             </vs-chip>
                         </vs-td>
-
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.sku">
-                            {{item.sku}}
-                        </vs-td>
-                        -->
 
                         <vs-td class="column-no-padding" :data="item.product_name">
                             <vs-chip>
@@ -287,7 +226,6 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding">
-                            <!--<vs-chip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" v-popover="{name:'items_popover_' + item.id}">-->
                             <vx-tooltip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" title="Items" :text="getProductsList(item)">
                                 <vs-chip>
                                     {{item.info.products.length}} items
@@ -320,27 +258,6 @@
                             <span v-else>No</span>
                         </vs-td>
 
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.delivery_status">
-                            <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" icon-pack="feather" icon="icon-package" />
-                        </vs-td>
-                        -->
-
-                        <vs-td class="column-no-padding" :data="item.order_status">
-                            <span>{{item.order_status}}</span>
-                        </vs-td>
-
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.carrier">
-                            <div v-if="item.carrier != ''" class="w-full">
-                                <img class="carrier-icon" v-if="carrierIcon.hasOwnProperty(item.carrier)" :src="carrierIcon[item.carrier]" />
-                                <span v-else>
-                                    {{item.carrier}}
-                                </span>
-                            </div>
-                        </vs-td>
-                        -->
-
                         <vs-td class="column-no-padding" :data="item.notes">
                             <vx-tooltip :text="item.notes" position="top">
                                 <vs-avatar :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-message-square" />
@@ -367,14 +284,6 @@
                                             <vs-icon icon-pack="feather" icon="icon-message-square"></vs-icon>
                                             Show Notes
                                         </vs-dropdown-item>
-                                        <vs-dropdown-item @click="fastCreateDelivery(item)">
-                                            <vs-icon icon-pack="feather" icon="icon-package"></vs-icon>
-                                            Create Delivery
-                                        </vs-dropdown-item>
-                                        <vs-dropdown-item @click="showLeadInfo(item)">
-                                            <vs-icon icon-pack="feather" icon="icon-info"></vs-icon>
-                                            Show Info
-                                        </vs-dropdown-item>
                                         <vs-dropdown-item @click="showPaymentLink(item)">
                                             <vs-icon icon-pack="feather" icon="icon-dollar-sign"></vs-icon>
                                             Show Payment Link
@@ -393,12 +302,6 @@
                                 <vx-tooltip text="Edit" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
                                 </vx-tooltip>
-                                <vx-tooltip text="Create delivery" position="top">
-                                    <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Info" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
-                                </vx-tooltip>
                                 <vx-tooltip text="Payment link" position="top">
                                     <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-dollar-sign" @click="showPaymentLink(item)" />
                                 </vx-tooltip>
@@ -413,13 +316,10 @@
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding">{{data.length}}</vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.price.toFixed(2)}}</vs-td>
@@ -429,9 +329,6 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
-                    <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
 
@@ -655,7 +552,6 @@
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
                     <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateDeliveryPopup()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
                 </div>
 
             </div>
@@ -700,7 +596,7 @@
                         {{product.name}}
                     </div>
                     <div class="vx-col md:w-1/6 w-full">
-                        {{product.quantity_stock}}
+                        {{product.quantity}}
                     </div>
                     <div class="vx-col md:w-1/3 w-full">
                         {{product.sku}}
@@ -723,44 +619,8 @@
             </div>
         </vs-popup>
 
-        <!-- Create delivery popup -->
-        <vs-popup title="Lead info" :active.sync="showPopup['create_delivery']">
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Completed date
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="order.completed_at" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateLeadInfoAndCreateDelivery()" color="primary" type="filled">Create Delivery</vs-button>
-            </div>
-        </vs-popup>
-
         <!-- Payment link popup -->
         <vs-popup title="Payment link" :active.sync="showPopup['payment_link']">
-            <!--
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Thank you page
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-check-circle" icon-no-border v-model="paymentSuccessUrl" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Cancel payment page
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-x-circle" icon-no-border v-model="paymentCancelUrl" />
-                </div>
-            </div>
-            -->
-
             <div class="vx-row mb-3">
                 <div class="vx-col w-full">
                     <vs-input :disabled="true" class="w-full" icon-pack="feather" icon="icon-link" icon-no-border :value="paymentLink" />
@@ -844,7 +704,7 @@ export default {
       filters: {
         date_from: '',
         date_to: '',
-        statuses: ['confirmed'],
+        statuses: ['to do','unprocessed','confirmed'],
         product: '',
         order_status: '',
       },
@@ -901,6 +761,7 @@ export default {
       products: [],
 
       leadStatuses: [
+        'unprocessed',
         'confirmed',
         'no answer',
         'cancelled',
@@ -912,6 +773,7 @@ export default {
         'abandoned',
       ],
       leadStatusColor: {
+        'unprocessed'    : '',
         'confirmed'      : 'success',
         'no answer'      : '#555555',
         'cancelled'      : 'danger',
@@ -1063,7 +925,7 @@ export default {
       this.filters = {
         date_from: '',
         date_to: '',
-        statuses: ['confirmed'],
+        statuses: ['to do','unprocessed','confirmed'],
         product: '',
         order_status: '',
       }
@@ -1535,8 +1397,6 @@ export default {
         products: products,
       }
 
-      await this.dropin.updateDelivery(o.lead_id, params)
-
       this.$vs.notify({
         title: 'Success',
         text: 'Lead updated',
@@ -1546,51 +1406,6 @@ export default {
       })
 
       this.$vs.loading.close()
-    },
-    showCreateDeliveryPopup() {
-      this.order.completed_at = this.formatDateTimeISO8601(new Date())
-      this.showPopup['create_delivery'] = true
-    },
-    async createDelivery() {
-      this.$vs.loading()
-
-      let o = this.order
-
-      let params = {
-        completed_at: this.formatDateTimeISO8601(new Date(this.order.completed_at)),
-        transform_to_order: 1,
-      }
-      await this.dropin.updateDelivery(o.lead_id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Delivery created',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      this.changeView('leads')
-    },
-    async updateLeadInfoAndCreateDelivery() {
-      let updateLeadInfoFlag = false
-      if (this.view === 'order_builder') {
-        updateLeadInfoFlag = true
-      }
-      if (updateLeadInfoFlag) {
-        await this.updateLeadInfo(this.order)
-      }
-      await this.createDelivery()
-
-      this.showPopup['create_delivery'] = false
-    },
-    async fastCreateDelivery(lead) {
-      //if (lead.delivery_status === 'sent') return
-      if (!this.canCreateDelivery(lead.info)) return
-      this.loadOrderInfo(lead)
-      this.showCreateDeliveryPopup()
     },
     loadOrderInfo(lead) {
       let first_name = lead.first_name
@@ -1816,33 +1631,6 @@ export default {
       }
       return false
     },
-    async showLeadInfo(lead) {
-      this.$vs.loading()
-
-      let delivery = await this.dropin.getDelivery(lead.id)
-      if (delivery !== null) {
-        this.lead = lead
-        this.lead.delivery = delivery
-        this.showPopup['lead_info'] = true
-      }
-
-      this.$vs.loading.close()
-    },
-    canCreateDelivery(leadInfo) {
-      let canCreate = true
-
-      // Check if street address has number
-      if (leadInfo !== null &&
-          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
-          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
-          leadInfo.shipping.street_address !== '') {
-        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
-      } else {
-        canCreate = false
-      }
-
-      return canCreate
-    },
     canUpdateLeadInfo(leadInfo) {
       let canCreate = true
 
@@ -2036,6 +1824,9 @@ export default {
       })
       this.showPopup['send_message'] = false
       this.$vs.loading.close()
+    },
+    copyLeadsCSV(leads) {
+      // TODO: HERE
     },
   },
   async created() {
