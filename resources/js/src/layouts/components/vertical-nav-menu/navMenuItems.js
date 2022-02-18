@@ -294,9 +294,9 @@ export default [
 
       {
         url: null,
-        name: 'Warehouse',
+        name: 'Elogy',
         icon: 'PackageIcon',
-        i18n: 'Warehouse',
+        i18n: 'Elogy',
         roles: ['developer', 'admin'],
         submenu: [
           {
@@ -310,6 +310,30 @@ export default [
             url: '/dashboard/warehouse/stock',
             name: 'Stock',
             slug: 'warehouse-stock',
+            i18n: 'Stock',
+            roles: ['developer', 'admin'],
+          },
+        ]
+      },
+
+      {
+        url: null,
+        name: 'Dropin',
+        icon: 'PackageIcon',
+        i18n: 'Dropin',
+        roles: ['developer', 'admin'],
+        submenu: [
+          {
+            url: '/dashboard/dropin/leads',
+            name: 'Leads',
+            slug: 'dropin-leads',
+            i18n: 'Leads',
+            roles: ['developer', 'admin'],
+          },
+          {
+            url: '/dashboard/dropin/stock',
+            name: 'Stock',
+            slug: 'dropin-stock',
             i18n: 'Stock',
             roles: ['developer', 'admin'],
           },

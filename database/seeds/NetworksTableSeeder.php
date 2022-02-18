@@ -1034,5 +1034,104 @@ class NetworksTableSeeder extends Seeder
             ],
         ]);
 
+        $url = (env('APP_NETWORK_FAKE_API', false) ? $app_url . '/api/fake/network/dropin/leads' : $app_url . '/api/3rd/dropin/leads');
+        \App\Network::create([
+            'name' => 'Dropin',
+            'slug' => 'dropin',
+            'api' => [
+                'default_status' => 'confirmed',
+                'store' => [
+                    'request' => [
+                        'url' => $url,
+                        'method' => 'post',
+                        'type' => 'json',
+                        'bodyParams' => [
+                            'first_name'   => '{input.name}',
+                            'last_name'    => ' . ',
+                            'phone'        => '{input.phone}',
+                            'order_id'     => '{order.id}',
+                            'sku'          => '{product.info.sku}',
+                            'product_name' => '{product.name}',
+                            'price'        => '{input.price}',
+                            'total'        => '{input.price}',
+                            'quantity'     => '{input.quantity}',
+
+                            'ip'             => '{input.ip}',
+                            'user_agent'     => '{input.user_agent}',
+                            'source_url'     => '{input.source_url}',
+                            'affiliate_id'   => '{form.affiliate_id}',
+                            'traffic_source' => '{input.traffic_source}',
+
+                            'product_id'     => '{product.id}',
+                        ],
+                        'validation' => [
+                            'bodyParams' => [
+                                'first_name' => 'required|string|min:3',
+                                'last_name' => 'required|string|min:3',
+                                'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                                'order_id' => 'required|integer|exists:orders,id',
+                                'sku' => 'required|string',
+                                'product_name' => 'required|string',
+                                'price' => 'required|numeric|min:0',
+                                'total' => 'required|numeric|min:0',
+                                'quantity' => 'required|string',
+
+                                'ip'             => 'nullable|string',
+                                'user_agent'     => 'nullable|string',
+                                'source_url'     => 'nullable|string',
+                                'affiliate_id'   => 'nullable|numeric',
+                                'traffic_source' => 'nullable|string',
+
+                                'product_id'     => 'nullable|numeric',
+                            ],
+                        ],
+                    ],
+                    'response' => [
+                        'type' => 'json',
+                        'status' => [
+                            'success' => [
+                                'validation' => [
+                                    'status' => 'required|in:success',
+                                ],
+                            ],
+                            'default' => 'error',
+                        ],
+                    ],
+                ],
+                'form' => [
+                    'input' => [
+                        // Step 1
+                        [
+                            'name' => [
+                                'type' => 'text',
+                                'required' => '',
+                                'label' => 'Nome e cognome',
+                            ],
+                            'phone' => [
+                                'type' => 'phone',
+                                'required' => '',
+                                'label' => 'Telefono (meglio cellulare)',
+                            ],
+                            'address' => [
+                                'type' => 'text',
+                                'label' => 'Indirizzo e numero civico'
+                            ],
+                        ],
+                    ],
+                    'params' => [
+                    ],
+                    'validation' => [
+                        'input' => [
+                            'name' => 'required|string|min:4',
+                            'phone' => 'required|string|min:10|regex:' . $phone_regex,
+                            'address' => 'string',
+                        ],
+                        'params' => [
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
     }
 }

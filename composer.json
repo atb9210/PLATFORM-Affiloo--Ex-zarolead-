@@ -11,6 +11,7 @@
         "daverogers/serverpilot-php": "^1.0",
         "driverfury/chatapi": "dev-master",
         "driverfury/cloudflare": "dev-master",
+        "driverfury/dropin": "dev-master",
         "driverfury/elogy": "dev-master",
         "driverfury/facebook": "dev-master",
         "driverfury/fraudfilter": "dev-master",
@@ -84,6 +85,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/cloudflare"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/dropin"
         },
         {
             "type": "path",

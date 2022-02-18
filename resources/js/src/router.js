@@ -1938,6 +1938,38 @@ const router = new Router({
         },
 
         {
+          path: '/dashboard/dropin/leads',
+          props: true,
+          name: 'dropin-leads',
+          component: () => import('./views/DropinLeads.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Dropin Leads', active: true }
+            ],
+            pageTitle: 'Dropin Leads',
+            rule: 'editor'
+          }
+        },
+
+        {
+          path: '/dashboard/dropin/stock',
+          props: true,
+          name: 'dropin-stock',
+          component: () => import('./views/DropinStock.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Dropin Stock', active: true }
+            ],
+            pageTitle: 'Dropin Stock',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),

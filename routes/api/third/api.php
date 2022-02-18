@@ -259,3 +259,45 @@ Route::get('/warehouse/products/{product_id}/payment-intent', 'api\third\Warehou
 Route::get('/warehouse/products/payment-intent', 'api\third\WarehouseController@getPaymentIntent')
     ->name('warehouse.products.payment-intent');
 
+/* Dropin routes */
+Route::get('/dropin/leads', 'api\third\DropinController@leads')->middleware('auth:api')
+    ->name('dropin.leads.index');
+Route::post('/dropin/leads', 'api\third\DropinController@createLead')
+    ->name('dropin.leads.create');
+Route::put('/dropin/leads/{id}', 'api\third\DropinController@updateLead')->middleware('auth:api')
+    ->name('dropin.leads.update');
+Route::delete('/dropin/leads/{id}', 'api\third\DropinController@destroyLead')->middleware('auth:api')
+    ->name('dropin.leads.destroy');
+
+Route::get('/dropin/leads/{lead_id}/delivery', 'api\third\DropinController@getDelivery')->middleware('auth:api')
+    ->name('dropin.delivery.get');
+Route::post('/dropin/delivery', 'api\third\DropinController@createDelivery')->middleware('auth:api')
+    ->name('dropin.delivery.create');
+Route::put('/dropin/delivery', 'api\third\DropinController@updateDelivery')->middleware('auth:api')
+    ->name('dropin.delivery.update');
+Route::get('/dropin/products', 'api\third\DropinController@products')->middleware('auth:api')
+    ->name('dropin.products.index');
+
+Route::post('/dropin/send-message', 'api\third\DropinController@sendMessage')->middleware('auth:api')
+    ->name('dropin.message.send');
+
+Route::get('/dropin/leads/{id}/info', 'api\third\DropinController@getLeadInfo')
+    ->name('dropin.leads.info');
+Route::put('/dropin/leads/{hash}/update', 'api\third\DropinController@publicUpdateLead')
+    ->name('dropin.leads.update.public');
+Route::delete('/dropin/leads/{hash}/delete', 'api\third\DropinController@publicDeleteLead')
+    ->name('dropin.leads.delete.public');
+Route::post('/dropin/leads/{lead_id}/address', 'api\third\DropinController@updateLeadAddress')
+    ->name('dropin.leads.address.update');
+Route::post('/dropin/leads/{lead_id}/complete', 'api\third\DropinController@completeLead')
+    ->name('dropin.leads.complete');
+
+// TODO: Move this somewhere else???
+// Also change public/js/checkout.ts
+Route::get('/dropin/products/{product_id}/payment-intent', 'api\third\DropinController@getPaymentIntentProduct')
+    ->name('dropin.products.payment-intent.product');
+Route::get('/dropin/products/payment-intent', 'api\third\DropinController@getPaymentIntent')
+    ->name('dropin.products.payment-intent');
+
+
+

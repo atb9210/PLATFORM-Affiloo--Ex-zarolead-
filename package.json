@@ -20,6 +20,7 @@
         "axios": "^0.19.0",
         "chart.js": "^2.8.0",
         "core-js": "2.6.5",
+        "dropin": "file:packages_node/driverfury/dropin",
         "echarts": "^4.2.1",
         "ecommerce": "file:packages_node/driverfury/ecommerce",
         "facebook": "file:packages_node/driverfury/facebook",
