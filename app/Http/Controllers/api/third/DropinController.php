@@ -256,7 +256,6 @@ class DropinController extends Controller
 
         return response([
             'status' => 'success',
-            'data' => $lead,
         ]);
     }
     

@@ -806,7 +806,6 @@
 
 <script>
 import { VueContext } from 'vue-context'
-import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
 import Dropin from 'dropin'
 
@@ -833,7 +832,6 @@ function stringContainsNumber(_input) {
 export default {
   components: {
     VueContext,
-    StatisticsCardLine,
   },
   data () {
     return {
