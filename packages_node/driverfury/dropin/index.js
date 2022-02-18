@@ -274,6 +274,11 @@ class Dropin {
       for (let i = 0; i < objects.length; i++) {
         let obj = objects[i]
 
+        // DEBUG NOTE TODO OPTIMIZE
+        // TODO: Index as id => Not good
+        // TODO: You must change this!!!!!!
+        obj.id = i
+
         if (obj.hasOwnProperty('dropshipping_price')) {
           obj.dropshipping_price = parseFloat(obj.dropshipping_price)
         } else {

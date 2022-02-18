@@ -284,10 +284,12 @@
                                             <vs-icon icon-pack="feather" icon="icon-message-square"></vs-icon>
                                             Show Notes
                                         </vs-dropdown-item>
+                                        <!--
                                         <vs-dropdown-item @click="showPaymentLink(item)">
                                             <vs-icon icon-pack="feather" icon="icon-dollar-sign"></vs-icon>
                                             Show Payment Link
                                         </vs-dropdown-item>
+                                        -->
                                         <vs-dropdown-item @click="whatsappMessage(item)">
                                             <vs-icon icon-pack="feather" icon="icon-message-circle"></vs-icon>
                                             Send Whatsapp Message
@@ -854,6 +856,12 @@ export default {
 
       receivers: [],
       message: '',
+
+      dropinGateways: {
+        'cashondelivery': 'Cod',
+        'online'        : 'Prepaid',
+      },
+      dropinDefaultEmail: 'mdjordje82@gmail.com',
     }
   },
   computed: {
@@ -1179,8 +1187,8 @@ export default {
         id: p.id,
         name: p.name,  
         sku: p.sku,
-        quantity_stock: parseInt(p.quantity_stock),
-        price: parseFloat(p.min_price),
+        quantity: parseInt(p.quantity),
+        price: parseFloat(p.price),
       }
     },
     async fetchProducts() {
@@ -1518,6 +1526,9 @@ export default {
         completed_at: '',
       }
 
+      // DEBUG TODO: to delete
+      console.log('this.order.products', this.order.products)
+
       if (lead.info !== null && lead.info.hasOwnProperty('total') &&
           parseFloat(lead.info.total) > 0) {
         this.order.total = lead.info.total
@@ -1758,7 +1769,7 @@ export default {
     },
     getAddress(lead) {
       let shipping = lead.info.shipping
-      return (shipping.street_address + ', ' + shipping.city + '(' + shipping.province + ')')
+      return (shipping.street_address + ', ' + shipping.city + ' (' + shipping.province + ')')
     },
     getProductsList(lead) {
       let productName = lead.product_name
@@ -1825,8 +1836,50 @@ export default {
       this.showPopup['send_message'] = false
       this.$vs.loading.close()
     },
-    copyLeadsCSV(leads) {
-      // TODO: HERE
+    async copyLeadsCSV(leads) {
+      let content = ''
+
+      for (let i = 0; i < leads.length; i++) {
+        let lead = leads[i]
+
+        let email = null
+        if (lead.info.shipping.hasOwnProperty('email') && lead.info.shipping.email !== null && lead.info.shipping.email != '') {
+          email = lead.info.shipping.email
+        } else if (lead.email !== null && lead.email != '') {
+          email = lead.email
+        }
+        if (email === null || email == '') {
+          email = this.dropinDefaultEmail
+        }
+
+        let phone = null
+        if (lead.info.shipping.hasOwnProperty('phone') && lead.info.shipping.phone !== null && lead.info.shipping.phone != '') {
+          phone = lead.info.shipping.phone
+        } else if (lead.phone !== null && lead.phone != '') {
+          phone = lead.phone
+        }
+
+        content += this.formatDate(new Date(lead.created_at)) + ','
+        content += this.dropinGateways[lead.gateway] + ','
+        content += lead.info.order_id + ','
+        content += lead.total + ','
+        // TODO: products
+        // TODO: HERE
+        content += lead.full_name + ','
+        content += lead.info.shipping.street_address + ','
+        content += lead.info.shipping.city + ' (' + lead.info.shipping.province + ')'
+        content += lead.info.shipping.postcode + ','
+        content += lead.info.shipping.country + ','
+        content += email + ','
+        content += phone + ','
+        // TODO: comments
+        // TODO: HERE
+        content += 'Comments,'
+
+        content += "\n"
+      }
+
+      await this.copyToClipboard(content)
     },
   },
   async created() {
