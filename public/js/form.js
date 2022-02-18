@@ -1071,8 +1071,12 @@ Form.prototype.onSubmit = function(step) {
             var data = {
                 info: JSON.stringify(info),
             };
+            var networkName = 'warehouse';
+            if (this.lead.hasOwnProperty('network')) {
+              networkName = this.lead.network;
+            }
             $.ajax({
-                url: this.API_URL_3RD + 'warehouse/leads/' + this.lead.id,
+                url: this.API_URL_3RD + networkName + '/leads/' + this.lead.hash + '/first-update',
                 method: "PUT",
                 dataType: "json",
                 data: data,

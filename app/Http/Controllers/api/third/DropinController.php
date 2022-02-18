@@ -254,8 +254,11 @@ class DropinController extends Controller
             }
         }
 
+        $lead['network'] = 'dropin';
+
         return response([
             'status' => 'success',
+            'data' => $lead,
         ]);
     }
     
@@ -299,6 +302,56 @@ class DropinController extends Controller
 
         return response([
             'data' => $lead,
+        ]);
+    }
+
+    /**
+     * Update a lead.
+     *
+     * @urlParam hash int required Lead's hash
+     *
+     * @bodyParam first_name string Lead's first name
+     * @bodyParam last_name string Lead's last name
+     * @bodyParam phone string Lead's phone number
+     * @bodyParam notes string Lead's notes
+     * @bodyParam info string Lead's info
+     * @bodyParam status string Lead's status
+     *
+     * @response {
+     *  "message": "Lead updated successfully",
+     * }
+     */
+    public function firstUpdateLead($hash, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'first_name' => 'string|min:1',
+            'last_name'  => 'string|min:1',
+            'phone'      => 'nullable|string|min:7',
+            'email'      => 'nullable|string|min:4',
+            'notes'      => 'string',
+            'info'       => 'json',
+            'status'     => 'nullable|string|' . $this->statusValidation(),
+        ]);
+
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $lead = DropinLead::findByHash($hash);
+        if ($lead === null) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Lead not found',
+            ], 404);
+        }
+        $params['hash'] = $this->generateRandomString(64);
+        $lead->update($params);
+
+        return response([
+            'message' => 'Lead updated successfully',
         ]);
     }
     

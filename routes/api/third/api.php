@@ -252,6 +252,9 @@ Route::post('/warehouse/leads/{lead_id}/address', 'api\third\WarehouseController
 Route::post('/warehouse/leads/{lead_id}/complete', 'api\third\WarehouseController@completeLead')
     ->name('warehouse.leads.complete');
 
+Route::put('/warehouse/leads/{hash}/first-update', 'api\third\WarehouseController@firstUpdateLead')
+    ->name('warehouse.leads.update.first');
+
 // TODO: Move this somewhere else???
 // Also change public/js/checkout.ts
 Route::get('/warehouse/products/{product_id}/payment-intent', 'api\third\WarehouseController@getPaymentIntentProduct')
@@ -299,5 +302,6 @@ Route::get('/dropin/products/{product_id}/payment-intent', 'api\third\DropinCont
 Route::get('/dropin/products/payment-intent', 'api\third\DropinController@getPaymentIntent')
     ->name('dropin.products.payment-intent');
 
-
+Route::put('/dropin/leads/{hash}/first-update', 'api\third\DropinController@firstUpdateLead')
+    ->name('dropin.leads.update.first');
 
