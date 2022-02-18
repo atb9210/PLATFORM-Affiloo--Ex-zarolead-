@@ -763,7 +763,13 @@ export default {
       products: [],
 
       leadStatuses: [
+        'complaint',
+        'refunded',
         'unprocessed',
+        'shipped',
+        'delivered',
+        'return',
+        'stock',
         'confirmed',
         'no answer',
         'cancelled',
@@ -775,7 +781,13 @@ export default {
         'abandoned',
       ],
       leadStatusColor: {
+        'complaint'      : 'danger',
+        'refunded'       : 'warning',
         'unprocessed'    : '',
+        'shipped'        : 'primary',
+        'delivered'      : 'success',
+        'return'         : '',
+        'stock'          : '',
         'confirmed'      : 'success',
         'no answer'      : '#555555',
         'cancelled'      : 'danger',

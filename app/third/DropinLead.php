@@ -17,7 +17,13 @@ class DropinLead extends Model
     ];
 
     public static $statuses = [
+        'complaint',
+        'refunded',
         'unprocessed',
+        'shipped',
+        'delivered',
+        'return',
+        'stock',
         'confirmed',
         'no answer',
         'cancelled',
