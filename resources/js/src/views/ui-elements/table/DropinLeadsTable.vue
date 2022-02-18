@@ -1526,9 +1526,6 @@ export default {
         completed_at: '',
       }
 
-      // DEBUG TODO: to delete
-      console.log('this.order.products', this.order.products)
-
       if (lead.info !== null && lead.info.hasOwnProperty('total') &&
           parseFloat(lead.info.total) > 0) {
         this.order.total = lead.info.total
@@ -1859,15 +1856,27 @@ export default {
           phone = lead.phone
         }
 
+        let productsString = '['
+        for (let pIndex = 0; pIndex < lead.products.length; pIndex++) {
+          let product = lead.products[pIndex]
+
+          if (pIndex > 0) {
+            productsString += ','
+          }
+          productsString += '['
+          productsString += '"' + product.name + '",' + product.quantity
+          productsString += ']'
+        }
+        productsString += ']'
+
         content += this.formatDate(new Date(lead.created_at)) + ','
         content += this.dropinGateways[lead.gateway] + ','
         content += lead.info.order_id + ','
         content += lead.total + ','
-        // TODO: products
-        // TODO: HERE
+        content += productsString + ','
         content += lead.full_name + ','
         content += lead.info.shipping.street_address + ','
-        content += lead.info.shipping.city + ' (' + lead.info.shipping.province + ')'
+        content += lead.info.shipping.city + ' (' + lead.info.shipping.province + ')' + ','
         content += lead.info.shipping.postcode + ','
         content += lead.info.shipping.country + ','
         content += email + ','
