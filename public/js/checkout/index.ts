@@ -178,14 +178,18 @@ class ZaroLead
     $http: any;
     httpHeaders: object;
 
-    constructor()
+    warehouseNetwork: string;
+
+    constructor(warehouseNetwork = 'warehouse')
     {
         // TODO: Change this based on which server is hosted
         //let hostname = utils.getHostname();
 
         let hostname = 'https://beta2.zarolead.com';
-        this.API_URL = hostname + '/api/v1/'
-        this.API_URL_3RD = hostname + '/api/3rd/'
+        this.API_URL = hostname + '/api/v1/';
+        this.API_URL_3RD = hostname + '/api/3rd/';
+
+        this.warehouseNetwork = warehouseNetwork;
 
         /*
         this.$http = new Http();
@@ -196,6 +200,11 @@ class ZaroLead
         */
 
         this.$http = axios;
+    }
+
+    setWarehouseNetwork(warehouseNetwork)
+    {
+        this.warehouseNetwork = warehouseNetwork;
     }
 
     async createOrder(params: object)
@@ -224,7 +233,7 @@ class ZaroLead
     {
         var lead: object = null;
         try {
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //lead = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
@@ -246,7 +255,7 @@ class ZaroLead
     async updateLead(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
+            const response = await this.$http.put(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -269,7 +278,7 @@ class ZaroLead
     {
         var lead: object = null;
         try {
-            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders });
+            const response = await this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/info', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //lead = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
@@ -291,7 +300,7 @@ class ZaroLead
     async updateLeadAddress(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -319,7 +328,7 @@ class ZaroLead
                 payment_method: paymentMethod,
                 push: push,
             };
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -341,7 +350,7 @@ class ZaroLead
     async deleteLead(leadId: string)
     {
         try {
-            const response = await this.$http.delete(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders });
+            const response = await this.$http.delete(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -394,7 +403,7 @@ class ZaroLead
         };
 
         try {
-            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
+            const response = await this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
             if (response !== null && response !== '') {
                 //paymentIntent = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
@@ -564,6 +573,9 @@ var phone: string = '';
 let quantity = '';
 let price = 0.0;
 let total = 0.0;
+
+var formId: string|null = null;
+var form: object|null = null;
 
 /******************************************************************************/
 /**                              STEP VALIDATION                             **/
@@ -1602,6 +1614,13 @@ function initPlugins()
     // Facebook
     if (plugins !== null && plugins.hasOwnProperty('facebook') && plugins['facebook'] !== null) {
         let p = plugins['facebook'];
+
+        // Get facebook pixel from url params
+        var tmpPixel = utils.getUrlParam('pi');
+        if (tmpPixel !== null) {
+            p['pixel'] = tmpPixel;
+        }
+
         if (p.hasOwnProperty('enabled') && p['enabled'] === true) {
             if (p.hasOwnProperty('pixel') && p['pixel'] !== null && p['pixel'] !== '' &&
                 p.hasOwnProperty('access_token') && p['access_token'] !== null && p['access_token'] !== '' &&
@@ -1741,6 +1760,11 @@ async function onLoad()
     let leadId = utils.getUrlParam('lid');
     if (leadId !== null) {
         let leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
+        if (leadInfo === null) {
+            zarolead.setWarehouseNetwork('dropin');
+        }
+        leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
+
         if (leadInfo !== null) {
             lead = leadInfo;
 
@@ -1807,6 +1831,14 @@ async function onLoad()
             }
         }
     }
+
+    /*
+    // Increase visits counter of the form
+    formId = utils.getUrlParam('id');
+    if (formId !== null) {
+        await zarolead.formVisited(formId);
+    }
+    */
 
     // Initialize steps and start with first step
     initSteps();
