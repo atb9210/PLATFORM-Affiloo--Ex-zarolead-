@@ -9,7 +9,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Copy selected leads CSV" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file-text" @click="exportLeadsAsCSV(selectedLeads)"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file-text" @click="exportLeadsAsCSV(selectedLeads)" :disabled="selectedLeads.length <= 0"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Send message (bulk)" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
@@ -926,6 +926,7 @@ export default {
     async changeView(view, item = null) {
       if (view == 'leads') {
         this.$vs.loading()
+        this.selectedLeads = []
         this.leads = await this.dropin.fetchLeads(this.filters)
         this.calculateStats()
         this.view = view
