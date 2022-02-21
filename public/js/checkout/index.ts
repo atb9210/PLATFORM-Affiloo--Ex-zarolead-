@@ -575,7 +575,6 @@ let price = 0.0;
 let total = 0.0;
 
 var formId: string|null = null;
-var form: object|null = null;
 
 /******************************************************************************/
 /**                              STEP VALIDATION                             **/
