@@ -273,6 +273,7 @@ export default {
         'accountant',
         'buyer',
         'account_manager',
+        'callcenter',
       ],
 
       showPopup: {

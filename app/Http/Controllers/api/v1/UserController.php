@@ -15,6 +15,16 @@ use App\Role as Role;
 
 class UserController extends Controller
 {
+    private $roles = [
+        'admin',
+        'mediabuyer',
+        'affiliate',
+        'advertiser',
+        'accountant',
+        'buyer',
+        'account_manager',
+    ];
+
     /**
      * Get all users list.
      *
@@ -81,7 +91,7 @@ class UserController extends Controller
             'name' => 'string|min:3|max:255',
             'email' => 'email|min:4|max:255|unique:users,email',
             'password' => 'string|min:7|max:255',
-            'role' => 'required|in:admin,mediabuyer,affiliate,advertiser,accountant,buyer,account_manager',
+            'role' => 'required|in:' . join(',', $this->roles),
         ]);
 
         // Create user
@@ -128,7 +138,7 @@ class UserController extends Controller
             'email' => 'email|min:4|max:255',
             'password' => 'string|min:7|max:255',
             'status' => 'string|in:active,blocked',
-            'role' => 'in:admin,mediabuyer,affiliate,advertiser,accountant,buyer,account_manager',
+            'role' => 'in:' . join(',', $this->roles),
             'info' => 'json',
         ]);
         if (isset($params['password'])) {
@@ -246,6 +256,7 @@ class UserController extends Controller
             'accountant' => 'boolean',
             'buyer' => 'boolean',
             'account_manager' => 'boolean',
+            'callcenter' => 'boolean',
         ]);
 
         // User cannot remove himself admin role

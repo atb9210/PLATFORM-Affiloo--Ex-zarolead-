@@ -297,21 +297,21 @@ export default [
         name: 'Elogy',
         icon: 'PackageIcon',
         i18n: 'Elogy',
-        roles: ['developer', 'admin'],
+        roles: ['developer', 'admin', 'callcenter'],
         submenu: [
           {
             url: '/dashboard/warehouse/leads',
             name: 'Leads',
             slug: 'warehouse-leads',
             i18n: 'Leads',
-            roles: ['developer', 'admin'],
+            roles: ['developer', 'admin', 'callcenter'],
           },
           {
             url: '/dashboard/warehouse/stock',
             name: 'Stock',
             slug: 'warehouse-stock',
             i18n: 'Stock',
-            roles: ['developer', 'admin'],
+            roles: ['developer', 'admin', 'callcenter'],
           },
         ]
       },
@@ -321,21 +321,21 @@ export default [
         name: 'Dropin',
         icon: 'PackageIcon',
         i18n: 'Dropin',
-        roles: ['developer', 'admin'],
+        roles: ['developer', 'admin', 'callcenter'],
         submenu: [
           {
             url: '/dashboard/dropin/leads',
             name: 'Leads',
             slug: 'dropin-leads',
             i18n: 'Leads',
-            roles: ['developer', 'admin'],
+            roles: ['developer', 'admin', 'callcenter'],
           },
           {
             url: '/dashboard/dropin/stock',
             name: 'Stock',
             slug: 'dropin-stock',
             i18n: 'Stock',
-            roles: ['developer', 'admin'],
+            roles: ['developer', 'admin', 'callcenter'],
           },
         ]
       },
