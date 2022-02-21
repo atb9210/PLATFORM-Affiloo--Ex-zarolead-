@@ -9,7 +9,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Copy selected leads CSV" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyLeadsCSV(selectedLeads)"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file-text" @click="exportLeadsAsCSV(selectedLeads)"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Send message (bulk)" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
@@ -32,6 +32,12 @@
             </vx-tooltip>
             <vx-tooltip text="No answer and to recall" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to recall','no answer'])"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Only unprocessed" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Only complaint" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-alert-triangle" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
             </vx-tooltip>
         </p>
 
@@ -1845,7 +1851,7 @@ export default {
       this.showPopup['send_message'] = false
       this.$vs.loading.close()
     },
-    async copyLeadsCSV(leads) {
+    getLeadsAsCSV(leads) {
       let content = ''
 
       for (let i = 0; i < leads.length; i++) {
@@ -1900,7 +1906,23 @@ export default {
         content += "\n"
       }
 
+      return content
+    },
+    async copyLeadsCSV(leads) {
+      let content = this.getLeadsAsCSV(leads)
       await this.copyToClipboard(content)
+    },
+    async exportLeadsAsCSV(leads) {
+      let content = this.getLeadsAsCSV(leads)
+      let filename = 'dropin_leads.csv'
+
+      let element = document.createElement('a')
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      element.setAttribute('download', filename)
+      element.style.display = 'none'
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
     },
   },
   async created() {

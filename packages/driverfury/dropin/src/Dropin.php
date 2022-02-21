@@ -43,16 +43,29 @@ class Dropin
         $objects = array_map(function ($objs) {
             $mappedObjects = [];
             foreach ($objs as $obj) {
+                $description = '';
+                if (!is_array($obj['Description'])) {
+                    $description = $obj['Description'];
+                }
+                $variations = '';
+                if (!is_array($obj['Variation'])) {
+                    $variations = $obj['Variation'];
+                }
+                $images = [];
+                if (isset($obj['Product_Images']['Image'])) {
+                    $images = $obj['Product_Images']['Image'];
+                }
                 $mappedObjects[] = [
                     'name' => $obj['Product_Name'],
-                    'description' => $obj['Description'],
+                    'description' => $description,
                     'category' => $obj['Category'],
                     'sku' => $obj['SKU'],
-                    'variations' => $obj['Variation'],
+                    'variations' => $variations,
                     'dropshipping_price' => $obj['Dropshipping_Price'],
                     'sale_price' => $obj['Suggested_Sale_Price'],
                     'price' => $obj['Suggested_Sale_Price'],
                     'quantity' => $obj['Total_Quantity'],
+                    'images' => $images,
                 ];
             }
             return $mappedObjects;

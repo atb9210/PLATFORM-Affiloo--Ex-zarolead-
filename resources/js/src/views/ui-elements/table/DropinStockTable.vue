@@ -7,28 +7,9 @@
 
         <div v-if="showFilters" class="mb-12">
             <div class="vx-row mb-2">
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('today')" icon-pack="feather" icon="icon-calendar">Today</vs-button>
-                </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('yesterday')" icon-pack="feather" icon="icon-calendar">Yesterday</vs-button>
-                </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('this_month')" icon-pack="feather" icon="icon-calendar">This Month</vs-button>
-                </div>
-                <div class="vx-col w-3-12">
-                    <vs-button class="mr-3 mb-2" @click="filterDatesShortcut('last_month')" icon-pack="feather" icon="icon-calendar">Last Month</vs-button>
-                </div>
-            </div>
-
-            <div class="vx-row mb-2">
                 <div class="vx-col w-1/2">
-                    <label>From</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_from" />
-                </div>
-                <div class="vx-col w-1/2">
-                    <label>To</label>
-                    <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
+                    <label>Categories</label>
+                    <my-select v-model="filters.categories" :options="categories" :autocomplete="true" multiple class="w-full select-large" />
                 </div>
             </div>
             
@@ -63,6 +44,12 @@
 
         <vue-context ref="product_context_menu" v-slot="{ data }">
             <li>
+              <a href="#" @click="$refs.product_context_menu.close();showProductInfo(data)" class="flex items-center text-sm">
+                <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Info</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.product_context_menu.close()" class="flex items-center text-sm">
                 <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Close</span>
@@ -76,7 +63,9 @@
             <template slot="thead">
                 <vs-th sort-key="name">Name</vs-th>
                 <vs-th sort-key="sku">SKU</vs-th>
-                <vs-th sort-key="price">Price</vs-th>
+                <vs-th sort-key="variations">Variation</vs-th>
+                <vs-th sort-key="sale_price">Suggested Price</vs-th>
+                <vs-th sort-key="dropshipping_price">Dropshipping Price</vs-th>
                 <vs-th sort-key="category">Category</vs-th>
                 <vs-th sort-key="category">Quantity</vs-th>
             </template>
@@ -96,9 +85,18 @@
                         {{item.sku}}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.price">
-                        € {{ item.price.toFixed(2) }}
+                    <vs-td class="column-no-padding" :data="item.variations">
+                        {{item.variations}}
                     </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.sale_price">
+                        € {{ item.sale_price.toFixed(2) }}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.dropshipping_price">
+                        € {{ item.dropshipping_price.toFixed(2) }}
+                    </vs-td>
+
 
                     <vs-td class="column-no-padding" :data="item.category">
                         {{item.category}}
@@ -112,6 +110,60 @@
                 </vs-tr>
             </template>
         </vs-table>
+
+        <!-- Product info popup -->
+        <vs-popup title="Product info" :active.sync="showPopup['product_info']">
+
+            <div>
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="productImageIndex > 0" src="/images/arrow-left.png" class="w-full nextPrevProductImage" @click="previousProductImage()">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && product.images.length > 0" :src="product.images[productImageIndex]" class="w-full">
+                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && (productImageIndex + 1 < product.images.length)" src="/images/arrow-right.png" class="w-full nextPrevProductImage" @click="nextProductImage()">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <strong>{{ product.name }} ({{ product.sku }})</strong>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.description != ''">
+                    <div class="vx-col w-full">
+                        <span>{{ product.description }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.variations != ''">
+                    <div class="vx-col w-full">
+                        <span>Variations: {{ product.variations }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Sugg. Price: € {{ (product.hasOwnProperty('sale_price') ? product.sale_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Drop. Price: € {{ (product.hasOwnProperty('dropshipping_price') ? product.dropshipping_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Stock Quantity: {{ product.quantity }}</span>
+                    </div>
+                </div>
+                
+            </div>
+
+        </vs-popup>
 
     </vx-card>
 </template>
@@ -144,12 +196,20 @@ export default {
 
       showFilters: false,
       filters: {
-        date_from: '',
-        date_to: '',
+        categories: [],
       },
 
       products: [],
       selectedProducts: [],
+
+      showPopup: {
+        'product_info': false,
+      },
+
+      product: {},
+      productImageIndex: 0,
+
+      categories: [],
     }
   },
   computed: {
@@ -183,7 +243,14 @@ export default {
       this.$vs.loading()
 
       if (view == 'products') {
-        this.products = await this.dropin.fetchProducts()
+        this.products = await this.dropin.fetchProducts(this.filters)
+        this.categories = []
+        for (let i = 0; i < this.products.length; i++) {
+          let category = this.products[i].category
+          if (!this.categories.includes(category)) {
+            this.categories.push(category)
+          }
+        }
         this.view = view
       }
 
@@ -202,57 +269,27 @@ export default {
     },
     async resetFilters() {
       this.filters = {
-        date_from: '',
-        date_to: '',
+        categories: [],
       }
-      await this.filterDatesShortcut('this_month')
+      await this.applyFilters()
     },
-    async filterDatesShortcut(period) {
-      let invalidPeriod = false
-
-      switch (period) {
-        case 'today': {
-          let today = new Date()
-          this.filters.date_from = this.formatDate(today)
-          this.filters.date_to = this.formatDate(today)
-        } break
-        case 'yesterday': {
-          let dateObj = new Date()
-          dateObj.setDate(dateObj.getDate() - 1)
-          this.filters.date_from = this.formatDate(dateObj)
-          this.filters.date_to = this.formatDate(dateObj)
-        } break
-        case 'this_month': {
-          let dateObj = new Date()
-          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1)
-          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0)
-          this.filters.date_from = this.formatDate(fromObj)
-          this.filters.date_to = this.formatDate(toObj)
-        } break
-        case 'last_month': {
-          let dateObj = new Date()
-          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1)
-          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0)
-          this.filters.date_from = this.formatDate(fromObj)
-          this.filters.date_to = this.formatDate(toObj)
-        } break
-        default: {
-          invalidPeriod = true
-        } break
-      }
-
-      if(!invalidPeriod) {
-        await this.applyFilters()
+    showProductInfo(product) {
+      this.product = product
+      this.productImageIndex = 0
+      this.showPopup['product_info'] = true
+    },
+    previousProductImage() {
+      this.productImageIndex -= 1
+      if (this.productImageIndex < 0) {
+        this.productImageIndex = 0
       }
     },
-    formatDate(dateObj) {
-      let dd = String(dateObj.getDate()).padStart(2, '0')
-      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
-      let yyyy = dateObj.getFullYear()
-      
-      let formattedDate = yyyy + '-' + mm + '-' + dd
-      return formattedDate
-    },
+    nextProductImage() {
+      this.productImageIndex += 1
+      if (this.productImageIndex >= this.product.images.length) {
+        this.productImageIndex = this.product.images.length - 1
+      }
+    }
   },
   async created() {
     this.dropin = new Dropin(localStorage.getItem('accessToken'))
@@ -266,3 +303,12 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.nextPrevProductImage {
+  cursor: pointer;
+}
+.nextPrevProductImage:hover {
+  filter: brightness(0.9);
+}
+</style>

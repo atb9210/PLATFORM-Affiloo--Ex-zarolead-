@@ -305,6 +305,10 @@ class Dropin {
 
         objects[i] = obj
       }
+
+      if (filters.hasOwnProperty('categories') && filters.categories.length > 0) {
+        objects = objects.filter((obj) => filters.categories.includes(obj.category))
+      }
     } catch (error) {
       // Nothing
     }

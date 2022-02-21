@@ -55,6 +55,11 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $dropin = new \Driverfury\Dropin\Dropin();
+        $products = $dropin->getProducts();
+        dd($products);
+        exit();
+
         $monitor = \App\third\FacebookMonitor::find(4);
         dd($monitor->runStrategy([
             'action_type' => 'bid.down',
