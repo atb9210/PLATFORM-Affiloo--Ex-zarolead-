@@ -766,6 +766,7 @@
             <button id="nextStepButton" class="hidden btn btn-primary w-100 p-2 fs-4" type="submit">Submit</button>
         </div>
 
+        <!--
         <div class="mb-3 mt-5 row fs-6">
 
             <div class="col-3">
@@ -794,6 +795,7 @@
             </div>
             
         </div>
+        -->
 
     </form>
 </div>
