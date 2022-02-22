@@ -579,10 +579,10 @@ Form.prototype.createUpSellOption = function(quantity, title, discount, price, a
     divUnitPrice.className = 'col-3';
     var divUnitPriceAmount = document.createElement('div');
     divUnitPriceAmount.className = 'upSellOptionBodyPriceAmount pt-2';
-    divUnitPriceAmount.innerHTML = '€' + unitPrice;
+    divUnitPriceAmount.innerHTML = '€' + price;
     var divUnitPriceLabel = document.createElement('div');
     divUnitPriceLabel.className = 'upSellOptionBodyPriceLabel pb-1';
-    divUnitPriceLabel.innerHTML = 'al pezzo';
+    divUnitPriceLabel.innerHTML = '€' + unitPrice + '/pz';
     divUnitPrice.appendChild(divUnitPriceAmount);
     divUnitPrice.appendChild(divUnitPriceLabel);
 

@@ -1463,16 +1463,12 @@ function addUpSellOption(qty, discount, price, unitPrice, bestSeller) {
     var eContentPrice1 = document.createElement('div');
     eContentPrice1.classList.add('upSellOptionBodyPriceAmount');
     eContentPrice1.classList.add('pt-2');
-    // TODO: Old
-    //eContentPrice1.innerText = '€' + utils.formatCurrency(price);
-    eContentPrice1.innerText = '€' + utils.formatCurrency(unitPrice);
+    eContentPrice1.innerText = '€' + utils.formatCurrency(price);
     eContentPrice.appendChild(eContentPrice1);
     var eContentPrice2 = document.createElement('div');
     eContentPrice2.classList.add('upSellOptionBodyPriceLabel');
     eContentPrice2.classList.add('pb-1');
-    // TODO: Old
-    //eContentPrice2.innerText = '€' + utils.formatCurrency(unitPrice) + ' al pezzo';
-    eContentPrice2.innerText = 'al pezzo';
+    eContentPrice2.innerText = '€' + utils.formatCurrency(unitPrice) + ' al pezzo';
     eContentPrice.appendChild(eContentPrice2);
     eContent.appendChild(eContentQty);
     eContent.appendChild(eContentSale);
