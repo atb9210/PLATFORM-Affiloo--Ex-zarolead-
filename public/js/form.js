@@ -1068,12 +1068,21 @@ Form.prototype.onSubmit = function(step) {
             var info = this.lead.info;
             info.quantity = $('#quantity').val();
             info.price    = $('#price').val();
-            info.street_address = $('#address').val();
-            info.city = '';
-            info.province = '';
-            info.state = '';
-            info.postcode = '';
-            info.country = 'IT';
+
+            var address = '';
+            if ($('#address') !== null) {
+              address = $('#address').val();
+            }
+            info.shipping = {
+                first_name: $('#name').val(),
+                last_name: '.',
+                street_address: address,
+                city: '',
+                province: '',
+                state: '',
+                postcode: '',
+                country: 'IT',
+            };
             var data = {
                 info: JSON.stringify(info),
             };
