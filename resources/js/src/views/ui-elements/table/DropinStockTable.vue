@@ -67,7 +67,7 @@
                 <vs-th sort-key="sale_price">Suggested Price</vs-th>
                 <vs-th sort-key="dropshipping_price">Dropshipping Price</vs-th>
                 <vs-th sort-key="category">Category</vs-th>
-                <vs-th sort-key="category">Quantity</vs-th>
+                <vs-th sort-key="quantity">Quantity</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -96,7 +96,6 @@
                     <vs-td class="column-no-padding" :data="item.dropshipping_price">
                         € {{ item.dropshipping_price.toFixed(2) }}
                     </vs-td>
-
 
                     <vs-td class="column-no-padding" :data="item.category">
                         {{item.category}}
@@ -244,13 +243,6 @@ export default {
 
       if (view == 'products') {
         this.products = await this.dropin.fetchProducts(this.filters)
-        this.categories = []
-        for (let i = 0; i < this.products.length; i++) {
-          let category = this.products[i].category
-          if (!this.categories.includes(category)) {
-            this.categories.push(category)
-          }
-        }
         this.view = view
       }
 
@@ -297,6 +289,15 @@ export default {
     this.$vs.loading()
 
     await this.resetFilters()
+
+    // Get categories list from products
+    this.categories = []
+    for (let i = 0; i < this.products.length; i++) {
+      let category = this.products[i].category
+      if (!this.categories.includes(category)) {
+        this.categories.push(category)
+      }
+    }
 
     this.$vs.loading.close()
   },

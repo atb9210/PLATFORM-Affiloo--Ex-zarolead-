@@ -133,7 +133,7 @@ class DropinController extends Controller
             'first_name' => 'required|string|min:1',
             'last_name'  => 'required|string|min:1',
             'phone'      => 'required|string|min:7',
-            'notes'      => 'string',
+            'notes'      => 'nullable|string',
             'info'       => 'json',
             'status'     => 'nullable|string|' . $this->statusValidation(),
 
@@ -288,7 +288,7 @@ class DropinController extends Controller
             'last_name'  => 'string|min:1',
             'phone'      => 'nullable|string|min:7',
             'email'      => 'nullable|string|min:4',
-            'notes'      => 'string',
+            'notes'      => 'nullable|string',
             'info'       => 'json',
             'status'     => 'nullable|string|' . $this->statusValidation(),
         ]);
@@ -331,7 +331,7 @@ class DropinController extends Controller
             'last_name'  => 'string|min:1',
             'phone'      => 'nullable|string|min:7',
             'email'      => 'nullable|string|min:4',
-            'notes'      => 'string',
+            'notes'      => 'nullable|string',
             'info'       => 'json',
             'status'     => 'nullable|string|' . $this->statusValidation(),
         ]);

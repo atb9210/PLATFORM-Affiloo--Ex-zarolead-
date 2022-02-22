@@ -21,6 +21,9 @@
                 <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
 
+            <vx-tooltip text="All leads" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="setFiltersStatuses([])"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Only confirmed" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-circle" @click="setFiltersStatuses(['confirmed'])"></vs-button>
             </vx-tooltip>
@@ -265,9 +268,17 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.notes">
+                            <!-- TODO: Old code -->
+                            <!--
                             <vx-tooltip :text="item.notes" position="top">
                                 <vs-avatar :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-message-square" />
                             </vx-tooltip>
+                            -->
+                            <vs-chip>
+                                <span @dblclick="showNotes(item)">
+                                    {{(item.notes === null ? 'Create note' : item.notes).substring(0, 20)}}{{((item.notes !== null && item.notes.length > 20) ? '...' : '')}}
+                                </span>
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding">
@@ -579,9 +590,70 @@
         </vs-popup>
 
         <!-- Add product popup -->
-        <vs-popup title="Add products" :active.sync="showPopup['add_product']">
+        <vs-popup fullscreen title="Add products" :active.sync="showPopup['add_product']">
 
             <div v-if="productView == 'normal'" class="w-full pr-2 pl-2">
+
+                <vs-table stripe search :data="products">
+
+                    <template slot="thead">
+                        <vs-th></vs-th>
+                        <vs-th sort-key="full_name">Name</vs-th>
+                        <vs-th sort-key="variations">Variation</vs-th>
+                        <vs-th sort-key="sku">SKU</vs-th>
+                        <vs-th sort-key="category">Category</vs-th>
+                        <vs-th sort-key="sale_price">Suggested Price</vs-th>
+                        <vs-th sort-key="dropshipping_price">Dropshipping Price</vs-th>
+                        <vs-th sort-key="quantity">Qty</vs-th>
+                        <vs-th>Actions</vs-th>
+                    </template>
+
+                    <template slot-scope="{data}">
+                        <vs-tr :data="item" :key="'addProductsRow' + indextr" v-for="(item, indextr) in data">
+
+                            <vs-td class="column-no-padding">
+                                <vs-checkbox :value="hasProduct(item)" @change="toggleProduct(item)" />
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.name">
+                                {{item.name}}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.variations">
+                                {{item.variations}}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.sku">
+                                {{item.sku}}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.category">
+                                {{item.category}}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.sale_price">
+                                € {{ item.sale_price.toFixed(2) }}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.dropshipping_price">
+                                € {{ item.dropshipping_price.toFixed(2) }}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding" :data="item.quantity">
+                                {{item.quantity}}
+                            </vs-td>
+
+                            <vs-td class="column-no-padding">
+                                <vs-avatar color="primary" size="24px" @click="showProductInfo(item)" icon-pack="feather" icon="icon-info" />
+                            </vs-td>
+
+                        </vs-tr>
+
+                    </template>
+                </vs-table>
+
+                <!-- TODO: Old code -->
+                <!--
                 <div class="vx-row mb-3 w-full font-bold">
                     <div class="vx-col md:w-1/6 w-full">
                     </div>
@@ -614,6 +686,7 @@
                         <vs-avatar color="primary" size="24px" @click="showProductInfo(product)" icon-pack="feather" icon="icon-info" />
                     </div>
                 </div>
+                -->
             </div>
 
             <div v-else-if="productView == 'product_info'">
