@@ -289,7 +289,7 @@ export default {
       if (this.productImageIndex >= this.product.images.length) {
         this.productImageIndex = this.product.images.length - 1
       }
-    }
+    },
   },
   async created() {
     this.dropin = new Dropin(localStorage.getItem('accessToken'))

@@ -741,26 +741,6 @@
 
         <!-- Payment link popup -->
         <vs-popup title="Payment link" :active.sync="showPopup['payment_link']">
-            <!--
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Thank you page
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-check-circle" icon-no-border v-model="paymentSuccessUrl" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Cancel payment page
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="url" class="w-full" icon-pack="feather" icon="icon-x-circle" icon-no-border v-model="paymentCancelUrl" />
-                </div>
-            </div>
-            -->
-
             <div class="vx-row mb-3">
                 <div class="vx-col w-full">
                     <vs-input :disabled="true" class="w-full" icon-pack="feather" icon="icon-link" icon-no-border :value="paymentLink" />

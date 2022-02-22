@@ -290,12 +290,10 @@
                                             <vs-icon icon-pack="feather" icon="icon-message-square"></vs-icon>
                                             Show Notes
                                         </vs-dropdown-item>
-                                        <!--
                                         <vs-dropdown-item @click="showPaymentLink(item)">
                                             <vs-icon icon-pack="feather" icon="icon-dollar-sign"></vs-icon>
                                             Show Payment Link
                                         </vs-dropdown-item>
-                                        -->
                                         <vs-dropdown-item @click="whatsappMessage(item)">
                                             <vs-icon icon-pack="feather" icon="icon-message-circle"></vs-icon>
                                             Send Whatsapp Message
@@ -582,35 +580,95 @@
 
         <!-- Add product popup -->
         <vs-popup title="Add products" :active.sync="showPopup['add_product']">
-            <div class="w-full pr-2 pl-2">
+
+            <div v-if="productView == 'normal'" class="w-full pr-2 pl-2">
                 <div class="vx-row mb-3 w-full font-bold">
                     <div class="vx-col md:w-1/6 w-full">
                     </div>
-                    <div class="vx-col md:w-1/3 w-full">
+                    <div class="vx-col md:w-1/4 w-full">
                         Name
                     </div>
                     <div class="vx-col md:w-1/6 w-full">
                         Q.ty
                     </div>
-                    <div class="vx-col md:w-1/3 w-full">
+                    <div class="vx-col md:w-1/4 w-full">
                         SKU
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
                     </div>
                 </div>
                 <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="'addProductOption' + pIndex">
                     <div class="vx-col md:w-1/6 w-full">
                         <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
                     </div>
-                    <div class="vx-col md:w-1/3 w-full">
-                        {{product.name}}
+                    <div class="vx-col md:w-1/4 w-full">
+                        {{product.name}} {{product.variations}}
                     </div>
                     <div class="vx-col md:w-1/6 w-full">
                         {{product.quantity}}
                     </div>
-                    <div class="vx-col md:w-1/3 w-full">
+                    <div class="vx-col md:w-1/4 w-full">
                         {{product.sku}}
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        <vs-avatar color="primary" size="24px" @click="showProductInfo(product)" icon-pack="feather" icon="icon-info" />
                     </div>
                 </div>
             </div>
+
+            <div v-else-if="productView == 'product_info'">
+                <div class="vx-row mb-6">
+                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="productView = 'normal'"></vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="productImageIndex > 0" src="/images/arrow-left.png" class="w-full nextPrevProductImage" @click="previousProductImage()">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && product.images.length > 0" :src="product.images[productImageIndex]" class="w-full">
+                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && (productImageIndex + 1 < product.images.length)" src="/images/arrow-right.png" class="w-full nextPrevProductImage" @click="nextProductImage()">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <strong>{{ product.name }} ({{ product.sku }})</strong>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.description != ''">
+                    <div class="vx-col w-full">
+                        <span>{{ product.description }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.variations != ''">
+                    <div class="vx-col w-full">
+                        <span>Variations: {{ product.variations }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Sugg. Price: € {{ (product.hasOwnProperty('sale_price') ? product.sale_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Drop. Price: € {{ (product.hasOwnProperty('dropshipping_price') ? product.dropshipping_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Stock Quantity: {{ product.quantity }}</span>
+                    </div>
+                </div>
+                
+            </div>
+
         </vs-popup>
 
         <!-- Lead info popup -->
@@ -880,6 +938,10 @@ export default {
         'online'        : 'Prepaid',
       },
       dropinDefaultEmail: 'mdjordje82@gmail.com',
+
+      productView: 'normal',
+      product: {},
+      productImageIndex: 0,
     }
   },
   computed: {
@@ -1201,23 +1263,8 @@ export default {
       this.order.shipping.country = country
       this.order.shipping.address = address
     },
-    mapProduct(p) {
-      return {
-        id: p.id,
-        name: p.name,  
-        sku: p.sku,
-        quantity: parseInt(p.quantity),
-        price: parseFloat(p.price),
-      }
-    },
     async fetchProducts() {
-      let products = await this.dropin.fetchProducts()
-
-      this.products = []
-      for (let i = 0; i < products.length; i++) {
-        let p = products[i]
-        this.products.push(this.mapProduct(p))
-      }
+      this.products = await this.dropin.fetchProducts()
     },
     removeProduct(index) {
       this.order.products.splice(index, 1)
@@ -1925,6 +1972,23 @@ export default {
       element.click()
       document.body.removeChild(element)
     },
+    showProductInfo(product) {
+      this.product = product
+      this.productImageIndex = 0
+      this.productView = 'product_info'
+    },
+    previousProductImage() {
+      this.productImageIndex -= 1
+      if (this.productImageIndex < 0) {
+        this.productImageIndex = 0
+      }
+    },
+    nextProductImage() {
+      this.productImageIndex += 1
+      if (this.productImageIndex >= this.product.images.length) {
+        this.productImageIndex = this.product.images.length - 1
+      }
+    },
   },
   async created() {
     this.dropin = new Dropin(localStorage.getItem('accessToken'))
@@ -1973,4 +2037,12 @@ export default {
   min-width: 200px !important;
 }
 
+.nextPrevProductImage {
+  cursor: pointer;
+}
+.nextPrevProductImage:hover {
+  filter: brightness(0.9);
+}
+
 </style>
+
