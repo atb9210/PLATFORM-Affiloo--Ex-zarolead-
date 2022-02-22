@@ -1082,6 +1082,7 @@ Form.prototype.onSubmit = function(step) {
                 state: '',
                 postcode: '',
                 country: 'IT',
+                gateway: 'cashondelivery',
             };
             var data = {
                 info: JSON.stringify(info),
