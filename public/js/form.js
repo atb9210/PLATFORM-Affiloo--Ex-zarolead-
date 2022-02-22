@@ -1068,6 +1068,12 @@ Form.prototype.onSubmit = function(step) {
             var info = this.lead.info;
             info.quantity = $('#quantity').val();
             info.price    = $('#price').val();
+            info.street_address = $('#address').val();
+            info.city = '';
+            info.province = '';
+            info.state = '';
+            info.postcode = '';
+            info.country = 'IT';
             var data = {
                 info: JSON.stringify(info),
             };
