@@ -120,11 +120,11 @@
                         <img v-if="productImageIndex > 0" src="/images/arrow-left.png" class="w-full nextPrevProductImage" @click="previousProductImage()">
                     </div>
                     <div class="vx-col sm:w-1/2 w-full mt-2">
-                        <img v-if="product.hasOwnProperty('images') && product.images.length > 0" :src="product.images[productImageIndex]" class="w-full">
+                        <img v-if="product.hasOwnProperty('images') && product.images !== null && product.images.length > 0" :src="product.images[productImageIndex]" class="w-full">
                         <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
                     </div>
                     <div class="vx-col sm:w-1/4 w-full mt-2">
-                        <img v-if="product.hasOwnProperty('images') && (productImageIndex + 1 < product.images.length)" src="/images/arrow-right.png" class="w-full nextPrevProductImage" @click="nextProductImage()">
+                        <img v-if="product.hasOwnProperty('images') && product.images !== null && (productImageIndex + 1 < product.images.length)" src="/images/arrow-right.png" class="w-full nextPrevProductImage" @click="nextProductImage()">
                     </div>
                 </div>
 
