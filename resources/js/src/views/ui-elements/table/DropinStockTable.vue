@@ -3,6 +3,7 @@
 
         <p class="flex items-center mb-4">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="showAddProductPopup"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -164,6 +165,101 @@
 
         </vs-popup>
 
+        <!-- Add product popup -->
+        <vs-popup title="Add products" :active.sync="showPopup['add_product']">
+
+            <div v-if="productView == 'normal'" class="w-full pr-2 pl-2">
+
+                <div class="vx-row mb-3 w-full font-bold">
+                    <div class="vx-col md:w-1/6 w-full">
+                    </div>
+                    <div class="vx-col md:w-1/4 w-full">
+                        Name
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        Q.ty
+                    </div>
+                    <div class="vx-col md:w-1/4 w-full">
+                        SKU
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                    </div>
+                </div>
+                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in dropinProducts" :key="'addProductOption' + pIndex">
+                    <div class="vx-col md:w-1/6 w-full">
+                        <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
+                    </div>
+                    <div class="vx-col md:w-1/4 w-full">
+                        {{product.name}} {{product.variations}}
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        {{product.quantity}}
+                    </div>
+                    <div class="vx-col md:w-1/4 w-full">
+                        {{product.sku}}
+                    </div>
+                    <div class="vx-col md:w-1/6 w-full">
+                        <vs-avatar color="primary" size="24px" @click="showProductInfo(product, true)" icon-pack="feather" icon="icon-info" />
+                    </div>
+                </div>
+
+            </div>
+
+            <div v-else-if="productView == 'product_info'">
+                <div class="vx-row mb-6">
+                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="productView = 'normal'"></vs-button>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="productImageIndex > 0" src="/images/arrow-left.png" class="w-full nextPrevProductImage" @click="previousProductImage()">
+                    </div>
+                    <div class="vx-col sm:w-1/2 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && product.images.length > 0" :src="product.images[productImageIndex]" class="w-full">
+                        <img v-else src="https://www.tucanomacchine.it/wp-content/uploads/2019/07/480px-No_image_available.svg.png" class="w-full">
+                    </div>
+                    <div class="vx-col sm:w-1/4 w-full mt-2">
+                        <img v-if="product.hasOwnProperty('images') && (productImageIndex + 1 < product.images.length)" src="/images/arrow-right.png" class="w-full nextPrevProductImage" @click="nextProductImage()">
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <strong>{{ product.name }} ({{ product.sku }})</strong>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.description != ''">
+                    <div class="vx-col w-full">
+                        <span>{{ product.description }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6" v-if="product.variations != ''">
+                    <div class="vx-col w-full">
+                        <span>Variations: {{ product.variations }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Sugg. Price: € {{ (product.hasOwnProperty('sale_price') ? product.sale_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                    <div class="vx-col md:1/2 w-full">
+                        <span>Drop. Price: € {{ (product.hasOwnProperty('dropshipping_price') ? product.dropshipping_price.toFixed(2) : 0.0) }}</span>
+                    </div>
+                </div>
+
+                <div class="vx-row mb-6">
+                    <div class="vx-col w-full">
+                        <span>Stock Quantity: {{ product.quantity }}</span>
+                    </div>
+                </div>
+                
+            </div>
+
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -203,12 +299,17 @@ export default {
 
       showPopup: {
         'product_info': false,
+        'add_product': false,
       },
 
       product: {},
       productImageIndex: 0,
 
       categories: [],
+
+      dropinProducts: [],
+      productView: 'normal',
+      productImageIndex: 0,
     }
   },
   computed: {
@@ -265,10 +366,14 @@ export default {
       }
       await this.applyFilters()
     },
-    showProductInfo(product) {
+    showProductInfo(product, inAddProductPopup = false) {
       this.product = product
       this.productImageIndex = 0
-      this.showPopup['product_info'] = true
+      if (inAddProductPopup) {
+        this.productView = 'product_info'
+      } else {
+        this.showPopup['product_info'] = true
+      }
     },
     previousProductImage() {
       this.productImageIndex -= 1
@@ -281,6 +386,81 @@ export default {
       if (this.productImageIndex >= this.product.images.length) {
         this.productImageIndex = this.product.images.length - 1
       }
+    },
+    async showAddProductPopup() {
+      if (this.dropinProducts.length == 0) {
+        this.$vs.loading()
+        this.dropinProducts = await this.dropin.fetchDropinProducts()
+        this.$vs.loading.close()
+      }
+
+      this.productView = 'normal'
+      this.showPopup['add_product'] = true
+    },
+    async toggleProduct(product) {
+      this.$vs.loading()
+
+      let hasBeenDeleted = false
+      for (let i = 0; i < this.products.length; i++) {
+        let p = this.products[i]
+        if (product.sku == p.sku) {
+          await this.dropin.deleteProduct(p.sku)
+          hasBeenDeleted = true
+          break
+        }
+      }
+
+      if (hasBeenDeleted) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product removed',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        let newProduct = await this.dropin.createProduct({
+          sku: product.sku,
+          name: product.name,
+          variations: product.variations,
+          description: product.description,
+          category: product.category,
+          images: JSON.stringify(product.images),
+          dropshipping_price: product.dropshipping_price,
+          sale_price: product.sale_price,
+          cost: product.dropshipping_price,
+          quantity: product.quantity,
+        })
+
+        if (product !== null) {
+          this.$vs.notify({
+            title: 'Success',
+            text: 'Product added',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'success'
+          })
+        } else {
+          this.$vs.notify({
+            title: 'Error',
+            text: 'Cannot add the product',
+            iconPack: 'feather',
+            icon: 'icon-alert-circle',
+            color: 'danger'
+          })
+        }
+      }
+
+      this.$vs.loading.close()
+    },
+    hasProduct(product) {
+      for (let i = 0; i < this.products.length; i++) {
+        let p = this.products[i]
+        if (product.sku == p.sku) {
+          return true
+        }
+      }
+      return false
     },
   },
   async created() {

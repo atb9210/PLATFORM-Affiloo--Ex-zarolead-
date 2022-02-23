@@ -71,21 +71,15 @@
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Status</label>
-                    <vs-select autocomplete multiple class="w-full" v-model="filters.statuses">
-                        <vs-select-item :key="'statusOption' + sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
-                    </vs-select>
+                    <my-select v-model="filters.statuses" :options="leadStatuses" :autocomplete="true" multiple class="w-full select-large" />
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Product</label>
-                    <vs-select class="w-full" v-model="filters.product">
-                        <vs-select-item :key="'productOption' + pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
-                    </vs-select>
+                    <my-select v-model="filters.product" :options="productOptions" :autocomplete="true" class="w-full select-large" />
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Order Status</label>
-                    <vs-select class="w-full" v-model="filters.order_status">
-                        <vs-select-item :key="'orderStatusOption' + osIndex" :value="oStatus.id" :text="oStatus.name" v-for="(oStatus, osIndex) in orderStatuses" />
-                    </vs-select>
+                    <my-select v-model="filters.order_status" :options="orderStatusOptions" :autocomplete="true" class="w-full select-large" />
                 </div>
             </div>
 
@@ -438,9 +432,7 @@
                 <h2>Payment method</h2>
                 <div class="vx-row w-full mb-3 font-bold">
                     <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-select class="w-full" v-model="order.gateway">
-                            <vs-select-item :key="'paymentMethodOption' + gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
-                        </vs-select>
+                        <my-select v-model="order.gateway" :options="gateways" class="w-full select-large" :autocomplete="true" />
                     </div>
                     <div class="vx-col mb-3 md:w-1/2 w-full">
                         <vs-button v-if="order.gateway === 'online' && order.phone != ''" class="w-full" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="confirmSendPaymentLinkViaMessage">Send payment link via Whatsapp</vs-button>
@@ -960,6 +952,19 @@ export default {
         { name: 'Duplicate',           id: 'duplicate' },
         { name: 'Lead',                id: 'lead' },
       ],
+      orderStatusOptions: [
+        { label: 'Unprocessed',         value: 'imported' },
+        { label: 'To prepare',          value: 'to_prepare' },
+        { label: 'Waiting for carrier', value: 'prepared_to_ship' },
+        { label: 'Assigned to carrier', value: 'waiting_carrier' },
+        { label: 'Shipped',             value: 'shipped' },
+        { label: 'Delivered',           value: 'delivered' },
+        { label: 'Return',              value: 'return' },
+        { label: 'Invalid',             value: 'invalid' },
+        { label: 'Out of stock',        value: 'out_of_stock' },
+        { label: 'Duplicate',           value: 'duplicate' },
+        { label: 'Lead',                value: 'lead' },
+      ],
 
       carriers: [
         'brt',
@@ -1015,6 +1020,8 @@ export default {
       productView: 'normal',
       product: {},
       productImageIndex: 0,
+
+      productOptions: [],
     }
   },
   computed: {
@@ -1338,6 +1345,15 @@ export default {
     },
     async fetchProducts() {
       this.products = await this.dropin.fetchProducts()
+
+      this.productOptions = []
+      for (let i = 0; i < this.products.length; i++) {
+        let p = this.products[i]
+        this.productOptions.push({
+          label: p.name,
+          value: p.sku,
+        })
+      }
     },
     removeProduct(index) {
       this.order.products.splice(index, 1)
@@ -1744,6 +1760,7 @@ export default {
       })
     },
     showAddProductPopup() {
+      this.productView = 'normal'
       this.showPopup['add_product'] = true
     },
     toggleProduct(product) {

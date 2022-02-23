@@ -278,8 +278,17 @@ Route::post('/dropin/delivery', 'api\third\DropinController@createDelivery')->mi
     ->name('dropin.delivery.create');
 Route::put('/dropin/delivery', 'api\third\DropinController@updateDelivery')->middleware('auth:api')
     ->name('dropin.delivery.update');
+
 Route::get('/dropin/products', 'api\third\DropinController@products')->middleware('auth:api')
     ->name('dropin.products.index');
+Route::post('/dropin/products', 'api\third\DropinController@createProduct')->middleware('auth:api')
+    ->name('dropin.products.store');
+Route::put('/dropin/products/{sku}', 'api\third\DropinController@updateProduct')->middleware('auth:api')
+    ->name('dropin.products.update');
+Route::delete('/dropin/products/{sku}', 'api\third\DropinController@destroyProduct')->middleware('auth:api')
+    ->name('dropin.products.destroy');
+Route::get('/dropin/products-dropin', 'api\third\DropinController@getProductsDropin')->middleware('auth:api')
+    ->name('dropin.products.dropin');
 
 Route::post('/dropin/send-message', 'api\third\DropinController@sendMessage')->middleware('auth:api')
     ->name('dropin.message.send');

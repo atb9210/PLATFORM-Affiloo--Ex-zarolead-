@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\third\DropinLead;
+use App\third\DropinProduct;
 
 use App\Settings;
 
@@ -649,25 +650,6 @@ class DropinController extends Controller
         ]);
     }
 
-    /**
-     * Get stock products list.
-     *
-     * @response {
-     *  "data": [products],
-     * }
-     */
-    public function products()
-    {
-        // TODO: Authorization
-
-        $dropin = new \Driverfury\Dropin\Dropin();
-        $objects = $dropin->getProducts();
-
-        return response([
-            'data' => $objects,
-        ]);
-    }
-
     private function getStripeClient()
     {
         $settings = Settings::get();
@@ -914,4 +896,160 @@ class DropinController extends Controller
             'message' => 'Message sent',
         ]);
     }
+
+    /**
+     * Get products list.
+     *
+     * @response {
+     *  "data": [products],
+     * }
+     */
+    public function products(Request $request)
+    {
+        // TODO: Authorization
+
+        $objects = DropinProduct::all();
+
+        return response([
+            'data' => $objects,
+        ]);
+    }
+
+    /**
+     * Create a product.
+     *
+     * @bodyParam sku string required Product's SKU
+     * @bodyParam name string required Product's name
+     * @bodyParam variations string Product's variations
+     * @bodyParam description string Product's description
+     * @bodyParam category string required Product's category
+     * @bodyParam images json Product's images
+     * @bodyParam dropshipping_price float required Product's dropshipping price
+     * @bodyParam sale_price float required Product's sale price
+     * @bodyParam cost float required Product's cost
+     * @bodyParam quantity int Product's quantity
+     *
+     * @response {
+     *  "success": true,
+     *  "data": product,
+     * }
+     */
+    public function createProduct(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'sku'                => 'required|string|min:1',
+            'name'               => 'required|string|min:1',
+            'variations'         => 'string|nullable',
+            'description'        => 'string|nullable',
+            'category'           => 'required|string|min:1',
+            'dropshipping_price' => 'required|numeric|min:0',
+            'sale_price'         => 'required|numeric|min:0',
+            'cost'               => 'required|numeric|min:0',
+            'quantity'           => 'required|numeric|min:0',
+        ]);
+
+
+        $params['dropshipping_price'] = floatval($params['dropshipping_price']);
+        $params['sale_price'] = floatval($params['sale_price']);
+        $params['cost'] = floatval($params['cost']);
+        $params['quantity'] = intval($params['quantity']);
+
+        $product = DropinProduct::create($params);
+
+        return response([
+            'status' => 'success',
+            'data' => $product,
+        ]);
+    }
+
+    /**
+     * Update a product.
+     *
+     * @urlParam sku int required Product's sku
+     *
+     * @bodyParam sku string Product's SKU
+     * @bodyParam name string Product's name
+     * @bodyParam variations string Product's variations
+     * @bodyParam description string Product's description
+     * @bodyParam category string Product's category
+     * @bodyParam images json Product's images
+     * @bodyParam dropshipping_price float Product's dropshipping price
+     * @bodyParam sale_price float Product's sale price
+     * @bodyParam cost float Product's cost
+     * @bodyParam quantity int Product's quantity
+     *
+     * @response {
+     *  "success": true,
+     *  "data": product,
+     * }
+     */
+    public function updateProduct($sku, Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'sku'                => 'string|min:1',
+            'name'               => 'string|min:1',
+            'variations'         => 'string|nullable',
+            'description'        => 'string|nullable',
+            'category'           => 'string|min:1',
+            'dropshipping_price' => 'numeric|min:0',
+            'sale_price'         => 'numeric|min:0',
+            'cost'               => 'numeric|min:0',
+            'quantity'           => 'numeric|min:0',
+        ]);
+
+        $product = DropinProduct::findOrFail($sku);
+        $product->update($params);
+
+        return response([
+            'status' => 'success',
+            'data' => $product,
+        ]);
+    }
+
+    /**
+     * Delete a lead.
+     *
+     * @urlParam sku int required Product's sku
+     *
+     * @response {
+     *  "message": "Product successfully deleted",
+     * }
+     */
+    public function destroyProduct($sku, Request $request)
+    {
+        // TODO: Authorization
+
+        $product = DropinProduct::findOrFail($sku);
+        $product->delete();
+
+        return response([
+            'message' => 'Product successfully deleted',
+        ]);
+    }
+
+    /**
+     * Get all dropin's products list.
+     *
+     * @response {
+     *  "data": [products],
+     * }
+     */
+    public function getProductsDropin(Request $request)
+    {
+        // TODO: Authorization
+
+        $dropin = new \Driverfury\Dropin\Dropin();
+        $products = $dropin->getProducts();
+
+        return response([
+            'data' => $products,
+        ]);
+    }
+    
 }

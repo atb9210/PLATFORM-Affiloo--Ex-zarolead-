@@ -1,5 +1,7 @@
 let axios = require('axios')
 
+import { xml2json } from '@assets/utils/xml2json'
+
 function getCurrencyValue(s) {
   if (typeof(s) === 'number') {
     return s;
@@ -334,6 +336,85 @@ class Dropin {
     }
 
     return object
+  }
+
+  async createProduct(params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.post('/api/3rd/dropin/products', params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+
+      // DEBUG TODO: to delete
+      console.log(error)
+    }
+
+    return object
+  }
+
+  async deleteProduct(sku) {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.delete('/api/3rd/dropin/products/' + sku, { headers })
+      result = true
+    } catch (error) {
+      // Nothing
+
+      // DEBUG TODO: to delete
+      console.log(error)
+    }
+
+    return result
+  }
+
+  async fetchDropinProducts() {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/products-dropin', { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+
+        for (let i = 0; i < objects.length; i++) {
+          let obj = objects[i]
+
+          if (obj.hasOwnProperty('dropshipping_price')) {
+            obj.dropshipping_price = parseFloat(obj.dropshipping_price)
+          } else {
+            obj.dropshipping_price = 0.0
+          }
+          if (obj.hasOwnProperty('sale_price')) {
+            obj.sale_price = parseFloat(obj.sale_price)
+          } else {
+            obj.sale_price = 0.0
+          }
+          if (obj.hasOwnProperty('cost')) {
+            obj.cost = parseFloat(obj.cost)
+          } else {
+            obj.cost = 0.0
+          }
+          if (obj.hasOwnProperty('quantity')) {
+            obj.quantity = parseInt(obj.quantity)
+          } else {
+            obj.quantity = 0.0
+          }
+
+          objects[i] = obj
+        }
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
   }
 
   async sendMessage(phone, message) {
