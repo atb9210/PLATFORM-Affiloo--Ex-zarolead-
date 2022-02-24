@@ -16,6 +16,13 @@ use App\Landing as Landing;
 
 class FlowController extends Controller
 {
+    private function getFlowPathnameRegex()
+    {
+        $fileOrDirNameRegex = '\w+[\w\d-]*';
+        $flowPathnameRegex = '#^(' . $fileOrDirNameRegex . '/){1,2}(' . $fileOrDirNameRegex . ')\.\w+$#';
+        return $flowPathnameRegex;
+    }
+
     /**
      * Get all flows list.
      *
@@ -75,7 +82,7 @@ class FlowController extends Controller
             'type' => 'required|in:redirect,hotload',
             'rules' => 'required|json',
             'domain_id' => 'required|exists:domains,id',
-            'path_name' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
+            'path_name' => 'required|regex:' . $this->getFlowPathnameRegex(),
             'traffic_source_id' => 'required|integer|exists:traffic_sources,id',
             'form_id' => 'nullable|integer',
         ]);

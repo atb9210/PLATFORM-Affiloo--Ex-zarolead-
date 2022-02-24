@@ -651,6 +651,7 @@ export default {
         Authorization: 'Bearer ' + localStorage.getItem('accessToken')
       }
 
+      this.newObject['create'].path_name = this.newObject['create'].path_name.trim()
       let pathName = this.newObject['create'].path_name
       if (pathName.length > 0) {
         if (!pathName.includes(".")) {

@@ -1400,6 +1400,7 @@ export default {
           resolve(true)
         } else {
           this.$vs.loading()
+          this.flow_path_name = this.flow_path_name.trim()
           let pathName = this.flow_path_name
           if (pathName.length > 0) {
             if (!pathName.includes(".")) {

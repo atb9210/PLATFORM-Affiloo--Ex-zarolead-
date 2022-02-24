@@ -55,9 +55,39 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        $dropin = new \Driverfury\Dropin\Dropin();
-        $products = $dropin->getProducts();
-        dd($products);
+        $pathnames = [
+            'pathname1' => 'ciao/index.php',
+            'pathname2' => 'ciao_bambina/index.php',
+            'pathname3' => 'ciao-bambina/index.php',
+            'pathname4' => 'Guanto-led2x1/index.php',
+        ];
+        /*
+        $pathnames = [
+            'pathname1' => 'index_yo',
+            'pathname2' => '-invalid',
+            'pathname3' => '_this-is-valid_',
+        ];
+        */
+        $fileOrDirNameRegex = '\w+[\w\d-]*';
+        $flowPathnameRegex = '#^(' . $fileOrDirNameRegex . '/){1,2}(' . $fileOrDirNameRegex . ')\.\w+$#';
+        $validator = Validator::make($pathnames, [
+            'pathname1' => 'required|regex:' . $flowPathnameRegex,
+            'pathname2' => 'required|regex:' . $flowPathnameRegex,
+            'pathname3' => 'required|regex:' . $flowPathnameRegex,
+            'pathname4' => 'required|regex:' . $flowPathnameRegex,
+        ]);
+        /*
+        $validator = Validator::make($pathnames, [
+            'pathname1' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
+            'pathname2' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
+            'pathname3' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
+        ]);
+         */
+        if ($validator->fails()) {
+            dd($validator->messages());
+        } else {
+            dd("OK");
+        }
         exit();
 
         $monitor = \App\third\FacebookMonitor::find(4);
