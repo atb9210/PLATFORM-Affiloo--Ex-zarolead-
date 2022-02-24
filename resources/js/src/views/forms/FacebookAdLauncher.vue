@@ -1155,7 +1155,7 @@ export default {
       if (this.campaign.cbo) {
         params.daily_budget = parseInt(this.campaign.daily_budget*100)
         params.bid_strategy = this.campaign.bid_strategy
-        if (this.campaign.accelerated) {
+        if (this.campaign.accelerated && this.campaign.bid_strategy === 'LOWEST_COST_WITH_BID_CAP') {
           params.pacing_type = ['no_pacing']
         }
       }
@@ -1234,7 +1234,7 @@ export default {
       if (!this.campaign.cbo) {
         params.bid_strategy = this.campaign.bid_strategy
         params.daily_budget = parseInt(this.campaign.daily_budget*100)
-        if (this.campaign.accelerated) {
+        if (this.campaign.accelerated && this.campaign.bid_strategy === 'LOWEST_COST_WITH_BID_CAP') {
           params.pacing_type = ['no_pacing']
         }
       }
@@ -1416,7 +1416,6 @@ export default {
           }
         }
       }
-      
 
       this.creatingAds = false
 
