@@ -255,6 +255,47 @@ class DropinController extends Controller
             }
         }
 
+        // Send confirmation link message via whatsapp
+        if ($lead->status !== 'duplicate') {
+            if ($product !== null) {
+                $chatapi = $this->getChatAPIClient();
+                $message = null;
+                $productInfo = $product->info;
+                if ($productInfo === null) {
+                    $productInfo = [];
+                }
+                if (isset($productInfo['confirmation_message'])) {
+                    // TODO: More general algorithm to compute confirm/cancel links
+                    $confirmLink = env('APP_URL') . '/products/' . $product->id . '/checkout?lid=' . $lead->hash;
+                    $cancelLink = env('APP_URL') . '/products/checkout/' . $lead->hash . '/cancel';
+
+                    $msgContext = [
+                        'product_name' => $product->name,
+                        'confirm_link' => $confirmLink,
+                        'cancel_link' => $cancelLink,
+                    ];
+                    $q = $product->quantity;
+                    if ($q === null) {
+                        $q = [];
+                    }
+                    if (isset($q['options']) && $q['options'] !== null) {
+                        foreach ($q['options'] as $key => $val) {
+                            $price = 0.0;
+                            if (isset($val['price']) && $val['price'] !== null) {
+                                $price = $val['price'];
+                            }
+                            $msgContext['price(' . $key . ')'] = $val['price'];
+                        }
+                    }
+                    $message = $this->interpretConfirmationMessage($productInfo['confirmation_message'], $msgContext);
+                }
+                if ($message !== null && $message !== '') {
+                    // TODO: This should be delayed by 10 minutes
+                    $chatapi->sendMessage($params['phone'], $message);
+                }
+            }
+        }
+
         $lead['network'] = 'dropin';
 
         return response([

@@ -298,6 +298,7 @@ class WarehouseController extends Controller
                 $lead->save();
             }
 
+            // Send confirmation link message via whatsapp
             if ($product !== null) {
                 $chatapi = $this->getChatAPIClient();
                 $message = null;
