@@ -1753,6 +1753,10 @@ async function onLoad()
 
     lead = null;
     let leadId = utils.getUrlParam('lid');
+
+    // TODO: DEBUG: To delete
+    console.log('leadId', leadId)
+
     if (leadId !== null) {
         let leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
         if (leadInfo === null) {

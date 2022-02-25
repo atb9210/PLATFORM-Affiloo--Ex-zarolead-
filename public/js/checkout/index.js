@@ -1742,6 +1742,8 @@ function onLoad() {
                     }
                     lead = null;
                     leadId = utils.getUrlParam('lid');
+                    // TODO: DEBUG: To delete
+                    console.log('leadId', leadId);
                     if (!(leadId !== null)) return [3 /*break*/, 8];
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 3:
