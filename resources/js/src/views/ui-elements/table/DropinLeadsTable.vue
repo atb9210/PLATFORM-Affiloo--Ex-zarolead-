@@ -40,7 +40,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Only complaint" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-alert-triangle" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-alert-triangle" @click="setFiltersStatuses(['complaint'])"></vs-button>
             </vx-tooltip>
         </p>
 

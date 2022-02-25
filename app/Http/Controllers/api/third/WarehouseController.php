@@ -1083,10 +1083,13 @@ class WarehouseController extends Controller
     {
         $lead = WarehouseLead::findByHash($hash);
         if ($lead === null) {
-            return response([
-                'status' => 'fail',
-                'message' => 'Lead not found',
-            ], 404);
+            $lead = \App\third\DropinLead::findByHash($hash);
+            if ($lead === null) {
+                return response([
+                    'status' => 'fail',
+                    'message' => 'Lead not found',
+                ], 404);
+            }
         }
 
         $info = $lead->info;
