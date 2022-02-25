@@ -227,6 +227,12 @@ class DropinController extends Controller
 
         $params['hash'] = $this->generateRandomString(64);
 
+        // Default payment method
+        if (!isset($params['info']['payment_method']) && !isset($params['info']['gateway'])) {
+            $params['info']['payment_method'] = 'cashondelivery';
+            $params['info']['gateway'] = 'cashondelivery';
+        }
+
         // TODO: Check if that hash already exists
 
         $lead = DropinLead::create($params);
