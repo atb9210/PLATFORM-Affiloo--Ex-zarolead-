@@ -1744,23 +1744,17 @@ function onLoad() {
                     }
                     lead = null;
                     leadId = utils.getUrlParam('lid');
-                    // TODO: DEBUG: To delete
-                    console.log('leadId', leadId);
                     if (!(leadId !== null)) return [3 /*break*/, 8];
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 3:
                     leadInfo = _a.sent();
                     if (!(leadInfo === null)) return [3 /*break*/, 5];
-                    // TODO: DEBUG: To delete
-                    console.log('leadInfo wh is null');
                     zarolead.setWarehouseNetwork('dropin');
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 4:
                     leadInfo = _a.sent();
                     _a.label = 5;
                 case 5:
-                    // TODO: DEBUG: To delete
-                    console.log('leadInfo', leadInfo);
                     if (!(leadInfo !== null)) return [3 /*break*/, 8];
                     lead = leadInfo;
                     fullName_1 = '';

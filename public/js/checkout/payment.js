@@ -154,12 +154,14 @@ var Utils = /** @class */ (function () {
 }());
 var utils = new Utils();
 var ZaroLead = /** @class */ (function () {
-    function ZaroLead() {
+    function ZaroLead(warehouseNetwork) {
         // TODO: Change this based on which server is hosted
         //let hostname = utils.getHostname();
+        if (warehouseNetwork === void 0) { warehouseNetwork = 'warehouse'; }
         var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
+        this.warehouseNetwork = warehouseNetwork;
         /*
         this.$http = new Http();
         this.httpHeaders = {
@@ -169,6 +171,9 @@ var ZaroLead = /** @class */ (function () {
         */
         this.$http = axios;
     }
+    ZaroLead.prototype.setWarehouseNetwork = function (warehouseNetwork) {
+        this.warehouseNetwork = warehouseNetwork;
+    };
     ZaroLead.prototype.createOrder = function (params) {
         return __awaiter(this, void 0, void 0, function () {
             var order, response, error_1;
@@ -214,7 +219,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads', params, { headers: this.httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -246,7 +251,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.put(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -280,7 +285,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/info', { headers: this.httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -312,7 +317,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -349,7 +354,7 @@ var ZaroLead = /** @class */ (function () {
                             payment_method: paymentMethod,
                             push: push
                         };
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -380,7 +385,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http["delete"](this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http["delete"](this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -456,7 +461,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders })];
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -497,7 +502,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/products/payment-intent', { params: params, headers: httpHeaders })];
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/payment-intent', { params: params, headers: httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -1176,14 +1181,19 @@ function onLoad() {
                         autocomplete.addListener('place_changed', fillInAddress);
                     }
                     thisScript = document.getElementById('checkout-js');
-                    if (!(thisScript !== null)) return [3 /*break*/, 3];
+                    if (!(thisScript !== null)) return [3 /*break*/, 4];
                     leadId = utils.getAttribute(thisScript, 'data-lead-id');
-                    if (!(leadId !== null)) return [3 /*break*/, 2];
+                    if (!(leadId !== null)) return [3 /*break*/, 3];
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 1:
                     lead = _a.sent();
-                    _a.label = 2;
+                    if (!(lead === null)) return [3 /*break*/, 3];
+                    zarolead.setWarehouseNetwork('dropin');
+                    return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 2:
+                    lead = _a.sent();
+                    _a.label = 3;
+                case 3:
                     if (lead !== null && lead.hasOwnProperty('products') && lead['products'] !== null) {
                         products = lead['products'];
                     }
@@ -1191,8 +1201,8 @@ function onLoad() {
                         accessories = lead['accessories'];
                     }
                     stripeKey = utils.getAttribute(thisScript, 'data-stripe-key');
-                    return [3 /*break*/, 3];
-                case 3:
+                    return [3 /*break*/, 4];
+                case 4:
                     // TODO: Better error handling (show message?)
                     if (lead === null) {
                         return [2 /*return*/];
@@ -1248,7 +1258,7 @@ function onLoad() {
                     else {
                         // TODO: Error handling
                     }
-                    if (!(lead !== null)) return [3 /*break*/, 6];
+                    if (!(lead !== null)) return [3 /*break*/, 7];
                     fullName_1 = '';
                     if (lead.hasOwnProperty('first_name') && lead['first_name'] !== null) {
                         fullName_1 += lead['first_name'];
@@ -1262,19 +1272,19 @@ function onLoad() {
                         phone_1 = lead['phone'];
                     }
                     utils.setInputValue('phone', phone_1);
-                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 6];
+                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 7];
                     shipping = lead['shipping'];
                     if (!(shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
                         shipping.hasOwnProperty('city') && shipping['city'] !== null &&
                         shipping.hasOwnProperty('province') && shipping['province'] !== null &&
-                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 6];
+                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 7];
                     address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
                     utils.setInputValue('address', address);
-                    if (!(autocomplete !== null)) return [3 /*break*/, 6];
+                    if (!(autocomplete !== null)) return [3 /*break*/, 7];
                     autocomplete.set(address);
                     acService = new google.maps.places.AutocompleteService();
                     return [4 /*yield*/, acService.getPlacePredictions({ input: address })];
-                case 4:
+                case 5:
                     res = _a.sent();
                     placeId = res['predictions'][0]['place_id'];
                     map = new google.maps.Map(document.getElementById('map'), {
@@ -1292,10 +1302,10 @@ function onLoad() {
                                 changeLocation(place);
                             }
                         })];
-                case 5:
-                    _a.sent();
-                    _a.label = 6;
                 case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7:
                     e = null;
                     e = document.getElementById('orderNumber');
                     if (e !== null) {
@@ -1321,7 +1331,7 @@ function onLoad() {
                     // Initialize steps and start with first step
                     initSteps();
                     return [4 /*yield*/, nextStep()];
-                case 7:
+                case 8:
                     _a.sent();
                     utils.loadingEnd();
                     return [2 /*return*/];
