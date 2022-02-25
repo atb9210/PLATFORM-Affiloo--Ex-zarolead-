@@ -1742,17 +1742,22 @@ function onLoad() {
                     }
                     lead = null;
                     leadId = utils.getUrlParam('lid');
-                    if (!(leadId !== null)) return [3 /*break*/, 7];
+                    if (!(leadId !== null)) return [3 /*break*/, 8];
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 3:
                     leadInfo = _a.sent();
-                    if (leadInfo === null) {
-                        zarolead.setWarehouseNetwork('dropin');
-                    }
+                    if (!(leadInfo === null)) return [3 /*break*/, 5];
+                    // TODO: DEBUG: To delete
+                    console.log('leadInfo wh is null');
+                    zarolead.setWarehouseNetwork('dropin');
                     return [4 /*yield*/, zarolead.getLeadInfo(utils.strval(leadId))];
                 case 4:
                     leadInfo = _a.sent();
-                    if (!(leadInfo !== null)) return [3 /*break*/, 7];
+                    _a.label = 5;
+                case 5:
+                    // TODO: DEBUG: To delete
+                    console.log('leadInfo', leadInfo);
+                    if (!(leadInfo !== null)) return [3 /*break*/, 8];
                     lead = leadInfo;
                     fullName_1 = '';
                     if (lead.hasOwnProperty('first_name') && lead['first_name'] !== null) {
@@ -1771,19 +1776,19 @@ function onLoad() {
                     if (lead.hasOwnProperty('quantity') && lead['quantity'] !== null) {
                         changeQuantity(lead['quantity']);
                     }
-                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 7];
+                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 8];
                     shipping = lead['shipping'];
                     if (!(shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
                         shipping.hasOwnProperty('city') && shipping['city'] !== null &&
                         shipping.hasOwnProperty('province') && shipping['province'] !== null &&
-                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 7];
+                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 8];
                     address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
                     utils.setInputValue('address', address);
-                    if (!(autocomplete !== null)) return [3 /*break*/, 7];
+                    if (!(autocomplete !== null)) return [3 /*break*/, 8];
                     autocomplete.set(address);
                     acService = new google.maps.places.AutocompleteService();
                     return [4 /*yield*/, acService.getPlacePredictions({ input: address })];
-                case 5:
+                case 6:
                     res = _a.sent();
                     placeId = res['predictions'][0]['place_id'];
                     map = new google.maps.Map(document.getElementById('map'), {
@@ -1801,10 +1806,10 @@ function onLoad() {
                                 changeLocation(place);
                             }
                         })];
-                case 6:
-                    _a.sent();
-                    _a.label = 7;
                 case 7:
+                    _a.sent();
+                    _a.label = 8;
+                case 8:
                     /*
                     // Increase visits counter of the form
                     formId = utils.getUrlParam('id');
@@ -1815,7 +1820,7 @@ function onLoad() {
                     // Initialize steps and start with first step
                     initSteps();
                     return [4 /*yield*/, nextStep()];
-                case 8:
+                case 9:
                     _a.sent();
                     utils.loadingEnd();
                     return [2 /*return*/];

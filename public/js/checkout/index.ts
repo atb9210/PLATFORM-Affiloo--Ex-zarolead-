@@ -1756,9 +1756,15 @@ async function onLoad()
     if (leadId !== null) {
         let leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
         if (leadInfo === null) {
+            // TODO: DEBUG: To delete
+            console.log('leadInfo wh is null')
+
             zarolead.setWarehouseNetwork('dropin');
+            leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
         }
-        leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
+
+        // TODO: DEBUG: To delete
+        console.log('leadInfo', leadInfo)
 
         if (leadInfo !== null) {
             lead = leadInfo;
