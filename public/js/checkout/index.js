@@ -1632,6 +1632,8 @@ function onLoad() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    // TODO: DEBUG: To delete
+                    console.log('onLoad()');
                     utils.loadingStart();
                     $http = axios;
                     // Steps initialization

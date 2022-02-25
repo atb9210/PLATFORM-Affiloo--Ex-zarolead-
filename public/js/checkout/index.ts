@@ -1643,6 +1643,9 @@ function initPlugins()
 
 async function onLoad()
 {
+    // TODO: DEBUG: To delete
+    console.log('onLoad()');
+
     utils.loadingStart();
 
     $http = axios;
@@ -1755,20 +1758,20 @@ async function onLoad()
     let leadId = utils.getUrlParam('lid');
 
     // TODO: DEBUG: To delete
-    console.log('leadId', leadId)
+    console.log('leadId', leadId);
 
     if (leadId !== null) {
         let leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
         if (leadInfo === null) {
             // TODO: DEBUG: To delete
-            console.log('leadInfo wh is null')
+            console.log('leadInfo wh is null');
 
             zarolead.setWarehouseNetwork('dropin');
             leadInfo = await zarolead.getLeadInfo(utils.strval(leadId));
         }
 
         // TODO: DEBUG: To delete
-        console.log('leadInfo', leadInfo)
+        console.log('leadInfo', leadInfo);
 
         if (leadInfo !== null) {
             lead = leadInfo;
