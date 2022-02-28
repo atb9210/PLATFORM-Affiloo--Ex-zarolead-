@@ -199,6 +199,22 @@ class Dropin {
     return objects
   }
 
+  async createLead(params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.post('/api/3rd/dropin/leads', params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
   async updateLead(id, params) {
     let object = null
 
@@ -257,7 +273,7 @@ class Dropin {
         if (obj.hasOwnProperty('price')) {
           obj.price = parseFloat(obj.price)
         } else {
-          obj.price = 0.0
+          obj.price = obj.sale_price
         }
         if (obj.hasOwnProperty('quantity')) {
           obj.quantity = parseInt(obj.quantity)

@@ -203,7 +203,7 @@ class DropinController extends Controller
             $total = $params['total'];
         }
 
-        $quantity = 0.0;
+        $quantity = 0;
         if (isset($params['quantity'])) {
             $params['info']['quantity'] = $params['quantity'];
             $quantity = $params['quantity'];

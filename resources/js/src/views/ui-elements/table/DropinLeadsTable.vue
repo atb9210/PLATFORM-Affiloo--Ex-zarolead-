@@ -5,6 +5,9 @@
             <vx-tooltip text="Filters" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Create a new lead" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('order_builder')"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
@@ -18,7 +21,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Back" position="top">
-                <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
+                <vs-button v-if="view == 'order_editor' || view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
 
             <vx-tooltip text="All leads" position="top">
@@ -116,7 +119,7 @@
 
             <vue-context ref="lead_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.lead_context_menu.close();changeView('order_builder', data)" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.lead_context_menu.close();changeView('order_editor', data)" class="flex items-center text-sm">
                     <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Edit</span>
                   </a>
@@ -180,7 +183,11 @@
                             {{formatDateTime(new Date(item.created_at))}}
                         </vs-td>
                         <vs-td v-else class="column-no-padding" :data="item.recall_at">
-                            {{(item.recall_at != '') ? ('Recall: ' + formatDateTime(new Date(item.created_at))) : ''}}
+                            <vs-chip :color="(item.recall_at != '') ? 'warning' : ''">
+                               <span @dblclick="showDateTimeInfoPopup(item, 'recall_at')">
+                                   {{(item.recall_at != '') ? ('Recall: ' + formatDateTime(new Date(item.created_at))) : 'recall date not set'}}
+                               </span>
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.full_name">
@@ -286,7 +293,11 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.completed_at">
-                            {{(item.completed_at != '') ? formatDateTime(new Date(item.completed_at)) : 'not completed'}}
+                            <vs-chip :color="(item.completed_at != '') ? 'success' : ''">
+                               <span @dblclick="showDateTimeInfoPopup(item, 'completed_at')">
+                                   {{(item.completed_at != '') ? formatDateTime(new Date(item.completed_at)) : 'not completed'}}
+                               </span>
+                            </vs-chip>
                         </vs-td>
 
                         <!--
@@ -299,7 +310,7 @@
                                     </vs-chip>
 
                                     <vs-dropdown-menu class="dropdown-menu">
-                                        <vs-dropdown-item @click="changeView('order_builder', item)">
+                                        <vs-dropdown-item @click="changeView('order_editor', item)">
                                             <vs-icon icon-pack="feather" icon="icon-edit"></vs-icon>
                                             Edit
                                         </vs-dropdown-item>
@@ -345,6 +356,224 @@
                 </template>
             </vs-table>
 
+        </div>
+
+        <!-- Order editor -->
+        <div v-if="view == 'order_editor'">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <h2>Contact data</h2>
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/4 w-full">
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/4 w-full">
+                        <fast-editable-value-select
+                            class="font-bold"
+                            :options="leadStatuses"
+                            v-model="newStatus"
+                            @onEdit="newStatus = order.status"
+                            @onUpdate="updateStatusOrderEditor()">
+                              <vs-chip :color="leadStatusColor[order.status]">
+                                  {{order.status}}
+                              </vs-chip>
+                        </fast-editable-value-select>
+                    </div>
+                </div>
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.first_name" placeholder="First Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.last_name" placeholder="Last Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.phone" placeholder="Phone" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.email" placeholder="Email" />
+                    </div>
+                </div>
+
+                <hr class="mt-3 mb-3">
+
+                <h2>Shipping</h2>
+                <div class="vx-row w-full">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.first_name" placeholder="First Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.last_name" placeholder="Last Name" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.phone" placeholder="Phone" />
+                    </div>
+                    <div class="vx-col mb-6 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.email" placeholder="Email" />
+                    </div>
+                    <div class="vx-col mb-3 w-full">
+                        <LocationInput v-model="order.location" @onEdit="findAddress" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.street_address" placeholder="Street address" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.city" placeholder="City" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.postcode" placeholder="Post code" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.province" placeholder="Province" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.state" placeholder="State" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-input class="w-full" type="text" v-model="order.shipping.country" placeholder="Country" />
+                    </div>
+                    <div class="vx-col mt-3 mb-3 w-full">
+                        <vs-input icon-before="true" icon-pack="feather" icon="icon-message-square" class="w-full" type="text" v-model="order.shipping.notes" placeholder="Notes" />
+                    </div>
+                </div>
+
+                <hr class="mt-3 mb-3">
+
+                <h2>Payment method</h2>
+                <div class="vx-row w-full mb-3 font-bold">
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <my-select v-model="order.gateway" :options="gateways" class="w-full select-large" :autocomplete="true" />
+                    </div>
+                    <div class="vx-col mb-3 md:w-1/2 w-full">
+                        <vs-button v-if="order.gateway === 'online' && order.phone != ''" class="w-full" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="confirmSendPaymentLinkViaMessage">Send payment link via Whatsapp</vs-button>
+                    </div>
+                </div>
+
+                <hr class="mt-3 mb-3">
+
+                <h2>Products</h2>
+                <div class="vx-row w-full mb-3 font-bold">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
+                        Name
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        Quantity
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        Unit Price
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        Total Price
+                    </div>
+                    <div class="vx-col w-full md:w-1/12">
+                        Upsell
+                    </div>
+                </div>
+
+                <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="'reviewProductOption' + pIndex">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
+                        {{product.name}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="product.quantity" @onUpdate="refreshOrderReviewTotal()">
+                            x{{product.quantity}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="product.price" @onUpdate="refreshOrderReviewTotal()">
+                            € {{product.price}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        € {{(product.total).toFixed(2)}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-checkbox v-model="order.products[pIndex].upsell" />
+                    </div>
+                </div>
+
+                <div class="vx-row w-full mb-3" v-for="(acc, aIndex) in order.accessories" :key="'accessoyOption' + aIndex">
+                    <div class="vx-col w-full md:w-1/12">
+                        <vs-checkbox v-model="order.accessories[aIndex].enabled" @change="refreshOrderReviewTotal()" />
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
+                        {{acc.name}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.accessories[aIndex].quantity" @onUpdate="refreshOrderReviewTotal()">
+                            x{{order.accessories[aIndex].quantity}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.accessories[aIndex].price" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.accessories[aIndex].price.toFixed(2)}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        € {{order.accessories[aIndex].total.toFixed(2)}}
+                    </div>
+                    <div class="vx-col w-full md:w-1/12">
+                    </div>
+                </div>
+
+                <!--
+                <div class="vx-row w-full mb-3">
+                    <div class="vx-col w-full md:w-1/6">
+                        Insurance
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        x1
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.insurance}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
+                            € {{order.insurance}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                </div>
+                -->
+
+                <div class="vx-row w-full mt-3 mb-3 font-bold">
+                    <div class="vx-col w-full md:w-1/12">
+                    </div>
+                    <div class="vx-col w-full md:w-1/3">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                    </div>
+                    <div class="vx-col w-full md:w-1/6">
+                        ----------------------<br>
+                        <fast-editable-value
+                            v-model="order.newTotal"
+                            @onEdit="order.newTotal = order.total"
+                            @onUpdate="updateOrderTotal()">
+                              € {{order.total}}
+                        </fast-editable-value>
+                    </div>
+                    <div class="vx-col w-full md:w-1/12">
+                    </div>
+                </div>
+
+                <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
+                </div>
+
+            </div>
         </div>
 
         <!-- Order builder -->
@@ -559,7 +788,7 @@
                 </div>
 
                 <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
+                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="createLeadFromInfo(order)" :disabled="!canCreateLeadFromInfo(order)">Save</vs-button>
                 </div>
 
             </div>
@@ -761,17 +990,17 @@
             </div>
         </vs-popup>
 
-        <!-- Recall popup -->
-        <vs-popup title="Recall info" :active.sync="showPopup['recall']">
+        <!-- Date time info popup -->
+        <vs-popup title="Set date time info" :active.sync="showPopup['date_time_info']">
             <div class="w-full pr-2 pl-2">
                 <div class="vx-row mb-3">
                     <div class="vx-col w-full">
-                        <label>Recall date</label>
-                        <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="recall.date" />
+                        <label>Date time</label>
+                        <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="dateTimeInfo.date" />
                     </div>
                 </div>
                 <div class="vx-col w-full">
-                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveRecall(recall)">Save</vs-button>
+                    <vs-button class="mr-auto ml-auto" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="saveDateTimeInfo(dateTimeInfo, dateTimeInfoType)">Save</vs-button>
                 </div>
             </div>
         </vs-popup>
@@ -846,7 +1075,7 @@ export default {
         'lead_info': false,
         'create_delivery': false,
         'payment_link': false,
-        'recall': false,
+        'date_time_info': false,
         'send_message': false,
       },
 
@@ -1004,9 +1233,10 @@ export default {
       paymentCancelUrl: '',
       paymentLink: '',
 
-      recall: {
+      dateTimeInfo: {
         date: '',
       },
+      dateTimeInfoType: 'recall_at',
 
       receivers: [],
       message: '',
@@ -1073,9 +1303,12 @@ export default {
         this.calculateStats()
         this.view = view
         this.$vs.loading.close()
-      } else if (view == 'order_builder') {
+      } else if (view == 'order_editor') {
         let lead = item
         this.loadOrderInfo(lead)
+        this.view = view
+      } else if (view == 'order_builder') {
+        this.emptyOrderInfo()
         this.view = view
       }
     },
@@ -1223,16 +1456,16 @@ export default {
       })
 
       if (this.newStatus === 'to recall') {
-        this.recall.date = ''
-        this.lead = lead
-        this.showPopup['recall'] = true
+        this.dateTimeInfo.date = ''
+        Object.assign(this.lead, lead)
+        this.showPopup['date_time_info'] = true
       }
 
       this.$vs.loading.close()
 
       this.applyFilters()
     },
-    async updateStatusOrderBuilder() {
+    async updateStatusOrderEditor() {
       this.$vs.loading()
 
       this.order.status = this.newStatus
@@ -1250,6 +1483,9 @@ export default {
       })
 
       this.$vs.loading.close()
+    },
+    updateStatusOrderBuilder() {
+      this.order.status = this.newStatus
     },
     showNotes(lead) {
       // Clone the object (don't use the one already existing)
@@ -1690,6 +1926,112 @@ export default {
         this.refreshOrderReviewTotal()
       }
     },
+    emptyOrderInfo() {
+      this.order = {
+        status: 'to do',
+        first_name: '',
+        last_name: '',
+        phone: '',
+        email: '',
+        shipping: {
+          first_name: '',
+          last_name: '',
+          phone: '',
+          email: '',
+          notes: '',
+          street_address: '',
+          city: '',
+          province: '',
+          state: '',
+          country: '',
+          postcode: '',
+          address: '',
+          notes: '',
+        },
+        location: {},
+        gateway: 'cashondelivery',
+        products: [],
+        accessories: [
+          { name: 'Insurance',     quantity: 1, price: 1.90, total: 1.90, enabled: false },
+          { name: 'Fast delivery', quantity: 1, price: 2.50, total: 2.50, enabled: false },
+          { name: 'Gift',          quantity: 1, price: 4.99, total: 4.99, enabled: false },
+        ],
+        review: {
+          products: [],
+        },
+        total: '0.0',
+        newTotal: '0.0',
+
+        completed_at: '',
+      }
+    },
+    async createLeadFromInfo(order) {
+      this.$vs.loading()
+
+      let o = order
+
+      let info = {}
+      info.shipping = {
+        first_name: o.shipping.first_name,
+        last_name: o.shipping.last_name,
+        phone: o.shipping.phone,
+        email: o.shipping.email,
+        street_address: o.shipping.street_address,
+        city: o.shipping.city,
+        state: o.shipping.state,
+        province: o.shipping.province,
+        postcode: o.shipping.postcode,
+        country: o.shipping.country,
+        notes: o.shipping.notes,
+      }
+      info.products = o.products
+      info.accessories = o.accessories
+      info.total = o.total
+      info.gateway = o.gateway
+      info.payment_method = o.payment_method
+
+      let quantity = 0
+      for (let i = 0; i < o.products.length; i++) {
+        let p = o.products[i]
+        quantity += parseInt(p.quantity)
+      }
+
+      let params = {
+        first_name: o.first_name,
+        last_name: o.last_name,
+        phone: o.phone,
+        email: o.email,
+        info: JSON.stringify(info),
+        status: o.status,
+        sku: o.products[0].sku,
+        product_name: o.products[0].name,
+        total: o.total,
+        price: o.total,
+        quantity: quantity,
+      }
+      const leadCreated = await this.dropin.createLead(params)
+
+      let result = (leadCreated !== null)
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Lead created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create the lead',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+    },
 
     async updatePrice(lead) {
       this.$vs.loading()
@@ -1798,6 +2140,34 @@ export default {
       return false
     },
     canUpdateLeadInfo(leadInfo) {
+      let canCreate = true
+
+      // Check shipping contact
+      if (leadInfo !== null &&
+          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
+          leadInfo.shipping.first_name != '' && leadInfo.shipping.last_name != '' &&
+          leadInfo.shipping.phone != '') {
+        canCreate = canCreate && true
+      } else {
+        canCreate = false
+      }
+
+      // Check if street address has number
+      if (leadInfo !== null &&
+          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
+          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
+          leadInfo.shipping.street_address != '' && leadInfo.shipping.city != '' &&
+          leadInfo.shipping.province != '' && leadInfo.shipping.postcode != '' &&
+          leadInfo.shipping.state != '' && leadInfo.shipping.country != ''
+      ) {
+        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
+      } else {
+        canCreate = false
+      }
+
+      return canCreate
+    },
+    canCreateLeadFromInfo(leadInfo) {
       let canCreate = true
 
       // Check shipping contact
@@ -1945,15 +2315,35 @@ export default {
       }
       return s
     },
-    async saveRecall(recall) {
-      let recallDate = this.formatDateTime(new Date(recall.date))
+    showDateTimeInfoPopup(lead, type) {
+      let currentDateTime = ''
+      if (lead.info !== null && lead.info.hasOwnProperty(type)) {
+        currentDateTime = lead.info[type]
+      }
+      this.dateTimeInfo.date = currentDateTime
+      this.dateTimeInfoType = type
+      Object.assign(this.lead, lead)
+      this.showPopup['date_time_info'] = true
+    },
+    async saveDateTimeInfo(dateTimeInfo, type) {
+      let setDateTime = new Date(dateTimeInfo.date)
+      // NOTE TODO: Be careful! This + 2 is needed because js is stupid enough to
+      // pick the correct date but subtract 2 hours. Idk why, but it seems so stupid.
+      // TODO: What happens when timezone changes again (only +1 for example),
+      // we need a more general code.
+      setDateTime.setHours(setDateTime.getHours() + 2)
+      let formattedDateTime = this.formatDateTime(setDateTime)
 
       this.$vs.loading()
       let info = this.lead.info
       if (info === null) {
         info = {}
       }
-      info.recall_at = recallDate
+      info[type] = formattedDateTime
+
+      // DEBUG TODO: to delete
+      console.log(type, info[type])
+
       const result = await this.dropin.updateLead(this.lead.id, { info: JSON.stringify(info) })
       this.$vs.loading.close()
 
@@ -1965,14 +2355,14 @@ export default {
       if (this.lead.notes !== '') {
         this.lead.notes += "\n"
       }
-      this.lead.notes += 'Recall date: ' + recallDate
+      this.lead.notes += 'Recall date: ' + formattedDateTime
       await this.updateNotes(this.lead)
       */
 
       if (result) {
         this.$vs.notify({
           title: 'Success',
-          text: 'Recall info saved',
+          text: 'Date time info saved',
           iconPack: 'feather',
           icon: 'icon-phone',
           color: 'success'
@@ -1980,14 +2370,16 @@ export default {
       } else {
         this.$vs.notify({
           title: 'Error',
-          text: 'Cannot save recall info',
+          text: 'Cannot save date time info',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'danger'
         })
       }
 
-      this.showPopup['recall'] = false
+      this.showPopup['date_time_info'] = false
+
+      await this.applyFilters()
     },
     openSendMessagePopup(receivers) {
       this.receivers = receivers
