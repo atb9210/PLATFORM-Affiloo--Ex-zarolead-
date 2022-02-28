@@ -346,6 +346,22 @@ class DropinController extends Controller
         }
 
         $lead = DropinLead::findOrFail($id);
+
+        // If the status changes from confirmed => unprocessed then set
+        // the completed_at date
+        if (isset($params['status']) && $params['status'] == 'unprocessed' &&
+            $lead->status == 'confirmed') {
+            $info = $lead->info;
+            if (isset($params['info'])) {
+                $info = $params['info'];
+            }
+            if ($info === null) {
+                $info = [];
+            }
+            $info['completed_at'] = date('Y-m-d H:i:s');
+            $params['info'] = $info;
+        }
+
         $lead->update($params);
 
         return response([

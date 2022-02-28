@@ -136,22 +136,27 @@ class Dropin {
           obj.gateway = obj.info.gateway
         }
 
-        if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
-          if (obj.info.delivery.hasOwnProperty('order_number') && obj.info.delivery.order_number !== null) {
-            obj.order_number = obj.info.delivery.order_number
-            if (obj.info.delivery.completed_at !== null && obj.info.delivery.completed_at !== '') {
-              obj.delivery_status = 'sent'
-            }
-          }
-        }
 
         if (!obj.info.hasOwnProperty('products') || obj.info.products === null || obj.info.products.length === 0) {
           obj.info.products = []
           let p = await this.getProductBySku(obj.sku, products)
           if (p !== null) {
-            let price = getCurrencyValue(p.min_price)
             let quantity = obj.quantity
-            let total = price*quantity
+
+            let price = 0.0
+            if (obj.info.hasOwnProperty('price')) {
+              price = getCurrencyValue(obj.info.price)
+            } else {
+              price = getCurrencyValue(p.sale_price)
+            }
+
+            let total = 0.0
+            if (obj.info.hasOwnProperty('total')) {
+              total = getCurrencyValue(obj.info.total)
+            } else {
+              total = price*quantity
+            }
+
             obj.info.products.push({
               id: p.id,
               name: p.name,
@@ -165,56 +170,14 @@ class Dropin {
         }
         obj.products = obj.info.products
 
-        obj.delivery = {
-          order_number  : '',
-          gateway       : '',
-          products      : [],
-          status        : 'lead',
-          lead_status   : '',
-          tracking_link : '',
-          completed_at  : '',
+        obj.completed_at = ''
+        if (obj.info.hasOwnProperty('completed_at') && obj.info.completed_at !== null) {
+          obj.completed_at = obj.info.completed_at
         }
-        if (obj.info.hasOwnProperty('delivery') && obj.info.delivery !== null) {
-          if (obj.info.delivery.hasOwnProperty('carrier_slug')) {
-            obj.carrier = obj.info.delivery.carrier_slug
-          }
-          if (obj.info.delivery.hasOwnProperty('status')) {
-            if (!Array.isArray(obj.info.delivery.status)) {
-              obj.order_status = obj.info.delivery.status
-            } else {
-              if (obj.info.delivery.status.length > 0 && obj.info.delivery.status[0].hasOwnProperty('status')) {
-                obj.order_status = obj.info.delivery.status[0].status
-              }
-            }
-          }
 
-          if (obj.info.delivery.hasOwnProperty('order_number')) {
-            obj.delivery.order_number = obj.info.delivery.order_number
-          }
-          if (obj.info.delivery.hasOwnProperty('gateway') && obj.info.delivery.gateway !== null) {
-            if (obj.info.delivery.gateway === 'cashondelivery') {
-                obj.delivery.gateway = 'cod'
-                obj.gateway = 'cod'
-            } else if (obj.info.delivery.gateway !== '') {
-                obj.delivery.gateway = 'online'
-                obj.gateway = 'online'
-            }
-          }
-          if (obj.info.delivery.hasOwnProperty('products') && obj.info.delivery.products !== null) {
-            obj.delivery.products = obj.info.delivery.products
-          }
-          if (obj.info.delivery.hasOwnProperty('status') && obj.info.delivery.status !== null) {
-            obj.delivery.status = obj.info.delivery.status
-          }
-          if (obj.info.delivery.hasOwnProperty('lead_status') && obj.info.delivery.lead_status !== null) {
-            obj.delivery.lead_status = obj.info.delivery.lead_status
-          }
-          if (obj.info.delivery.hasOwnProperty('tracking_link') && obj.info.delivery.tracking_link !== null) {
-            obj.delivery.tracking_link = obj.info.delivery.tracking_link
-          }
-          if (obj.info.delivery.hasOwnProperty('completed_at') && obj.info.delivery.completed_at !== null) {
-            obj.delivery.completed_at = obj.info.delivery.completed_at
-          }
+        obj.recall_at = ''
+        if (obj.info.hasOwnProperty('recall_at') && obj.info.recall_at !== null) {
+          obj.recall_at = obj.info.recall_at
         }
       }
 
@@ -301,9 +264,6 @@ class Dropin {
         } else {
           obj.quantity = 0
         }
-
-        obj.min_price = getCurrencyValue(obj.min_price)
-        obj.max_price = getCurrencyValue(obj.max_price)
 
         objects[i] = obj
       }

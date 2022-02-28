@@ -53,41 +53,67 @@ class TestController extends Controller
         return 'false';
     }
 
+    private function generateRandomString(int $length = 32): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
     public function test(Request $request)
     {
-        $pathnames = [
-            'pathname1' => 'ciao/index.php',
-            'pathname2' => 'ciao_bambina/index.php',
-            'pathname3' => 'ciao-bambina/index.php',
-            'pathname4' => 'Guanto-led2x1/index.php',
-        ];
-        /*
-        $pathnames = [
-            'pathname1' => 'index_yo',
-            'pathname2' => '-invalid',
-            'pathname3' => '_this-is-valid_',
-        ];
-        */
-        $fileOrDirNameRegex = '\w+[\w\d-]*';
-        $flowPathnameRegex = '#^(' . $fileOrDirNameRegex . '/){1,2}(' . $fileOrDirNameRegex . ')\.\w+$#';
-        $validator = Validator::make($pathnames, [
-            'pathname1' => 'required|regex:' . $flowPathnameRegex,
-            'pathname2' => 'required|regex:' . $flowPathnameRegex,
-            'pathname3' => 'required|regex:' . $flowPathnameRegex,
-            'pathname4' => 'required|regex:' . $flowPathnameRegex,
-        ]);
-        /*
-        $validator = Validator::make($pathnames, [
-            'pathname1' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
-            'pathname2' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
-            'pathname3' => 'required|regex:#^(\w+/){1,2}\w+\.\w+$#',
-        ]);
-         */
-        if ($validator->fails()) {
-            dd($validator->messages());
-        } else {
-            dd("OK");
+        $tmpLeads = \App\third\WarehouseLead::where('created_at', '>=', '2022-01-01 00:00:00')
+            ->whereIn('status', ['to do', 'confirmed', 'abandoned', 'to recall'])
+            ->get();
+        $warehouseLeads = [];
+        foreach ($tmpLeads as $lead) {
+            $info = $lead->info;
+            if ($info === null) {
+                $info = [];
+            }
+
+            $productName = null;
+            if (isset($info['product_name'])) {
+                $productName = $info['product_name'];
+            }
+            if ($productName === 'Tazza Elettrica') {
+                $warehouseLeads[] = $lead;
+            }
+
+            if (!isset($info['gateway'])) {
+                $info['gateway'] = 'cashondelivery';
+                $info['payment_method'] = 'cashondelivery';
+            }
+
+            $info['price'] = '39.90';
+            $info['total'] = '39.90';
+            $info['sku'] = '2433-911-18031';
         }
+        $dropinLeads = [];
+        foreach ($warehouseLeads as $lead) {
+            $dropinLeads[] = [
+                'first_name' => $lead->first_name,
+                'last_name' => $lead->last_name,
+                'phone' => $lead->phone,
+                'email' => $lead->email,
+                'status' => $lead->status,
+                'info' => $info,
+                'notes' => $lead->notes,
+                'hash' => $this->generateRandomString(64),
+                'archived' => $lead->archived,
+                'created_at' => $lead->created_at,
+                'updated_at' => $lead->updated_at,
+            ];
+        }
+        $finalLeads = [];
+        foreach ($dropinLeads as $lead) {
+            $finalLeads[] = \App\third\DropinLead::create($lead);
+        }
+        dd($finalLeads);
         exit();
 
         $monitor = \App\third\FacebookMonitor::find(4);

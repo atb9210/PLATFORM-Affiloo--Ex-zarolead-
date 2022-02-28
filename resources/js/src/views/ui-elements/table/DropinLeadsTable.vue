@@ -34,7 +34,7 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-clock" @click="setFiltersStatuses(['waiting payment'])"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="No answer and to recall" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to recall','no answer'])"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to recall','no answer'], true)"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Only unprocessed" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="success" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
@@ -128,6 +128,12 @@
                   </a>
                 </li>
                 <li>
+                  <a href="#" @click="$refs.lead_context_menu.close();showPaymentLink(data)"class="flex items-center text-sm">
+                    <feather-icon icon="DollarSignIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show payment link</span>
+                  </a>
+                </li>
+                <li>
                   <a href="#" @click="$refs.lead_context_menu.close();deleteLead(data)" class="flex items-center text-sm">
                     <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Delete</span>
@@ -159,7 +165,8 @@
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
                     <vs-th sort-key="notes">Notes</vs-th>
-                    <vs-th>Actions</vs-th>
+                    <vs-th sort-key="completed_at">Completed Date</vs-th>
+                    <!--<vs-th>Actions</vs-th>-->
                 </template>
 
                 <template slot-scope="{data}">
@@ -169,8 +176,11 @@
                             {{item.id}}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.created_at">
+                        <vs-td v-if="!showRecallDate" class="column-no-padding" :data="item.created_at">
                             {{formatDateTime(new Date(item.created_at))}}
+                        </vs-td>
+                        <vs-td v-else class="column-no-padding" :data="item.recall_at">
+                            {{(item.recall_at != '') ? ('Recall: ' + formatDateTime(new Date(item.created_at))) : ''}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.full_name">
@@ -268,19 +278,21 @@
                                 <vs-avatar :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" size="24px" @click="showNotes(item)" icon-pack="feather" icon="icon-message-square" />
                             </vx-tooltip>
                             -->
-                            <vs-chip>
+                            <vs-chip :color="(item.notes === null || item.notes == '') ? '' : 'warning'">
                                 <span @dblclick="showNotes(item)">
-                                    {{(item.notes === null ? 'Create note' : item.notes).substring(0, 20)}}{{((item.notes !== null && item.notes.length > 20) ? '...' : '')}}
+                                    {{((item.notes === null || item.notes == '') ? 'Create note' : item.notes).substring(0, 20)}}{{((item.notes !== null && item.notes.length > 20) ? '...' : '')}}
                                 </span>
                             </vs-chip>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="item.completed_at">
+                            {{(item.completed_at != '') ? formatDateTime(new Date(item.completed_at)) : 'not completed'}}
+                        </vs-td>
+
+                        <!--
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
                                 <vs-dropdown class="mr-2 dropdown font-bold">
-                                    <!--
-                                    <vs-button class="btn-drop" type="filled" icon="expand_more">Actions</vs-button>
-                                    -->
                                     <vs-chip color="primary">
                                         Actions
                                         <vs-icon icon-pack="feather" icon="icon-chevron-down"></vs-icon>
@@ -305,23 +317,9 @@
                                         </vs-dropdown-item>
                                     </vs-dropdown-menu>
                                 </vs-dropdown>
-
-                                <!--
-                                <vx-tooltip :text="item.notes" position="top">
-                                    <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Edit" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Payment link" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-dollar-sign" @click="showPaymentLink(item)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Send Whatsapp message" position="top">
-                                    <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
-                                </vx-tooltip>
-                                -->
                             </div>
                         </vs-td>
+                        -->
                         
                     </vs-tr>
 
@@ -342,6 +340,7 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
+                    <!--<vs-td class="column-no-padding"></vs-td>-->
 
                 </template>
             </vs-table>
@@ -839,6 +838,7 @@ export default {
         product: '',
         order_status: '',
       },
+      showRecallDate: false,
 
       showPopup: {
         'notes': false,
@@ -1100,11 +1100,12 @@ export default {
       }
       await this.filterDatesShortcut('this_month')
     },
-    async setFiltersStatuses(statuses) {
+    async setFiltersStatuses(statuses, showRecallDate = false) {
       this.filters.statuses = []
       for (let i = 0; i < statuses.length; i++) {
         this.filters.statuses.push(statuses[i])
       }
+      this.showRecallDate = showRecallDate
       await this.applyFilters()
     },
     async filterDatesShortcut(period) {
@@ -1251,7 +1252,8 @@ export default {
       this.$vs.loading.close()
     },
     showNotes(lead) {
-      this.lead = lead
+      // Clone the object (don't use the one already existing)
+      Object.assign(this.lead, lead)
       this.showPopup['notes'] = true
     },
     async updateNotes(lead) {
@@ -1945,6 +1947,18 @@ export default {
     },
     async saveRecall(recall) {
       let recallDate = this.formatDateTime(new Date(recall.date))
+
+      this.$vs.loading()
+      let info = this.lead.info
+      if (info === null) {
+        info = {}
+      }
+      info.recall_at = recallDate
+      const result = await this.dropin.updateLead(this.lead.id, { info: JSON.stringify(info) })
+      this.$vs.loading.close()
+
+      // TODO: Old code
+      /*
       if (this.lead.notes === null) {
         this.lead.notes = ''
       }
@@ -1953,14 +1967,25 @@ export default {
       }
       this.lead.notes += 'Recall date: ' + recallDate
       await this.updateNotes(this.lead)
+      */
 
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Recall info saved',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Recall info saved',
+          iconPack: 'feather',
+          icon: 'icon-phone',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot save recall info',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
 
       this.showPopup['recall'] = false
     },
@@ -2020,26 +2045,26 @@ export default {
             productsString += ','
           }
           productsString += '['
-          productsString += '"' + product.name + '",' + product.quantity
+          productsString += '"' + product.sku + '",' + product.quantity
           productsString += ']'
         }
         productsString += ']'
 
-        content += this.formatDate(new Date(lead.created_at)) + ','
-        content += this.dropinGateways[lead.gateway] + ','
+        content += '"' + this.formatDate(new Date(lead.created_at)) + '",'
+        content += '"' + this.dropinGateways[lead.gateway] + '",'
         content += lead.info.order_id + ','
-        content += lead.total + ','
-        content += productsString + ','
-        content += lead.full_name + ','
-        content += lead.info.shipping.street_address + ','
-        content += lead.info.shipping.city + ' (' + lead.info.shipping.province + ')' + ','
+        content += '"' + lead.total + '",'
+        content += '"' + productsString + '",'
+        content += '"' + lead.full_name + '",'
+        content += '"' + lead.info.shipping.street_address + '",'
+        content += '"' + lead.info.shipping.city + ' (' + lead.info.shipping.province + ')' + '",'
         content += lead.info.shipping.postcode + ','
-        content += lead.info.shipping.country + ','
-        content += email + ','
-        content += phone + ','
+        content += '"' + lead.info.shipping.country + '",'
+        content += '"' + email + '",'
+        content += '"' + phone + '",'
         // TODO: comments
         // TODO: HERE
-        content += 'Comments,'
+        content += '"Comments",'
 
         content += "\n"
       }

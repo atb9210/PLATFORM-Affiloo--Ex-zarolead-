@@ -65,7 +65,7 @@
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Product</label>
-                    <vs-select class="w-full" v-model="filters.product">
+                    <vs-select class="w-full" v-model="filters.product" autocomplete>
                         <vs-select-item :key="'productOption' + pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
                     </vs-select>
                 </div>
