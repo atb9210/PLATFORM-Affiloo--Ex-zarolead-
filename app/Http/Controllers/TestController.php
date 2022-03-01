@@ -87,6 +87,7 @@ class TestController extends Controller
             if ($info === null) {
                 $info = [];
             }
+            unset($info['products']);
             $info['sku'] = '2433-911-18031';
             $info['product_id'] = 343;
             $info['product_name'] = 'Tazza Elettrica';
