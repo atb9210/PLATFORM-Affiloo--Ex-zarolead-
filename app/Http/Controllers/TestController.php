@@ -89,16 +89,22 @@ class TestController extends Controller
             }
             $info['sku'] = '2433-911-18031';
             $info['product_id'] = 343;
+            $info['product_name'] = 'Tazza Elettrica';
             $lead->info = $info;
 
-            $wLead = \App\third\WarehouseLead::where('phone', $lead->phone)->where('archived', 0)->last();
+            /*
+            $wLead = \App\third\WarehouseLead::where('phone', $lead->phone)->where('archived', 0)->get()->last();
             if ($wLead !== null) {
                 $lead->created_at = $wLead->created_at;
             }
+            */
 
             $lead->save();
 
-            $leadsDone[] = $lead->phone;
+            $leadsDone[] = [
+                'phone' => $lead->phone,
+                'date'  => $lead->created_at,
+            ];
         }
         dd([
             'count' => count($leadsDone),
