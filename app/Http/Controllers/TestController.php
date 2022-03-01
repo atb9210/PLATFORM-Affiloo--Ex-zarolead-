@@ -100,10 +100,19 @@ class TestController extends Controller
             }
             */
 
+            $notes = $lead->notes;
+            if ($notes === null) {
+                $notes = '';
+            }
+            $notes = 'IMPORTED ' . $notes;
+            $lead->notes = $notes;
+
             $lead->save();
 
             $leadsDone[] = [
                 'phone' => $lead->phone,
+                'info'  => $lead->info,
+                'notes' => $lead->notes,
                 'date'  => $lead->created_at,
             ];
         }
