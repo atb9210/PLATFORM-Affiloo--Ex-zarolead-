@@ -2442,6 +2442,11 @@ export default {
         }
         productsString += ']'
 
+        let shippingNotes = ''
+        if (lead.info.shipping.hasOwnProperty('notes') && lead.info.shipping.notes !== null) {
+          shippingNotes = lead.info.shipping.notes
+        }
+
         content += '"' + this.formatDate(new Date(lead.created_at)) + '",'
         content += '"' + this.dropinGateways[lead.gateway] + '",'
         content += lead.info.order_id + ','
@@ -2454,9 +2459,7 @@ export default {
         content += '"' + lead.info.shipping.country + '",'
         content += '"' + email + '",'
         content += '"' + phone + '",'
-        // TODO: comments
-        // TODO: HERE
-        content += '"Comments",'
+        content += '"' + shippingNotes + '",'
 
         content += "\n"
       }
