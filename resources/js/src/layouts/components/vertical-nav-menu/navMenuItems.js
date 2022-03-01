@@ -331,6 +331,13 @@ export default [
             roles: ['developer', 'admin', 'callcenter'],
           },
           {
+            url: '/dashboard/dropin/shippings',
+            name: 'Shippings',
+            slug: 'dropin-shippings',
+            i18n: 'Shippings',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+          {
             url: '/dashboard/dropin/stock',
             name: 'Stock',
             slug: 'dropin-stock',

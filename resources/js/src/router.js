@@ -1954,6 +1954,22 @@ const router = new Router({
         },
 
         {
+          path: '/dashboard/dropin/shippings',
+          props: true,
+          name: 'dropin-shippings',
+          component: () => import('./views/DropinShippings.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Dropin Shippings', active: true }
+            ],
+            pageTitle: 'Dropin Shippings',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/dropin/stock',
           props: true,
           name: 'dropin-stock',
