@@ -2437,7 +2437,7 @@ export default {
             productsString += ','
           }
           productsString += '['
-          productsString += '"' + product.sku + '",' + product.quantity
+          productsString += '""' + product.sku + '"",""' + product.quantity + '""'
           productsString += ']'
         }
         productsString += ']'
