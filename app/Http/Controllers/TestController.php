@@ -66,6 +66,47 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $todayLeads = [
+            '+(39)3804916544',
+            '+(39)3488149818',
+            '+(39)3317443111',
+            '+(39)3405614088',
+            '+(39)3487008053',
+            '+(39)3421022680',
+            '+(39)3393682737',
+        ];
+        $leads = \App\third\DropinLead::where('id', '>=', 69)
+            ->where('id', '<=', 164)->get();
+        $leadsDone = [];
+        foreach ($leads as $lead) {
+            if (in_array($lead->phone, $todayLeads)) {
+                continue;
+            }
+
+            $info = $lead->info;
+            if ($info === null) {
+                $info = [];
+            }
+            $info['sku'] = '2433-911-18031';
+            $info['product_id'] = 343;
+            $lead->info = $info;
+
+            $wLead = \App\third\WarehouseLead::where('phone', $lead->phone)->where('archived', 0)->last();
+            if ($wLead !== null) {
+                $lead->created_at = $wLead->created_at;
+            }
+
+            $lead->save();
+
+            $leadsDone[] = $lead->phone;
+        }
+        dd([
+            'count' => count($leadsDone),
+            'leads' => $leadsDone,
+        ]);
+        exit();
+        // TODO: HERE
+
         $tmpLeads = \App\third\WarehouseLead::where('created_at', '>=', '2022-01-01 00:00:00')
             ->whereIn('status', ['to do', 'confirmed', 'abandoned', 'to recall'])
             ->get();
