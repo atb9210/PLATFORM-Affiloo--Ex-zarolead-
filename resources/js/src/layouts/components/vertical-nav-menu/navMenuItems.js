@@ -78,6 +78,15 @@ export default [
         i18n: 'My Reports',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertiser'],
       },
+
+      {
+        url: '/dashboard/products',
+        name: 'Products',
+        slug: 'products',
+        icon: 'CodesandboxIcon',
+        i18n: 'Products',
+        roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
+      },
     ],
   },
 
@@ -179,6 +188,8 @@ export default [
         ]
       },
 
+      // TODO: Hidden
+      /*
       {
         url: '/dashboard/logistics-orders',
         name: 'Logistics Orders',
@@ -196,15 +207,49 @@ export default [
         i18n: 'Finapsy Orders',
         roles: ['developer', 'admin'],
       },
+      */
+
+      {
+        url: null,
+        name: 'Wholesale Dropin',
+        icon: 'PackageIcon',
+        i18n: 'Wholesale Dropin',
+        roles: ['developer', 'admin', 'callcenter'],
+        submenu: [
+          {
+            url: '/dashboard/dropin/leads',
+            name: 'Leads',
+            slug: 'dropin-leads',
+            i18n: 'Leads',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+          {
+            url: '/dashboard/dropin/shippings',
+            name: 'Shippings',
+            slug: 'dropin-shippings',
+            i18n: 'Shippings',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+          {
+            url: '/dashboard/dropin/stock',
+            name: 'Stock',
+            slug: 'dropin-stock',
+            i18n: 'Stock',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+        ]
+      },
     ],
   },
 
   {
-    header: 'Workspace',
+    header: 'Mediabuy',
     icon: 'PackageIcon',
-    i18n: 'Workspace',
+    i18n: 'Mediabuy',
     roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'advertisers', 'account_manager'],
     items: [
+      // TODO: Hidden
+      /*
       {
         url: '/dashboard/fb-accounts',
         name: 'FB accounts',
@@ -213,15 +258,7 @@ export default [
         i18n: 'FB accounts',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
-
-      {
-        url: '/dashboard/tiktok-ads',
-        name: 'TikTok Ads',
-        slug: 'tiktok-ads',
-        icon: 'MusicIcon',
-        i18n: 'TikTok Ads',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
-      },
+      */
 
       {
         url: null,
@@ -247,6 +284,79 @@ export default [
         ],
       },
 
+      {
+        url: '/dashboard/tiktok-ads',
+        name: 'TikTok Ads',
+        slug: 'tiktok-ads',
+        icon: 'MusicIcon',
+        i18n: 'TikTok Ads',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
+      },
+
+      {
+        url: null,
+        name: 'Campaigns',
+        icon: 'ClipboardIcon',
+        i18n: 'Campaigns',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        submenu: [
+          {
+            url: '/dashboard/forms',
+            name: 'All campaigns',
+            slug: 'campaigns',
+            i18n: 'All campaigns',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+          {
+            url: '/dashboard/forms/builder',
+            name: 'Create campaign',
+            slug: 'create-campaign',
+            i18n: 'Create campaign',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+        ]
+      },
+
+      {
+        url: '/dashboard/flows',
+        name: 'Flows',
+        slug: 'flows',
+        icon: 'GitBranchIcon',
+        i18n: 'Flows',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+
+      // TODO: Old code
+      /*
+      {
+        url: null,
+        name: 'Landings',
+        icon: 'LayoutIcon',
+        i18n: 'Landings',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+        submenu: [
+          {
+            url: '/dashboard/landings',
+            name: 'Landings',
+            slug: 'landings',
+            icon: 'LayoutIcon',
+            i18n: 'Landings',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+          {
+            url: '/dashboard/flows',
+            name: 'Flows',
+            slug: 'flows',
+            icon: 'GitBranchIcon',
+            i18n: 'Flows',
+            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+          },
+        ]
+      },
+      */
+
+      // TODO: Hidden
+      /*
       {
         url: null,
         name: 'Ecommerce',
@@ -315,38 +425,10 @@ export default [
           },
         ]
       },
+      */
 
-      {
-        url: null,
-        name: 'Dropin',
-        icon: 'PackageIcon',
-        i18n: 'Dropin',
-        roles: ['developer', 'admin', 'callcenter'],
-        submenu: [
-          {
-            url: '/dashboard/dropin/leads',
-            name: 'Leads',
-            slug: 'dropin-leads',
-            i18n: 'Leads',
-            roles: ['developer', 'admin', 'callcenter'],
-          },
-          {
-            url: '/dashboard/dropin/shippings',
-            name: 'Shippings',
-            slug: 'dropin-shippings',
-            i18n: 'Shippings',
-            roles: ['developer', 'admin', 'callcenter'],
-          },
-          {
-            url: '/dashboard/dropin/stock',
-            name: 'Stock',
-            slug: 'dropin-stock',
-            i18n: 'Stock',
-            roles: ['developer', 'admin', 'callcenter'],
-          },
-        ]
-      },
-
+      // TODO: Hidden
+      /*
       {
         url: '/dashboard/marketplace',
         name: 'Marketplace',
@@ -355,30 +437,7 @@ export default [
         i18n: 'Marketplace',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer', 'account_manager'],
       },
-
-      {
-        url: null,
-        name: 'Campaigns',
-        icon: 'ClipboardIcon',
-        i18n: 'Campaigns',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-        submenu: [
-          {
-            url: '/dashboard/forms',
-            name: 'All campaigns',
-            slug: 'campaigns',
-            i18n: 'All campaigns',
-            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-          },
-          {
-            url: '/dashboard/forms/builder',
-            name: 'Create campaign',
-            slug: 'create-campaign',
-            i18n: 'Create campaign',
-            roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-          },
-        ]
-      },
+      */
 
       {
         url: '/dashboard/styles',
@@ -391,9 +450,9 @@ export default [
 
       {
         url: null,
-        name: 'Landings',
-        icon: 'LayoutIcon',
-        i18n: 'Landings',
+        name: 'Cloud',
+        icon: 'CloudIcon',
+        i18n: 'Cloud',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
         submenu: [
           {
@@ -405,23 +464,13 @@ export default [
             roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
           },
           {
-            url: '/dashboard/flows',
-            name: 'Flows',
-            slug: 'flows',
-            icon: 'GitBranchIcon',
-            i18n: 'Flows',
+            url: '/dashboard/domains',
+            name: 'Domains',
+            slug: 'domains',
+            icon: 'LinkIcon',
+            i18n: 'Domains',
             roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
           },
-        ]
-      },
-
-      {
-        url: null,
-        name: 'Cloud',
-        icon: 'CloudIcon',
-        i18n: 'Cloud',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-        submenu: [
           {
             url: '/dashboard/product-medias',
             name: 'Product Medias',
@@ -443,6 +492,8 @@ export default [
     ],
   },
 
+  // TODO: Hidden
+  /*
   {
     header: 'Settings',
     icon: 'PackageIcon',
@@ -504,15 +555,6 @@ export default [
       },
 
       {
-        url: '/dashboard/domains',
-        name: 'Domains',
-        slug: 'domains',
-        icon: 'LinkIcon',
-        i18n: 'Domains',
-        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
-      },
-
-      {
         url: '/dashboard/3rd-party',
         name: '3rd Party',
         slug: '3rd-party',
@@ -521,7 +563,7 @@ export default [
         roles: ['developer', 'admin' ],
       },
 
-      /* TODO: TEST FIVERR */
+      // TODO: TEST FIVERR
       {
         url: '/dashboard/fiverr/test',
         name: 'Fiverr Test',
@@ -530,98 +572,10 @@ export default [
         i18n: 'Fiverr Test',
         roles: ['developer', 'admin', 'fiverr_test' ],
       },
-
-      /*
-      {
-        url: '/apps/email',
-        name: 'Email',
-        slug: 'email',
-        icon: 'MailIcon',
-        i18n: 'Email'
-      },
-      {
-        url: '/apps/chat',
-        name: 'Chat',
-        slug: 'chat',
-        icon: 'MessageSquareIcon',
-        i18n: 'Chat'
-      },
-      {
-        url: '/apps/todo',
-        name: 'Todo',
-        slug: 'todo',
-        icon: 'CheckSquareIcon',
-        i18n: 'Todo'
-      },
-      {
-        url: '/apps/calendar/vue-simple-calendar',
-        name: 'Calendar',
-        slug: 'calendar-simple-calendar',
-        icon: 'CalendarIcon',
-        tagColor: 'success',
-        i18n: 'Calendar'
-      },
-      {
-        url: null,
-        name: 'eCommerce',
-        icon: 'ShoppingCartIcon',
-        i18n: 'eCommerce',
-        submenu: [
-          {
-            url: '/apps/eCommerce/shop',
-            name: 'Shop',
-            slug: 'ecommerce-shop',
-            i18n: 'Shop'
-          },
-          {
-            url: '/apps/eCommerce/item/',
-            name: 'Item Details',
-            slug: 'ecommerce-item-detail-view',
-            i18n: 'ItemDetails'
-          },
-          {
-            url: '/apps/eCommerce/wish-list',
-            name: 'Wish List',
-            slug: 'ecommerce-wish-list',
-            i18n: 'WishList'
-          },
-          {
-            url: '/apps/eCommerce/checkout',
-            name: 'Checkout',
-            slug: 'ecommerce-checkout',
-            i18n: 'Checkout'
-          }
-        ]
-      },
-      {
-        url: null,
-        name: 'User',
-        icon: 'UserIcon',
-        i18n: 'User',
-        submenu: [
-          {
-            url: '/apps/user/user-list',
-            name: 'List',
-            slug: 'app-user-list',
-            i18n: 'List'
-          },
-          {
-            url: '/apps/user/user-view/268',
-            name: 'View',
-            slug: 'app-user-view',
-            i18n: 'View'
-          },
-          {
-            url: '/apps/user/user-edit/268',
-            name: 'Edit',
-            slug: 'app-user-edit',
-            i18n: 'Edit'
-          }
-        ]
-      }
-      */
     ]
   },
+  */
+
   /*
   {
     header: 'UI',

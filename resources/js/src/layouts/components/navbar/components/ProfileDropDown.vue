@@ -23,6 +23,56 @@
             <span class="ml-2">Profile</span>
           </li>
 
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin', 'mediabuyer', 'advertiser'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/products').catch(() => {})">
+            <feather-icon icon="CodesandboxIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Products</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/users').catch(() => {})">
+            <feather-icon icon="UserIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Users</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/advertisers').catch(() => {})">
+            <feather-icon icon="LayersIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Advertisers</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/networks').catch(() => {})">
+            <feather-icon icon="GlobeIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Networks</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/tags').catch(() => {})">
+            <feather-icon icon="TagIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Tags</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/traffic-sources').catch(() => {})">
+            <feather-icon icon="RadioIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">Traffic Sources</span>
+          </li>
+
+          <li v-if="hasOneOfTheseRoles(['developer', 'admin'])"
+            class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
+            @click="$router.push('/dashboard/3rd-party').catch(() => {})">
+            <feather-icon icon="CloudLightningIcon" svgClasses="w-4 h-4" />
+            <span class="ml-2">3rd Party</span>
+          </li>
+
+          <!--
           <li
             class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
             @click="$router.push('/apps/chat').catch(() => {})">
@@ -30,7 +80,6 @@
             <span class="ml-2">Chat</span>
           </li>
 
-          <!--
           <li
             class="flex py-2 px-4 cursor-pointer hover:bg-primary hover:text-white"
             @click="$router.push('/apps/email').catch(() => {})">
@@ -83,6 +132,15 @@ export default {
     }
   },
   methods: {
+    hasOneOfTheseRoles(theseRoles) {
+      let roles = this.activeUserInfo.roles
+      for (let i = 0; i < roles.length; i++) {
+        if (theseRoles.includes(roles[i])) {
+          return true
+        }
+      }
+      return false
+    },
     logout () {
       this.$store.dispatch('auth/logoutAPI')
       this.$router.push('/pages/login').catch(() => {})
