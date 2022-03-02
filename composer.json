@@ -15,6 +15,7 @@
         "driverfury/elogy": "dev-master",
         "driverfury/facebook": "dev-master",
         "driverfury/fraudfilter": "dev-master",
+        "driverfury/requests": "dev-master",
         "driverfury/tiktok": "dev-master",
         "driverfury/worldfilia": "dev-master",
         "driverfury/zarocloner": "dev-master",
@@ -97,6 +98,10 @@
         {
             "type": "path",
             "url": "./packages/driverfury/fraudfilter"
+        },
+        {
+            "type": "path",
+            "url": "./packages/driverfury/requests"
         },
         {
             "type": "path",
