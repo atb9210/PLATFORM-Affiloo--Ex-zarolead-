@@ -182,7 +182,16 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        \App\third\DropinShipping::refreshTable();
+        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+        $orders = $dropin->getOrders();
+        $shippings = [];
+        foreach ($orders as $order) {
+            if ($order['id'] < 84) {
+                $shipping = \App\third\DropinShipping::importShipping($order['id'], $dropin);
+                $shippings[] = $shipping;
+            }
+        }
+        dd($shippings);
     }
 
     public function test2(Request $request)

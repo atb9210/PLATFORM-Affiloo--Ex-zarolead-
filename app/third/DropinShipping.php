@@ -138,44 +138,52 @@ class DropinShipping extends Model
         }
     }
 
+    public static function importShipping($id, $dropin = null)
+    {
+        if ($dropin === null) {
+            $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+        }
+        $details = $dropin->getOrderDetails(strval($id));
+        if ($details === null || !isset($details['order'])) {
+            return null;
+        }
+        $shipping = \App\third\DropinShipping::find($id);
+        if ($shipping === null) {
+            $shipping = \App\third\DropinShipping::create([
+                'id' => $id,
+                'name' => $details['order']['customer_full_name'],
+                'phone' => $details['order']['customer_mobile'],
+                'email' => $details['order']['customer_email'],
+                'address' => $details['order']['customer_address'],
+                'city' => $details['order']['customer_city'],
+                'postcode' => $details['order']['customer_post_code'],
+                'notes' => $details['order']['comment'],
+                'amount' => floatval($details['order']['items_price']),
+                'delivery_price' => floatval($details['order']['delivery_charge']),
+                'tax' => floatval($details['order']['tax']),
+                'payment_method' => (($details['order']['is_cod']) ? 'cod' : 'online'),
+                'status' => $details['orderStatus']['status_title'],
+                'info' => [],
+                'created_at' => $details['order']['created_at'],
+                'updated_at' => $details['order']['updated_at'],
+            ]);
+        }
+        if (isset($details['tracking']['tracking_url'])) {
+            $shipping->tracking_url = $details['tracking']['tracking_url'];
+            $shipping->save();
+        }
+        $shipping->refreshShippingStatus();
+
+        return $shipping;
+    }
+
     public static function refreshTable()
     {
         $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
         $orders = $dropin->getOrders();
         $shippings = [];
         foreach ($orders as $order) {
-            $orderId = $order['id'];
-            $details = $dropin->getOrderDetails(strval($orderId));
-            if ($details === null || !isset($details['order'])) {
-                continue;
-            }
-            $shipping = \App\third\DropinShipping::find($orderId);
-            if ($shipping === null) {
-                $shipping = \App\third\DropinShipping::create([
-                    'id' => $orderId,
-                    'name' => $details['order']['customer_full_name'],
-                    'phone' => $details['order']['customer_mobile'],
-                    'email' => $details['order']['customer_email'],
-                    'address' => $details['order']['customer_address'],
-                    'city' => $details['order']['customer_city'],
-                    'postcode' => $details['order']['customer_post_code'],
-                    'notes' => $details['order']['comment'],
-                    'amount' => floatval($details['order']['items_price']),
-                    'delivery_price' => floatval($details['order']['delivery_charge']),
-                    'tax' => floatval($details['order']['tax']),
-                    'payment_method' => (($details['order']['is_cod']) ? 'cod' : 'online'),
-                    'status' => $details['orderStatus']['status_title'],
-                    'info' => [],
-                    'created_at' => $details['order']['created_at'],
-                    'updated_at' => $details['order']['updated_at'],
-                ]);
-            }
-            if (isset($details['tracking']['tracking_url'])) {
-                $shipping->tracking_url = $details['tracking']['tracking_url'];
-                $shipping->save();
-            }
-            $shipping->refreshShippingStatus();
-
+            $shipping = self::importShipping($order['id'], $dropin);
             $shippings[] = $shipping;
         }
 

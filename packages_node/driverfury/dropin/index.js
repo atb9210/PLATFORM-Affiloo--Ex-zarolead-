@@ -410,35 +410,117 @@ class Dropin {
     return false
   }
 
-  async fetchShippings() {
+  mapShippingObject(obj) {
+    if (obj.hasOwnProperty('amount')) {
+      obj.amount = parseFloat(obj.amount)
+    } else {
+      obj.amount = 0.0
+    }
+    if (obj.hasOwnProperty('delivery_price')) {
+      obj.delivery_price = parseFloat(obj.delivery_price)
+    } else {
+      obj.delivery_price = 0.0
+    }
+    if (obj.hasOwnProperty('tax')) {
+      obj.tax = parseFloat(obj.tax)
+    } else {
+      obj.tax = 0.0
+    }
+
+    let info = obj.info
+    if (info === null) {
+      info = {}
+    }
+
+    obj.packeta_status = ''
+    obj.carrier_status_changes = ''
+    obj.carrier_status = {
+      date: '',
+      status: '',
+    }
+    if (info.hasOwnProperty('packeta') && info.packeta !== null) {
+      if (info.packeta.hasOwnProperty('status')) {
+        obj.packeta_status = info.packeta.status
+      }
+      if (info.packeta.hasOwnProperty('changes')) {
+        obj.carrier_status_changes = info.packeta.changes
+        if (obj.carrier_status_changes.length > 0) {
+          obj.carrier_status = obj.carrier_status_changes[obj.carrier_status_changes.length - 1]
+        }
+      }
+    }
+
+    return obj
+  }
+
+  async fetchShippings(filters = {}) {
     let objects = []
 
     try {
       let headers = this.getHeaders()
-      const response = await this.$http.get('/api/3rd/dropin/shippings', { headers })
+      let params = {}
+      if (filters.hasOwnProperty('date_from') && filters.date_from != '') {
+        params.filter_date_from = filters.date_from
+      }
+      if (filters.hasOwnProperty('date_to') && filters.date_to != '') {
+        params.filter_date_to = filters.date_to
+      }
+      const response = await this.$http.get('/api/3rd/dropin/shippings', { headers, params })
       objects = response.data.data
 
       for (let i = 0; i < objects.length; i++) {
-        let obj = objects[i]
+        this.mapShippingObject(objects[i])
+      }
 
-        let info = obj.info
-        if (info === null) {
-          info = {}
-        }
-
-        if (info.hasOwnProperty('packeta') && info.packeta !== null) {
-          if (info.packeta.hasOwnProperty('status')) {
-            obj.packeta_status = info.packeta.status
-          }
-        }
-
-        objects[i] = obj
+      if (filters.hasOwnProperty('dropin_statuses') && filters.dropin_statuses.length > 0) {
+        objects = objects.filter((obj) => {
+          return (obj.hasOwnProperty('status') && filters.dropin_statuses.includes(obj.status))
+        })
+      }
+      if (filters.hasOwnProperty('packeta_statuses') && filters.packeta_statuses.length > 0) {
+        objects = objects.filter((obj) => {
+          return (obj.hasOwnProperty('packeta_status') && filters.packeta_statuses.includes(obj.packeta_status))
+        })
+      }
+      if (filters.hasOwnProperty('carrier_statuses') && filters.carrier_statuses.length > 0) {
+        objects = objects.filter((obj) => {
+          return (obj.hasOwnProperty('carrier_status') && filters.carrier_statuses.includes(obj.carrier_status))
+        })
       }
     } catch (error) {
       // Nothing
     }
 
     return objects
+  }
+
+  async refreshShipping(id) {
+    let object = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/shippings/' + id + '/refresh', { headers })
+      object = response.data.data
+      this.mapShippingObject(object)
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
+  async refreshShippingsTable() {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/shippings/refresh', { headers })
+      result = (response.data.success == true)
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
   }
 
 }

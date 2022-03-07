@@ -1119,6 +1119,9 @@ class DropinController extends Controller
     /**
      * Get shippings list.
      *
+     * @bodyParam filter_date_from string From date (Y-m-d format)
+     * @bodyParam filter_date_to string To date (Y-m-d format)
+     *
      * @response {
      *  "data": [shippings],
      * }
@@ -1127,11 +1130,62 @@ class DropinController extends Controller
     {
         // TODO: Authorization
 
-        $objects = DropinShipping::all();
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'nullable|date|date_format:Y-m-d',
+            'filter_date_to'   => 'nullable|date|date_format:Y-m-d',
+        ]);
+
+        $q = DropinShipping::query();
+        if (isset($params['filter_date_from'])) {
+            $q = $q->where('created_at', '>=', $params['filter_date_from']);
+        }
+        if (isset($params['filter_date_to'])) {
+            $q = $q->where('created_at', '<=', $params['filter_date_to']);
+        }
+        $objects = $q->orderBy('created_at', 'desc')->get();
+
 
         return response([
             'data' => $objects,
         ]);
     }
-    
+
+    /**
+     * Get shippings list.
+     *
+     * @response {
+     *  "data": [shippings],
+     * }
+     */
+    public function refreshShipping($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $object = DropinShipping::findOrFail($id);
+        $object->refreshShippingStatus();
+
+        return response([
+            'data' => $object,
+        ]);
+    }
+
+    /**
+     * Refresh shippings table.
+     *
+     * @response {
+     *  "success": true,
+     * }
+     */
+    public function refreshShippingsTable(Request $request)
+    {
+        // TODO: Authorization
+
+        DropinShipping::refreshTable();
+
+        return response([
+            'success' => true,
+        ]);
+    }
+
 }
