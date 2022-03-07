@@ -314,3 +314,5 @@ Route::get('/dropin/products/payment-intent', 'api\third\DropinController@getPay
 Route::put('/dropin/leads/{hash}/first-update', 'api\third\DropinController@firstUpdateLead')
     ->name('dropin.leads.update.first');
 
+Route::get('/dropin/shippings', 'api\third\DropinController@shippings')->middleware('auth:api')
+    ->name('dropin.shippings.index');

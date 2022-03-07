@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\third\DropinLead;
 use App\third\DropinProduct;
+use App\third\DropinShipping;
 
 use App\Settings;
 
@@ -1112,6 +1113,24 @@ class DropinController extends Controller
 
         return response([
             'data' => $products,
+        ]);
+    }
+
+    /**
+     * Get shippings list.
+     *
+     * @response {
+     *  "data": [shippings],
+     * }
+     */
+    public function shippings(Request $request)
+    {
+        // TODO: Authorization
+
+        $objects = DropinShipping::all();
+
+        return response([
+            'data' => $objects,
         ]);
     }
     

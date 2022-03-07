@@ -410,6 +410,37 @@ class Dropin {
     return false
   }
 
+  async fetchShippings() {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/shippings', { headers })
+      objects = response.data.data
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        let info = obj.info
+        if (info === null) {
+          info = {}
+        }
+
+        if (info.hasOwnProperty('packeta') && info.packeta !== null) {
+          if (info.packeta.hasOwnProperty('status')) {
+            obj.packeta_status = info.packeta.status
+          }
+        }
+
+        objects[i] = obj
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
 }
 
 export default Dropin

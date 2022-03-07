@@ -33,6 +33,11 @@ class Kernel extends ConsoleKernel
             Storage::deleteDirectory('public/tmp');
         })->dailyAt('01:00');
 
+        // Refresh shipping statuses
+        $schedule->call(function () {
+            \App\third\DropinShipping::refreshTable();
+        })->dailyAt('00:00');
+
         // Facebook Monitors reports
         $schedule->call(function () {
             $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();

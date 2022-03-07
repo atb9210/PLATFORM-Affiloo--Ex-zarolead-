@@ -92,7 +92,7 @@ class Dropin
         return $objects;
     }
 
-    public function getOrderDetails($id): array
+    public function getOrderDetails($id): array|null
     {
         // TODO: What if he's not logged in?
 

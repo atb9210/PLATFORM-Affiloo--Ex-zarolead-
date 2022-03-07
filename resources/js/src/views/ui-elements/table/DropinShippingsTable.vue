@@ -54,18 +54,17 @@
         </vue-context>
 
         <!-- Shippings table -->
-        <vs-table v-if="view == 'shippings'" stripe multiple v-model="selectedProducts" :max-items="maxItems" pagination search :data="shippings" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table v-if="view == 'shippings'" stripe multiple v-model="selectedShippings" :max-items="maxItems" pagination search :data="shippings" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="id">Order #</vs-th>
-                <vs-th sort-key="created_at">Shipping Date</vs-th>
-                <vs-th>Channel</vs-th>
-                <vs-th>Customer</vs-th>
-                <vs-th>Phone</vs-th>
-                <vs-th>Payment</vs-th>
-                <vs-th>Carrier</vs-th>
-                <vs-th>Status</vs-th>
-                <vs-th>Notes</vs-th>
+                <vs-th sort-key="created_at">Creation Date</vs-th>
+                <vs-th sort-key="name">Customer</vs-th>
+                <vs-th sort-key="phone">Phone</vs-th>
+                <vs-th sort-key="payment_method">Payment</vs-th>
+                <vs-th sort-key="status">Dropin Status</vs-th>
+                <vs-th sort-key="tracking_url">Tracking</vs-th>
+                <vs-th sort-key="packeta_status">Packeta Status</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -80,35 +79,33 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.created_at">
-                        {{item.created_at}}
+                        {{ formatDate(new Date(item.created_at)) }}
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Channel
+                        {{ item.name }}
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Customer
+                        {{ item.phone }}
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Phone
+                        {{ item.payment_method }}
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Payment
+                        {{ item.status }}
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Carrier
+                        <a :href="item.tracking_url">
+                            {{ getTrackingIdFromUrl(item.tracking_url) }}
+                        </a>
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        Status
-                    </vs-td>
-
-                    <vs-td class="column-no-padding">
-                        Notes
+                        {{ item.packeta_status }}
                     </vs-td>
 
                 </vs-tr>
@@ -146,7 +143,6 @@ export default {
 
       showFilters: false,
       filters: {
-        categories: [],
       },
 
       shippings: [],
@@ -175,7 +171,10 @@ export default {
       }
     },
     objects() {
-      return this.shippings
+      if (this.view == 'shippings') {
+        return this.shippings
+      }
+      return []
     },
   },
   methods: {
@@ -186,7 +185,9 @@ export default {
     async changeView(view, parent = null) {
       this.$vs.loading()
 
-      // TODO: HERE
+      if (view == 'shippings') {
+        this.shippings = await this.dropin.fetchShippings()
+      }
 
       this.$vs.loading.close()
     },
@@ -202,24 +203,82 @@ export default {
       await this.changeView(this.view)
     },
     async resetFilters() {
-      this.filters = {
-        categories: [],
-      }
+      this.filters = {}
       await this.applyFilters()
+    },
+    getTrackingIdFromUrl(tracking_url) {
+      if (tracking_url === null || tracking_url == '') {
+        return ''
+      }
+      let u = new URL(tracking_url)
+      return u.searchParams.get('id')
+    },
+    async filterDatesShortcut(period) {
+      let invalidPeriod = false
+
+      switch (period) {
+        case 'today': {
+          let today = new Date()
+          this.filters.date_from = this.formatDate(today)
+          this.filters.date_to = this.formatDate(today)
+        } break
+        case 'yesterday': {
+          let dateObj = new Date()
+          dateObj.setDate(dateObj.getDate() - 1)
+          this.filters.date_from = this.formatDate(dateObj)
+          this.filters.date_to = this.formatDate(dateObj)
+        } break
+        case 'this_month': {
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
+        case 'last_month': {
+          let dateObj = new Date()
+          let fromObj = new Date(dateObj.getFullYear(), dateObj.getMonth() - 1, 1)
+          let toObj = new Date(dateObj.getFullYear(), dateObj.getMonth(), 0)
+          this.filters.date_from = this.formatDate(fromObj)
+          this.filters.date_to = this.formatDate(toObj)
+        } break
+        default: {
+          invalidPeriod = true
+        } break
+      }
+
+      if(!invalidPeriod) {
+        await this.applyFilters()
+      }
+    },
+    formatDate(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      let yyyy = dateObj.getFullYear()
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd
+      return formattedDate
+    },
+    formatDateTime(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      let yyyy = dateObj.getFullYear()
+      let hh = String(dateObj.getHours() - 1).padStart(2, '0') // TODO: Why -1?
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+
+      return formattedDate
     },
   },
   async created() {
     this.dropin = new Dropin(localStorage.getItem('accessToken'))
+
+    await this.resetFilters()
   },
 }
 
 </script>
 
 <style scoped>
-.nextPrevProductImage {
-  cursor: pointer;
-}
-.nextPrevProductImage:hover {
-  filter: brightness(0.9);
-}
 </style>

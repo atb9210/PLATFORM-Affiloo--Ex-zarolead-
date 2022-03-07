@@ -180,49 +180,31 @@ class TestController extends Controller
         exit();
     }
 
+    private function getInnerHTML(string $html, string $tag): string
+    {
+        $innerHTML = '';
+
+        $needleStart = '<'  . $tag . '>';
+        $needleEnd   = '</' . $tag . '>';
+
+        $needleStartPos = strpos($html, $needleStart);
+        if ($needleStartPos !== false) {
+            $html = substr($html, $needleStartPos + strlen($needleStart));
+        }
+
+        $needleEndPos = strpos($html, $needleEnd);
+        if ($needleEndPos !== false) {
+            $html = substr($html, 0, $needleEndPos);
+        }
+
+        $innerHTML = $html;
+
+        return $innerHTML;
+    }
+
     public function test(Request $request)
     {
-        //$cookies = 'XSRF-TOKEN=eyJpdiI6IndBS2dlU1Z5MmVKUDdZUXJZQndGRmc9PSIsInZhbHVlIjoiNkd3bnZLanlCeEtsbHFyVXp5SmlOdHd3T1l2aWdabGs4YjB3b3hwQTRUNXZWNmdJU0ZoQ2EwVTE2cDV4MzBJUkFBU2ZWYU5wWHpBdWt3WE9yTTA5MThhYnJkS2J1UkxjbE1kYVVXcXdUN28wUWN3M05WK0ZSL2pwRTFlUmpnb3QiLCJtYWMiOiI0MjgxODQzZmVkZjY2OWM2OTU0NjkwZmZiOTJhMWZiODYwODYzNjNjMzY2ODRjYTZhMjk4MTc0NmYzZGY5OTllIiwidGFnIjoiIn0%3D; expires=Thu, 03-Mar-2022 14:49:59 GMT; Max-Age=86400; path=/; samesite=lax, dropin_session=eyJpdiI6IkJQOWIzdDJ4bEtHR0xJd2Z6dzVJQnc9PSIsInZhbHVlIjoiYTgyaklIL1dOTkIwbmF2NkNtYktUY05odExmWURIeE13SnJRczk4dmRmOVZ6OEw4WEc3NVpPcldOdUdPY3g3cS9yb3BrL3FUUGZvam1ZemJ1Z0EzNTRhL09HVnhKR1hlWXFhOEdJTzlCbzVobUFWQ2ZGOVE2SWg1emlYd0l0Vk0iLCJtYWMiOiIxZjMzYjY0ZTJjOTMwZWRkZjUzMzE5MzdjYjI0OGQ3MDYwYjI5ZTM2OTQ0ZjgyN2YyYjY4N2IxYTkyZWY5YTg0IiwidGFnIjoiIn0%3D; expires=Thu, 03-Mar-2022 14:49:59 GMT; Max-Age=86400; path=/; httponly; samesite=lax';
-        //dd(\Driverfury\Requests\Requests::parseCookies($cookies));
-        //
-        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
-        dd($dropin->getOrders());
-        exit();
-
-        $requests = new \Driverfury\Requests\Requests();
-
-        $url = 'https://dropship.eurowholesale.eu/sanctum/csrf-cookie';
-        $headers = [
-            'accept' => 'application/json',
-            'content-type' => 'application/json',
-        ];
-        $response = $requests->get($url, $headers);
-        dd($response);
-
-        $cookies = $requests->getCookies();
-        if (isset($cookies['XSRF-TOKEN'])) {
-            $xsrfToken = $cookies['XSRF-TOKEN'];
-            //$xsrfToken = str_replace('%3D', '=', $xsrfToken);
-            $xsrfToken = str_replace('=', 'miaoasd', $xsrfToken);
-            $headers['x-xsrf-token'] = $xsrfToken;
-        }
-        $headers['referer'] = 'https://dropship.eurowholesale.eu/auth/login';
-        $headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36';
-        $headers['x-requested-with'] = 'XMLHttpRequest';
-
-        $url = 'https://dropship.eurowholesale.eu/login';
-        $response = $requests->post($url, $headers, [
-            'email' => 'zarosrls@gmail.com',
-            'password' => 'medi9810',
-            'status' => false,
-        ]);
-        dd($response);
-
-        $url = 'https://dropship.eurowholesale.eu/api/orders-list';
-        $response = $requests->get($url, $headers);
-
-        dd($response);
-        exit();
+        \App\third\DropinShipping::refreshTable();
     }
 
     public function test2(Request $request)
