@@ -180,28 +180,6 @@ class TestController extends Controller
         exit();
     }
 
-    private function getInnerHTML(string $html, string $tag): string
-    {
-        $innerHTML = '';
-
-        $needleStart = '<'  . $tag . '>';
-        $needleEnd   = '</' . $tag . '>';
-
-        $needleStartPos = strpos($html, $needleStart);
-        if ($needleStartPos !== false) {
-            $html = substr($html, $needleStartPos + strlen($needleStart));
-        }
-
-        $needleEndPos = strpos($html, $needleEnd);
-        if ($needleEndPos !== false) {
-            $html = substr($html, 0, $needleEndPos);
-        }
-
-        $innerHTML = $html;
-
-        return $innerHTML;
-    }
-
     public function test(Request $request)
     {
         \App\third\DropinShipping::refreshTable();

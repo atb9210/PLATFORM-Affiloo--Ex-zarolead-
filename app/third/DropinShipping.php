@@ -26,6 +26,28 @@ class DropinShipping extends Model
         'tax' => 'float',
     ];
 
+    private function getInnerHTML(string $html, string $tag): string
+    {
+        $innerHTML = '';
+
+        $needleStart = '<'  . $tag . '>';
+        $needleEnd   = '</' . $tag . '>';
+
+        $needleStartPos = strpos($html, $needleStart);
+        if ($needleStartPos !== false) {
+            $html = substr($html, $needleStartPos + strlen($needleStart));
+        }
+
+        $needleEndPos = strpos($html, $needleEnd);
+        if ($needleEndPos !== false) {
+            $html = substr($html, 0, $needleEndPos);
+        }
+
+        $innerHTML = $html;
+
+        return $innerHTML;
+    }
+
     public function refreshShippingStatus()
     {
         $trackingUrl = $this->tracking_url;
