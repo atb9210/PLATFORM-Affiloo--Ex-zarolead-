@@ -1266,7 +1266,7 @@ export default {
 
       let loc = this.order.location
       if (loc.hasOwnProperty('street') && loc.hasOwnProperty('street_number')) {
-        street_address = loc.street_number + ' ' + loc.street
+        street_address = loc.street + ' ' + loc.street_number
       }
       if (loc.hasOwnProperty('city')) {
         city = loc.city
