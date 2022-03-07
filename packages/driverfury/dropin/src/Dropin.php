@@ -80,13 +80,28 @@ class Dropin
         return $headers;
     }
 
-    public function getOrders()
+    public function getOrders(): array
+    {
+        //TODO: What if he's not logged in?
+
+        $objects = [];
+        $response = $this->http->get(self::$apiUrl . '/api/orders-list', $this->getHeaders());
+        if ($response['code'] == 200) {
+            $objects = $response['data'];
+        }
+        return $objects;
+    }
+
+    public function getOrderDetails($id): array
     {
         // TODO: What if he's not logged in?
 
-        $response = $this->http->get(self::$apiUrl . '/api/orders-list', $this->getHeaders());
-        $objects = $response['data'];
-        return $objects;
+        $object = null;
+        $response = $this->http->get(self::$apiUrl . '/api/order-details', $this->getHeaders(), ['orderId' => $id]);
+        if ($response['code'] == 200) {
+            $object = $response['data'];
+        }
+        return $object;
     }
 
     protected function getRequestXML(string $path): array
