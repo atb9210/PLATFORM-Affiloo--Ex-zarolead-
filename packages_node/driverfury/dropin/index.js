@@ -432,12 +432,22 @@ class Dropin {
       info = {}
     }
 
+    obj.order_id = ''
+    if (info.hasOwnProperty('order_id') && info.order_id !== null) {
+      obj.order_id = info.order_id
+    }
+    obj.cod_amount = 0.0
+    if (info.hasOwnProperty('cod_amount') && info.cod_amount !== null) {
+      obj.cod_amount = info.cod_amount
+    }
+
     obj.packeta_status = ''
     obj.carrier_status_changes = ''
     obj.carrier_status = {
       date: '',
       status: '',
     }
+    obj.delivered_at = ''
     if (info.hasOwnProperty('packeta') && info.packeta !== null) {
       if (info.packeta.hasOwnProperty('status')) {
         obj.packeta_status = info.packeta.status
@@ -447,8 +457,16 @@ class Dropin {
         if (obj.carrier_status_changes.length > 0) {
           obj.carrier_status = obj.carrier_status_changes[obj.carrier_status_changes.length - 1]
         }
+        for (let j = 0; j < obj.carrier_status_changes.length; j++) {
+          let statusChange = obj.carrier_status_changes[j]
+          if (statusChange.status == 'CONSEGNATA') {
+            obj.delivered_at = statusChange.date
+            break
+          }
+        }
       }
     }
+    obj.carrier_status_name = obj.carrier_status.name
 
     return obj
   }

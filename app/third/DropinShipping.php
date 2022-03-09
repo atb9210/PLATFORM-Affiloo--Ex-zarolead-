@@ -26,16 +26,88 @@ class DropinShipping extends Model
         'tax' => 'float',
     ];
 
-    private function getInnerHTML(string $html, string $tag): string
+    private function getHtmlElementPosition(string $html, string $tag): array
+    {
+        $start = -1;
+        $end = -1;
+        $startInnerHtml = -1;
+        $endInnerHtml = -1;
+
+        $tmpHtml = $html;
+
+        $needleStart = '<'  . $tag . '>';
+        $needleEnd   = '</' . $tag . '>';
+        $needleEndLen = strlen($needleEnd);
+
+        $needleStartPos = strpos($tmpHtml, $needleStart);
+        if ($needleStartPos === false) {
+            $needleStart = '<'  . $tag;
+            $needleStartPos = strpos($tmpHtml, $needleStart);
+            if ($needleStartPos === false || !ctype_space($tmpHtml[$needleStartPos + strlen($needleStart)])) {
+                $needleStartPos = false;
+            }
+        }
+        $initialTagEndRel = -1;
+        $startOfInnerHtmlRel = -1;
+        if ($needleStartPos !== false) {
+            $i = 0;
+            while ($tmpHtml[$needleStartPos + $i] != '>') {
+                $i += 1;
+            }
+            $initialTagEndRel = $i;
+            $startOfInnerHtmlRel = $initialTagEndRel + 1;
+            $tmpHtml = substr($tmpHtml, $needleStartPos + $startOfInnerHtmlRel);
+        }
+
+        $needleEndPos = strpos($tmpHtml, $needleEnd);
+
+        if ($needleStartPos !== false && $needleEndPos !== false) {
+            $start = $needleStartPos;
+            $startInnerHtml = $needleStartPos + $startOfInnerHtmlRel;
+            $endInnerHtml = $needleStartPos + $startOfInnerHtmlRel + $needleEndPos;
+            $end = $endInnerHtml + $needleEndLen;
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end,
+            'startInnerHtml' => $startInnerHtml,
+            'endInnerHtml' => $endInnerHtml,
+        ];
+    }
+
+    private function getInnerHtml(string $html, string $tag): string
     {
         $innerHTML = '';
 
+        $elementPosition = $this->getHtmlElementPosition($html, $tag);
+        if ($elementPosition['startInnerHtml'] >= 0 && $elementPosition['endInnerHtml'] >= 0) {
+            $start = $elementPosition['startInnerHtml'];
+            $end = $elementPosition['endInnerHtml'];
+            $innerHTML = substr($html, $start, ($end - $start));
+        }
+
+        return $innerHTML;
+
+        // TODO: to delete from now on?????? (old code)
+        /*
         $needleStart = '<'  . $tag . '>';
         $needleEnd   = '</' . $tag . '>';
 
         $needleStartPos = strpos($html, $needleStart);
+        if ($needleStartPos === false) {
+            $needleStart = '<'  . $tag;
+            $needleStartPos = strpos($html, $needleStart);
+            if ($needleStartPos === false || !ctype_space($html[$needleStartPos + strlen($needleStart)])) {
+                $needleStartPos = false;
+            }
+        }
         if ($needleStartPos !== false) {
-            $html = substr($html, $needleStartPos + strlen($needleStart));
+            $i = 0;
+            while ($html[$needleStartPos + $i] != '>') {
+                $i += 1;
+            }
+            $html = substr($html, $needleStartPos + $i + 1);
         }
 
         $needleEndPos = strpos($html, $needleEnd);
@@ -46,6 +118,44 @@ class DropinShipping extends Model
         $innerHTML = $html;
 
         return $innerHTML;
+        */
+    }
+
+    private function parseTableHtml(string $innerHtml): array
+    {
+        $table = [];
+
+        $endLoop = false;
+        while (!$endLoop) {
+            $trPos = $this->getHtmlElementPosition($innerHtml, 'tr');
+            if ($trPos['start'] < 0 || $trPos['end'] < 0) {
+                $endLoop = true;
+                continue;
+            }
+            $tr = $this->getInnerHtml($innerHtml, 'tr');
+
+            $key = null;
+            $thPos = $this->getHtmlElementPosition($tr, 'th');
+            if ($thPos['start'] >= 0 && $thPos['end'] >= 0) {
+                $key = trim($this->getInnerHtml($tr, 'th'));
+            }
+
+            $value = '';
+            $tdPos = $this->getHtmlElementPosition($tr, 'td');
+            if ($tdPos['start'] >= 0 && $tdPos['end'] >= 0) {
+                $value = trim($this->getInnerHtml($tr, 'td'));
+            }
+
+            if ($key !== null) {
+                $table[$key] = $value;
+            } else {
+                $table[] = $value;
+            }
+
+            $innerHtml = substr($innerHtml, $trPos['end']);
+        }
+
+        return $table;
     }
 
     public function refreshShippingStatus()
@@ -84,6 +194,17 @@ class DropinShipping extends Model
                 }
             }
 
+            // Get COD amount
+            $codAmount = 0.0;
+            $tableHtml = $this->getInnerHtml($html, 'table');
+            $table = $this->parseTableHtml($tableHtml);
+            foreach ($table as $key => $value) {
+                if ($key == 'Cash on delivery') {
+                    $codAmount = floatval($value);
+                    break;
+                }
+            }
+
             // Get status changes
             $statusChanges = [];
             $statusesUrl = $trackingUrl;
@@ -95,33 +216,13 @@ class DropinShipping extends Model
                 $html = str_replace(["\t", "\n"], "", $html);
             }
             if ($html != '') {
-                $endLoop = false;
-                $tmp = $html;
-                while (!$endLoop) {
-                    $startRowNeedle = '<tr>';
-                    $startRowPos = strpos($tmp, $startRowNeedle);
-                    if ($startRowPos === false) {
-                        $endLoop = true;
-                        continue;
-                    }
-                    $row = $this->getInnerHTML($tmp, 'tr');
-                    if ($row != '') {
-                        $date = trim($this->getInnerHTML($row, 'th'));
-                        $status = trim($this->getInnerHTML($row, 'td'));
-                        $statusChanges[] = [
-                            'date' => $date,
-                            'status' => $status,
-                        ];
-                        $endRowNeedle = '</tr>';
-                        $endRowPos = strpos($tmp, $endRowNeedle);
-                        if ($endRowPos === false) {
-                            $endLoop = true;
-                        } else {
-                            $tmp = substr($tmp, $endRowPos + strlen($endRowNeedle));
-                        }
-                    } else {
-                        $endLoop = true;
-                    }
+                $tableHtml = $this->getInnerHtml($html, 'table');
+                $table = $this->parseTableHtml($tableHtml);
+                foreach ($table as $key => $value) {
+                    $statusChanges[] = [
+                        'date' => $key,
+                        'status' => $value,
+                    ];
                 }
             }
 
@@ -133,6 +234,7 @@ class DropinShipping extends Model
                 'status' => $packetaStatus,
                 'changes' => $statusChanges,
             ];
+            $info['cod_amount'] = $codAmount;
             $this->info = $info;
             $this->save();
         }
@@ -170,8 +272,14 @@ class DropinShipping extends Model
         }
         if (isset($details['tracking']['tracking_url'])) {
             $shipping->tracking_url = $details['tracking']['tracking_url'];
-            $shipping->save();
         }
+        $info = $shipping->info;
+        if ($info === null) {
+            $info = [];
+        }
+        $info['order_id'] = $details['order']['external_id'];
+        $shipping->info = $info;
+        $shipping->save();
         $shipping->refreshShippingStatus();
 
         return $shipping;

@@ -107,7 +107,8 @@
         <vs-table v-if="view == 'shippings'" stripe multiple v-model="selectedShippings" :max-items="maxItems" pagination search :data="shippings" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
-                <vs-th sort-key="id">Order #</vs-th>
+                <vs-th sort-key="id">ID</vs-th>
+                <vs-th sort-key="order_id">Order ID</vs-th>
                 <vs-th sort-key="created_at">Creation Date</vs-th>
                 <vs-th sort-key="name">Customer</vs-th>
                 <vs-th sort-key="phone">Phone</vs-th>
@@ -115,10 +116,12 @@
                 <vs-th sort-key="status">Dropin Status</vs-th>
                 <vs-th sort-key="tracking_url">Tracking</vs-th>
                 <vs-th sort-key="packeta_status">Packeta Status</vs-th>
-                <vs-th sort-key="carrier_status">Carrier Status</vs-th>
+                <vs-th sort-key="carrier_status_name">Carrier Status</vs-th>
+                <vs-th sort-key="delivered_at">Delivery Date</vs-th>
                 <vs-th sort-key="amount">Amount</vs-th>
                 <vs-th sort-key="delivery_price">Shipping Price</vs-th>
                 <vs-th sort-key="tax">VAT</vs-th>
+                <vs-th sort-key="cod_amount">COD amount</vs-th>
             </template>
 
             <template slot-scope="{data}">
@@ -127,9 +130,13 @@
                     <vs-td class="column-no-padding" :data="item.id">
                         <div @contextmenu.prevent="$refs.shipping_context_menu.open($event, item)">
                             <vs-chip>
-                                Order #{{item.id}}
+                                #{{item.id}}
                             </vs-chip>
                         </div>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.order_id">
+                        {{ item.order_id }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.created_at">
@@ -162,8 +169,12 @@
                         {{ item.packeta_status }}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.carrier_status">
+                    <vs-td class="column-no-padding" :data="item.carrier_status_name">
                         {{ getCarrierStatus(item) }}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.delivered_at">
+                        {{ (item.delivered_at != '') ? formatDate(new Date(item.delivered_at)) : '' }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.amount">
@@ -176,6 +187,10 @@
 
                     <vs-td class="column-no-padding" :data="item.tax">
                         € {{ item.tax.toFixed(2) }}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.cod_amount">
+                        € {{ item.cod_amount.toFixed(2) }}
                     </vs-td>
 
                 </vs-tr>
@@ -191,9 +206,12 @@
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.amount.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.delivery_price.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.tax.toFixed(2)}}</vs-td>
+                <vs-td class="column-no-padding">€ {{totalStats.cod_amount.toFixed(2)}}</vs-td>
 
             </template>
         </vs-table>
@@ -248,6 +266,7 @@ export default {
         amount: 0.0,
         delivery_price: 0.0,
         tax: 0.0,
+        cod_amount: 0.0,
       },
 
       dropinStatuses: [
@@ -447,6 +466,7 @@ export default {
         amount: 0.0,
         delivery_price: 0.0,
         tax: 0.0,
+        cod_amount: 0.0,
       }
 
       for (let i = 0; i < this.objects.length; i++) {
@@ -460,6 +480,9 @@ export default {
         }
         if (obj.hasOwnProperty('tax')) {
           this.totalStats.tax += parseFloat(obj.tax)
+        }
+        if (obj.hasOwnProperty('cod_amount')) {
+          this.totalStats.cod_amount += parseFloat(obj.cod_amount)
         }
       }
     },
