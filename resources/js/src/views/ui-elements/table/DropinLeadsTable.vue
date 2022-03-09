@@ -150,6 +150,15 @@
                 </li>
             </vue-context>
 
+            <vue-context ref="phone_context_menu" v-slot="{ data }">
+            <li>
+              <a href="#" @click="$refs.phone_context_menu.close()" class="flex items-center text-sm">
+                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Close</span>
+              </a>
+            </li>
+        </vue-context>
+
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
@@ -201,11 +210,20 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding">
+                            <div v-if="item.hasOwnProperty('phone') && item.phone != ''" @contextmenu.prevent="$refs.phone_context_menu.open($event, item)" @dblclick="whatsappMessage(item)">
+                                <vs-chip :color="(item.has_new_message) ? 'warning' : ''">
+                                    <vs-avatar icon-pack="feather" icon="icon-message-circle" />
+                                    {{ item.phone }}
+                                </vs-chip>
+                            </div>
+                            <!-- TODO: Old code -->
+                            <!--
                             <vs-chip v-if="item.hasOwnProperty('phone') && item.phone != ''">
                                 <span @click="copyToClipboard(item.phone)" @dblclick="whatsappMessage(item)">
                                     {{item.phone}}
                                 </span>
                             </vs-chip>
+                            -->
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.product_name">

@@ -946,7 +946,7 @@ class DropinController extends Controller
         ]);
 
         $chatapi = $this->getChatAPIClient();
-        $result = $chatapi->sendMessage($params['phone'], $params['message']);
+        $result = ($chatapi->sendMessage($params['phone'], $params['message']) !== null);
 
         if (!$result) {
             return response([

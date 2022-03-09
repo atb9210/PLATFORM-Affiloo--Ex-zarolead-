@@ -106,6 +106,9 @@ class Dropin {
       obj.order_status = ''
       obj.gateway = ''
       obj.delivery_status = 'not sent'
+      obj.last_message = null
+      obj.last_message_read = null
+      obj.has_new_message = false
       if (obj.hasOwnProperty('info') && obj.info !== null) {
         if (obj.info.hasOwnProperty('product_name')) {
           obj.product_name = obj.info.product_name
@@ -179,6 +182,18 @@ class Dropin {
         if (obj.info.hasOwnProperty('recall_at') && obj.info.recall_at !== null) {
           obj.recall_at = obj.info.recall_at
         }
+
+        obj.last_message = null
+        obj.last_message_read = null
+        if (obj.info.hasOwnProperty('whatsapp') && obj.info.whatsapp !== null) {
+          if (obj.info.whatsapp.hasOwnProperty('last_message') && obj.info.whatsapp.last_message !== null) {
+            obj.last_message = obj.info.last_message
+          }
+          if (obj.info.whatsapp.hasOwnProperty('last_message_read') && obj.info.whatsapp.last_message_read !== null) {
+            obj.last_message_read = obj.info.last_message_read
+          }
+        }
+        obj.has_new_message = (obj.last_message_read !== obj.last_message)
       }
 
       objects[i] = obj

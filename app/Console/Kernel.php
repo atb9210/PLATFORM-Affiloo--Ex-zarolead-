@@ -38,6 +38,14 @@ class Kernel extends ConsoleKernel
             \App\third\DropinShipping::refreshTable();
         })->dailyAt('00:00');
 
+        // Refresh and leads whatsapp message
+        $schedule->call(function () {
+            $leads = \App\third\DropinLead::where('archived', 0);
+            foreach ($leads as $lead) {
+                $lead->refreshWhatsappInfo();
+            }
+        })->dailyAt('00:00');
+
         // Facebook Monitors reports
         $schedule->call(function () {
             $monitors = \App\third\FacebookMonitor::where('archived', 0)->get();

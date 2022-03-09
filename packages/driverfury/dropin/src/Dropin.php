@@ -115,6 +115,7 @@ class Dropin
             $path = '/' . $path;
         }
 
+        $url = self::$apiUrlProducts . $path;
         $content = file_get_contents($url);
 
         if ($content !== null) {
@@ -131,7 +132,9 @@ class Dropin
 
     public function getProducts(): array
     {
-        $objects = $this->getRequestXML(self::$apiUrlProducts . '/partner_exports/it/it-zaro/65/it-zaro-620e4273c1c2d.xml');
+        // TODO: Get products from the unofficial APIs??
+
+        $objects = $this->getRequestXML('/partner_exports/it/it-zaro/65/it-zaro-620e4273c1c2d.xml');
 
         $objects = array_map(function ($objs) {
             $mappedObjects = [];

@@ -182,6 +182,11 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $lead = \App\third\DropinLead::findOrFail(1);
+        $lead->refreshWhatsappInfo();
+        dd('ok');
+        exit();
+
         $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
         $orders = $dropin->getOrders();
         $shippings = [];

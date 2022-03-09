@@ -170,7 +170,7 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.carrier_status_name">
-                        {{ getCarrierStatus(item) }}
+                        {{ item.carrier_status_name }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.delivered_at">
