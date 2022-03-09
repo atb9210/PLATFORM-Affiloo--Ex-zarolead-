@@ -88,14 +88,27 @@ class DropinLead extends Model
         }
     }
 
-    public function sendMessage(string $message): bool
+    public function sendMessage(string $message): array|null
     {
-        $result = false;
+        $object = null;
         if ($this->phone !== null && $this->phone != '' && $message != '') {
             $chatapi = $this->getChatAPIClient();
-            $obj = $chatapi->sendMessage($this->phone, $message);
-            $result = ($obj !== null);
+            $object = $chatapi->sendMessage($this->phone, $message);
         }
-        return $result;
+        return $object;
+    }
+
+    public function getMessages(): array
+    {
+        $objects = [];
+        $chatapi = $this->getChatAPIClient();
+        if ($this->phone !== null && $this->phone != '') {
+            $chatapi = $this->getChatAPIClient();
+            $tmp = $chatapi->getMessages($this->phone);
+            if ($tmp !== null) {
+                $objects = $tmp;
+            }
+        }
+        return $objects;
     }
 }

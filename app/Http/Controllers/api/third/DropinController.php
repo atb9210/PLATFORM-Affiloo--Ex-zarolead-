@@ -962,6 +962,68 @@ class DropinController extends Controller
     }
 
     /**
+     * Send message to a lead
+     *
+     * @urlParam id required int Lead's id
+     *
+     * @bodyParam message required string Message
+     *
+     * @response {
+     *  "status": "success",
+     *  "message": "Message sent",
+     * }
+     */
+    public function sendLeadMessage($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = DropinLead::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'message' => 'required|string|min:1',
+        ]);
+
+        $object = $lead->sendMessage($params['message']);
+        $result = ($object !== null);
+
+        if (!$result) {
+            return response([
+                'status' => 'fail',
+                'message' => 'Message not sent',
+            ], 500);
+        }
+
+        return response([
+            'status' => 'success',
+            'message' => 'Message sent',
+            'data' => $object,
+        ]);
+    }
+
+    /**
+     * Get lead's messages
+     *
+     * @urlParam id required int Lead's id
+     *
+     * @response {
+     *  "data": [messages],
+     * }
+     */
+    public function getLeadMessages($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = DropinLead::findOrFail($id);
+
+        $messages = $lead->getMessages();
+
+        return response([
+            'data' => $messages,
+        ]);
+    }
+
+    /**
      * Get products list.
      *
      * @response {

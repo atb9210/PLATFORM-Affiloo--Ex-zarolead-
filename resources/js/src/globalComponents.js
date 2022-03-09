@@ -24,18 +24,24 @@ Vue.component(FeatherIcon.name, FeatherIcon)
 Vue.component(VxInputGroup.name, VxInputGroup)
 
 // NOTE: Custom (created by driverfury)
-import MySelect  from './components/MySelect.vue'
+import MySelect from './components/MySelect.vue'
 Vue.component(MySelect.name, MySelect)
-import EditableValue  from './components/EditableValue.vue'
+import EditableValue from './components/EditableValue.vue'
 Vue.component(EditableValue.name, EditableValue)
-import FastEditableValue  from './components/FastEditableValue.vue'
+import FastEditableValue from './components/FastEditableValue.vue'
 Vue.component(FastEditableValue.name, FastEditableValue)
-import FastEditableValueSelect  from './components/FastEditableValueSelect.vue'
+import FastEditableValueSelect from './components/FastEditableValueSelect.vue'
 Vue.component(FastEditableValueSelect.name, FastEditableValueSelect)
-import StatsCard  from './components/StatsCard.vue'
+import StatsCard from './components/StatsCard.vue'
 Vue.component(StatsCard.name, StatsCard)
-import LocationInput  from './components/LocationInput.vue'
+import LocationInput from './components/LocationInput.vue'
 Vue.component(LocationInput.name, LocationInput)
+import ChatNavbar from './components/ChatNavbar.vue'
+Vue.component(ChatNavbar.name, ChatNavbar)
+import ChatLog from './components/ChatLog.vue'
+Vue.component(ChatLog.name, ChatLog)
+import Chat from './components/Chat.vue'
+Vue.component(Chat.name, Chat)
 
 
 // v-select component

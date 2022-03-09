@@ -183,7 +183,7 @@ class TestController extends Controller
     public function test(Request $request)
     {
         $lead = \App\third\DropinLead::findOrFail(1);
-        $lead->refreshWhatsappInfo();
+        dd($lead->sendMessage('test'));
         dd('ok');
         exit();
 

@@ -257,6 +257,37 @@ class Dropin {
     return false
   }
 
+  async getLeadMessages(leadId) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/leads/' + leadId + '/messages', { headers })
+      objects = response.data.data
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
+  async sendLeadMessage(leadId, message) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      let params = {
+        message: message,
+      }
+      const response = await this.$http.post('/api/3rd/dropin/leads/' + leadId + '/messages', params, { headers })
+      object = response.data.data
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
   async fetchProducts(filters = {}) {
     let objects = []
 
@@ -409,6 +440,8 @@ class Dropin {
   }
 
   async sendMessage(phone, message) {
+    let result = false
+
     try {
       let headers = this.getHeaders()
       let params = {
@@ -417,12 +450,13 @@ class Dropin {
       }
       const response = await this.$http.post('/api/3rd/dropin/send-message', params, { headers })
       if (response.hasOwnProperty('data') && response.data.hasOwnProperty('status') && response.data.status === 'success') {
-        return true
+        result = true
       }
     } catch (error) {
       // Nothing
     }
-    return false
+
+    return result
   }
 
   mapShippingObject(obj) {

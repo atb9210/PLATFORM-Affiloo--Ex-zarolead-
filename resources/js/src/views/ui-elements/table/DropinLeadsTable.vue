@@ -151,13 +151,19 @@
             </vue-context>
 
             <vue-context ref="phone_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.phone_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+                <li>
+                  <a href="#" @click="$refs.phone_context_menu.close();showWhatsappChat(data)" class="flex items-center text-sm">
+                    <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Whatsapp Chat</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.phone_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
 
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
@@ -811,6 +817,11 @@
 
             </div>
         </div>
+        
+        <!-- Customer chat -->
+        <div v-if="view == 'chat'">
+          <Chat :user="lead" :chatMessages="chatMessages" />
+        </div>
 
         <!-- Notes popup -->
         <vs-popup title="Notes" :active.sync="showPopup['notes']">
@@ -1270,6 +1281,8 @@ export default {
       productImageIndex: 0,
 
       productOptions: [],
+
+      chatMessages: [],
     }
   },
   computed: {
@@ -2516,6 +2529,15 @@ export default {
       if (this.productImageIndex >= this.product.images.length) {
         this.productImageIndex = this.product.images.length - 1
       }
+    },
+    async showWhatsappChat(lead) {
+      this.$vs.loading()
+
+      this.lead = lead
+      this.chatMessages = await this.dropin.getLeadMessages(lead.id)
+
+      this.$vs.loading.close()
+      this.view = 'chat'
     },
   },
   async created() {
