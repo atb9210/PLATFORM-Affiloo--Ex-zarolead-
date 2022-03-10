@@ -12,6 +12,18 @@ function getCurrencyValue(s) {
   }
 }
 
+function formatDateTime(dateObj) {
+  let dd = String(dateObj.getDate()).padStart(2, '0')
+  let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+  let yyyy = dateObj.getFullYear()
+  let hh = String(dateObj.getHours()).padStart(2, '0')
+  let ii = String(dateObj.getMinutes()).padStart(2, '0')
+  
+  let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+
+  return formattedDate
+}
+
 class Dropin {
 
   constructor(apiKey) {
@@ -257,13 +269,22 @@ class Dropin {
     return false
   }
 
-  async getLeadMessages(leadId) {
+  async fetchLeadMessages(leadId) {
     let objects = []
 
     try {
       let headers = this.getHeaders()
       const response = await this.$http.get('/api/3rd/dropin/leads/' + leadId + '/messages', { headers })
       objects = response.data.data
+
+      for (let i = 0; i < objects.length; i++) {
+        let obj = objects[i]
+
+        let d = new Date(obj.time*1000)
+        obj.datetime = formatDateTime(d)
+
+        objects[i] = obj
+      }
     } catch (error) {
       // Nothing
     }

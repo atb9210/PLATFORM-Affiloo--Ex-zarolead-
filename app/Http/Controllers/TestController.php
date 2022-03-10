@@ -182,12 +182,8 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
-        $lead = \App\third\DropinLead::findOrFail(1);
-        dd($lead->sendMessage('test'));
-        dd('ok');
-        exit();
-
         $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+        dd($dropin->getProducts());
         $orders = $dropin->getOrders();
         $shippings = [];
         foreach ($orders as $order) {

@@ -1422,7 +1422,7 @@ export default {
       let dd = String(dateObj.getDate()).padStart(2, '0')
       let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
       let yyyy = dateObj.getFullYear()
-      let hh = String(dateObj.getHours() - 1).padStart(2, '0') // TODO: Why -1?
+      let hh = String(dateObj.getHours() - 1).padStart(2, '0') // TODO: Why -1? BECAUSE OF THE TIMEZONE!!!
       let ii = String(dateObj.getMinutes()).padStart(2, '0')
       
       let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
@@ -2534,7 +2534,7 @@ export default {
       this.$vs.loading()
 
       this.lead = lead
-      this.chatMessages = await this.dropin.getLeadMessages(lead.id)
+      this.chatMessages = await this.dropin.fetchLeadMessages(lead.id)
 
       this.$vs.loading.close()
       this.view = 'chat'
