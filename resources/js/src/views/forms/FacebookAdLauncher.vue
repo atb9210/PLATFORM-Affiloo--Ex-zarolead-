@@ -234,7 +234,7 @@
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-search" @click="view = 'preview_search'"></vs-button>
             </div>
             <div v-if="item.type === 'image'" class="vx-col sm:w-1/3 md:w-1/5 w-full" :class="previewIsSelected(item) ? 'selected-media' : ''" v-for="(item, index) in mediasOptions" @click="selectPreview(item)" @dblclick="openProductMedia(item)">
-              <img class="w-full" :src="(item.type == 'image') ? item.thumbnailUrl : videoThumbnail">
+              <img class="w-full" :src="(item.type == 'image') ? item.url : videoThumbnail">
               <center class="text-xl font-bold">{{item.filename}} ({{item.type}})</center>
             </div>
           </div>
@@ -1927,25 +1927,29 @@ export default {
           for (let i = 0; i < files.length; i++) {
             let file = files[i]
 
-            // NOTE: Facebook does not accept images from DropBox (go wonder).
-            // So we need to upload the dropbox image(s) temporarily on our server
-            // and give our links to facebook.
-            let imageBase64 = await this.resizeImageUrl(file.link)
-            let imageFile = await createFileFromBase64DataURL(imageBase64)
-            let uploadedImage = await this.createTemporaryImage(imageFile)
-
-            let imageUrl = uploadedImage.url
-            //let imageUrl = file.link
-
-            let fileType = 'image'
             let ext = getFileExtension(file.name)
+            let fileType = 'image'
             if (this.videoExtensions.includes(ext)) {
               fileType = 'video'
             }
+
+            let mediaUrl = ''
+            if (fileType == 'image') {
+              // NOTE: Facebook does not accept images from DropBox (go wonder).
+              // So we need to upload the dropbox image(s) temporarily on our server
+              // and give our links to facebook.
+              let imageBase64 = await this.resizeImageUrl(file.link)
+              let imageFile = await createFileFromBase64DataURL(imageBase64)
+              let uploadedImage = await this.createTemporaryImage(imageFile)
+              mediaUrl = uploadedImage.url
+            } else if (fileType == 'video') {
+              mediaUrl = file.link
+            }
+
             this.ad.medias.push({
               id: file.id,
               pathname: 'dropbox.com/' + file.name,
-              url: imageUrl,
+              url: mediaUrl,
               type: fileType,
             })
           }

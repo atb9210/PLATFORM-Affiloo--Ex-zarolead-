@@ -375,9 +375,6 @@ class Facebook {
         // Filter by status
         if (filters.hasOwnProperty('status') && filters.status !== null && filters.status !== '') {
           if (obj.status != filters.status) {
-            // TODO: to delete
-            console.log(obj.status, '!==', filters.status)
-
             continue
           }
         }
@@ -554,6 +551,7 @@ class Facebook {
     let object = null
 
     try {
+      params.access_token = this.accessToken
       const response = await this.$http.post(this.apiUrl + '/' + adAccountId + '/adimages', params)
       if (response.hasOwnProperty('data') && response.data !== null &&
           response.data.hasOwnProperty('images') && response.data.images !== null) {
@@ -572,6 +570,7 @@ class Facebook {
     let object = null
 
     try {
+      params.access_token = this.accessToken
       const response = await this.$http.post(this.apiUrl + '/' + adAccountId + '/advideos', params)
       if (response.hasOwnProperty('data') && response.data !== null &&
           response.data.hasOwnProperty('id') && response.data.id !== null) {
