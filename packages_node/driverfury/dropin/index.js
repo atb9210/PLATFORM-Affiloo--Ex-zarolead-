@@ -106,6 +106,7 @@ class Dropin {
 
       obj.products = []
       obj.product_name = ''
+      obj.order_id = ''
       obj.sku = ''
       obj.price = 0.0
       obj.quantity = 0
@@ -124,6 +125,9 @@ class Dropin {
       if (obj.hasOwnProperty('info') && obj.info !== null) {
         if (obj.info.hasOwnProperty('product_name')) {
           obj.product_name = obj.info.product_name
+        }
+        if (obj.info.hasOwnProperty('order_id')) {
+          obj.order_id = obj.info.order_id
         }
         if (obj.info.hasOwnProperty('sku')) {
           obj.sku = obj.info.sku
@@ -502,6 +506,11 @@ class Dropin {
       info = {}
     }
 
+    obj.marked = false
+    if (info.hasOwnProperty('marked') && info.marked) {
+      obj.marked = true
+    }
+
     obj.order_id = ''
     if (info.hasOwnProperty('order_id') && info.order_id !== null) {
       obj.order_id = info.order_id
@@ -510,6 +519,7 @@ class Dropin {
     if (info.hasOwnProperty('cod_amount') && info.cod_amount !== null) {
       obj.cod_amount = info.cod_amount
     }
+    obj.vat = obj.cod_amount - (obj.cod_amount * (1 - 0.22))
 
     obj.packeta_status = ''
     obj.carrier_status_changes = ''
@@ -582,6 +592,20 @@ class Dropin {
     return objects
   }
 
+  async updateShipping(id, params) {
+    let object = null
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/dropin/shippings/' + id, params, { headers })
+      object = response.data.data
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
+  }
+
   async refreshShipping(id) {
     let object = []
 
@@ -609,6 +633,31 @@ class Dropin {
     }
 
     return result
+  }
+
+  async toggleMarkShipping(shipping) {
+    let object = null
+
+    try {
+      let info = shipping.info
+      if (info === null || Array.isArray(info)) {
+        info = {}
+      }
+      if (info.hasOwnProperty('marked')) {
+        info.marked = !info.marked
+      } else {
+        info.marked = true
+      }
+      let params = {
+        info: JSON.stringify(info),
+      }
+
+      object = await this.updateShipping(shipping.id, params)
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
   }
 
 }

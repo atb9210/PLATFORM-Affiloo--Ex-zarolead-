@@ -1,7 +1,10 @@
 <template>
     <div id="chat-app" class="border border-solid d-theme-border-grey-light rounded relative overflow-hidden">
         <div id="chatMain" class="chat__bg no-scroll-content chat-content-area border border-solid d-theme-border-grey-light border-t-0 border-r-0 border-b-0" :class="{'sidebar-spacer--wide': clickNotClose, 'flex items-center justify-center': user === null}">
+            <!--
             <template v-if="chatMessages.length > 0">
+            -->
+            <template>
                 <div class="chat__navbar">
                     <ChatNavbar :isSidebarCollapsed="!clickNotClose" :user="user" :isPinnedProp="isChatPinned" @openContactsSidebar="toggleChatSidebar(true)" @showProfileSidebar="showProfileSidebar" @toggleIsChatPinned="toggleIsChatPinned" />
                 </div>
@@ -15,12 +18,14 @@
                     <vs-button class="bg-primary-gradient ml-4" type="filled" @click="sendMsg">Send</vs-button>
                 </div>
             </template>
+            <!--
             <template v-else>
                 <div class="flex flex-col items-center">
                     <feather-icon icon="MessageSquareIcon" class="mb-4 bg-white p-8 shadow-md rounded-full" svgClasses="w-16 h-16"></feather-icon>
                     <h4 class=" py-2 px-4 bg-white shadow-md rounded-full cursor-pointer" @click.stop="toggleChatSidebar(true)">Start Conversation</h4>
                 </div>
             </template>
+            -->
         </div>
     </div>
 </template>

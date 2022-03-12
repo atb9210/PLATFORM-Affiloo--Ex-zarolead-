@@ -1216,6 +1216,40 @@ class DropinController extends Controller
     /**
      * Get shippings list.
      *
+     * @urlParam id int required Shipping's id
+     *
+     * @info info json Shipping's info
+     *
+     * @response {
+     *  "data": shipping,
+     * }
+     */
+    public function updateShipping($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $object = DropinShipping::findOrFail($id);
+
+        // TODO: Only info for now
+        // Param validation
+        $params = $request->validate([
+            'info' => 'json',
+        ]);
+
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
+        }
+
+        $object->update($params);
+
+        return response([
+            'data' => $object,
+        ]);
+    }
+
+    /**
+     * Refresh shipping status.
+     *
      * @response {
      *  "data": [shippings],
      * }

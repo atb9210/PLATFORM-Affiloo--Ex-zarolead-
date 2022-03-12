@@ -9,7 +9,10 @@
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" :disabled="selectedShippings.length <= 0" @click="refreshShippings(selectedShippings)"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Import shippings" position="top">
-                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="refreshShippingsTable"></vs-button>
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-download" @click="refreshShippingsTable"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Mark shippings" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-bookmark" :disabled="selectedShippings.length <= 0" @click="markShippings(selectedShippings)"></vs-button>
             </vx-tooltip>
         </p>
 
@@ -104,7 +107,7 @@
         </vue-context>
 
         <!-- Shippings table -->
-        <vs-table v-if="view == 'shippings'" stripe multiple v-model="selectedShippings" :max-items="maxItems" pagination search :data="shippings" :currentPage="currentPage" @change-page="onPageChanged">
+        <vs-table v-if="view == 'shippings'" multiple v-model="selectedShippings" :max-items="maxItems" pagination search :data="shippings" :currentPage="currentPage" @change-page="onPageChanged">
 
             <template slot="thead">
                 <vs-th sort-key="id">ID</vs-th>
@@ -120,12 +123,12 @@
                 <vs-th sort-key="delivered_at">Delivery Date</vs-th>
                 <vs-th sort-key="amount">Amount</vs-th>
                 <vs-th sort-key="delivery_price">Shipping Price</vs-th>
-                <vs-th sort-key="tax">VAT</vs-th>
+                <vs-th sort-key="vat">VAT</vs-th>
                 <vs-th sort-key="cod_amount">COD amount</vs-th>
             </template>
 
             <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data" :class="(item.marked) ? 'row-marked' : ''">
 
                     <vs-td class="column-no-padding" :data="item.id">
                         <div @contextmenu.prevent="$refs.shipping_context_menu.open($event, item)">
@@ -185,8 +188,8 @@
                         € {{ item.delivery_price.toFixed(2) }}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.tax">
-                        € {{ item.tax.toFixed(2) }}
+                    <vs-td class="column-no-padding" :data="item.vat">
+                        € {{ item.vat.toFixed(2) }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.cod_amount">
@@ -210,7 +213,7 @@
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.amount.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.delivery_price.toFixed(2)}}</vs-td>
-                <vs-td class="column-no-padding">€ {{totalStats.tax.toFixed(2)}}</vs-td>
+                <vs-td class="column-no-padding">€ {{totalStats.vat.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.cod_amount.toFixed(2)}}</vs-td>
 
             </template>
@@ -266,6 +269,7 @@ export default {
         amount: 0.0,
         delivery_price: 0.0,
         tax: 0.0,
+        vat: 0.0,
         cod_amount: 0.0,
       },
 
@@ -323,6 +327,7 @@ export default {
       this.$vs.loading()
 
       if (view == 'shippings') {
+        this.selectedShippings = []
         this.shippings = await this.dropin.fetchShippings(this.filters)
         for (let i = 0; i < this.shippings.length; i++) {
           let obj = this.shippings[i]
@@ -466,6 +471,7 @@ export default {
         amount: 0.0,
         delivery_price: 0.0,
         tax: 0.0,
+        vat: 0.0,
         cod_amount: 0.0,
       }
 
@@ -481,10 +487,36 @@ export default {
         if (obj.hasOwnProperty('tax')) {
           this.totalStats.tax += parseFloat(obj.tax)
         }
+        if (obj.hasOwnProperty('vat')) {
+          this.totalStats.vat += parseFloat(obj.vat)
+        }
         if (obj.hasOwnProperty('cod_amount')) {
           this.totalStats.cod_amount += parseFloat(obj.cod_amount)
         }
       }
+    },
+    async markShippings(shippings) {
+      let numShippings = shippings.length
+
+      if (numShippings <= 0) return
+
+      this.$vs.loading()
+
+      for (let i = 0; i < shippings.length; i++) {
+        await this.dropin.toggleMarkShipping(shippings[i])
+      }
+
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Shippings successfully marked',
+        iconPack: 'feather',
+        icon: 'icon-bookmark',
+        color: 'success'
+      })
+
+      await this.applyFilters()
     },
   },
   async created() {
@@ -501,5 +533,8 @@ export default {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
   white-space: nowrap;
+}
+.row-marked {
+  background-color: #ffd382 !important;
 }
 </style>

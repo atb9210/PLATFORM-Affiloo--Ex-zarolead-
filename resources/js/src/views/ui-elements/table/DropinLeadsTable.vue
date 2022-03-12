@@ -17,6 +17,9 @@
             <vx-tooltip text="Send message (bulk)" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Change status to unprocessed" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="newStatus = 'unprocessed';confirmUpdateStatusBulk(selectedLeads)" :disabled="selectedLeads.length <= 0"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Delete selected leads" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
             </vx-tooltip>
@@ -170,6 +173,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="id">ID</vs-th>
+                    <vs-th sort-key="order_id">Order ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
@@ -192,6 +196,10 @@
 
                         <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.order_id">
+                            {{item.order_id}}
                         </vs-td>
 
                         <vs-td v-if="!showRecallDate" class="column-no-padding" :data="item.created_at">
@@ -239,7 +247,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.gateway">
-                            {{item.gateway}}
+                            {{(item.gateway != '') ? gatewayShortNames[item.gateway] : ''}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
@@ -287,10 +295,10 @@
                         <vs-td class="column-no-padding" :data="item.status">
                             <fast-editable-value-select
                                 class="font-bold"
-                                :options="leadStatuses"
+                                :options="leadStatusOptions"
                                 v-model="newStatus"
                                 @onEdit="newStatus = data[indextr].status"
-                                @onUpdate="updateStatus(data[indextr])">
+                                @onUpdate="confirmUpdateStatus(data[indextr])">
                                   <vs-chip :color="leadStatusColor[data[indextr].status]">
                                       {{item.status}}
                                   </vs-chip>
@@ -359,6 +367,7 @@
                     </vs-tr>
 
                     <!-- TOTAL STATS -->
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
@@ -1185,6 +1194,16 @@ export default {
         'waiting payment': 'primary',
         'abandoned'      : '',
       },
+      leadStatusOptions: [
+        'confirmed',
+        'to do',
+        'to recall',
+        'no answer',
+        'cancelled',
+        'fake',
+        'duplicate',
+        'waiting payment',
+      ],
 
       deliveryStatuses: [
         'not sent',
@@ -1241,6 +1260,10 @@ export default {
         'cashondelivery',
         'online',
       ],
+      gatewayShortNames: {
+        'cashondelivery': 'cod',
+        'online'        : 'online',
+      },
 
       accessories: [
         { name: 'Insurance',     quantity: 1, price: 1.90, total: 1.90, enabled: false },
@@ -1470,6 +1493,17 @@ export default {
       }
     },
 
+    confirmUpdateStatus(lead) {
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Status change confirmation',
+        text: 'Are you sure you want to change the status from "' + lead.status + '" to "' + this.newStatus + '"?',
+        accept: function () {
+          this.updateStatus(lead)
+        }.bind(this),
+      })
+    },
     async updateStatus(lead) {
       this.$vs.loading()
 
@@ -1491,6 +1525,52 @@ export default {
         Object.assign(this.lead, lead)
         this.showPopup['date_time_info'] = true
       }
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
+    confirmUpdateStatusBulk(leads) {
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Status change confirmation',
+        text: 'Are you sure you want to change the status of the selected leads to "' + this.newStatus + '"?',
+        accept: function () {
+          this.updateStatusBulk(leads)
+        }.bind(this),
+      })
+    },
+    async updateStatusBulk(leads) {
+      let numLeads = leads.length
+      if (numLeads <= 0) return
+
+      this.$vs.loading()
+
+      let params = {
+        status: this.newStatus,
+      }
+      for (let i = 0; i < numLeads; i++) {
+        await this.dropin.updateLead(leads[i].id, params)
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Leads status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      // TODO: What about the 'to recall'
+      // Don't worry for now because we only change to 'unprocessed' in bulk
+      /*
+      if (this.newStatus === 'to recall') {
+        this.dateTimeInfo.date = ''
+        Object.assign(this.lead, lead)
+        this.showPopup['date_time_info'] = true
+      }
+      */
 
       this.$vs.loading.close()
 
