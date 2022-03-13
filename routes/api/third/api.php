@@ -291,12 +291,14 @@ Route::get('/dropin/products-dropin', 'api\third\DropinController@getProductsDro
     ->name('dropin.products.dropin');
 
 Route::get('/dropin/leads/{id}/messages', 'api\third\DropinController@getLeadMessages')->middleware('auth:api')
-    ->name('dropin.leads.message.index');
+    ->name('dropin.leads.messages.index');
 Route::post('/dropin/leads/{id}/messages', 'api\third\DropinController@sendLeadMessage')->middleware('auth:api')
-    ->name('dropin.leads.message.send');
+    ->name('dropin.leads.messages.send');
 // TODO: delete this? Do we still need it
 Route::post('/dropin/send-message', 'api\third\DropinController@sendMessage')->middleware('auth:api')
-    ->name('dropin.message.send');
+    ->name('dropin.messages.send');
+Route::get('/dropin/leads/messages/webhook', 'api\third\DropinController@leadMessagesWebhook')
+    ->name('dropin.leads.messages.webhook');
 
 Route::get('/dropin/leads/{id}/info', 'api\third\DropinController@getLeadInfo')
     ->name('dropin.leads.info');

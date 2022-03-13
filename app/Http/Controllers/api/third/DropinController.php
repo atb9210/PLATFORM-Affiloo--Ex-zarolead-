@@ -1023,6 +1023,11 @@ class DropinController extends Controller
         ]);
     }
 
+    public function leadMessagesWebhook(Request $request)
+    {
+        dd('test');
+    }
+
     /**
      * Get products list.
      *
