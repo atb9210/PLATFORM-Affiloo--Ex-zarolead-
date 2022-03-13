@@ -11,6 +11,9 @@ use App\third\DropinShipping;
 
 use App\Settings;
 
+// DEBUG
+use Illuminate\Support\Facades\Log;
+
 class DropinController extends Controller
 {
     private $table = 'third_dropin_leads';
@@ -1025,7 +1028,72 @@ class DropinController extends Controller
 
     public function leadMessagesWebhook(Request $request)
     {
-        dd('test');
+        $params = $request->all();
+
+        // DEBUG
+        Log::channel('chatapi')->info('Message webhook received - PARAMS: ' . json_encode($params));
+
+        $messages = [];
+        if (isset($params['messages'])) {
+            $messages = $params['messages'];
+        }
+
+        foreach ($messages as $message) {
+            if (!isset($message['fromMe']) || $message['fromMe']) {
+                // DEBUG
+                Log::channel('chatapi')->info('Our own message (skip it)');
+                continue;
+            }
+
+            $phone = null;
+            if (isset($message['author'])) {
+                $phone = '';
+                for ($i = 0; $i < strlen($message['author']); $i += 1) {
+                    if (ctype_digit($message['author'][$i])) {
+                        $phone .= $message['author'][$i];
+                    }
+                }
+            }
+            if ($phone === null || $phone == '') {
+                // DEBUG
+                Log::channel('chatapi')->info('Phone === null or \'\'');
+                continue;
+            }
+
+            $prefix = substr($phone, 0, 2);
+            $phoneNum = substr($phone, 2);
+            $phones = [
+                $phone,
+                '+' . $phone,
+                '+(' . $prefix . ')' . $phoneNum,
+            ];
+            $lead = null;
+            foreach ($phones as $p) {
+                $leads = DropinLead::where('phone', $p)->get();
+                if (count($leads) > 0) {
+                    $lead = $leads[0];
+                    break;
+                }
+            }
+            if ($lead === null) {
+                // DEBUG
+                Log::channel('chatapi')->info('Cannot find lead with numbers ' . json_encode($phones));
+                continue;
+            }
+
+            $info = $lead->info;
+            if ($info === null) {
+                $info = [];
+            }
+            if (!isset($info['whatsapp'])) {
+                $info['whatsapp'] = [];
+            }
+            $info['whatsapp']['last_message'] = $message['id'];
+            $lead->info = $info;
+            $lead->save();
+            // DEBUG
+            Log::channel('chatapi')->info('Lead saved');
+        }
     }
 
     /**

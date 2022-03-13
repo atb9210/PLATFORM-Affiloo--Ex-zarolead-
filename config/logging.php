@@ -117,6 +117,13 @@ return [
             'path' => storage_path('logs/elogy.log'),
             'level' => 'debug',
         ],
+
+        // DEBUG
+        'chatapi' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/chatapi.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
