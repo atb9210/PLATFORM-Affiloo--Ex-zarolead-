@@ -38,6 +38,8 @@ class Kernel extends ConsoleKernel
             \App\third\DropinShipping::refreshTable();
         })->dailyAt('00:00');
 
+        /*
+         * TODO: We have chat api webhook now, we don't need this anymore.
         // Refresh and leads whatsapp message
         $schedule->call(function () {
             $leads = \App\third\DropinLead::where('archived', 0);
@@ -45,6 +47,7 @@ class Kernel extends ConsoleKernel
                 $lead->refreshWhatsappInfo();
             }
         })->dailyAt('00:00');
+        */
 
         // Facebook Monitors reports
         $schedule->call(function () {
