@@ -306,8 +306,7 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.paid">
-                            <span v-if="item.paid">Yes</span>
-                            <span v-else>No</span>
+                            <vs-avatar class="icon-paid" icon-pack="feather" icon="icon-dollar-sign" :color="(item.paid) ? 'success' : '#878787'"  @dblclick="confirmTogglePaid(item)" />
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.notes">
@@ -1576,6 +1575,65 @@ export default {
 
       this.applyFilters()
     },
+    confirmTogglePaid(lead) {
+      let prevPaid = (lead.paid) ? 'paid' : 'not paid'
+      let nextPaid = (!lead.paid) ? 'paid' : 'not paid'
+      this.$vs.dialog({
+        type: 'confirm',
+        color: 'primary',
+        title: 'Paid status change confirmation',
+        text: 'Are you sure you want to change the paid status from "' + prevPaid + '" to "' + nextPaid + '"?',
+        accept: function () {
+          this.togglePaid(lead)
+        }.bind(this),
+      })
+    },
+    async togglePaid(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      if (info === null) {
+        info = {}
+      }
+      info.paid = !lead.paid
+      let params = {
+        info: JSON.stringify(info),
+      }
+      if (info.paid) {
+        params.status = 'confirmed'
+      }
+      await this.dropin.updateLead(lead.id, params)
+
+      this.$vs.loading.close()
+
+      await this.applyFilters()
+    },
+    async updateStatus(lead) {
+      this.$vs.loading()
+
+      let params = {
+        status: this.newStatus,
+      }
+      await this.dropin.updateLead(lead.id, params)
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead\'s status updated',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      if (this.newStatus === 'to recall') {
+        this.dateTimeInfo.date = ''
+        Object.assign(this.lead, lead)
+        this.showPopup['date_time_info'] = true
+      }
+
+      this.$vs.loading.close()
+
+      this.applyFilters()
+    },
     async updateStatusOrderEditor() {
       this.$vs.loading()
 
@@ -2672,6 +2730,13 @@ export default {
 }
 .nextPrevProductImage:hover {
   filter: brightness(0.9);
+}
+
+.icon-paid {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0px;
+  padding: 0px;
 }
 
 </style>
