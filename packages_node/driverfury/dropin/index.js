@@ -546,7 +546,7 @@ class Dropin {
         }
       }
     }
-    obj.carrier_status_name = obj.carrier_status.name
+    obj.carrier_status_name = obj.carrier_status.status
 
     return obj
   }
