@@ -582,7 +582,7 @@ class Dropin {
       }
       if (filters.hasOwnProperty('carrier_statuses') && filters.carrier_statuses.length > 0) {
         objects = objects.filter((obj) => {
-          return (obj.hasOwnProperty('carrier_status') && filters.carrier_statuses.includes(obj.carrier_status))
+          return (obj.hasOwnProperty('carrier_status_name') && filters.carrier_statuses.includes(obj.carrier_status_name))
         })
       }
     } catch (error) {
