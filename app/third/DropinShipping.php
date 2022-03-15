@@ -26,6 +26,25 @@ class DropinShipping extends Model
         'tax' => 'float',
     ];
 
+    private function substrFromTo(string $haystack, string $needleStart, string $needleEnd = ''): string
+    {
+        $result = '';
+
+        $startPos = strpos($haystack, $needleStart);
+        if ($startPos !== false) {
+            $result = substr($haystack, $startPos + strlen($needleStart));
+        }
+
+        if ($needleEnd != '') {
+            $endPos = strpos($result, $needleEnd);
+            if ($endPos !== false) {
+                $result = substr($result, 0, $endPos);
+            }
+        }
+
+        return $result;
+    }
+
     private function getHtmlElementPosition(string $html, string $tag): array
     {
         $start = -1;
@@ -121,7 +140,7 @@ class DropinShipping extends Model
         */
     }
 
-    private function parseTableHtml(string $innerHtml): array
+    private function parseTableHtmlKeyValue(string $innerHtml): array
     {
         $table = [];
 
@@ -152,6 +171,41 @@ class DropinShipping extends Model
                 $table[] = $value;
             }
 
+            $innerHtml = substr($innerHtml, $trPos['end']);
+        }
+
+        return $table;
+    }
+
+    private function parseTableHtml(string $innerHtml): array
+    {
+        $table = [];
+
+        $endLoop = false;
+        while (!$endLoop) {
+            $trPos = $this->getHtmlElementPosition($innerHtml, 'tr');
+            if ($trPos['start'] < 0 || $trPos['end'] < 0) {
+                $endLoop = true;
+                continue;
+            }
+            $tr = $this->getInnerHtml($innerHtml, 'tr');
+
+            $row = [];
+            $endRow = false;
+            while (!$endRow) {
+                $value = '';
+                $tdPos = $this->getHtmlElementPosition($tr, 'td');
+                if ($tdPos['start'] >= 0 && $tdPos['end'] >= 0) {
+                    $value = trim($this->getInnerHtml($tr, 'td'));
+                } else {
+                    $endRow = true;
+                    continue;
+                }
+                $row[] = $value;
+                $tr = substr($tr, $tdPos['end']);
+            }
+
+            $table[] = $row;
             $innerHtml = substr($innerHtml, $trPos['end']);
         }
 
@@ -197,7 +251,7 @@ class DropinShipping extends Model
             // Get COD amount
             $codAmount = 0.0;
             $tableHtml = $this->getInnerHtml($html, 'table');
-            $table = $this->parseTableHtml($tableHtml);
+            $table = $this->parseTableHtmlKeyValue($tableHtml);
             foreach ($table as $key => $value) {
                 if ($key == 'Cash on delivery') {
                     $codAmount = floatval($value);
@@ -205,6 +259,25 @@ class DropinShipping extends Model
                 }
             }
 
+            // Get external carrier tracking number and url
+            $brtTrackingNumber = '';
+            $brtTrackingUrl = '';
+            $tableHtmlPos = $this->getHtmlElementPosition($html, 'table');
+            $tmp = substr($html, $tableHtmlPos['end']);
+            $tableHtml = $this->getInnerHtml($tmp, 'table');
+            $table = $this->parseTableHtmlKeyValue($tableHtml);
+            foreach ($table as $key => $value) {
+                $needle = '<a href="';
+                if (strpos($value, $needle) !== false) {
+                    $brtTrackingNumber = $this->getInnerHtml($value, 'a');
+                    $brtTrackingUrl = $this->substrFromTo($value, '<a href="', '"');
+                    $brtTrackingUrl = str_replace('&amp;', '&', $brtTrackingUrl);
+                    break;
+                }
+            }
+
+            // TODO: Old code
+            /*
             // Get status changes
             $statusChanges = [];
             $statusesUrl = $trackingUrl;
@@ -217,11 +290,45 @@ class DropinShipping extends Model
             }
             if ($html != '') {
                 $tableHtml = $this->getInnerHtml($html, 'table');
-                $table = $this->parseTableHtml($tableHtml);
+                $table = $this->parseTableHtmlKeyValue($tableHtml);
                 foreach ($table as $key => $value) {
                     $statusChanges[] = [
                         'date' => $key,
                         'status' => $value,
+                    ];
+                }
+            }
+            */
+
+            // Get status changes
+            $statusChanges = [];
+            if ($brtTrackingUrl != '') {
+                $response = $requests->get($brtTrackingUrl);
+                $html = '';
+                if ($response['code'] == 200) {
+                    $html = $response['data'];
+                    $html = str_replace(["\t", "\n"], "", $html);
+                }
+                $tableHtmlPos = $this->getHtmlElementPosition($html, 'table');
+                $tmp = substr($html, $tableHtmlPos['end']);
+                $tableHtml = $this->getInnerHtml($tmp, 'table');
+                $tableBody = $this->getInnerHtml($tableHtml, 'tbody');
+                // Skip first row of the table (header)
+                $tableRowPos = $this->getHtmlElementPosition($tableBody, 'tr');
+                $tableBody = substr($tableBody, $tableRowPos['end']);
+                $table = $this->parseTableHtml($tableBody);
+                foreach ($table as $row) {
+                    $tmp = explode('.', $row[0]);
+                    $date = $tmp[2] . '-' . $tmp[1] . '-' . $tmp[0];
+                    $time = '00:00:00';
+                    if ($row[1] != '') {
+                        $time = str_replace('.', ':', $row[1]) . ':00';
+                    }
+                    $datetime = $date . ' ' . $time;
+                    $status = $row[3];
+                    $statusChanges[] = [
+                        'date' => $datetime,
+                        'status' => $status,
                     ];
                 }
             }
@@ -232,6 +339,11 @@ class DropinShipping extends Model
             }
             $info['packeta'] = [
                 'status' => $packetaStatus,
+                'changes' => $statusChanges,
+            ];
+            $info['bartolini'] = [
+                'tracking_number' => $brtTrackingNumber,
+                'tracking_url' => $brtTrackingUrl,
                 'changes' => $statusChanges,
             ];
             $info['cod_amount'] = $codAmount;

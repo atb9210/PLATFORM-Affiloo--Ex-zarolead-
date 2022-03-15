@@ -528,25 +528,44 @@ class Dropin {
       status: '',
     }
     obj.delivered_at = ''
+    obj.started_at = ''
     if (info.hasOwnProperty('packeta') && info.packeta !== null) {
       if (info.packeta.hasOwnProperty('status')) {
         obj.packeta_status = info.packeta.status
       }
-      if (info.packeta.hasOwnProperty('changes')) {
-        obj.carrier_status_changes = info.packeta.changes
+    }
+    obj.brt_tracking_number = ''
+    obj.brt_tracking_url = ''
+    if (info.hasOwnProperty('bartolini') && info.bartolini !== null) {
+      if (info.bartolini.hasOwnProperty('tracking_number')) {
+        obj.brt_tracking_number = info.bartolini.tracking_number
+      }
+      if (info.bartolini.hasOwnProperty('tracking_url')) {
+        obj.brt_tracking_url = info.bartolini.tracking_url
+      }
+      if (info.bartolini.hasOwnProperty('changes')) {
+        obj.carrier_status_changes = info.bartolini.changes
         if (obj.carrier_status_changes.length > 0) {
-          obj.carrier_status = obj.carrier_status_changes[obj.carrier_status_changes.length - 1]
+          obj.carrier_status = obj.carrier_status_changes[0]
         }
         for (let j = 0; j < obj.carrier_status_changes.length; j++) {
           let statusChange = obj.carrier_status_changes[j]
           if (statusChange.status == 'CONSEGNATA') {
             obj.delivered_at = statusChange.date
-            break
+          } else if (statusChange.status == 'RITIRATA') {
+            obj.started_at = statusChange.date
           }
         }
       }
     }
     obj.carrier_status_name = obj.carrier_status.status
+
+    obj.processing_time = ''
+    if (obj.created_at != '' && obj.started_at != '') {
+      let d1 = new Date(obj.created_at)
+      let d2 = new Date(obj.started_at)
+      obj.processing_time = Math.round((d2-d1)/(1000*60*60*24)) -1
+    }
 
     return obj
   }

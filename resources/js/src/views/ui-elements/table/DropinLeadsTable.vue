@@ -199,7 +199,12 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.order_id">
-                            {{item.order_id}}
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = (item.order_id != '' && item.order_id != null) ? item.order_id : ''"
+                                @onUpdate="updateOrderId(data[indextr])">
+                                {{ (item.order_id != '' && item.order_id != null) ? item.order_id : 'none' }}
+                            </fast-editable-value>
                         </vs-td>
 
                         <vs-td v-if="!showRecallDate" class="column-no-padding" :data="item.created_at">
@@ -2676,6 +2681,46 @@ export default {
 
       this.$vs.loading.close()
       this.view = 'chat'
+    },
+    async updateOrderId(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      if (info === null) {
+        info = {}
+      }
+      let value = null
+      if (this.newValue != '') {
+        value = parseInt(this.newValue)
+      }
+      info.order_id = value
+      let params = {
+        info: JSON.stringify(info),
+      }
+      let object = await this.dropin.updateLead(lead.id, params)
+      let result = (object !== null)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Lead successfully updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the lead',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+
+      await this.applyFilters()
     },
   },
   async created() {

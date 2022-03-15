@@ -113,11 +113,14 @@
                 <vs-th sort-key="id">ID</vs-th>
                 <vs-th sort-key="order_id">Order ID</vs-th>
                 <vs-th sort-key="created_at">Creation Date</vs-th>
+                <vs-th sort-key="started_at">Start Date</vs-th>
+                <vs-th sort-key="processing_time">Processing Time</vs-th>
                 <vs-th sort-key="name">Customer</vs-th>
                 <vs-th sort-key="phone">Phone</vs-th>
                 <vs-th sort-key="payment_method">Payment</vs-th>
                 <vs-th sort-key="status">Dropin Status</vs-th>
                 <vs-th sort-key="tracking_url">Tracking</vs-th>
+                <vs-th sort-key="brt_tracking_url">Brt Tracking</vs-th>
                 <vs-th sort-key="packeta_status">Packeta Status</vs-th>
                 <vs-th sort-key="carrier_status_name">Carrier Status</vs-th>
                 <vs-th sort-key="delivered_at">Delivery Date</vs-th>
@@ -139,11 +142,24 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.order_id">
-                        {{ item.order_id }}
+                        <fast-editable-value
+                            v-model="newValue"
+                            @onEdit="newValue = (item.order_id != '' && item.order_id != null) ? item.order_id : ''"
+                            @onUpdate="updateOrderId(data[indextr])">
+                            {{ (item.order_id != '' && item.order_id != null) ? item.order_id : 'none' }}
+                        </fast-editable-value>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.created_at">
                         {{ formatDate(new Date(item.created_at)) }}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.started_at">
+                        {{ (item.started_at != '') ? formatDate(new Date(item.started_at)) : '' }}
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.processing_time">
+                        {{ item.processing_time }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.name">
@@ -165,6 +181,12 @@
                     <vs-td class="column-no-padding" :data="item.tracking_url">
                         <a :href="item.tracking_url">
                             {{ getTrackingIdFromUrl(item.tracking_url) }}
+                        </a>
+                    </vs-td>
+
+                    <vs-td class="column-no-padding" :data="item.brt_tracking_url">
+                        <a :href="item.brt_tracking_url">
+                            {{ item.brt_tracking_number }}
                         </a>
                     </vs-td>
 
@@ -201,6 +223,9 @@
                 <!-- TOTAL STATS -->
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
@@ -291,6 +316,8 @@ export default {
         'RIFIUTA SENZA MOTIVAZIONE',
         'ASSENTE DOPO LASCIATO AVVISO',
       ],
+
+      newValue: '',
     }
   },
   computed: {
@@ -515,6 +542,46 @@ export default {
         icon: 'icon-bookmark',
         color: 'success'
       })
+
+      await this.applyFilters()
+    },
+    async updateOrderId(shipping) {
+      this.$vs.loading()
+
+      let info = shipping.info
+      if (info === null) {
+        info = {}
+      }
+      let value = null
+      if (this.newValue != '') {
+        value = parseInt(this.newValue)
+      }
+      info.order_id = value
+      let params = {
+        info: JSON.stringify(info),
+      }
+      let object = await this.dropin.updateShipping(shipping.id, params)
+      let result = (object !== null)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Shipping successfully updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the shipping',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
 
       await this.applyFilters()
     },
