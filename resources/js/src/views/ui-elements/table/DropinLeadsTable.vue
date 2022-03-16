@@ -1128,6 +1128,7 @@ export default {
         date_to: '',
         statuses: ['to do','unprocessed','confirmed'],
         product: '',
+        product_id: '',
         order_status: '',
       },
       showRecallDate: false,
@@ -1436,6 +1437,7 @@ export default {
         date_to: '',
         statuses: ['to do','unprocessed','confirmed'],
         product: '',
+        product_id: '',
         order_status: '',
       }
       await this.filterDatesShortcut('this_month')
