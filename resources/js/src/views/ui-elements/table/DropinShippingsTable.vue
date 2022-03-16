@@ -14,6 +14,12 @@
             <vx-tooltip text="Mark shippings" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-bookmark" :disabled="selectedShippings.length <= 0" @click="markShippings(selectedShippings)"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Copy phone numbers" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedShippings.length <= 0" @click="copyPhoneNumbers(selectedShippings)"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Copy IDs" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedShippings.length <= 0" @click="copyIds(selectedShippings)"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -584,6 +590,41 @@ export default {
       this.$vs.loading.close()
 
       await this.applyFilters()
+    },
+
+    async copyToClipboard(toCopy, notificationMessage = 'Copied to the clipboard') {
+      await window.navigator.clipboard.writeText(toCopy)
+      this.$vs.notify({
+        title: 'Success',
+        text: notificationMessage,
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+    },
+    async copyPhoneNumbers(objects) {
+      if (objects.length <= 0) {
+        return
+      }
+
+      let toCopy = ''
+      for (let i = 0; i < objects.length; i++) {
+        toCopy += objects[i].phone + '\n'
+      }
+
+      await this.copyToClipboard(toCopy)
+    },
+    async copyIds(objects) {
+      if (objects.length <= 0) {
+        return
+      }
+
+      let toCopy = ''
+      for (let i = 0; i < objects.length; i++) {
+        toCopy += objects[i].id + '\n'
+      }
+
+      await this.copyToClipboard(toCopy)
     },
   },
   async created() {

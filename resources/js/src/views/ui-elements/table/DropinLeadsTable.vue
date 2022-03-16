@@ -9,7 +9,10 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('order_builder')"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Copy phone numbers" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedLeads.length <= 0" @click="copyPhoneNumbers(selectedLeads)"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Copy IDs" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedLeads.length <= 0" @click="copyIds(selectedLeads)"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Copy selected leads CSV" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file-text" @click="exportLeadsAsCSV(selectedLeads)" :disabled="selectedLeads.length <= 0"></vs-button>
@@ -2389,7 +2392,7 @@ export default {
       })
     },
     async copyToClipboard(toCopy, notificationMessage = 'Copied to the clipboard') {
-      await await window.navigator.clipboard.writeText(toCopy)
+      await window.navigator.clipboard.writeText(toCopy)
       this.$vs.notify({
         title: 'Success',
         text: notificationMessage,
@@ -2398,14 +2401,26 @@ export default {
         color: 'success'
       })
     },
-    async copyPhoneNumbers() {
-      if (this.selectedLeads.length <= 0) {
+    async copyPhoneNumbers(objects) {
+      if (objects.length <= 0) {
         return
       }
 
       let toCopy = ''
-      for (let i = 0; i < this.selectedLeads.length; i++) {
-        toCopy += this.selectedLeads[i].phone + '\n'
+      for (let i = 0; i < objects.length; i++) {
+        toCopy += objects[i].phone + '\n'
+      }
+
+      await this.copyToClipboard(toCopy)
+    },
+    async copyIds(objects) {
+      if (objects.length <= 0) {
+        return
+      }
+
+      let toCopy = ''
+      for (let i = 0; i < objects.length; i++) {
+        toCopy += objects[i].id + '\n'
       }
 
       await this.copyToClipboard(toCopy)
