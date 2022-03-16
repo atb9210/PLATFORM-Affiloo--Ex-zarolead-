@@ -86,12 +86,16 @@
                     <vs-input type="date" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="filters.date_to" />
                 </div>
                 <div class="vx-col w-1/2">
-                    <label>Status</label>
-                    <my-select v-model="filters.statuses" :options="leadStatuses" :autocomplete="true" multiple class="w-full select-large" />
+                    <label>Product</label>
+                    <my-select v-model="filters.product" :options="dropinProductOptions" :autocomplete="true" class="w-full select-large" />
                 </div>
                 <div class="vx-col w-1/2">
-                    <label>Product</label>
-                    <my-select v-model="filters.product" :options="productOptions" :autocomplete="true" class="w-full select-large" />
+                    <label>Assoc. Product</label>
+                    <my-select v-model="filters.product_id" :options="productOptions" :autocomplete="true" class="w-full select-large" />
+                </div>
+                <div class="vx-col w-1/2">
+                    <label>Status</label>
+                    <my-select v-model="filters.statuses" :options="leadStatuses" :autocomplete="true" multiple class="w-full select-large" />
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Order Status</label>
@@ -187,6 +191,7 @@
                     <vs-th sort-key="created_at">Date</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
+                    <vs-th sort-key="product_id">Ass. Prod.</vs-th>
                     <vs-th sort-key="product_name">Product</vs-th>
                     <vs-th sort-key="gateway">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
@@ -253,6 +258,12 @@
                                 </span>
                             </vs-chip>
                             -->
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.product_id">
+                            <vs-chip v-if="item.product !== null">
+                                {{item.product.name}}
+                            </vs-chip>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.product_name">
@@ -866,7 +877,7 @@
 
             <div v-if="productView == 'normal'" class="w-full pr-2 pl-2">
 
-                <vs-table stripe search :data="products">
+                <vs-table stripe search :data="dropinProducts">
 
                     <template slot="thead">
                         <vs-th></vs-th>
@@ -941,7 +952,7 @@
                     <div class="vx-col md:w-1/6 w-full">
                     </div>
                 </div>
-                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="'addProductOption' + pIndex">
+                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in dropinProducts" :key="'addProductOption' + pIndex">
                     <div class="vx-col md:w-1/6 w-full">
                         <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
                     </div>
@@ -1171,6 +1182,7 @@ export default {
       },
 
       products: [],
+      dropinProducts: [],
 
       leadStatuses: [
         'complaint',
@@ -1318,6 +1330,7 @@ export default {
       productImageIndex: 0,
 
       productOptions: [],
+      dropinProductOptions: [],
 
       chatMessages: [],
 
@@ -1370,6 +1383,23 @@ export default {
         this.$vs.loading()
         this.selectedLeads = []
         this.leads = await this.dropin.fetchLeads(this.filters)
+
+        for (let i = 0; i < this.leads.length; i++) {
+          let lead = this.leads[i]
+          let product = null
+          if (lead.hasOwnProperty('product_id') && lead.product_id !== null && lead.product_id != '') {
+            for (let j = 0; j < this.products.length; j++) {
+              let p = this.products[j]
+              if (p.id == lead.product_id) {
+                product = p
+                break
+              }
+            }
+          }
+          lead.product = product
+          this.leads[i] = lead
+        }
+
         this.calculateStats()
         this.view = view
         this.$vs.loading.close()
@@ -1775,14 +1805,28 @@ export default {
       this.order.shipping.address = address
     },
     async fetchProducts() {
-      this.products = await this.dropin.fetchProducts()
+      this.dropinProducts = await this.dropin.fetchProducts()
 
+      this.dropinProductOptions = []
+      for (let i = 0; i < this.dropinProducts.length; i++) {
+        let p = this.dropinProducts[i]
+        this.dropinProductOptions.push({
+          label: p.name,
+          value: p.sku,
+        })
+      }
+
+      let headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+      }
+      const response = await this.$http.get('/api/v1/products', { headers })
+      this.products = response.data.data
       this.productOptions = []
       for (let i = 0; i < this.products.length; i++) {
         let p = this.products[i]
         this.productOptions.push({
           label: p.name,
-          value: p.sku,
+          value: p.id,
         })
       }
     },
@@ -1792,9 +1836,9 @@ export default {
     },
     getProductById(id) {
       let p = null
-      for (let i = 0; i < this.products.length; i++) {
-        if (this.products[i].id == id) {
-          p = this.products[i]
+      for (let i = 0; i < this.dropinProducts.length; i++) {
+        if (this.dropinProducts[i].id == id) {
+          p = this.dropinProducts[i]
           break
         }
       }
@@ -2776,6 +2820,12 @@ export default {
     await this.resetFilters()
 
     this.$vs.loading.close()
+  },
+  beforeDestroyed() {
+    if (this.timer !== null) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
   },
 }
 

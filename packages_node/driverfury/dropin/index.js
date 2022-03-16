@@ -104,6 +104,12 @@ class Dropin {
         obj.phone = this.adjustPhoneNumber(obj.phone)
       }
 
+      obj.product_id = ''
+      if (obj.hasOwnProperty('info') && obj.info !== null &&
+          obj.info.hasOwnProperty('product_id') && obj.info.product_id !== null) {
+        obj.product_id = parseInt(obj.info.product_id)
+      }
+
       obj.products = []
       obj.product_name = ''
       obj.order_id = ''
@@ -213,6 +219,12 @@ class Dropin {
       }
 
       objects[i] = obj
+    }
+
+    if (filters.hasOwnProperty('product_id') && filters.product_id != '') {
+      objects = objects.filter((obj) => {
+        return (obj.product_id === filters.product_id)
+      })
     }
 
     if (filters.hasOwnProperty('statuses') && filters.statuses.length > 0) {
