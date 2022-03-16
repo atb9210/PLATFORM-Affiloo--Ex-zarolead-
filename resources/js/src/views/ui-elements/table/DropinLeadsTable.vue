@@ -51,6 +51,13 @@
             <vx-tooltip text="Only complaint" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-alert-triangle" @click="setFiltersStatuses(['complaint'])"></vs-button>
             </vx-tooltip>
+
+            <vx-tooltip text="Back" position="top">
+                <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Refresh Chat" position="top">
+                <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshChatMessages"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -1313,6 +1320,8 @@ export default {
       productOptions: [],
 
       chatMessages: [],
+
+      timer: null,
     }
   },
   computed: {
@@ -1371,6 +1380,13 @@ export default {
       } else if (view == 'order_builder') {
         this.emptyOrderInfo()
         this.view = view
+      }
+
+      if (view != 'chat') {
+        if (this.timer !== null) {
+          clearInterval(this.timer)
+          this.timer = null
+        }
       }
     },
     getObjectById(id) {
@@ -2694,8 +2710,21 @@ export default {
       this.lead = lead
       this.chatMessages = await this.dropin.fetchLeadMessages(lead.id)
 
+      // Refresh Chat every 10 seconds
+      this.timer = setInterval(() => {
+        this.refreshChatMessagesBackground()
+      }, 10 * 1000)
+
       this.$vs.loading.close()
       this.view = 'chat'
+    },
+    async refreshChatMessages() {
+      this.$vs.loading()
+      this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
+      this.$vs.loading.close()
+    },
+    async refreshChatMessagesBackground() {
+      this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
     },
     async updateOrderId(lead) {
       this.$vs.loading()
