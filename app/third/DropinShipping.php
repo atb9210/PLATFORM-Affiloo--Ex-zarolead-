@@ -95,6 +95,20 @@ class DropinShipping extends Model
         ];
     }
 
+    private function getOuterHtml(string $html, string $tag): string
+    {
+        $outerHTML = '';
+
+        $elementPosition = $this->getHtmlElementPosition($html, $tag);
+        if ($elementPosition['startInnerHtml'] >= 0 && $elementPosition['endInnerHtml'] >= 0) {
+            $start = $elementPosition['start'];
+            $end = $elementPosition['end'];
+            $outerHTML = substr($html, $start, ($end - $start));
+        }
+
+        return $outerHTML;
+    }
+
     private function getInnerHtml(string $html, string $tag): string
     {
         $innerHTML = '';
@@ -107,37 +121,6 @@ class DropinShipping extends Model
         }
 
         return $innerHTML;
-
-        // TODO: to delete from now on?????? (old code)
-        /*
-        $needleStart = '<'  . $tag . '>';
-        $needleEnd   = '</' . $tag . '>';
-
-        $needleStartPos = strpos($html, $needleStart);
-        if ($needleStartPos === false) {
-            $needleStart = '<'  . $tag;
-            $needleStartPos = strpos($html, $needleStart);
-            if ($needleStartPos === false || !ctype_space($html[$needleStartPos + strlen($needleStart)])) {
-                $needleStartPos = false;
-            }
-        }
-        if ($needleStartPos !== false) {
-            $i = 0;
-            while ($html[$needleStartPos + $i] != '>') {
-                $i += 1;
-            }
-            $html = substr($html, $needleStartPos + $i + 1);
-        }
-
-        $needleEndPos = strpos($html, $needleEnd);
-        if ($needleEndPos !== false) {
-            $html = substr($html, 0, $needleEndPos);
-        }
-
-        $innerHTML = $html;
-
-        return $innerHTML;
-        */
     }
 
     private function parseTableHtmlKeyValue(string $innerHtml): array
@@ -309,27 +292,43 @@ class DropinShipping extends Model
                     $html = $response['data'];
                     $html = str_replace(["\t", "\n"], "", $html);
                 }
-                $tableHtmlPos = $this->getHtmlElementPosition($html, 'table');
-                $tmp = substr($html, $tableHtmlPos['end']);
-                $tableHtml = $this->getInnerHtml($tmp, 'table');
-                $tableBody = $this->getInnerHtml($tableHtml, 'tbody');
-                // Skip first row of the table (header)
-                $tableRowPos = $this->getHtmlElementPosition($tableBody, 'tr');
-                $tableBody = substr($tableBody, $tableRowPos['end']);
-                $table = $this->parseTableHtml($tableBody);
-                foreach ($table as $row) {
-                    $tmp = explode('.', $row[0]);
-                    $date = $tmp[2] . '-' . $tmp[1] . '-' . $tmp[0];
-                    $time = '00:00:00';
-                    if ($row[1] != '') {
-                        $time = str_replace('.', ':', $row[1]) . ':00';
+                // Look for the right table
+                $tmp = $html;
+                $tableFound = false;
+                $tableHtml = '';
+                while (!$tableFound) {
+                    $tableHtmlPos = $this->getHtmlElementPosition($tmp, 'table');
+                    if ($tableHtmlPos['end'] < 0) {
+                        break;
                     }
-                    $datetime = $date . ' ' . $time;
-                    $status = $row[3];
-                    $statusChanges[] = [
-                        'date' => $datetime,
-                        'status' => $status,
-                    ];
+                    $tableOuterHtml = $this->getOuterHtml($tmp, 'table');
+                    if (strpos($tableOuterHtml, 'table_stato_dati') !== false) {
+                        $tableFound = true;
+                        $tableHtml = $tableOuterHtml;
+                        continue;
+                    }
+                    $tmp = substr($tmp, $tableHtmlPos['end']);
+                }
+                if ($tableFound) {
+                    $tableBody = $this->getInnerHtml($tableHtml, 'tbody');
+                    // Skip first row of the table (header)
+                    $tableRowPos = $this->getHtmlElementPosition($tableBody, 'tr');
+                    $tableBody = substr($tableBody, $tableRowPos['end']);
+                    $table = $this->parseTableHtml($tableBody);
+                    foreach ($table as $row) {
+                        $tmp = explode('.', $row[0]);
+                        $date = $tmp[2] . '-' . $tmp[1] . '-' . $tmp[0];
+                        $time = '00:00:00';
+                        if ($row[1] != '') {
+                            $time = str_replace('.', ':', $row[1]) . ':00';
+                        }
+                        $datetime = $date . ' ' . $time;
+                        $status = $row[3];
+                        $statusChanges[] = [
+                            'date' => $datetime,
+                            'status' => $status,
+                        ];
+                    }
                 }
             }
 
