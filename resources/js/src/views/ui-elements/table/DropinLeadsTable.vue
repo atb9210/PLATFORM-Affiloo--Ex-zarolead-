@@ -1230,6 +1230,7 @@ export default {
         'fake',
         'duplicate',
         'waiting payment',
+        'stock',
       ],
 
       deliveryStatuses: [
