@@ -29,6 +29,9 @@
             <vx-tooltip text="Back" position="top">
                 <vs-button v-if="view == 'order_editor' || view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Open Chat (new tab)" position="top">
+                <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openLeadChat(order)"></vs-button>
+            </vx-tooltip>
 
             <vx-tooltip text="All leads" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="setFiltersStatuses([])"></vs-button>
@@ -163,7 +166,7 @@
 
             <vue-context ref="phone_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.phone_context_menu.close();showWhatsappChat(data)" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.phone_context_menu.close();openLeadChat(data)" class="flex items-center text-sm">
                     <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Whatsapp Chat</span>
                   </a>
@@ -2729,7 +2732,7 @@ export default {
         this.productImageIndex = this.product.images.length - 1
       }
     },
-    async showWhatsappChat(lead) {
+    async openLeadChat(lead) {
       this.openNewTab('/dashboard/dropin/leads/' + lead.id + '/chat')
       // TODO: Old code
       // TODO: to delete
