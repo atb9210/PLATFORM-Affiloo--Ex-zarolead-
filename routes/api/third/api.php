@@ -265,6 +265,8 @@ Route::get('/warehouse/products/payment-intent', 'api\third\WarehouseController@
 /* Dropin routes */
 Route::get('/dropin/leads', 'api\third\DropinController@leads')->middleware('auth:api')
     ->name('dropin.leads.index');
+Route::get('/dropin/leads/{id}', 'api\third\DropinController@getLead')->middleware('auth:api')
+    ->name('dropin.leads.show');
 Route::post('/dropin/leads', 'api\third\DropinController@createLead')
     ->name('dropin.leads.create');
 Route::put('/dropin/leads/{id}', 'api\third\DropinController@updateLead')->middleware('auth:api')

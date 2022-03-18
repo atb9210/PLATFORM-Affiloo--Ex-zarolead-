@@ -52,12 +52,6 @@
                 <vs-button v-if="view == 'leads'" class="mr-2" color="warning" type="filled" icon-pack="feather" icon="icon-alert-triangle" @click="setFiltersStatuses(['complaint'])"></vs-button>
             </vx-tooltip>
 
-            <vx-tooltip text="Back" position="top">
-                <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
-            </vx-tooltip>
-            <vx-tooltip text="Refresh Chat" position="top">
-                <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="refreshChatMessages"></vs-button>
-            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -852,11 +846,6 @@
             </div>
         </div>
         
-        <!-- Customer chat -->
-        <div v-if="view == 'chat'">
-          <Chat :user="lead" :chatMessages="chatMessages" />
-        </div>
-
         <!-- Notes popup -->
         <vs-popup title="Notes" :active.sync="showPopup['notes']">
             <div class="w-full pr-2 pl-2">
@@ -1333,10 +1322,6 @@ export default {
 
       productOptions: [],
       dropinProductOptions: [],
-
-      chatMessages: [],
-
-      timer: null,
     }
   },
   computed: {
@@ -1384,7 +1369,7 @@ export default {
       if (view == 'leads') {
         this.$vs.loading()
         this.selectedLeads = []
-        this.leads = await this.dropin.fetchLeads(this.filters)
+        this.leads = await this.dropin.fetchLeads(this.filters, this.dropinProducts)
 
         for (let i = 0; i < this.leads.length; i++) {
           let lead = this.leads[i]
@@ -1412,13 +1397,6 @@ export default {
       } else if (view == 'order_builder') {
         this.emptyOrderInfo()
         this.view = view
-      }
-
-      if (view != 'chat') {
-        if (this.timer !== null) {
-          clearInterval(this.timer)
-          this.timer = null
-        }
       }
     },
     getObjectById(id) {
@@ -2752,6 +2730,10 @@ export default {
       }
     },
     async showWhatsappChat(lead) {
+      this.openNewTab('/dashboard/dropin/leads/' + lead.id + '/chat')
+      // TODO: Old code
+      // TODO: to delete
+      /*
       this.$vs.loading()
 
       this.lead = lead
@@ -2764,7 +2746,11 @@ export default {
 
       this.$vs.loading.close()
       this.view = 'chat'
+      */
     },
+    // TODO: Old code
+    // TODO: to delete
+    /*
     async refreshChatMessages() {
       this.$vs.loading()
       this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
@@ -2773,6 +2759,8 @@ export default {
     async refreshChatMessagesBackground() {
       this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
     },
+    */
+
     async updateOrderId(lead) {
       this.$vs.loading()
 
@@ -2823,12 +2811,6 @@ export default {
     await this.resetFilters()
 
     this.$vs.loading.close()
-  },
-  beforeDestroyed() {
-    if (this.timer !== null) {
-      clearInterval(this.timer)
-      this.timer = null
-    }
   },
 }
 

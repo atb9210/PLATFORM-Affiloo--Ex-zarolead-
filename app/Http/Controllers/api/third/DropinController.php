@@ -108,6 +108,26 @@ class DropinController extends Controller
     }
 
     /**
+     * Get lead info.
+     *
+     * @urlParam id int required Lead's id
+     *
+     * @response {
+     *  "data": lead,
+     * }
+     */
+    public function getLead($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $lead = DropinLead::findOrFail($id);
+
+        return response([
+            'data' => $lead,
+        ]);
+    }
+
+    /**
      * Create a lead.
      *
      * @bodyParam first_name string required Lead's first name

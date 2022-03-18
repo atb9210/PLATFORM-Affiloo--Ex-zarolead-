@@ -45,10 +45,158 @@ class Dropin {
     }
   }
 
-  async fetchLeads(filters = {}) {
+  async mapLeadObject(obj, products) {
+    let first_name = obj.first_name
+    let last_name = obj.last_name
+
+    // When we have the full name in the first_name field we need to split
+    // into first name and last name
+    if (last_name === '.' || last_name.trim() === '') {
+      let tmp = first_name.split(' ')
+      if (tmp.length > 0) {
+        first_name = tmp[0]
+        last_name = ''
+        for (let j = 1; j < tmp.length; j++) {
+          last_name += ' ' + tmp[j]
+        }
+        last_name = last_name.trim()
+      }
+    }
+
+    obj.first_name = first_name
+    obj.last_name = last_name
+
+    obj.full_name = obj.first_name
+    if (obj.last_name !== '.') {
+      obj.full_name += ' ' + obj.last_name
+    }
+    if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
+      obj.phone = this.adjustPhoneNumber(obj.phone)
+    }
+
+    obj.product_id = ''
+    if (obj.hasOwnProperty('info') && obj.info !== null &&
+        obj.info.hasOwnProperty('product_id') && obj.info.product_id !== null) {
+      obj.product_id = parseInt(obj.info.product_id)
+    }
+
+    obj.products = []
+    obj.product_name = ''
+    obj.order_id = ''
+    obj.sku = ''
+    obj.price = 0.0
+    obj.quantity = 0
+    obj.total = 0.0
+    obj.contact = false
+    obj.call_count = 0
+    obj.paid = false
+    obj.order_number = ''
+    obj.carrier = ''
+    obj.order_status = ''
+    obj.gateway = ''
+    obj.delivery_status = 'not sent'
+    obj.last_message = null
+    obj.last_message_read = null
+    obj.has_new_message = false
+    if (obj.hasOwnProperty('info') && obj.info !== null) {
+      if (obj.info.hasOwnProperty('product_name')) {
+        obj.product_name = obj.info.product_name
+      }
+      if (obj.info.hasOwnProperty('order_id')) {
+        obj.order_id = obj.info.order_id
+      }
+      if (obj.info.hasOwnProperty('sku')) {
+        obj.sku = obj.info.sku
+      }
+      if (obj.info.hasOwnProperty('price')) {
+        obj.price = getCurrencyValue(obj.info.price)
+      }
+      if (obj.info.hasOwnProperty('quantity')) {
+        obj.quantity = parseInt(obj.info.quantity)
+      }
+      if (obj.info.hasOwnProperty('total')) {
+        obj.total = getCurrencyValue(obj.info.total)
+      }
+      if (obj.info.hasOwnProperty('contact')) {
+        obj.contact = obj.info.contact
+      }
+      if (obj.info.hasOwnProperty('call_count')) {
+        obj.call_count = obj.info.call_count
+      }
+      if (obj.info.hasOwnProperty('paid')) {
+        obj.paid = obj.info.paid
+      }
+
+      if (obj.info.hasOwnProperty('gateway')) {
+        obj.gateway = obj.info.gateway
+      }
+
+
+      if (!obj.info.hasOwnProperty('products') || obj.info.products === null || obj.info.products.length === 0) {
+        obj.info.products = []
+        let p = await this.getProductBySku(obj.sku, products)
+        if (p !== null) {
+          let quantity = obj.quantity
+
+          let price = 0.0
+          if (obj.info.hasOwnProperty('price')) {
+            price = getCurrencyValue(obj.info.price)
+          } else {
+            price = getCurrencyValue(p.sale_price)
+          }
+
+          let total = 0.0
+          if (obj.info.hasOwnProperty('total')) {
+            total = getCurrencyValue(obj.info.total)
+          } else {
+            total = price*quantity
+          }
+
+          obj.info.products.push({
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            price: price,
+            quantity: quantity,
+            total: total,
+            upsell: false,
+          })
+        }
+      }
+      obj.products = obj.info.products
+
+      obj.completed_at = ''
+      if (obj.info.hasOwnProperty('completed_at') && obj.info.completed_at !== null) {
+        obj.completed_at = obj.info.completed_at
+      }
+
+      obj.recall_at = ''
+      if (obj.info.hasOwnProperty('recall_at') && obj.info.recall_at !== null) {
+        obj.recall_at = obj.info.recall_at
+      }
+
+      obj.last_message = null
+      obj.last_message_read = null
+      if (obj.info.hasOwnProperty('whatsapp') && obj.info.whatsapp !== null) {
+        if (obj.info.whatsapp.hasOwnProperty('last_message') && obj.info.whatsapp.last_message !== null) {
+          obj.last_message = obj.info.last_message
+        }
+        if (obj.info.whatsapp.hasOwnProperty('last_message_read') && obj.info.whatsapp.last_message_read !== null) {
+          obj.last_message_read = obj.info.last_message_read
+        }
+      }
+      obj.has_new_message = (obj.last_message_read !== obj.last_message)
+    }
+
+    return obj
+  }
+
+  async fetchLeads(filters = {}, products = null) {
     let objects = []
 
-    let products = await this.fetchProducts()
+    if (products === null) {
+      products = await this.fetchProducts()
+    }
     try {
       let headers = this.getHeaders()
       let params = {}
@@ -75,149 +223,7 @@ class Dropin {
 
     for (let i = 0; i < objects.length; i++) {
       let obj = objects[i]
-
-      let first_name = obj.first_name
-      let last_name = obj.last_name
-
-      // When we have the full name in the first_name field we need to split
-      // into first name and last name
-      if (last_name === '.' || last_name.trim() === '') {
-        let tmp = first_name.split(' ')
-        if (tmp.length > 0) {
-          first_name = tmp[0]
-          last_name = ''
-          for (let j = 1; j < tmp.length; j++) {
-            last_name += ' ' + tmp[j]
-          }
-          last_name = last_name.trim()
-        }
-      }
-
-      obj.first_name = first_name
-      obj.last_name = last_name
-
-      obj.full_name = obj.first_name
-      if (obj.last_name !== '.') {
-        obj.full_name += ' ' + obj.last_name
-      }
-      if (obj.hasOwnProperty('phone') && obj.phone !== null && obj.phone !== '') {
-        obj.phone = this.adjustPhoneNumber(obj.phone)
-      }
-
-      obj.product_id = ''
-      if (obj.hasOwnProperty('info') && obj.info !== null &&
-          obj.info.hasOwnProperty('product_id') && obj.info.product_id !== null) {
-        obj.product_id = parseInt(obj.info.product_id)
-      }
-
-      obj.products = []
-      obj.product_name = ''
-      obj.order_id = ''
-      obj.sku = ''
-      obj.price = 0.0
-      obj.quantity = 0
-      obj.total = 0.0
-      obj.contact = false
-      obj.call_count = 0
-      obj.paid = false
-      obj.order_number = ''
-      obj.carrier = ''
-      obj.order_status = ''
-      obj.gateway = ''
-      obj.delivery_status = 'not sent'
-      obj.last_message = null
-      obj.last_message_read = null
-      obj.has_new_message = false
-      if (obj.hasOwnProperty('info') && obj.info !== null) {
-        if (obj.info.hasOwnProperty('product_name')) {
-          obj.product_name = obj.info.product_name
-        }
-        if (obj.info.hasOwnProperty('order_id')) {
-          obj.order_id = obj.info.order_id
-        }
-        if (obj.info.hasOwnProperty('sku')) {
-          obj.sku = obj.info.sku
-        }
-        if (obj.info.hasOwnProperty('price')) {
-          obj.price = getCurrencyValue(obj.info.price)
-        }
-        if (obj.info.hasOwnProperty('quantity')) {
-          obj.quantity = parseInt(obj.info.quantity)
-        }
-        if (obj.info.hasOwnProperty('total')) {
-          obj.total = getCurrencyValue(obj.info.total)
-        }
-        if (obj.info.hasOwnProperty('contact')) {
-          obj.contact = obj.info.contact
-        }
-        if (obj.info.hasOwnProperty('call_count')) {
-          obj.call_count = obj.info.call_count
-        }
-        if (obj.info.hasOwnProperty('paid')) {
-          obj.paid = obj.info.paid
-        }
-
-        if (obj.info.hasOwnProperty('gateway')) {
-          obj.gateway = obj.info.gateway
-        }
-
-
-        if (!obj.info.hasOwnProperty('products') || obj.info.products === null || obj.info.products.length === 0) {
-          obj.info.products = []
-          let p = await this.getProductBySku(obj.sku, products)
-          if (p !== null) {
-            let quantity = obj.quantity
-
-            let price = 0.0
-            if (obj.info.hasOwnProperty('price')) {
-              price = getCurrencyValue(obj.info.price)
-            } else {
-              price = getCurrencyValue(p.sale_price)
-            }
-
-            let total = 0.0
-            if (obj.info.hasOwnProperty('total')) {
-              total = getCurrencyValue(obj.info.total)
-            } else {
-              total = price*quantity
-            }
-
-            obj.info.products.push({
-              id: p.id,
-              name: p.name,
-              sku: p.sku,
-              price: price,
-              quantity: quantity,
-              total: total,
-              upsell: false,
-            })
-          }
-        }
-        obj.products = obj.info.products
-
-        obj.completed_at = ''
-        if (obj.info.hasOwnProperty('completed_at') && obj.info.completed_at !== null) {
-          obj.completed_at = obj.info.completed_at
-        }
-
-        obj.recall_at = ''
-        if (obj.info.hasOwnProperty('recall_at') && obj.info.recall_at !== null) {
-          obj.recall_at = obj.info.recall_at
-        }
-
-        obj.last_message = null
-        obj.last_message_read = null
-        if (obj.info.hasOwnProperty('whatsapp') && obj.info.whatsapp !== null) {
-          if (obj.info.whatsapp.hasOwnProperty('last_message') && obj.info.whatsapp.last_message !== null) {
-            obj.last_message = obj.info.last_message
-          }
-          if (obj.info.whatsapp.hasOwnProperty('last_message_read') && obj.info.whatsapp.last_message_read !== null) {
-            obj.last_message_read = obj.info.last_message_read
-          }
-        }
-        obj.has_new_message = (obj.last_message_read !== obj.last_message)
-      }
-
+      obj = await this.mapLeadObject(obj, products)
       objects[i] = obj
     }
 
@@ -240,6 +246,29 @@ class Dropin {
     }
 
     return objects
+  }
+
+  async fetchLead(id, products = null) {
+    let object = null
+
+    try {
+      if (products === null) {
+        products = await this.fetchProducts()
+      }
+      let headers = this.getHeaders()
+      const response = await this.$http.get('/api/3rd/dropin/leads/' + id, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        object = response.data.data
+        object = await this.mapLeadObject(object, products)
+
+        // DEBUG TODO: to delete
+        console.log(object)
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return object
   }
 
   async createLead(params) {

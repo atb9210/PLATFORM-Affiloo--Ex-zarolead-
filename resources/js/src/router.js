@@ -1954,6 +1954,23 @@ const router = new Router({
         },
 
         {
+          path: '/dashboard/dropin/leads/:lead_id/chat',
+          props: true,
+          name: 'dropin-lead-chat',
+          component: () => import('./views/DropinLeadChat.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Dropin Leads', url: '/dashboard/dropin/leads' },
+              { title: 'Chat', active: true }
+            ],
+            pageTitle: 'Dropin Lead Chat',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/dropin/shippings',
           props: true,
           name: 'dropin-shippings',
