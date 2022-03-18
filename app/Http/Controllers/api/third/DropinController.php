@@ -1298,8 +1298,7 @@ class DropinController extends Controller
         if (isset($params['filter_date_to'])) {
             $q = $q->where('created_at', '<=', $params['filter_date_to']);
         }
-        $objects = $q->orderBy('created_at', 'desc')->get();
-
+        $objects = $q->orderBy('id', 'desc')->get();
 
         return response([
             'data' => $objects,

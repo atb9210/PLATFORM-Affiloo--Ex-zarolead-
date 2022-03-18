@@ -59,6 +59,10 @@
                     <label>Carrier Status</label>
                     <my-select v-model="filters.carrier_statuses" :options="carrierStatuses" :autocomplete="true" multiple class="w-full select-large" />
                 </div>
+                <div class="vx-col w-1/2">
+                    <label>Product</label>
+                    <my-select v-model="filters.products" :options="products" :autocomplete="true" multiple class="w-full select-large" />
+                </div>
             </div>
             
             <!-- TODO: HERE -->
@@ -117,27 +121,28 @@
 
             <template slot="thead">
                 <vs-th sort-key="id">ID</vs-th>
-                <vs-th sort-key="order_id">Order ID</vs-th>
+                <vs-th sort-key="order_id">Order</vs-th>
+                <vs-th sort-key="product">Prod.</vs-th>
                 <vs-th sort-key="created_at">Creation Date</vs-th>
                 <vs-th sort-key="started_at">Start Date</vs-th>
-                <vs-th sort-key="processing_time">Processing Time</vs-th>
+                <vs-th sort-key="processing_time">Proc. Time</vs-th>
                 <vs-th sort-key="name">Customer</vs-th>
                 <vs-th sort-key="phone">Phone</vs-th>
-                <vs-th sort-key="payment_method">Payment</vs-th>
+                <vs-th sort-key="payment_method">Mtd</vs-th>
+                <vs-th sort-key="cod_amount">COD amount</vs-th>
                 <vs-th sort-key="status">Dropin Status</vs-th>
-                <vs-th sort-key="tracking_url">Tracking</vs-th>
-                <vs-th sort-key="brt_tracking_url">Brt Tracking</vs-th>
-                <vs-th sort-key="packeta_status">Packeta Status</vs-th>
-                <vs-th sort-key="carrier_status_name">Carrier Status</vs-th>
-                <vs-th sort-key="delivered_at">Delivery Date</vs-th>
+                <vs-th sort-key="tracking_url">Track.</vs-th>
+                <vs-th sort-key="brt_tracking_url">Brt</vs-th>
+                <vs-th sort-key="packeta_status">Pkt Status</vs-th>
+                <vs-th sort-key="carrier_status_name">Brt Status</vs-th>
+                <vs-th sort-key="delivered_at">Del. Date</vs-th>
                 <vs-th sort-key="amount">Amount</vs-th>
                 <vs-th sort-key="delivery_price">Shipping Price</vs-th>
                 <vs-th sort-key="vat">VAT</vs-th>
-                <vs-th sort-key="cod_amount">COD amount</vs-th>
             </template>
 
             <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data" :class="(item.marked) ? 'row-marked' : ''">
+                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data" :class="getRowClass(item)">
 
                     <vs-td class="column-no-padding" :data="item.id">
                         <div @contextmenu.prevent="$refs.shipping_context_menu.open($event, item)">
@@ -156,6 +161,10 @@
                         </fast-editable-value>
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.product">
+                        {{ firstNCharacters(item.product, 15) }}
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.created_at">
                         {{ formatDate(new Date(item.created_at)) }}
                     </vs-td>
@@ -169,7 +178,7 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.name">
-                        {{ item.name }}
+                        {{ firstNCharacters(item.name, 20) }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.phone">
@@ -180,28 +189,38 @@
                         {{ item.payment_method }}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.cod_amount">
+                        € {{ item.cod_amount.toFixed(2) }}
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.staus">
                         {{ item.status }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.tracking_url">
-                        <a :href="item.tracking_url">
+                        <a :href="item.tracking_url" v-if="item.tracking_url !== null && item.tracking_url != ''">
+                            <!--
                             {{ getTrackingIdFromUrl(item.tracking_url) }}
+                            -->
+                            link
                         </a>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.brt_tracking_url">
-                        <a :href="item.brt_tracking_url">
+                        <a :href="item.brt_tracking_url" v-if="item.brt_tracking_url !== null && item.brt_tracking_url != ''">
+                            <!--
                             {{ item.brt_tracking_number }}
+                            -->
+                            link
                         </a>
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.packeta_status">
-                        {{ item.packeta_status }}
+                        {{ firstNCharacters(item.packeta_status, 15) }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.carrier_status_name">
-                        {{ item.carrier_status_name }}
+                        {{ firstNCharacters(item.carrier_status_name, 15) }}
                     </vs-td>
 
                     <vs-td class="column-no-padding" :data="item.delivered_at">
@@ -220,10 +239,6 @@
                         € {{ item.vat.toFixed(2) }}
                     </vs-td>
 
-                    <vs-td class="column-no-padding" :data="item.cod_amount">
-                        € {{ item.cod_amount.toFixed(2) }}
-                    </vs-td>
-
                 </vs-tr>
 
                 <!-- TOTAL STATS -->
@@ -237,6 +252,8 @@
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
+                <vs-td class="column-no-padding">€ {{totalStats.cod_amount.toFixed(2)}}</vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
@@ -245,7 +262,6 @@
                 <vs-td class="column-no-padding">€ {{totalStats.amount.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.delivery_price.toFixed(2)}}</vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.vat.toFixed(2)}}</vs-td>
-                <vs-td class="column-no-padding">€ {{totalStats.cod_amount.toFixed(2)}}</vs-td>
 
             </template>
         </vs-table>
@@ -288,6 +304,7 @@ export default {
         carrier_statuses: [],
         amount_min: 0,
         amount_max: 100,
+        products: [],
       },
 
       shippings: [],
@@ -322,6 +339,9 @@ export default {
         'RIFIUTA SENZA MOTIVAZIONE',
         'ASSENTE DOPO LASCIATO AVVISO',
       ],
+
+      orders: [],
+      products: [],
 
       newValue: '',
     }
@@ -360,7 +380,7 @@ export default {
       this.$vs.loading()
 
       if (view == 'shippings') {
-        this.selectedShippings = []
+        await this.fetchOrders()
         this.shippings = await this.dropin.fetchShippings(this.filters)
         for (let i = 0; i < this.shippings.length; i++) {
           let obj = this.shippings[i]
@@ -378,20 +398,61 @@ export default {
           if (carrierStatus !== null && carrierStatus != '' && !this.carrierStatuses.includes(carrierStatus)) {
             this.carrierStatuses.push(carrierStatus)
           }
+
+          obj.product = ''
+          if (obj.info !== null && obj.info.hasOwnProperty('oder_id') && obj.info_order_id !== null) {
+            let order = this.getObjectById(obj.info.order_id, this.orders)
+            obj.product = order.product
+          }
         }
+
+        // Hide cancelled shippings by default
+        let filterDropinStatuses = this.filters.dropin_statuses
+        if (filterDropinStatuses.length == 0) {
+          this.shippings = this.shippings.filter((obj) => {
+            if (obj.status == 'Canceled') {
+              return false
+            }
+            return true
+          })
+        }
+
+        // Products filter
+        let filterProducts = this.filters.products
+        if (filterProducts.length > 0) {
+          this.shippings = this.shippings.filter((obj) => {
+            return (filterProducts.includes(obj.product))
+          })
+        }
+
+        this.refreshSelectedShippings()
 
         this.calculateTotalStats()
       }
 
       this.$vs.loading.close()
     },
-    getObjectById(id) {
-      for (let i = 0; i < this.orders.length; i++) {
-        if (this.objects[i].id === id) {
-          return this.objects[i]
+    getObjectById(id, objects = null) {
+      if (objects === null) {
+        objects = this.objects
+      }
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].id == id) {
+          return objects[i]
         }
       }
       return null
+    },
+    refreshSelectedShippings() {
+      let newSelectedShippings = []
+      for (let i = 0; i < this.selectedShippings.length; i++) {
+        let sel = this.selectedShippings[i]
+        let obj = this.getObjectById(sel.id)
+        if (obj !== null) {
+          newSelectedShippings.push(obj)
+        }
+      }
+      this.selectedShippings = newSelectedShippings
     },
     async applyFilters() {
       await this.changeView(this.view)
@@ -405,6 +466,7 @@ export default {
         carrier_statuses: [],
         amount_min: 0,
         amount_max: 100,
+        products: [],
       }
       await this.filterDatesShortcut('this_month')
     },
@@ -626,6 +688,62 @@ export default {
 
       await this.copyToClipboard(toCopy)
     },
+    firstNCharacters(s, numChars) {
+      if (s === null || s == '') {
+        return ''
+      }
+      let res = s.substr(0, numChars)
+      if (s.length > numChars) {
+        res += '...'
+      }
+      return res
+    },
+    async fetchOrders() {
+      this.orders = []
+
+      try {
+        let headers = {
+          Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+        }
+        let params = {}
+        if (this.filters.date_from != '') {
+          let dateFrom = new Date(this.filters.date_from)
+          dateFrom.setDate(dateFrom.getDate()-30)
+          params.filter_date_from = this.formatDate(dateFrom)
+        }
+        if (this.filters.date_to != '') {
+          params.filter_date_to = this.filters.date_to
+        }
+        const response = await this.$http.get('/api/v1/orders', { headers, params })
+        this.orders = response.data.data
+      } catch (error) {
+        this.orders = []
+      }
+
+      for (let i = 0; i < this.orders.length; i++) {
+        let obj = this.orders[i]
+        if (obj.product !== null && obj.product != '') {
+          if (!this.products.includes(obj.product)) {
+            this.products.push(obj.product)
+          }
+        }
+      }
+
+      return this.orders
+    },
+    getRowClass(shipping) {
+      let c = ''
+      if (shipping.marked) {
+        c = 'row-marked'
+      }
+      if (shipping.packeta_status == 'Delivered') {
+        c = 'row-delivered'
+      }
+      if (shipping.packeta_status == 'Return') {
+        c = 'row-return'
+      }
+      return c
+    },
   },
   async created() {
     this.dropin = new Dropin(localStorage.getItem('accessToken'))
@@ -640,9 +758,16 @@ export default {
 .column-no-padding {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+  font-size: 0.8em;
   white-space: nowrap;
 }
 .row-marked {
   background-color: #ffd382 !important;
+}
+.row-delivered {
+  background-color: #cef5ce !important;
+}
+.row-return {
+  background-color: #f5cece !important;
 }
 </style>

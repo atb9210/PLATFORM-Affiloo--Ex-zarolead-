@@ -31,25 +31,20 @@
 
           <!-- Logo -->
           <router-link tag="div" class="vx-logo cursor-pointer flex items-center" to="/">
-            <img class="logo" src="/images/full_logo.jpeg" style="width: 100%;">
-            <!--<logo class="w-10 mr-4 fill-current text-primary" />-->
-            <!--<span class="vx-logo-text text-primary" v-show="isMouseEnter || !reduce" v-if="title">{{ title }}</span>-->
+            <!--<img class="logo" src="/images/full_logo.jpeg" style="width: 100%;">-->
+            <logo class="w-10 mr-4 fill-current text-primary" />
+            <span class="vx-logo-text text-primary" v-show="isMouseEnter || !reduce" v-if="title">{{ title }}</span>
           </router-link>
           <!-- /Logo -->
 
           <!-- Menu Buttons -->
-          <!--
           <div>
-          -->
             <!-- Close Button -->
-            <!--
             <template v-if="showCloseButton">
               <feather-icon icon="XIcon" class="m-0 cursor-pointer" @click="$store.commit('TOGGLE_IS_VERTICAL_NAV_MENU_ACTIVE', false)" />
             </template>
-            -->
 
             <!-- Toggle Buttons -->
-            <!--
             <template v-else-if="!showCloseButton && !verticalNavMenuItemsMin">
               <feather-icon
                 id="btnVNavMenuMinToggler"
@@ -59,7 +54,6 @@
                 @click="toggleReduce(!reduce)" />
             </template>
           </div>
-          -->
           <!-- /Menu Toggle Buttons -->
 
         </div>
@@ -147,7 +141,7 @@ export default {
   data: () => ({
     clickNotClose       : false, // disable close navMenu on outside click
     isMouseEnter        : false,
-    reduce              : false, // determines if navMenu is reduce - component property
+    reduce              : true,  // determines if navMenu is reduce - component property
     showCloseButton     : false, // show close button in smaller devices
     settings            : {      // perfectScrollbar settings
       maxScrollbarLength: 60,
