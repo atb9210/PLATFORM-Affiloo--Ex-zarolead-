@@ -136,8 +136,8 @@
                 <vs-th sort-key="packeta_status">Pkt Status</vs-th>
                 <vs-th sort-key="carrier_status_name">Brt Status</vs-th>
                 <vs-th sort-key="delivered_at">Del. Date</vs-th>
-                <vs-th sort-key="amount">Amount</vs-th>
-                <vs-th sort-key="delivery_price">Shipping Price</vs-th>
+                <vs-th sort-key="amount">Am.t</vs-th>
+                <vs-th sort-key="delivery_price">Ship. Price</vs-th>
                 <vs-th sort-key="vat">VAT</vs-th>
             </template>
 
@@ -400,9 +400,11 @@ export default {
           }
 
           obj.product = ''
-          if (obj.info !== null && obj.info.hasOwnProperty('oder_id') && obj.info_order_id !== null) {
+          if (obj.info !== null && obj.info.hasOwnProperty('order_id') && obj.info_order_id !== null) {
             let order = this.getObjectById(obj.info.order_id, this.orders)
-            obj.product = order.product
+            if (order !== null) {
+              obj.product = order.product
+            }
           }
         }
 
