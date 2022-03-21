@@ -330,7 +330,6 @@ class DropinShipping extends Model
                         ];
                     }
                 }
-                $statusChanges = array_reverse($statusChanges);
                 $isReturn = false;
                 $isDelivered = false;
                 foreach ($statusChanges as $change) {
