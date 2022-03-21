@@ -224,15 +224,15 @@ Route::post('customers/{id}/messages', 'api\v1\CustomerController@sendMessage')-
     ->name('customers.messages.store');
 
 /* Warehouse products routes */
-Route::apiResource('warehouse/orders', 'api\v1\WarehouseProductController')->except([
+Route::apiResource('warehouse/products', 'api\v1\WarehouseProductController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
-Route::post('warehouse/orders/{id}/variations', 'api\v1\CustomerController@storeVariation')->middleware('auth:api')
-    ->name('warehouse.orders.variations.store');
-Route::put('warehouse/orders/variations/{id}', 'api\v1\CustomerController@updateVariation')->middleware('auth:api')
-    ->name('warehouse.orders.variations.update');
-Route::delete('warehouse/orders/variations/{id}', 'api\v1\CustomerController@destroyVariation')->middleware('auth:api')
-    ->name('warehouse.orders.variations.destroy');
+Route::post('warehouse/products/{id}/variations', 'api\v1\WarehouseProductController@storeVariation')->middleware('auth:api')
+    ->name('warehouse.products.variations.store');
+Route::put('warehouse/products/variations/{id}', 'api\v1\WarehouseProductController@updateVariation')->middleware('auth:api')
+    ->name('warehouse.products.variations.update');
+Route::delete('warehouse/products/variations/{id}', 'api\v1\WarehouseProductController@destroyVariation')->middleware('auth:api')
+    ->name('warehouse.products.variations.destroy');
 
 /* Warehouse orders routes */
 Route::apiResource('warehouse/orders', 'api\v1\WarehouseOrderController')->except([
