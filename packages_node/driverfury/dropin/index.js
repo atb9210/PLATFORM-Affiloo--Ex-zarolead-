@@ -80,7 +80,7 @@ class Dropin {
       obj.product_id = parseInt(obj.info.product_id)
     }
 
-    obj.num_items = 1
+    obj.num_items = 0
     obj.products = []
     obj.product_name = ''
     obj.order_id = ''
@@ -162,11 +162,13 @@ class Dropin {
             total: total,
             upsell: false,
           })
-
-          obj.num_items += parseInt(quantity)
         }
       }
       obj.products = obj.info.products
+      for (let i = 0; i < obj.products.length; i++) {
+        let p = obj.products[i]
+        obj.num_items += parseInt(p.quantity)
+      }
 
       obj.completed_at = ''
       if (obj.info.hasOwnProperty('completed_at') && obj.info.completed_at !== null) {
