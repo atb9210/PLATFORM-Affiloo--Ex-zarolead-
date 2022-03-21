@@ -1,57 +1,9 @@
-let axios = require('axios')
+import Object from './object'
 
-class Order {
-  constructor(apiKey) {
-    this.apiKey = apiKey
-    this.$http = axios
-  }
+class WarehouseOrder extends Object {
 
-  getHeaders() {
-    return {
-      Authorization: 'Bearer ' + this.apiKey,
-    }
-  }
-
-  async create(params) {
-    let object = null
-
-    try {
-      let headers = this.getHeaders()
-      const response = await this.$http.post('/api/v1/orders/normal', params, { headers: headers })
-      object = response.data.data
-    } catch (error) {
-      // Nothing
-    }
-
-    return object
-  }
-
-  async update(id, params) {
-    let object = null
-
-    try {
-      let headers = this.getHeaders()
-      const response = await this.$http.put('/api/v1/orders/' + id, params, { headers: headers })
-      object = response.data.data
-    } catch (error) {
-      // Nothing
-    }
-
-    return object
-  }
-
-  async delete(id) {
-    let result = false
-
-    try {
-      let headers = this.getHeaders()
-      const response = await this.$http.delete('/api/v1/orders/' + id, { headers: headers })
-      result = true
-    } catch (error) {
-      // Nothing
-    }
-
-    return result
+  constructor(zarolead) {
+    super(zarolead, '/api/v1/warehouse/orders')
   }
 
   async getLines(orderId) {
