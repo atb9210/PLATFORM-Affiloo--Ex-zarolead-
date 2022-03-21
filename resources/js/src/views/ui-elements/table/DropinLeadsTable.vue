@@ -303,7 +303,7 @@
                         <vs-td class="column-no-padding">
                             <vx-tooltip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" title="Items" :text="getProductsList(item)">
                                 <vs-chip>
-                                    {{item.numItems}} items
+                                    {{item.num_items}} items
                                 </vs-chip>
                             </vx-tooltip>
                             <vs-chip v-else>
