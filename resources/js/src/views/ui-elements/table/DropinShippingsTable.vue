@@ -744,6 +744,9 @@ export default {
       if (shipping.packeta_status == 'Return') {
         c = 'row-return'
       }
+      if (shipping.status = 'Error') {
+        c = 'row-error'
+      }
       return c
     },
   },
@@ -771,5 +774,9 @@ export default {
 }
 .row-return {
   background-color: #f5cece !important;
+}
+.row-error {
+  color: white !important;
+  background-color: #c94444 !important;
 }
 </style>
