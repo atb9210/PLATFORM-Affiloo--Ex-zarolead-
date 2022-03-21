@@ -22,7 +22,7 @@ class CreateWarehouseProductVariationsTable extends Migration
             $table->integer('quantity')->unsiged()->default(0);
             $table->timestamps();
 
-			$table->foreign('warehouse_product_id')->references('id')->on('warehouse_products');
+			$table->foreign('warehouse_product_id')->references('id')->on('warehouse_products')->onDelete('cascade');
         });
     }
 

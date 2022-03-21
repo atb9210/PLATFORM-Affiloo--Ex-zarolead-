@@ -9,11 +9,7 @@ class WarehouseProductVariation extends Model
     protected $fillable = [
         'warehouse_product_id',
         'sku', 'name',
-        'price', 'quantity', 'attributes',
-    ];
-
-    protected $casts = [
-        'attributes' => 'array',
+        'price', 'quantity'
     ];
 
     public function product()

@@ -29,10 +29,10 @@ class WarehouseOrderController extends Controller
     /**
      * Get warehouse order's informations.
      *
-     * @urlParam id int required Tag's id
+     * @urlParam id int required Order's id
      *
      * @response {
-     *  "data": tag,
+     *  "data": warehouse_order,
      * }
      */
     public function show($id)
@@ -54,7 +54,7 @@ class WarehouseOrderController extends Controller
      *
      * @bodyParam customer_id int required Customer's id
      * @bodyParam amount string required Warehouse order's amount
-     * @bodyParam status string required Warehouse order's status
+     * @bodyParam status string Warehouse order's status
      *
      * @response {
      *  "message": "Warehouse order successfully created",
@@ -83,14 +83,10 @@ class WarehouseOrderController extends Controller
     /**
      * Update a warehouse order.
      *
-     * @urlParam id int required WarehouseOrder's id
+     * @urlParam id int required Warehouse order's id
      *
-     * @bodyParam amount string WarehouseOrder's first name
-     * @bodyParam status string WarehouseOrder's last name
-     * @bodyParam phone string WarehouseOrder's phone number
-     * @bodyParam email string WarehouseOrder's email
-     * @bodyParam address_line1 string WarehouseOrder's address_line1
-     * @bodyParam address_line2 string WarehouseOrder's address_line2
+     * @bodyParam amount string Warehouse order's first name
+     * @bodyParam status string Warehouse order's last name
      *
      * @response {
      *  "data": warehouse_order,
@@ -103,7 +99,7 @@ class WarehouseOrderController extends Controller
         $object = WarehouseOrder::findOrFail($id);
         if ($object->status == 'deleted') {
             return response([
-                "message" => "That Warehouse Order is deleted"
+                "message" => "That warehouse order is deleted"
             ], 403);
         }
 
@@ -121,10 +117,10 @@ class WarehouseOrderController extends Controller
     /**
      * Archive a warehouse order.
      *
-     * @urlParam id int required WarehouseOrder's id
+     * @urlParam id int required Warehouse order's id
      *
      * @response {
-     *  "message": "Warehouse Order successfully deleted",
+     *  "message": "Warehouse order successfully deleted",
      * }
      */
     public function destroy($id, Request $request)
@@ -134,7 +130,7 @@ class WarehouseOrderController extends Controller
         $object = WarehouseOrder::findOrFail($id);
         if ($object->status == 'deleted') {
             return response([
-                "message" => "That Warehouse Order is deleted"
+                "message" => "That warehouse order is deleted"
             ], 403);
         }
 
@@ -142,7 +138,7 @@ class WarehouseOrderController extends Controller
         $object->save();
 
         return response([
-            'message' => 'Warehouse Order successfully deleted',
+            'message' => 'Warehouse order successfully deleted',
         ]);
     }
 
