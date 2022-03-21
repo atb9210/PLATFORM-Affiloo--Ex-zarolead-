@@ -337,7 +337,7 @@ class DropinShipping extends Model
                         $isReturn = true;
                     }
                 }
-                $isDelivered = (count($statusChanges) > 0 && $statusChanges[0]['status'] == 'CONSEGNATA');
+                $isReturn = (count($statusChanges) > 0 && $statusChanges[0]['status'] == 'CONSEGNATA');
                 if ($isDelivered) {
                     $tmp = $statusChanges;
                     $statusChanges = [];
