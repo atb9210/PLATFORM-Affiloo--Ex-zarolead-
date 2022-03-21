@@ -88,6 +88,12 @@ Vue.use(VueHammer)
 import Popover from 'vue-js-popover'
 Vue.use(Popover)
 
+// Vue Native Notification plugin
+import VueNativeNotification from 'vue-native-notification'
+Vue.use(VueNativeNotification, {
+  requestOnNotify: true,
+})
+
 // PrismJS
 import 'prismjs'
 import 'prismjs/themes/prism-tomorrow.css'

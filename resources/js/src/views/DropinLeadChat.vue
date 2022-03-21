@@ -48,13 +48,29 @@ export default {
       this.$vs.loading.close()
     },
     async refreshChatMessagesBackground() {
-      this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
+      let newChatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
+      if (newChatMessages.length > 0 && newChatMessages.length != this.chatMessages.length) {
+        this.$notification.show('New message from ' + this.lead.first_name + ' ' + this.lead.last_name, {
+          body: this.firstNCharacters(newChatMessages[0].body),
+        }, {})
+      }
+      this.chatMessages = newChatMessages
     },
     goToLeadsTable() {
       this.$router.push({name: 'dropin-leads'})
         .catch(error => {
           this.$router.push({name: 'dropin-leads'})
         })
+    },
+    firstNCharacters(s, numChars) {
+      if (s === null || s == '') {
+        return ''
+      }
+      let res = s.substr(0, numChars)
+      if (s.length > numChars) {
+        res += '...'
+      }
+      return res
     },
   },
   async created() {
@@ -67,7 +83,7 @@ export default {
       if (this.lead !== null) {
         this.chatMessages = await this.dropin.fetchLeadMessages(this.lead.id)
 
-        // Refresh Chat every 10 seconds
+        // Refresh chat every 10 seconds
         this.timer = setInterval(() => {
           this.refreshChatMessagesBackground()
         }, 10 * 1000)
