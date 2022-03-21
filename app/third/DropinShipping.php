@@ -354,6 +354,7 @@ class DropinShipping extends Model
                             'status' => 'RIT. CONSEGNATA',
                         ];
                     }
+                    $statusChanges = array_reverse($statusChanges);
                 }
             }
 
