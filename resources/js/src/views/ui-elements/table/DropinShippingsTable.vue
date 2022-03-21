@@ -744,7 +744,7 @@ export default {
       if (shipping.packeta_status == 'Return') {
         c = 'row-return'
       }
-      if (shipping.status = 'Error') {
+      if (shipping.status == 'Error') {
         c = 'row-error'
       }
       return c
