@@ -135,6 +135,7 @@
                 <vs-th sort-key="brt_tracking_url">Brt</vs-th>
                 <vs-th sort-key="packeta_status">Pkt Status</vs-th>
                 <vs-th sort-key="carrier_status_name">Brt Status</vs-th>
+                <vs-th sort-key="status_check_date">Last Check</vs-th>
                 <vs-th sort-key="delivered_at">Del. Date</vs-th>
                 <vs-th sort-key="amount">Am.t</vs-th>
                 <vs-th sort-key="delivery_price">Ship. Price</vs-th>
@@ -223,6 +224,10 @@
                         {{ firstNCharacters(item.carrier_status_name, 15) }}
                     </vs-td>
 
+                    <vs-td class="column-no-padding" :data="item.status_check_date">
+                        {{ (item.status_check_date != '') ? formatDate(new Date(item.status_check_date)) : '' }}
+                    </vs-td>
+
                     <vs-td class="column-no-padding" :data="item.delivered_at">
                         {{ (item.delivered_at != '') ? formatDate(new Date(item.delivered_at)) : '' }}
                     </vs-td>
@@ -253,6 +258,7 @@
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding">€ {{totalStats.cod_amount.toFixed(2)}}</vs-td>
+                <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>
                 <vs-td class="column-no-padding"></vs-td>

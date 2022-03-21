@@ -330,6 +330,32 @@ class DropinShipping extends Model
                         ];
                     }
                 }
+
+                $isReturn = false;
+                $isDelivered = false;
+                foreach ($statusChanges as $change) {
+                    if ($chage['status'] == 'RESO MITTENTE') {
+                        $isReturn = true;
+                    }
+                }
+                $isDelivered = (count($statusChanges) > 0 && $statusChanges[0]['status'] == 'CONSEGNATA');
+                if ($isDelivered) {
+                    $tmp = $statusChanges;
+                    $statusChanges = [];
+                    for ($i = count($tmp) - 1; $i >= 0; $i -= 1) {
+                        $change = $tmp[$i];
+                        $statusChanges[] = $change;
+                        if ($chage['status'] == 'RESO MITTENTE') {
+                            break;
+                        }
+                    }
+                    if ($isDelivered) {
+                        $statusChanges[] = [
+                            'date' => $tmp[0]['date'],
+                            'status' => 'RIT. CONSEGNATA',
+                        ];
+                    }
+                }
             }
 
             $info = $this->info;
@@ -346,6 +372,7 @@ class DropinShipping extends Model
                 'changes' => $statusChanges,
             ];
             $info['cod_amount'] = $codAmount;
+            $info['status_check_date'] = date('Y-m-d');
             $this->info = $info;
             $this->save();
         }

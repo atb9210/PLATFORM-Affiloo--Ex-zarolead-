@@ -565,6 +565,11 @@ class Dropin {
     }
     obj.vat = obj.cod_amount - (obj.cod_amount * (1 - 0.22))
 
+    obj.status_check_date = ''
+    if (info.hasOwnProperty('status_check_date') && info.status_check_date !== null) {
+      obj.status_check_date = info.status_check_date
+    }
+
     obj.packeta_status = ''
     obj.carrier_status_changes = ''
     obj.carrier_status = {
