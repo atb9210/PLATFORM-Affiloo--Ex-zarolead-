@@ -334,7 +334,7 @@ class DropinShipping extends Model
                 $isReturn = false;
                 $isDelivered = false;
                 foreach ($statusChanges as $change) {
-                    if ($chage['status'] == 'RESO MITTENTE') {
+                    if ($change['status'] == 'RESO MITTENTE') {
                         $isReturn = true;
                     }
                 }
@@ -345,7 +345,7 @@ class DropinShipping extends Model
                     for ($i = count($tmp) - 1; $i >= 0; $i -= 1) {
                         $change = $tmp[$i];
                         $statusChanges[] = $change;
-                        if ($chage['status'] == 'RESO MITTENTE') {
+                        if ($change['status'] == 'RESO MITTENTE') {
                             break;
                         }
                     }
