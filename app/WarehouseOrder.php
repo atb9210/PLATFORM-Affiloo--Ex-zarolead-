@@ -13,6 +13,7 @@ class WarehouseOrder extends Model
         'cancelled',
         'refunded',
         'confirmed',
+        'deleted',
     ];
 
     protected $fillable = [

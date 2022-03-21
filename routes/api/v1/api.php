@@ -212,6 +212,23 @@ Route::group(['prefix' => 'reports', 'middleware' => 'auth:api'], function() {
     Route::put('advertisers/{user_id}', 'api\v1\ReportController@advertisersUpdate')->name('reports.advertisers.update');
 });
 
+/* Customers routes */
+Route::apiResource('customers', 'api\v1\CustomerController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+Route::get('customers/{id}/orders', 'api\v1\CustomerController@orders')->middleware('auth:api')
+    ->name('customers.orders.index');
+Route::get('customers/{id}/messages', 'api\v1\CustomerController@getMessages')->middleware('auth:api')
+    ->name('customers.messages.index');
+Route::post('customers/{id}/messages', 'api\v1\CustomerController@sendMessage')->middleware('auth:api')
+    ->name('customers.messages.store');
+
+/* Warehouse orders routes */
+Route::apiResource('warehouse/orders', 'api\v1\WarehouseOrderController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+
 /* Storage routes */
 Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');
 

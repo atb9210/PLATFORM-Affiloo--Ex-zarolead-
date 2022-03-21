@@ -17,7 +17,7 @@ class CreateWarehouseOrdersTable extends Migration
             $table->id();
             $table->bigInteger('customer_id')->unsigned();
             $table->decimal('amount', 9, 2)->defaul(0.0);
-            $table->enum('status', \App\WarehouseOrder::STATUSES);
+            $table->enum('status', \App\WarehouseOrder::STATUSES)->default('waiting_payment');
             $table->timestamps();
 
 			$table->foreign('customer_id')->references('id')->on('customers');
