@@ -80,6 +80,7 @@ class Dropin {
       obj.product_id = parseInt(obj.info.product_id)
     }
 
+    obj.numItems = 0
     obj.products = []
     obj.product_name = ''
     obj.order_id = ''
@@ -161,6 +162,8 @@ class Dropin {
             total: total,
             upsell: false,
           })
+
+          obj.numItems += quantity
         }
       }
       obj.products = obj.info.products

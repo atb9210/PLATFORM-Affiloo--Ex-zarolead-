@@ -303,7 +303,7 @@
                         <vs-td class="column-no-padding">
                             <vx-tooltip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" title="Items" :text="getProductsList(item)">
                                 <vs-chip>
-                                    {{item.info.products.length}} items
+                                    {{item.numItems}} items
                                 </vs-chip>
                             </vx-tooltip>
                             <vs-chip v-else>
@@ -394,6 +394,7 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">{{data.length}}</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
