@@ -1,4 +1,4 @@
-class Object {
+class ZaroLeadObject {
 
   constructor(zarolead, apiBasePath = '') {
     this.$zarolead = zarolead
@@ -27,4 +27,4 @@ class Object {
 
 }
 
-export default Object
+export default ZaroLeadObject

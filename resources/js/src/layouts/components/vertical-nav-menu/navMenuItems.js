@@ -239,6 +239,23 @@ export default [
           },
         ]
       },
+
+      {
+        url: null,
+        name: 'Warehouse',
+        icon: 'PackageIcon',
+        i18n: 'Warehouse',
+        roles: ['developer', 'admin', 'callcenter'],
+        submenu: [
+          {
+            url: '/dashboard/customers',
+            name: 'Customers',
+            slug: '',
+            i18n: 'Customers',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+        ]
+      }
     ],
   },
 

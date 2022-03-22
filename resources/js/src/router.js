@@ -1830,6 +1830,26 @@ const router = new Router({
           }
         },
 
+        // =============================================================================
+        // WAREHOUSE
+        // =============================================================================
+        {
+          path: '/dashboard/customers',
+          props: true,
+          name: 'customers',
+          component: () => import('./views/Customers.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Customers', active: true }
+            ],
+            pageTitle: 'Customers',
+            rule: 'editor'
+          }
+        },
+
+
         {
           path: '/dashboard/ecommerce',
           props: true,

@@ -1,6 +1,6 @@
-import Object from './object'
+import ZaroLeadObject from './object'
 
-class Customer extends Object {
+class Customer extends ZaroLeadObject {
 
   constructor(zarolead) {
     super(zarolead, '/api/v1/customers')

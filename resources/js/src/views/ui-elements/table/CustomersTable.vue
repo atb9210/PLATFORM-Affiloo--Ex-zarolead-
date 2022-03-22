@@ -12,7 +12,7 @@
     <vx-card title="Customers" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button v-if="view == 'customers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showForm('create')"></vs-button>
+            <vs-button v-if="view == 'customers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('create')"></vs-button>
             <vs-button v-if="view == 'customers'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" :disabled="selected.length <= 0"></vs-button>
             <vs-button v-if="(['create','edit']).includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'customers'"></vs-button>
             <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'customers'"></vs-button>
@@ -43,7 +43,7 @@
 
             <vue-context ref="customer_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.customer_context_menu.close();showEditForm(data)" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.customer_context_menu.close();changeView('edit', data)" class="flex items-center text-sm">
                     <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Edit</span>
                   </a>
@@ -89,7 +89,7 @@
 
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
-                                <vs-button @click="showEditForm(data[indextr])" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                                <vs-button @click="changeView('edit', data[indextr])" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             </div>
                         </vs-td>
 
@@ -99,6 +99,11 @@
         </div>
 
         <!-- Create or edit customer -->
+        <div v-if="(['create','edit']).includes(view)" class="w-full">
+          <CustomerBuilderComponent :value="null" />
+        </div>
+        <!-- TODO: Old code -->
+        <!--
         <div v-if="(['create','edit']).includes(view)" class="w-full">
 
             <div class="vx-row mb-6">
@@ -199,6 +204,7 @@
                 </vs-button>
             </div>
         </div>
+        -->
 
         <!-- Customer chat -->
         <div v-if="view == 'chat'">
@@ -497,7 +503,14 @@ export default {
       this.$vs.loading.close()
       await this.fetchObjects()
     },
-    showForm(type) {
+    changeView(type, value = null) {
+      if (type == 'customer') {
+        await this.fetchObjects()
+      } else if (type == 'create') {
+        this.customer = {}
+      } else if (type == 'edit') {
+        this.customer = value
+      }
       this.view = type
     },
     clearForm(type) {
@@ -588,7 +601,7 @@ export default {
         country: obj.country,
       }
       this.editingObject = customer
-      this.showForm('edit')
+      this.changeView('edit')
     },
     async updateObject() {
       if (this.editingObject === null) return

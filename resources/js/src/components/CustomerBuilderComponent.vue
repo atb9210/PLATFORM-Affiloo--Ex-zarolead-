@@ -17,9 +17,16 @@ import { Customer } from 'zarolead'
 export default {
   name: 'CustomerBuilderComponent',
   props: {
+    value: {
+      type: Object,
+      required: false,
+      default: {},
+    },
   },
   data () {
     return {
+      editMode: false,
+
       customer: {
         first_name: '',
         last_name: '',
@@ -176,9 +183,49 @@ export default {
                              cust.phone.length > 0 && this.checkPhone(cust.phone))
       return isValidCustomer
     },
-    createCustomer() {
-      // TODO: HERE
+    async createCustomer() {
+      this.$vs.loading()
+
+      let customerClient = new Customer(this.$zarolead)
+
+      let params = {
+        first_name: this.customer.first_name,
+        last_name: this.customer.last_name,
+        phone: this.customer.phone,
+        email: this.customer.email,
+        address_line1: this.customer.address_line1,
+        address_line2: this.customer.address_line2,
+        city: this.customer.city,
+        postcode: this.customer.postcode,
+        zone: this.customer.zone,
+        country: this.customer.country,
+      }
+
+      if (this.editMode) {
+        let customer = await customerClient.update(this.customer.id, params)
+        this.$emit('onCustomerUpdated', customer)
+      } else {
+        let customer = await customerClient.create(params)
+        this.$emit('onCustomerCreated', customer)
+      }
+
+      this.$vs.loading.close()
     },
+  },
+  created() {
+    if (this.value !== null) {
+      // Add not existing keys
+      for (const [key, value] of Object.entries(this.customer)) {
+        if (!this.value.hasOwnProperty(key)) {
+          this.value[key] = value
+        }
+      }
+      this.customer = this.value
+    }
+
+    if (this.customer.hasOwnProperty('id')) {
+      this.editMode = true
+    }
   },
   updated () {
   },

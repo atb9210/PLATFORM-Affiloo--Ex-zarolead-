@@ -32,6 +32,8 @@ import FastEditableValue from './components/FastEditableValue.vue'
 Vue.component(FastEditableValue.name, FastEditableValue)
 import FastEditableValueSelect from './components/FastEditableValueSelect.vue'
 Vue.component(FastEditableValueSelect.name, FastEditableValueSelect)
+import PhoneInput from './components/PhoneInput.vue'
+Vue.component(PhoneInput.name, PhoneInput)
 import StatsCard from './components/StatsCard.vue'
 Vue.component(StatsCard.name, StatsCard)
 import LocationInput from './components/LocationInput.vue'
@@ -42,6 +44,10 @@ import ChatLog from './components/ChatLog.vue'
 Vue.component(ChatLog.name, ChatLog)
 import Chat from './components/Chat.vue'
 Vue.component(Chat.name, Chat)
+import CustomerBuilderFormComponent from './components/CustomerBuilderFormComponent.vue'
+Vue.component(CustomerBuilderFormComponent.name, CustomerBuilderFormComponent)
+import CustomerBuilderComponent from './components/CustomerBuilderComponent.vue'
+Vue.component(CustomerBuilderComponent.name, CustomerBuilderComponent)
 
 
 // v-select component

@@ -109,6 +109,10 @@ import '@fortawesome/fontawesome-free/js/all.js'
 // Note: In latest version you have to add it separately
 // import 'vue-select/dist/vue-select.css';
 
+// ZaroLead js library
+import { ZaroLead } from 'zarolead'
+Vue.prototype.$zarolead = new ZaroLead(localStorage.getItem('accessToken'))
+
 Vue.config.productionTip = false
 
 

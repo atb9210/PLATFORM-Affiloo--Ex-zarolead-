@@ -1,6 +1,6 @@
-import Object from './object'
+import ZaroLeadObject from './object'
 
-class WarehouseOrder extends Object {
+class WarehouseOrder extends ZaroLeadObject {
 
   constructor(zarolead) {
     super(zarolead, '/api/v1/warehouse/orders')
@@ -64,4 +64,4 @@ class WarehouseOrder extends Object {
 
 }
 
-export default Order
+export default WarehouseOrder

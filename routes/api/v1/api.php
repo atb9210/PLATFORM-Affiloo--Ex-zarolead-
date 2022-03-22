@@ -238,6 +238,14 @@ Route::delete('warehouse/products/variations/{id}', 'api\v1\WarehouseProductCont
 Route::apiResource('warehouse/orders', 'api\v1\WarehouseOrderController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
+Route::post('warehouse/orders/{warehouse_order_id}/lines', 'api\v1\WarehouseOrderController@lines')->middleware('auth:api')
+    ->name('warehouse.orders.lines.index');
+Route::post('warehouse/orders/{warehouse_order_id}/lines', 'api\v1\WarehouseOrderController@storeLine')->middleware('auth:api')
+    ->name('warehouse.orders.lines.store');
+Route::put('warehouse/orders/lines/{id}', 'api\v1\WarehouseOrderController@updateLine')->middleware('auth:api')
+    ->name('warehouse.orders.lines.update');
+Route::delete('warehouse/orders/lines/{id}', 'api\v1\WarehouseOrderController@deleteLine')->middleware('auth:api')
+    ->name('warehouse.orders.lines.destroy');
 
 
 /* Storage routes */
