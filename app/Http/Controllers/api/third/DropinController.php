@@ -1059,7 +1059,7 @@ class DropinController extends Controller
         }
 
         foreach ($messages as $message) {
-            if (!isset($message['fromMe']) || $message['fromMe']) {
+            if (isset($message['fromMe']) && $message['fromMe']) {
                 // DEBUG
                 Log::channel('chatapi')->info('Our own message (skip it)');
                 continue;
@@ -1099,6 +1099,14 @@ class DropinController extends Controller
                 // DEBUG
                 Log::channel('chatapi')->info('Cannot find lead with numbers ' . json_encode($phones));
                 continue;
+            } else {
+                // DEBUG
+                Log::channel('chatapi')->info('Lead found ' . json_encode([
+                    'id' => $lead->id,
+                    'first_name' => $lead->first_name,
+                    'last_name' => $lead->last_name,
+                    'phone' => $lead->phone,
+                ]));
             }
 
             $info = $lead->info;
@@ -1111,8 +1119,9 @@ class DropinController extends Controller
             $info['whatsapp']['last_message'] = $message['id'];
             $lead->info = $info;
             $lead->save();
+
             // DEBUG
-            Log::channel('chatapi')->info('Lead saved');
+            Log::channel('chatapi')->info('Lead saved info: ' . json_encode($lead->info));
         }
     }
 

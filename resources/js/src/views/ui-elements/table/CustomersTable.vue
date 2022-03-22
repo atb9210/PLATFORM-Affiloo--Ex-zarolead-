@@ -503,7 +503,7 @@ export default {
       this.$vs.loading.close()
       await this.fetchObjects()
     },
-    changeView(type, value = null) {
+    async changeView(type, value = null) {
       if (type == 'customer') {
         await this.fetchObjects()
       } else if (type == 'create') {
