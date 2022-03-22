@@ -1058,6 +1058,9 @@ class DropinController extends Controller
             $messages = $params['messages'];
         }
 
+        // DEBUG
+        Log::channel('chatapi')->info(json_encode($messages));
+
         foreach ($messages as $message) {
             if (!isset($message['fromMe']) || $message['fromMe']) {
                 // DEBUG

@@ -301,6 +301,8 @@ Route::post('/dropin/send-message', 'api\third\DropinController@sendMessage')->m
     ->name('dropin.messages.send');
 Route::get('/dropin/leads/messages/webhook', 'api\third\DropinController@leadMessagesWebhook')
     ->name('dropin.leads.messages.webhook');
+Route::post('/dropin/leads/messages/webhook', 'api\third\DropinController@leadMessagesWebhook')
+    ->name('dropin.leads.messages.webhook');
 
 Route::get('/dropin/leads/{id}/info', 'api\third\DropinController@getLeadInfo')
     ->name('dropin.leads.info');
