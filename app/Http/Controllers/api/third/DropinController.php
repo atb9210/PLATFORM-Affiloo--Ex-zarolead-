@@ -1058,9 +1058,6 @@ class DropinController extends Controller
             $messages = $params['messages'];
         }
 
-        // DEBUG
-        Log::channel('chatapi')->info(json_encode($messages));
-
         foreach ($messages as $message) {
             if (!isset($message['fromMe']) || $message['fromMe']) {
                 // DEBUG
@@ -1092,7 +1089,7 @@ class DropinController extends Controller
             ];
             $lead = null;
             foreach ($phones as $p) {
-                $leads = DropinLead::where('phone', $p)->get();
+                $leads = DropinLead::where('archived', 0)->where('phone', $p)->orderBy('created_at', 'desc')->get();
                 if (count($leads) > 0) {
                     $lead = $leads[0];
                     break;

@@ -184,10 +184,10 @@ class Dropin {
       obj.last_message_read = null
       if (obj.info.hasOwnProperty('whatsapp') && obj.info.whatsapp !== null) {
         if (obj.info.whatsapp.hasOwnProperty('last_message') && obj.info.whatsapp.last_message !== null) {
-          obj.last_message = obj.info.last_message
+          obj.last_message = obj.info.whatsapp.last_message
         }
         if (obj.info.whatsapp.hasOwnProperty('last_message_read') && obj.info.whatsapp.last_message_read !== null) {
-          obj.last_message_read = obj.info.last_message_read
+          obj.last_message_read = obj.info.whatsapp.last_message_read
         }
       }
       obj.has_new_message = (obj.last_message_read !== obj.last_message)
