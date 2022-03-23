@@ -1059,11 +1059,13 @@ class DropinController extends Controller
         }
 
         foreach ($messages as $message) {
+            /*
             if (isset($message['fromMe']) && $message['fromMe']) {
                 // DEBUG
                 Log::channel('chatapi')->info('Our own message (skip it)');
                 continue;
             }
+            */
 
             $phone = null;
             if (isset($message['author'])) {
@@ -1117,6 +1119,9 @@ class DropinController extends Controller
                 $info['whatsapp'] = [];
             }
             $info['whatsapp']['last_message'] = $message['id'];
+            if (isset($message['fromMe']) && $message['fromMe']) {
+                $info['whatsapp']['last_message_read'] = $message['id'];
+            }
             $lead->info = $info;
             $lead->save();
 

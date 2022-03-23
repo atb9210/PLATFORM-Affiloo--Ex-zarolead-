@@ -101,6 +101,7 @@ export default {
       }
       whatsapp.last_message = messageId
       whatsapp.last_message_read = messageId
+      info.whatsapp = whatsapp
       this.user.info = info
       await this.dropin.updateLead(this.user.id, {
         info: JSON.stringify(info),

@@ -565,7 +565,7 @@ class Dropin {
     if (info.hasOwnProperty('cod_amount') && info.cod_amount !== null) {
       obj.cod_amount = info.cod_amount
     }
-    obj.vat = obj.cod_amount - (obj.cod_amount * (1 - 0.22))
+    obj.vat = obj.cod_amount - (obj.cod_amount / 122)
 
     obj.status_check_date = ''
     if (info.hasOwnProperty('status_check_date') && info.status_check_date !== null) {
