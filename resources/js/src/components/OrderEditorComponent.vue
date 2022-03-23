@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { Order } from 'zarolead'
+import { WarehouseOrder } from 'zarolead'
 
 export default {
   name: 'OrderEditorComponent',
@@ -55,7 +55,7 @@ export default {
           price: price,
         })
       }
-      let orderClient = new Order(localStorage.getItem('accessToken'))
+      let orderClient = new WarehouseOrder(localStorage.getItem('accessToken'))
       let order = await orderClient.update(this.order.id, {
         lines: JSON.stringify(lines),
       })
@@ -64,7 +64,7 @@ export default {
       if (result) {
         this.$vs.notify({
           title: 'Success',
-          text: 'Order updated',
+          text: 'Warehouse order updated',
           iconPack: 'feather',
           icon: 'icon-package',
           color: 'success'

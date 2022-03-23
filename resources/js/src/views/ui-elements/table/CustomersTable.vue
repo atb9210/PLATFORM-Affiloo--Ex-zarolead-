@@ -89,7 +89,7 @@
 
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
-                                <vs-button @click="changeView('edit', data[indextr])" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
+                                <vs-button @click="changeView('edit', item)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
                             </div>
                         </vs-td>
 
@@ -100,7 +100,7 @@
 
         <!-- Create or edit customer -->
         <div v-if="(['create','edit']).includes(view)" class="w-full">
-          <CustomerBuilderComponent :value="null" />
+          <CustomerBuilderComponent :value="customer" @onCustomerCreated="onCustomerCreated" @onCustomerUpdated="onCustomerUpdated" />
         </div>
         <!-- TODO: Old code -->
         <!--
@@ -249,6 +249,14 @@ function checkPhone(phone) {
   }
 
   return true
+}
+
+function cloneObject(obj) {
+  let res = {}
+  for (const [key, value] of Object.entries(obj)) {
+    res[key] = value
+  }
+  return res
 }
 
 export default {
@@ -504,11 +512,14 @@ export default {
       await this.fetchObjects()
     },
     async changeView(type, value = null) {
-      if (type == 'customer') {
+      if (type == 'customers') {
         await this.fetchObjects()
       } else if (type == 'create') {
         this.customer = {}
       } else if (type == 'edit') {
+        if (value === null) {
+          return
+        }
         this.customer = value
       }
       this.view = type
@@ -554,7 +565,7 @@ export default {
         country: obj.country,
       }
 
-      // Create tag
+      // Create customer
       let result = false
       try {
         const response = await this.$http.post('/api/v1/customers', params, { headers: headers })
@@ -586,22 +597,6 @@ export default {
       this.clearForm('create')
       this.view = 'customers'
       await this.fetchObjects()
-    },
-    showEditForm(customer) {
-      let obj = customer
-      this.newObject['edit'] = {
-        first_name: obj.first_name,
-        last_name: obj.last_name,
-        phone: obj.phone,
-        email: obj.email,
-        address_line1: obj.address_line1,
-        city: obj.city,
-        postcode: obj.postcode,
-        zone: obj.zone,
-        country: obj.country,
-      }
-      this.editingObject = customer
-      this.changeView('edit')
     },
     async updateObject() {
       if (this.editingObject === null) return
@@ -732,9 +727,53 @@ export default {
       this.view = 'chat'
       this.$vs.loading.close()
     },
+    async onCustomerCreated(customer) {
+      let result = (customer !== null)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Customer created',
+          iconPack: 'feather',
+          icon: 'icon-user-plus',
+          color: 'success'
+        })
+        this.changeView('customers')
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create the customer',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+    },
+    async onCustomerUpdated(customer) {
+      let result = (customer !== null)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Customer updated',
+          iconPack: 'feather',
+          icon: 'icon-user-plus',
+          color: 'success'
+        })
+        this.changeView('customers')
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the customer',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+    },
   },
   async created() {
-    await this.fetchObjects()
+    await this.changeView('customers')
   },
 }
 

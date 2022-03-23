@@ -4,7 +4,9 @@
         <CustomerBuilderFormComponent v-model="customer" />
 
         <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createCustomer" :disabled="!isValidForm()">Create Order</vs-button>
+            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" :icon="editMode ? 'icon-save' : 'icon-plus'" @click="createCustomer" :disabled="!isValidForm()">
+                {{ editMode ? 'Edit' : 'Create' }} Customer
+            </vs-button>
         </div>
 
     </div>
@@ -215,12 +217,14 @@ export default {
   created() {
     if (this.value !== null) {
       // Add not existing keys
-      for (const [key, value] of Object.entries(this.customer)) {
-        if (!this.value.hasOwnProperty(key)) {
-          this.value[key] = value
+      for (const [key, val] of Object.entries(this.customer)) {
+        if (this.value.hasOwnProperty(key)) {
+          this.customer[key] = this.value[key]
         }
       }
-      this.customer = this.value
+      if (this.value.hasOwnProperty('id')) {
+        this.customer.id = this.value.id
+      }
     }
 
     if (this.customer.hasOwnProperty('id')) {

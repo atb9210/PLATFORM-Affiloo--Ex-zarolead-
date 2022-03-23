@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { Customer, Order } from 'zarolead'
+import { Customer, WarehouseOrder } from 'zarolead'
 
 export default {
   name: 'OrderBuilderComponent',
@@ -292,7 +292,7 @@ export default {
           price: price,
         })
       }
-      let orderClient = new Order(localStorage.getItem('accessToken'))
+      let orderClient = new WarehouseOrder(localStorage.getItem('accessToken'))
       let order = await orderClient.create({
         customer_id: customer.id,
         lines: JSON.stringify(lines),
@@ -302,7 +302,7 @@ export default {
       if (result) {
         this.$vs.notify({
           title: 'Success',
-          text: 'Order created',
+          text: 'Warehouse order created',
           iconPack: 'feather',
           icon: 'icon-package',
           color: 'success'

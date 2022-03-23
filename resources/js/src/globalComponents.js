@@ -48,6 +48,12 @@ import CustomerBuilderFormComponent from './components/CustomerBuilderFormCompon
 Vue.component(CustomerBuilderFormComponent.name, CustomerBuilderFormComponent)
 import CustomerBuilderComponent from './components/CustomerBuilderComponent.vue'
 Vue.component(CustomerBuilderComponent.name, CustomerBuilderComponent)
+import OrderLinesEditorComponent from './components/OrderLinesEditorComponent.vue'
+Vue.component(OrderLinesEditorComponent.name, OrderLinesEditorComponent)
+import OrderBuilderComponent from './components/OrderBuilderComponent.vue'
+Vue.component(OrderBuilderComponent.name, OrderBuilderComponent)
+import OrderEditorComponent from './components/OrderEditorComponent.vue'
+Vue.component(OrderEditorComponent.name, OrderEditorComponent)
 
 
 // v-select component

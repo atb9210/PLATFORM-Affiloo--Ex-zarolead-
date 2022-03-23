@@ -3,7 +3,6 @@
 namespace App\Http\Resources\api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 
 class CustomerResource extends JsonResource {
     /**

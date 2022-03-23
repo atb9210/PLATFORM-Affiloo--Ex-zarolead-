@@ -16,12 +16,12 @@ class ZaroLeadObject {
   }
 
   async update(id, params) {
-    const res = await this.$zarolead.put(this.apiBasePath + id, params)
+    const res = await this.$zarolead.put(this.apiBasePath + '/' + id, params)
     return res
   }
 
   async delete(id) {
-    const res = await this.$zarolead.delete(this.apiBasePath + id)
+    const res = await this.$zarolead.delete(this.apiBasePath + '/' + id)
     return res
   }
 
