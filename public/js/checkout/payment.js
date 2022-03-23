@@ -153,11 +153,14 @@ var Utils = /** @class */ (function () {
     return Utils;
 }());
 var utils = new Utils();
+/******************************************************************************/
+/**                                 ZAROLEAD                                 **/
+/******************************************************************************/
 var ZaroLead = /** @class */ (function () {
     function ZaroLead(warehouseNetwork) {
         // TODO: Change this based on which server is hosted
         //let hostname = utils.getHostname();
-        if (warehouseNetwork === void 0) { warehouseNetwork = 'warehouse'; }
+        if (warehouseNetwork === void 0) { warehouseNetwork = 'dropin'; }
         var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';

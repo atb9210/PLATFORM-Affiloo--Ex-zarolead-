@@ -153,13 +153,18 @@ var Utils = /** @class */ (function () {
     return Utils;
 }());
 var utils = new Utils();
+/******************************************************************************/
+/**                                 ZAROLEAD                                 **/
+/******************************************************************************/
 var ZaroLead = /** @class */ (function () {
-    function ZaroLead() {
+    function ZaroLead(warehouseNetwork) {
         // TODO: Change this based on which server is hosted
         //let hostname = utils.getHostname();
+        if (warehouseNetwork === void 0) { warehouseNetwork = 'dropin'; }
         var hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/';
         this.API_URL_3RD = hostname + '/api/3rd/';
+        this.warehouseNetwork = warehouseNetwork;
         /*
         this.$http = new Http();
         this.httpHeaders = {
@@ -169,6 +174,9 @@ var ZaroLead = /** @class */ (function () {
         */
         this.$http = axios;
     }
+    ZaroLead.prototype.setWarehouseNetwork = function (warehouseNetwork) {
+        this.warehouseNetwork = warehouseNetwork;
+    };
     ZaroLead.prototype.createOrder = function (params) {
         return __awaiter(this, void 0, void 0, function () {
             var order, response, error_1;
@@ -214,7 +222,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads', params, { headers: this.httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -246,7 +254,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.put(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -280,7 +288,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/info', { headers: this.httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -312,7 +320,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -336,7 +344,7 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod) {
+    ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod, push) {
         return __awaiter(this, void 0, void 0, function () {
             var params, response, respJson, error_6;
             return __generator(this, function (_a) {
@@ -346,9 +354,10 @@ var ZaroLead = /** @class */ (function () {
                         params = {
                             status: status,
                             total: total,
-                            payment_method: paymentMethod
+                            payment_method: paymentMethod,
+                            push: push
                         };
-                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -379,7 +388,7 @@ var ZaroLead = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http["delete"](this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http["delete"](this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -455,7 +464,7 @@ var ZaroLead = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders })];
+                        return [4 /*yield*/, this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders })];
                     case 2:
                         response = _a.sent();
                         if (response !== null && response !== '') {

@@ -10,13 +10,18 @@ export class ZaroLead
     $http: any;
     httpHeaders: object;
 
-    constructor()
+    warehouseNetwork: string;
+
+    constructor(warehouseNetwork: string = 'dropin')
     {
         // TODO: Change this based on which server is hosted
         //let hostname = utils.getHostname();
+
         let hostname = 'https://beta2.zarolead.com';
         this.API_URL = hostname + '/api/v1/'
         this.API_URL_3RD = hostname + '/api/3rd/'
+
+        this.warehouseNetwork = warehouseNetwork;
 
         /*
         this.$http = new Http();
@@ -27,6 +32,11 @@ export class ZaroLead
         */
 
         this.$http = axios;
+    }
+
+    setWarehouseNetwork(warehouseNetwork)
+    {
+        this.warehouseNetwork = warehouseNetwork;
     }
 
     async createOrder(params: object)
@@ -55,7 +65,7 @@ export class ZaroLead
     {
         var lead: object = null;
         try {
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //lead = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
@@ -77,7 +87,7 @@ export class ZaroLead
     async updateLead(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.put(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
+            const response = await this.$http.put(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -100,7 +110,7 @@ export class ZaroLead
     {
         var lead: object = null;
         try {
-            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/info', { headers: this.httpHeaders });
+            const response = await this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/info', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //lead = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
@@ -122,7 +132,7 @@ export class ZaroLead
     async updateLeadAddress(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -141,15 +151,16 @@ export class ZaroLead
         return false;
     }
 
-    async completeLead(leadId: string, status: string, total: number, paymentMethod: string)
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
     {
         try {
             let params = {
                 status: status,
                 total: total,
                 payment_method: paymentMethod,
+                push: push,
             };
-            const response = await this.$http.post(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
+            const response = await this.$http.post(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -171,7 +182,7 @@ export class ZaroLead
     async deleteLead(leadId: string)
     {
         try {
-            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/leads/' + leadId + '/delete', { headers: this.httpHeaders });
+            const response = await this.$http.delete(this.API_URL_3RD + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -212,11 +223,11 @@ export class ZaroLead
         return product;
     }
 
-    async getPaymentIntent(productId: string, leadId: string, quantity: string)
+    async getPaymentIntentProduct(productId: string, leadId: string, quantity: string)
     {
         var paymentIntent: object = null;
         let params = {
-            lead_id: leadId,
+            lead: leadId,
             quantity: quantity,
         };
         let httpHeaders = {
@@ -224,7 +235,36 @@ export class ZaroLead
         };
 
         try {
-            const response = await this.$http.get(this.API_URL_3RD + 'warehouse/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
+            const response = await this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/' + productId + '/payment-intent', { params: params, headers: httpHeaders });
+            if (response !== null && response !== '') {
+                //paymentIntent = utils.jsonDecode(response);
+                if (response.hasOwnProperty('data')) {
+                    paymentIntent = response['data'];
+                }
+                if (paymentIntent === null || paymentIntent.hasOwnProperty('error') || paymentIntent.hasOwnProperty('errors')) {
+                    paymentIntent = null;
+                } else if (paymentIntent.hasOwnProperty('data')) {
+                    paymentIntent = paymentIntent['data'];
+                }
+            }
+        } catch (error) {
+            paymentIntent = null;
+        }
+        return paymentIntent;
+    }
+
+    async getPaymentIntent(amount: number)
+    {
+        var paymentIntent: object = null;
+        let params = {
+            amount: amount,
+        };
+        let httpHeaders = {
+            'Accept': 'application/json',
+        };
+
+        try {
+            const response = await this.$http.get(this.API_URL_3RD + this.warehouseNetwork + '/products/payment-intent', { params: params, headers: httpHeaders });
             if (response !== null && response !== '') {
                 //paymentIntent = utils.jsonDecode(response);
                 if (response.hasOwnProperty('data')) {
