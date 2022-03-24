@@ -912,7 +912,7 @@ async function initStep5()
 
         e = document.getElementById('orderNumber');
         if (e !== null) {
-            e.innerText = lead['number'];
+            e.innerText = lead['id'];
         }
         e = document.getElementById('orderDate');
         if (e !== null) {
