@@ -41,7 +41,7 @@ class CloneWebpageJob implements ShouldQueue
             ->execute(
                 'python3 ' . env('ZAROCLONER_PATH') . '/zarocloner.py ' .
                 $this->webpage_url . ' ' .
-                $this->path
+                $this->path . ' >> ' . env('ZAROCLONER_PATH') . '/error.log 2>&1'
             );
     }
 }
