@@ -52,6 +52,7 @@ class ZaroClonerJob implements ShouldQueue
                 $this->form_id . ' ' .
                 $this->landing_id;
         }
+        $command .= ' >> ' . env('ZAROCLONER_PATH') . '/error.log 2>&1';
         Ssh::create(env('SFTP_USER'), env('SFTP_HOST'))
             ->execute($command);
     }
