@@ -1,6 +1,6 @@
 <template>
 
-    <div class="vx-row w-full" v-else>
+    <div class="vx-row w-full">
         <div class="vx-col mb-3 sm:w-1/2 w-full">
             <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="customer.first_name" placeholder="First Name" />
         </div>

@@ -67,7 +67,7 @@
             </div>
             <div class="vx-col w-full md:w-1/6">
                 _____________________<br>
-                € {{order.total.toFixed(2)}}
+                € {{parseFloat(order.amount).toFixed(2)}}
             </div>
             <div class="vx-col w-full md:w-1/6">
             </div>
@@ -86,7 +86,7 @@
                     <vs-th sort-key="name">Name</vs-th>
                     <vs-th sort-key="sku">SKU</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
-                    <vs-th sort-key="stock_quantity">Stock Qty</vs-th>
+                    <vs-th sort-key="quantity">Stock Qty</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -108,8 +108,8 @@
                             € {{ item.price.toFixed(2) }}
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.stock_quantity">
-                            {{item.stock_quantity}}
+                        <vs-td class="column-no-padding" :data="item.quantity">
+                            {{item.quantity}}
                         </vs-td>
 
                     </vs-tr>
@@ -149,12 +149,12 @@ export default {
         let line = this.order.lines[i]
         let quantity = parseInt(line.quantity)
         let unitPrice = parseFloat(line.unit_price)
-        let price = quantity*unitPrice
-        this.order.lines[i].price = price.toFixed(2)
-        total += price
+        let totalPrice = quantity*unitPrice
+        this.order.lines[i].total_price = totalPrice.toFixed(2)
+        total += totalPrice
       }
 
-      this.order.total = total
+      this.order.amount = total
     },
     removeLine(lineIndex) {
       this.order.lines.splice(lineIndex, 1)
@@ -174,12 +174,12 @@ export default {
 
       let quantity = 1
       let unitPrice = parseFloat(product.price)
-      let price = unitPrice*quantity
+      let totalPrice = unitPrice*quantity
       this.order.lines.push({
         product_id: product.id,
         product: product,
         unit_price: unitPrice,
-        price: price,
+        total_price: totalPrice,
         quantity: 1,
       })
       this.refreshOrderTotal()
@@ -206,15 +206,15 @@ export default {
     for (let i = 0; i < this.order.lines.length; i++) {
       let line = this.order.lines[i]
 
-      let product = this.getProductById(line.product_id)
+      let product = this.getProductById(line.product_variation.id)
 
       let quantity = parseInt(line.quantity)
-      let unitPrice = parseFloat(product.price)
-      let price = unitPrice*quantity
+      let unitPrice = parseFloat(line.unit_price)
+      let totalPrice = unitPrice*quantity
 
       line.product = product
       line.unit_price = unitPrice
-      line.price = price
+      line.total_price = totalPrice
       line.quantity = quantity
 
       this.order.lines[i] = line

@@ -10,9 +10,7 @@ class WarehouseOrder extends ZaroLeadObject {
     let objects = []
 
     try {
-      let headers = this.getHeaders()
-      const response = await this.$http.get('/api/v1/orders/' + orderId + '/lines', { headers: headers })
-      objects = response.data.data
+      objects = await this.$zarolead.get('/api/v1/warehouse/orders/' + orderId + '/lines')
     } catch (error) {
       // Nothing
     }
@@ -24,9 +22,7 @@ class WarehouseOrder extends ZaroLeadObject {
     let object = null
 
     try {
-      let headers = this.getHeaders()
-      const response = await this.$http.post('/api/v1/orders/' + orderId + '/lines', params, { headers: headers })
-      object = response.data.data
+      object = await this.$zarolead.post('/api/v1/warehouse/orders/' + orderId + '/lines', params)
     } catch (error) {
       // Nothing
     }
@@ -38,9 +34,7 @@ class WarehouseOrder extends ZaroLeadObject {
     let object = null
 
     try {
-      let headers = this.getHeaders()
-      const response = await this.$http.put('/api/v1/orders/lines/' + lineId, params, { headers: headers })
-      object = response.data.data
+      object = await this.$zarolead.put('/api/v1/warehouse/orders/lines/' + lineId, params)
     } catch (error) {
       // Nothing
     }
@@ -52,9 +46,7 @@ class WarehouseOrder extends ZaroLeadObject {
     let result = false
 
     try {
-      let headers = this.getHeaders()
-      const response = await this.$http.delete('/api/v1/orders/lines/' + lineId, { headers: headers })
-      result = true
+      result = await this.$zarolead.delete('/api/v1/warehouse/orders/lines/' + lineId)
     } catch (error) {
       // Nothing
     }

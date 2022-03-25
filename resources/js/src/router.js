@@ -1834,6 +1834,21 @@ const router = new Router({
         // WAREHOUSE
         // =============================================================================
         {
+          path: '/dashboard/warehouse/products',
+          props: true,
+          name: 'warehouse-products',
+          component: () => import('./views/WarehouseProducts.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Warehouse Products', active: true }
+            ],
+            pageTitle: 'Warehouse Products',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/customers',
           props: true,
           name: 'customers',

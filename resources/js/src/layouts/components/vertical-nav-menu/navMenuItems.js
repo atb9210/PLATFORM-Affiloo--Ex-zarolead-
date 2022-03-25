@@ -248,6 +248,13 @@ export default [
         roles: ['developer', 'admin', 'callcenter'],
         submenu: [
           {
+            url: '/dashboard/warehouse/products',
+            name: 'Products',
+            slug: '',
+            i18n: 'Products',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
+          {
             url: '/dashboard/customers',
             name: 'Customers',
             slug: '',

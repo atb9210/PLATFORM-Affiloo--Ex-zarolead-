@@ -4,7 +4,7 @@ namespace App\Http\Resources\api\v1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class WarehouseOrderResource extends JsonResource {
+class WarehouseOrderLineResource extends JsonResource {
     /**
      * Transform the resource into an array.
      *
@@ -12,7 +12,7 @@ class WarehouseOrderResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
-        $variation = $this->variation;
+        $variation = $this->product_variation;
         return [
             'id' => $this->id,
             'order_id' => $this->order_id,

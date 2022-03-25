@@ -9,7 +9,8 @@ class WarehouseProductVariation extends Model
     protected $fillable = [
         'warehouse_product_id',
         'sku', 'name',
-        'price', 'quantity'
+        'price', 'quantity',
+        'info',
     ];
 
     public function product()

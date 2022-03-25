@@ -12,7 +12,7 @@
 
         <div class="vx-row w-full" v-if="useExistingCustomer">
             <div class="vx-col mb-3 w-full">
-                <my-select v-model="existingCustomer" :options="customers" class="w-full select-large" autocomplete />
+                <my-select v-model="existingCustomer" :options="customers" class="w-full select-large" :autocomplete="true" />
             </div>
         </div>
         <CustomerBuilderFormComponent v-else v-model="newCustomer" />
@@ -57,6 +57,9 @@ export default {
   },
   data () {
     return {
+      customerClient: null,
+      warehouseOrderClient: null,
+
       useExistingCustomer: true,
 
       order: {
@@ -269,8 +272,7 @@ export default {
       if (this.useExistingCustomer) {
         customer = this.existingCustomer
       } else {
-        let customerClient = new Customer(localStorage.getItem('accessToken'))
-        customer = await customerClient.create(this.newCustomer)
+        customer = await this.customerClient.create(this.newCustomer)
       }
       if (customer === null) {
         // TODO: Log error
@@ -278,25 +280,33 @@ export default {
 
       // Create the order
       let lines = []
+      let amount = 0.0
       for (let i = 0; i < this.order.lines.length; i++) {
         let line = this.order.lines[i]
+        let unitPrice = parseFloat(line.unit_price)
         let quantity = parseInt(line.quantity)
-        let fullPrice = parseFloat(line.unit_price)*quantity
-        let price = fullPrice
+        let totalPrice = unitPrice*quantity
         let discount = 0.0
+        let finalPrice = totalPrice - discount
+        amount += finalPrice
         lines.push({
-          product_id: line.product.id,
+          warehouse_product_variation_id: line.product.id,
           quantity: quantity,
-          full_price: fullPrice,
-          discount: discount,
-          price: price,
+          unit_price: unitPrice.toFixed(2),
+          total_price: totalPrice.toFixed(2),
+          discount: discount.toFixed(2),
+          final_price: finalPrice.toFixed(2),
         })
       }
-      let orderClient = new WarehouseOrder(localStorage.getItem('accessToken'))
-      let order = await orderClient.create({
+      let order = await this.warehouseOrderClient.create({
         customer_id: customer.id,
-        lines: JSON.stringify(lines),
+        amount: amount.toFixed(2),
       })
+
+      // Create the order lines
+      for (let i = 0; i < lines.length; i++) {
+        await this.warehouseOrderClient.createLine(order.id, lines[i])
+      }
 
       let result = (order !== null)
       if (result) {
@@ -310,7 +320,7 @@ export default {
       } else {
         this.$vs.notify({
           title: 'Error',
-          text: 'Cannot create the order',
+          text: 'Cannot create the warehouse order',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'danger'
@@ -320,9 +330,9 @@ export default {
       this.$vs.loading.close()
     },
   },
-  updated () {
+  created() {
+    this.customerClient = new Customer(this.$zarolead)
+    this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)
   },
-  mounted () {
-  }
 }
 </script>

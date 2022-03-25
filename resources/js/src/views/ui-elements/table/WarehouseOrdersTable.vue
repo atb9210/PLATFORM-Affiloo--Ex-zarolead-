@@ -14,8 +14,8 @@
         <p class="flex items-center mb-4">
             <vs-button v-if="view == 'orders'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('create')"></vs-button>
             <vs-button v-if="view == 'orders'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" :disabled="selected.length <= 0"></vs-button>
-            <vs-button v-if="(['create','edit']).includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'orders'"></vs-button>
-            <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'orders'"></vs-button>
+            <vs-button v-if="view == 'create' || view == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('orders')"></vs-button>
+            <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('orders')"></vs-button>
         </p>
 
         <!-- Orders table -->
@@ -99,8 +99,13 @@
         </div>
 
         <!-- Create or edit order -->
-        <div v-if="(['create','edit']).includes(view)" class="w-full">
-          <OrderBuilderComponent :customers="customers" :products="products" @onOrderCreated="onOrderCreated" @onOrderUpdated="onOrderUpdated" />
+        <div v-if="view == 'create'" class="w-full">
+          <OrderBuilderComponent :customers="customers" :products="variations" @onOrderCreated="onOrderCreated" @onOrderUpdated="onOrderUpdated" />
+        </div>
+
+        <!-- Edit the order -->
+        <div v-if="view == 'edit'" class="w-full">
+          <OrderEditorComponent :order="order" :products="variations" @onOrderCreated="onOrderCreated" @onOrderUpdated="onOrderUpdated" />
         </div>
 
     </vx-card>
@@ -109,6 +114,7 @@
 <script>
 import { VueContext } from 'vue-context'
 import { Customer, WarehouseProduct, WarehouseOrder } from 'zarolead'
+import * as utils from 'utils'
 
 function forcePhoneFormat(val) {
   let phonePrefix = '+(39)'
@@ -158,164 +164,20 @@ export default {
   data () {
     return {
       customerClient: null,
-      productClient: null,
-      orderClient: null,
+      warehouseProductClient: null,
+      warehouseOrderClient: null,
 
       view: 'orders',
 
-      objects: [],
-      selected: [],
+      orders: [],
+      selectedOrders: [],
 
       maxItems: 20,
 
-      editingObject: null,
-
-      newObject: {
-        'create': {
-          first_name: '',
-          last_name: '',
-          phone: '',
-          email: '',
-          address_line1: '',
-          city: '',
-          postcode: '',
-          zone: '',
-          country: 'IT',
-        },
-        'edit': {
-          first_name: '',
-          last_name: '',
-          phone: '',
-          email: '',
-          address_line1: '',
-          city: '',
-          postcode: '',
-          zone: '',
-          country: 'IT',
-        },
-      },
-
-      locationFound: {},
-
-      zoneOptions: [
-        { label: 'AGRIGENTO', value: 'AG' },
-        { label: 'ALESSANDRIA', value: 'AL' },
-        { label: 'ANCONA', value: 'AN' },
-        { label: 'AOSTA', value: 'AO' },
-        { label: 'AREZZO', value: 'AR' },
-        { label: 'ASCOLI PICENO', value: 'AP' },
-        { label: 'ASTI', value: 'AT' },
-        { label: 'AVELLINO', value: 'AV' },
-        { label: 'BARI', value: 'BA' },
-        { label: 'BARLETTA-ANDRIA-TRANI', value: 'BT' },
-        { label: 'BELLUNO', value: 'BL' },
-        { label: 'BENEVENTO', value: 'BN' },
-        { label: 'BERGAMO', value: 'BG' },
-        { label: 'BIELLA', value: 'BI' },
-        { label: 'BOLOGNA', value: 'BO' },
-        { label: 'BOLZANO', value: 'BZ' },
-        { label: 'BRESCIA', value: 'BS' },
-        { label: 'BRINDISI', value: 'BR' },
-        { label: 'CAGLIARI', value: 'CA' },
-        { label: 'CALTANISSETTA', value: 'CL' },
-        { label: 'CAMPOBASSO', value: 'CB' },
-        { label: 'CARBONIA-IGLESIAS', value: 'CI' },
-        { label: 'CASERTA', value: 'CE' },
-        { label: 'CATANIA', value: 'CT' },
-        { label: 'CATANZARO', value: 'CZ' },
-        { label: 'CHIETI', value: 'CH' },
-        { label: 'COMO', value: 'CO' },
-        { label: 'COSENZA', value: 'CS' },
-        { label: 'CREMONA', value: 'CR' },
-        { label: 'CROTONE', value: 'KR' },
-        { label: 'CUNEO', value: 'CN' },
-        { label: 'ENNA', value: 'EN' },
-        { label: 'FERMO', value: 'FM' },
-        { label: 'FERRARA', value: 'FE' },
-        { label: 'FIRENZE', value: 'FI' },
-        { label: 'FOGGIA', value: 'FG' },
-        { label: 'FORLI-CESENA', value: 'FC' },
-        { label: 'FROSINONE', value: 'FR' },
-        { label: 'GENOVA', value: 'GE' },
-        { label: 'GORIZIA', value: 'GO' },
-        { label: 'GROSSETO', value: 'GR' },
-        { label: 'IMPERIA', value: 'IM' },
-        { label: 'ISERNIA', value: 'IS' },
-        { label: 'LA SPEZIA', value: 'SP' },
-        { label: 'L’AQUILA', value: 'AQ' },
-        { label: 'LATINA', value: 'LT' },
-        { label: 'LECCE', value: 'LE' },
-        { label: 'LECCO', value: 'LC' },
-        { label: 'LIVORNO', value: 'LI' },
-        { label: 'LODI', value: 'LO' },
-        { label: 'LUCCA', value: 'LU' },
-        { label: 'MACERATA', value: 'MC' },
-        { label: 'MANTOVA', value: 'MN' },
-        { label: 'MASSA-CARRARA', value: 'MS' },
-        { label: 'MATERA', value: 'MT' },
-        { label: 'MEDIO CAMPIDANO', value: 'VS' },
-        { label: 'MESSINA', value: 'ME' },
-        { label: 'MILANO', value: 'MI' },
-        { label: 'MODENA', value: 'MO' },
-        { label: 'MONZA E BRIANZA', value: 'MB' },
-        { label: 'NAPOLI', value: 'NA' },
-        { label: 'NOVARA', value: 'NO' },
-        { label: 'NUORO', value: 'NU' },
-        { label: 'OGLIASTRA', value: 'OG' },
-        { label: 'OLBIA-TEMPIO', value: 'OT' },
-        { label: 'ORISTANO', value: 'OR' },
-        { label: 'PADOVA', value: 'PD' },
-        { label: 'PALERMO', value: 'PA' },
-        { label: 'PARMA', value: 'PR' },
-        { label: 'PAVIA', value: 'PV' },
-        { label: 'PERUGIA', value: 'PG' },
-        { label: 'PESARO E URBINO', value: 'PU' },
-        { label: 'PESCARA', value: 'PE' },
-        { label: 'PIACENZA', value: 'PC' },
-        { label: 'PISA', value: 'PI' },
-        { label: 'PISTOIA', value: 'PT' },
-        { label: 'PORDENONE', value: 'PN' },
-        { label: 'POTENZA', value: 'PZ' },
-        { label: 'PRATO', value: 'PO' },
-        { label: 'RAGUSA', value: 'RG' },
-        { label: 'RAVENNA', value: 'RA' },
-        { label: 'REGGIO CALABRIA', value: 'RC' },
-        { label: 'REGGIO EMILIA', value: 'RE' },
-        { label: 'RIETI', value: 'RI' },
-        { label: 'RIMINI', value: 'RN' },
-        { label: 'ROMA', value: 'RM' },
-        { label: 'ROVIGO', value: 'RO' },
-        { label: 'SALERNO', value: 'SA' },
-        { label: 'SASSARI', value: 'SS' },
-        { label: 'SAVONA', value: 'SV' },
-        { label: 'SIENA', value: 'SI' },
-        { label: 'SIRACUSA', value: 'SR' },
-        { label: 'SONDRIO', value: 'SO' },
-        { label: 'TARANTO', value: 'TA' },
-        { label: 'TERAMO', value: 'TE' },
-        { label: 'TERNI', value: 'TR' },
-        { label: 'TORINO', value: 'TO' },
-        { label: 'TRAPANI', value: 'TP' },
-        { label: 'TRENTO', value: 'TN' },
-        { label: 'TREVISO', value: 'TV' },
-        { label: 'TRIESTE', value: 'TS' },
-        { label: 'UDINE', value: 'UD' },
-        { label: 'VARESE', value: 'VA' },
-        { label: 'VENEZIA', value: 'VE' },
-        { label: 'VERBANO-CUSIO-OSSOLA', value: 'VB' },
-        { label: 'VERCELLI', value: 'VC' },
-        { label: 'VERONA', value: 'VR' },
-        { label: 'VIBO VALENTIA', value: 'VV' },
-        { label: 'VICENZA', value: 'VI' },
-        { label: 'VITERBO', value: 'VT' },
-      ],
-
-      countryOptions: [
-        'IT',
-      ],
-
       order: {},
-      chatMessages: [],
+      customers: [],
+      products: [],
+      variations: [],
     }
   },
   computed: {
@@ -336,31 +198,30 @@ export default {
         this.gridApi.paginationGoToPage(val - 1)
       }
     },
+    objects() {
+      if (this.view == 'orders') {
+        return this.orders
+      }
+      return []
+    },
+    selected() {
+      if (this.view == 'orders') {
+        return this.selectedOrders
+      }
+      return []
+    },
   },
   methods: {
-    getObjectIndexById(id) {
-      let index = -1;
-      this.objects.forEach((obj, i) => {
-        if (obj.id == id) {
-          index = i
-          return
-        }
-      })
-      return index
-    },
-    async fetchObjects() {
-      this.selected = []
-
-      this.$vs.loading()
-
-      this.objects = await this.orderClient.fetch()
-      for (let i = 0; i < this.objects.length; i++) {
-        let obj = this.objects[i]
-        obj.full_name = obj.first_name + ' ' + obj.last_name
-        this.objects[i] = obj
+    getObjectById(id, objects = null) {
+      if (objects === null) {
+        objects = this.objects
       }
-
-      this.$vs.loading.close()
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].hasOwnProperty('id') && objects[i].id == id) {
+          return objects[i]
+        }
+      }
+      return null
     },
     onPageChanged(val) {
       this.currentPage = val
@@ -389,7 +250,6 @@ export default {
         const response = await this.$http.delete('/api/v1/warehouse/orders/' + obj.id, { headers })
       }
 
-      this.selected = []
       this.$vs.notify({
         title: 'Success',
         text: numSelected + ' Warehouse order(s) deleted',
@@ -398,20 +258,27 @@ export default {
         color: 'success'
       })
       this.$vs.loading.close()
-      await this.fetchObjects()
+      await this.changeView('orders')
     },
-    async changeView(type, value = null) {
-      if (type == 'orders') {
-        await this.fetchObjects()
-      } else if (type == 'create') {
-        this.order = {}
-      } else if (type == 'edit') {
-        if (value === null) {
-          return
+    async changeView(view, value = null) {
+      if (view == 'orders') {
+        this.$vs.loading()
+
+        this.selectedOrders = []
+        this.orders = await this.warehouseOrderClient.fetch()
+        for (let i = 0; i < this.orders.length; i++) {
+          let obj = this.orders[i]
+          obj.full_name = obj.customer.first_name + ' ' + obj.customer.last_name
+          this.orders[i] = obj
         }
-        this.order = value
+
+        this.$vs.loading.close()
+      } else if (view == 'create') {
+        this.order = {}
+      } else if (view == 'edit') {
+        this.order = utils.deepCloneObject(value)
       }
-      this.view = type
+      this.view = view
     },
     clearForm(type) {
       this.newObject[type] = {
@@ -485,7 +352,7 @@ export default {
           
       this.clearForm('create')
       this.view = 'orders'
-      await this.fetchObjects()
+      await this.changeView('orders')
     },
     async updateObject() {
       if (this.editingObject === null) return
@@ -529,9 +396,7 @@ export default {
           color: 'success'
         })
         this.clearForm('edit')
-        this.view = 'orders'
-        await this.fetchObjects()
-        this.editingObject = null
+        await this.changeView('orders')
       } else {
         this.$vs.notify({
           title: 'Error',
@@ -602,9 +467,7 @@ export default {
       this.$vs.loading()
 
       this.order = order
-      let orderClient = new WarehouseOrder(localStorage.getItem('accessToken'))
-
-      this.chatMessages = await orderClient.getChatMessages(order.id)
+      this.chatMessages = await this.warehouseOrderClient.getChatMessages(order.id)
       for (let i = 0; i < this.chatMessages.length; i++) {
         let msg = this.chatMessages[i]
 
@@ -663,12 +526,34 @@ export default {
   },
   async created() {
     this.customerClient = new Customer(this.$zarolead)
-    this.orderClient = new WarehouseOrder(this.$zarolead)
-    this.productClient = new WarehouseProduct(this.$zarolead)
+    this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
+    this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)
 
     this.$vs.loading()
+
     this.customers = await this.customerClient.fetch()
-    this.products = await this.productClient.fetch()
+    for (let i = 0; i < this.customers.length; i++) {
+      let obj = this.customers[i]
+      obj.name = obj.first_name + ' ' + obj.last_name + '  ' + obj.phone
+      this.customers[i] = obj
+    }
+
+    this.products = await this.warehouseProductClient.fetch()
+    this.variations = []
+    for (let i = 0; i < this.products.length; i++) {
+      let product = this.products[i]
+      for (let j = 0; j < product.variations.length; j++) {
+        let variation = product.variations[j]
+        this.variations.push({
+          id: variation.id,
+          name: product.name + ' ' + variation.name,
+          sku: variation.sku,
+          price: parseFloat(variation.price),
+          quantity: parseInt(variation.quantity),
+        })
+      }
+    }
+
     this.$vs.loading.close()
 
     await this.changeView('orders')

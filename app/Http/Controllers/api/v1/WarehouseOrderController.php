@@ -73,7 +73,7 @@ class WarehouseOrderController extends Controller
         $params = $request->validate([
             'customer_id' => 'required|integer|min:1|exists:customers,id',
             'amount'      => 'required|numeric|min:0',
-            'status'      => 'in:' . implode(WarehouseOrder::STATUSES, ','),
+            'status'      => 'in:' . join(',', WarehouseOrder::STATUSES),
         ]);
 
         $object = WarehouseOrder::create($params);
@@ -110,7 +110,7 @@ class WarehouseOrderController extends Controller
         // Param validation
         $params = $request->validate([
             'amount'      => 'numeric|min:0',
-            'status'      => 'in:' . implode(WarehouseOrder::STATUSES, ','),
+            'status'      => 'in:' . join(',', WarehouseOrder::STATUSES),
         ]);
 
         $object->update($params);

@@ -8,6 +8,7 @@ class WarehouseProduct extends Model
 {
     protected $fillable = [
         'name', 'sku',
+        'info',
     ];
 
     public function variations()

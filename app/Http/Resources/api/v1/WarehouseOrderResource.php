@@ -31,7 +31,7 @@ class WarehouseOrderResource extends JsonResource {
                 'zone' => $customer->zone,
                 'country' => $customer->country,
             ],
-            'lines' => WarehouseOrderLineResource($lines),
+            'lines' => WarehouseOrderLineResource::collection($lines),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

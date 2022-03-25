@@ -2,7 +2,9 @@
     <vx-card title="Warehouse Products" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="view == 'products'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            <vs-button v-if="view == 'products'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('create')"></vs-button>
+            <vs-button v-if="view == 'create' || view == 'edit'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('products')"></vs-button>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -14,83 +16,145 @@
             </div>
         </div>
 
-        <vs-dropdown vs-trigger-click class="cursor-pointer">
-            <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
-                <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
-                <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+        <div v-if="view == 'products'">
+
+            <vs-dropdown vs-trigger-click class="cursor-pointer">
+                <div class="p-4 border border-solid d-theme-border-grey-light rounded-full d-theme-dark-bg cursor-pointer flex items-center justify-between font-medium">
+                    <span class="mr-2">{{ currentPage * maxItems - (maxItems - 1) }} - {{ objects.length - currentPage * maxItems > 0 ? currentPage * maxItems : objects.length }} of {{ objects.length }}</span>
+                    <feather-icon icon="ChevronDownIcon" svgClasses="h-4 w-4" />
+                </div>
+                <vs-dropdown-menu>
+                    <vs-dropdown-item @click="maxItems = 20">
+                        <span>20</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 50">
+                        <span>50</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 100">
+                        <span>100</span>
+                    </vs-dropdown-item>
+                    <vs-dropdown-item @click="maxItems = 150">
+                        <span>150</span>
+                    </vs-dropdown-item>
+                </vs-dropdown-menu>
+            </vs-dropdown>
+
+            <vue-context ref="product_context_menu" v-slot="{ data }">
+                <li>
+                  <a href="#" @click="$refs.product_context_menu.close();showProductInfo(data)" class="flex items-center text-sm">
+                    <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Show Info</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.product_context_menu.close();changeView('edit', data)" class="flex items-center text-sm">
+                    <feather-icon icon="EditIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Edit</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" @click="$refs.product_context_menu.close()" class="flex items-center text-sm">
+                    <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
+                    <span class="ml-2">Close</span>
+                  </a>
+                </li>
+            </vue-context>
+
+            <!-- Products table -->
+            <vs-table stripe multiple v-model="selectedProducts" :max-items="maxItems" pagination search :data="products" :currentPage="currentPage" @change-page="onPageChanged">
+
+                <template slot="thead">
+                    <vs-th sort-key="name">Name</vs-th>
+                    <vs-th sort-key="sku">SKU</vs-th>
+                    <vs-th sort-key="variations">Variations</vs-th>
+                </template>
+
+                <template slot-scope="{data}">
+                    <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
+
+                        <vs-td class="column-no-padding" :data="item.name">
+                            <div @contextmenu.prevent="$refs.product_context_menu.open($event, item)">
+                                <vs-chip>
+                                    {{item.name}}
+                                </vs-chip>
+                            </div>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.sku">
+                            {{item.sku}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.variations">
+                            <vx-tooltip :title="item.name + ' variations'" :text="getVariationsNames(item)" position="left">
+                                <vs-chip>
+                                    {{item.variations.length}} variations
+                                </vs-chip>
+                            </vx-tooltip>
+                        </vs-td>
+
+                    </vs-tr>
+                </template>
+
+            </vs-table>
+
+        </div>
+
+        <div v-if="view == 'create' || view == 'edit'">
+
+            <div class="vx-row w-full">
+                <div class="vx-col mb-3 sm:w-1/2 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="product.name" placeholder="Name*" />
+                </div>
+                <div class="vx-col mb-3 sm:w-1/2 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="product.sku" placeholder="SKU" />
+                </div>
             </div>
-            <vs-dropdown-menu>
-                <vs-dropdown-item @click="maxItems = 20">
-                    <span>20</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 50">
-                    <span>50</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 100">
-                    <span>100</span>
-                </vs-dropdown-item>
-                <vs-dropdown-item @click="maxItems = 150">
-                    <span>150</span>
-                </vs-dropdown-item>
-            </vs-dropdown-menu>
-        </vs-dropdown>
 
-        <vue-context ref="product_context_menu" v-slot="{ data }">
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close();showProductInfo(data)" class="flex items-center text-sm">
-                <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Show Info</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" @click="$refs.product_context_menu.close()" class="flex items-center text-sm">
-                <feather-icon icon="XIcon" svgClasses="w-5 h-5" />
-                <span class="ml-2">Close</span>
-              </a>
-            </li>
-        </vue-context>
+            <div class="vx-row w-full" v-for="(variation, vIndex) in product.variations" :key="'prodCreateVariation' + vIndex">
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <span @click="removeVariation(vIndex)"><vs-icon class="icon-button" icon-pack="feather" icon="icon-x"></vs-icon></span>
+                    {{ variation.name }}
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    {{ variation.sku }}
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    {{ variation.price }}
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    {{ variation.quantity }}
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <span @click="removeVariation(vIndex)"><vs-icon class="icon-button" icon-pack="feather" icon="icon-x"></vs-icon></span>
+                </div>
+            </div>
 
-        <!-- Products table -->
-        <vs-table v-if="view == 'products'" stripe multiple v-model="selectedProducts" :max-items="maxItems" pagination search :data="products" :currentPage="currentPage" @change-page="onPageChanged">
+            <div class="vx-row w-full">
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-tag" icon-no-border v-model="variation.name" placeholder="Name*" />
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="variation.sku" placeholder="SKU*" />
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <vs-input type="number" step="0.01" min="0" class="w-full" icon-pack="feather" icon="icon-dollar-sign" icon-no-border v-model="variation.price" placeholder="Price*" />
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <vs-input type="number" step="1" min="0" class="w-full" icon-pack="feather" icon="icon-package" icon-no-border v-model="variation.quantity" placeholder="Quantity*" />
+                </div>
+                <div class="vx-col mb-3 sm:w-1/5 w-full">
+                    <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="addVariation(variation)" :disabled="!isValidVariation(variation)"></vs-button>
+                </div>
+            </div>
 
-            <template slot="thead">
-                <vs-th sort-key="name">Name</vs-th>
-                <vs-th sort-key="sku">SKU</vs-th>
-                <vs-th sort-key="variations">Variations</vs-th>
-                <vs-th sort-key="sale_price">Price</vs-th>
-                <vs-th sort-key="quantity">Quantity</vs-th>
-            </template>
+            <div class="vx-row w-full">
+                <div class="vx-col mb-3 w-full">
+                    <vs-button v-if="view == 'create'" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="createProduct(product)" :disabled="!isValidProduct(product)">Create Product</vs-button>
+                    <vs-button v-if="view == 'edit'" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateProduct(product)" :disabled="!isValidProduct(product)">Update Product</vs-button>
+                </div>
+            </div>
 
-            <template slot-scope="{data}">
-                <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
-
-                    <vs-td class="column-no-padding" :data="item.name">
-                        <div @contextmenu.prevent="$refs.product_context_menu.open($event, item)">
-                            <vs-chip>
-                                {{item.name}}
-                            </vs-chip>
-                        </div>
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.sku">
-                        {{item.sku}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.variations">
-                        {{item.variations}}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding" :data="item.sale_price">
-                        € {{ item.price.toFixed(2) }}
-                    </vs-td>
-
-                    <vs-td class="column-no-padding">
-                        {{item.quantity}}
-                    </vs-td>
-
-                </vs-tr>
-            </template>
-        </vs-table>
+        </div>
 
         <!-- Product info popup -->
         <vs-popup title="Product info" :active.sync="showPopup['product_info']">
@@ -111,37 +175,50 @@
 
                 <div class="vx-row mb-6">
                     <div class="vx-col w-full">
-                        <strong>{{ product.name }} ({{ product.sku }})</strong>
+                        <strong>{{ product.name }} ({{ (product.sku !== null) ? product.sku : 'sku undefined'}})</strong>
                     </div>
                 </div>
 
+                <!--
                 <div class="vx-row mb-6" v-if="product.description != ''">
                     <div class="vx-col w-full">
                         <span>{{ product.description }}</span>
                     </div>
                 </div>
+                -->
 
-                <div class="vx-row mb-6" v-if="product.variations != ''">
-                    <div class="vx-col w-full">
-                        <span>Variations: {{ product.variations }}</span>
+                <div class="vx-row w-full mb-6 font-bold" v-if="product !== null && product.hasOwnProperty('variations') && product.variations.length > 0">
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        Name
+                    </div>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        SKU
+                    </div>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        Price
+                    </div>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        Stock Quantity
                     </div>
                 </div>
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col md:1/2 w-full">
-                        <span>Sugg. Price: € {{ (product.hasOwnProperty('sale_price') ? product.sale_price.toFixed(2) : 0.0) }}</span>
+                <div class="vx-row w-full" v-if="product !== null && product.hasOwnProperty('variations') && product.variations.length > 0" v-for="(variation, vIndex) in product.variations" :key="'showInfoVariation' + variation.id">
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        {{ variation.name }}
                     </div>
-                    <div class="vx-col md:1/2 w-full">
-                        <span>Drop. Price: € {{ (product.hasOwnProperty('dropshipping_price') ? product.dropshipping_price.toFixed(2) : 0.0) }}</span>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        {{ variation.sku }}
+                    </div>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        € {{ variation.price }}
+                    </div>
+                    <div class="vx-col mb-3 sm:w-1/4 w-full">
+                        {{ variation.quantity }}
                     </div>
                 </div>
-
-                <div class="vx-row mb-6">
-                    <div class="vx-col w-full">
-                        <span>Stock Quantity: {{ product.quantity }}</span>
-                    </div>
+                <div class="vx-row w-full" v-else>
+                    This product has no variations
                 </div>
-                
+
             </div>
 
         </vs-popup>
@@ -246,8 +323,8 @@
 
 <script>
 import { VueContext } from 'vue-context'
-
-import Dropin from 'dropin'
+import { WarehouseProduct } from 'zarolead'
+import * as utils from 'utils'
 
 function formatMoney(num) {
   let s = ''
@@ -265,14 +342,13 @@ export default {
   },
   data () {
     return {
-      dropin: null,
+      warehouseProductClient: null,
 
       maxItems: 20,
       view: 'products',
 
       showFilters: false,
       filters: {
-        categories: [],
       },
 
       products: [],
@@ -286,7 +362,7 @@ export default {
       product: {},
       productImageIndex: 0,
 
-      categories: [],
+      variation: {},
 
       dropinProducts: [],
       productView: 'normal',
@@ -312,7 +388,16 @@ export default {
       }
     },
     objects() {
-      return this.products
+      if (this.view == 'products') {
+        return this.products
+      }
+      return []
+    },
+    selected() {
+      if (this.view == 'products') {
+        return this.selectedProducts
+      }
+      return []
     },
   },
   methods: {
@@ -320,20 +405,37 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
-    async changeView(view, parent = null) {
-      this.$vs.loading()
-
+    async changeView(view, value = null) {
       if (view == 'products') {
-        this.products = await this.dropin.fetchProducts(this.filters)
-        this.view = view
+        this.$vs.loading()
+        this.selectedProducts = []
+        this.products = await this.warehouseProductClient.fetch(this.filters)
+        this.$vs.loading.close()
+      } else if (view == 'create') {
+        this.product = {
+          name: '',
+          sku: '',
+          variations: [],
+        }
+        this.variation = {
+          name: '',
+          sku: '',
+          price: '',
+          quantity: '',
+        }
+      } else if (view == 'edit') {
+        this.product = utils.deepCloneObject(value)
       }
 
-      this.$vs.loading.close()
+      this.view = view
     },
-    getObjectById(id) {
-      for (let i = 0; i < this.orders.length; i++) {
-        if (this.objects[i].id === id) {
-          return this.objects[i]
+    getObjectById(id, objects = null) {
+      if (objects === null) {
+        objects = this.objects
+      }
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].hasOwnProperty('id') && objects[i].id == id) {
+          return objects[i]
         }
       }
       return null
@@ -343,7 +445,6 @@ export default {
     },
     async resetFilters() {
       this.filters = {
-        categories: [],
       }
       await this.applyFilters()
     },
@@ -368,99 +469,135 @@ export default {
         this.productImageIndex = this.product.images.length - 1
       }
     },
-    async showAddProductPopup() {
-      if (this.dropinProducts.length == 0) {
-        this.$vs.loading()
-        this.dropinProducts = await this.dropin.fetchDropinProducts()
-        this.$vs.loading.close()
-      }
-
-      this.productView = 'normal'
-      this.showPopup['add_product'] = true
+    removeVariation(index) {
+      this.product.variations.splice(index, 1)
     },
-    async toggleProduct(product) {
+    addVariation(variation) {
+      this.product.variations.push(this.variation)
+      this.variation = {
+        name: '',
+        sku: '',
+        price: '',
+        quantity: '',
+      }
+    },
+    isValidVariation(variation) {
+      try {
+        if (variation.name.length > 0 && variation.sku.length > 0 &&
+            parseFloat(variation.price) >= 0 && parseInt(variation.quantity) >= 0) {
+          return true
+        }
+      } catch (error) {
+        return false
+      }
+      return false
+    },
+    isValidProduct(product) {
+      try {
+        if (product.name.length > 0) {
+          return true
+        }
+      } catch (error) {
+        return false
+      }
+      return false
+    },
+    async createProduct(product) {
       this.$vs.loading()
 
-      let hasBeenDeleted = false
-      for (let i = 0; i < this.products.length; i++) {
-        let p = this.products[i]
-        if (product.sku == p.sku) {
-          await this.dropin.deleteProduct(p.sku)
-          hasBeenDeleted = true
-          break
+      // Create product
+      let obj = await this.warehouseProductClient.create(product)
+      if (obj === null) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create the product',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      } else {
+        // Create product variations
+        for (let i = 0; i < product.variations.length; i++) {
+          let variation = product.variations[i]
+          await this.warehouseProductClient.createVariation(obj.id, variation)
+          // TODO: Check for errors when creating a variation
         }
-      }
-
-      if (hasBeenDeleted) {
         this.$vs.notify({
           title: 'Success',
-          text: 'Product removed',
+          text: 'Product created',
           iconPack: 'feather',
           icon: 'icon-alert-circle',
           color: 'success'
         })
-      } else {
-        let newProduct = await this.dropin.createProduct({
-          sku: product.sku,
-          name: product.name,
-          variations: product.variations,
-          description: product.description,
-          category: product.category,
-          images: JSON.stringify(product.images),
-          dropshipping_price: product.dropshipping_price,
-          sale_price: product.sale_price,
-          cost: product.dropshipping_price,
-          quantity: product.quantity,
-        })
-
-        if (product !== null) {
-          this.$vs.notify({
-            title: 'Success',
-            text: 'Product added',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'success'
-          })
-        } else {
-          this.$vs.notify({
-            title: 'Error',
-            text: 'Cannot add the product',
-            iconPack: 'feather',
-            icon: 'icon-alert-circle',
-            color: 'danger'
-          })
-        }
       }
 
       this.$vs.loading.close()
+
+      this.changeView('products')
     },
-    hasProduct(product) {
-      for (let i = 0; i < this.products.length; i++) {
-        let p = this.products[i]
-        if (product.sku == p.sku) {
-          return true
+    async updateProduct(product) {
+      this.$vs.loading()
+
+      // Update product
+      let obj = await this.warehouseProductClient.update(product.id)
+      if (obj === null) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the product',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      } else {
+        let originalProduct = this.getObjectById(obj.id, this.products)
+
+        // Delete missing variations
+        for (let i = 0; i < originalProduct.variations.length; i++) {
+          let variation = originalProduct.variations[i]
+          let found = (this.getObjectById(variation.id, product.variations) !== null)
+          if (!found) {
+            await this.warehouseProductClient.deleteVariation(variation.id)
+          }
         }
+
+        // Create new variations
+        for (let i = 0; i < product.variations.length; i++) {
+          let variation = product.variations[i]
+          if (!variation.hasOwnProperty('id')) {
+            await this.warehouseProductClient.createVariation(obj.id, variation)
+          }
+        }
+
+        // TODO: Check for errors when creating/deleting variations
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Product updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
       }
-      return false
+
+      this.$vs.loading.close()
+
+      this.changeView('products')
+    },
+    getVariationsNames(product) {
+      let s = ''
+      for (let i = 0; i < product.variations.length; i++) {
+        if (i > 0) {
+          s += ', '
+        }
+        s += product.variations[i].name
+      }
+      return s
     },
   },
   async created() {
-    this.dropin = new Dropin(localStorage.getItem('accessToken'))
+    this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
 
-    this.$vs.loading()
-
-    await this.resetFilters()
-
-    // Get categories list from products
-    this.categories = []
-    for (let i = 0; i < this.products.length; i++) {
-      let category = this.products[i].category
-      if (!this.categories.includes(category)) {
-        this.categories.push(category)
-      }
-    }
-
-    this.$vs.loading.close()
+    await this.changeView('products')
   },
 }
 
@@ -472,5 +609,8 @@ export default {
 }
 .nextPrevProductImage:hover {
   filter: brightness(0.9);
+}
+.icon-button {
+  cursor: pointer;
 }
 </style>

@@ -17,7 +17,7 @@ class WarehouseProductResource extends JsonResource {
             'id' => $this->id,
             'name' => $this->name,
             'sku' => $this->sku,
-            'lines' => WarehouseProductVariationResource($variations),
+            'variations' => WarehouseProductVariationResource::collection($variations),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

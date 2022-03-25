@@ -20,6 +20,7 @@ class CreateWarehouseProductVariationsTable extends Migration
             $table->string('name');
             $table->decimal('price', 9, 2);
             $table->integer('quantity')->unsiged()->default(0);
+            $table->json('info')->nullable();
             $table->timestamps();
 
 			$table->foreign('warehouse_product_id')->references('id')->on('warehouse_products')->onDelete('cascade');

@@ -17,6 +17,7 @@ class CreateWarehouseProductsTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('sku')->nullable()->unique();
+            $table->json('info')->nullable();
             $table->timestamps();
         });
     }
