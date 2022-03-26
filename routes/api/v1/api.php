@@ -247,6 +247,16 @@ Route::put('warehouse/orders/lines/{id}', 'api\v1\WarehouseOrderController@updat
 Route::delete('warehouse/orders/lines/{id}', 'api\v1\WarehouseOrderController@destroyLine')->middleware('auth:api')
     ->name('warehouse.orders.lines.destroy');
 
+/* Warehouse shippings routes */
+Route::apiResource('warehouse/shippings', 'api\v1\WarehouseShippingController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Warehouse shipping carriers routes */
+Route::apiResource('warehouse/shipping-carriers', 'api\v1\WarehouseShippingCarrierController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
 
 /* Storage routes */
 Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');

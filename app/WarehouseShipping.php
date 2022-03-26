@@ -29,6 +29,7 @@ class WarehouseShipping extends Model
         'status',
         'tracking_number', 'tracking_url',
         'created_at', 'updated_at', 'delivered_at',
+        'first_name', 'last_name', 'phone', 'email',
         'address_line1', 'address_line2', 'city', 'postcode', 'zone', 'country',
         'notes',
         'info',

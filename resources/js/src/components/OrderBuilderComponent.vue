@@ -26,6 +26,18 @@
         <OrderLinesEditorComponent :order="order" :products="products" />
     </div>
 
+    <hr class="mt-3 mb-6">
+
+    <div class="w-full mb-6">
+        <h2 class="mb-3">Shipping</h2>
+        <div class="vx-col mb-3 w-full">
+            <vs-checkbox v-model="createShipping">Also create the relative shipping</vs-checkbox>
+        </div>
+        <div class="vx-col mb-3 w-full" v-if="createShipping">
+            <my-select v-model="carrier" :options="carriers" class="w-full select-large" :autocomplete="true" />
+        </div>
+    </div>
+
     <div class="w-full pr-2 pl-2">
         <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
             <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-package" @click="createOrder" :disabled="!isValidForm()">Create Order</vs-button>
@@ -37,7 +49,7 @@
 </template>
 
 <script>
-import { Customer, WarehouseOrder } from 'zarolead'
+import { Customer, WarehouseOrder, WarehouseShipping } from 'zarolead'
 
 export default {
   name: 'OrderBuilderComponent',
@@ -46,6 +58,7 @@ export default {
   props: {
     customers: { type: Array, required: true },
     products: { type: Array, required: true },
+    carriers: { type: Array, required: true },
   },
   computed: {
     customer() {
@@ -59,12 +72,14 @@ export default {
     return {
       customerClient: null,
       warehouseOrderClient: null,
+      warehouseShippingClient: null,
 
-      useExistingCustomer: true,
+      useExistingCustomer: false,
+      createShipping: true,
 
       order: {
         lines: [],
-        total: 0.0,
+        amount: 0.0,
       },
 
       existingCustomer: {},
@@ -200,6 +215,8 @@ export default {
         'IT',
       ],
 
+      carrier: {},
+
     }
   },
   methods: {
@@ -262,7 +279,18 @@ export default {
 
       let isValidOrder = (this.order.lines.length > 0)
 
-      return (isValidCustomer && isValidOrder)
+      let carrier = null
+      if (this.carrier.hasOwnProperty('id')) {
+        for (let i = 0; i < this.carriers.length; i++) {
+          if (this.carriers[i].id == this.carrier.id) {
+            carrier = this.carriers[i]
+            break
+          }
+        }
+      }
+      let isValidCarrier = ((!this.createShipping) || (this.createShipping && carrier !== null))
+
+      return (isValidCustomer && isValidOrder && isValidCarrier)
     },
     async createOrder() {
       this.$vs.loading()
@@ -310,6 +338,22 @@ export default {
 
       let result = (order !== null)
       if (result) {
+        if (this.createShipping) {
+          let shipping = await this.warehouseShippingClient.create({
+            warehouse_order_id: order.id,
+            warehouse_shipping_carrier_id: this.carrier.id,
+            first_name: customer.first_name,
+            last_name: customer.last_name,
+            phone: customer.phone,
+            email: customer.email,
+            address_line1: customer.address_line1,
+            address_line2: customer.address_line2,
+            city: customer.city,
+            postcode: customer.postcode,
+            zone: customer.zone,
+            country: customer.country,
+          })
+        }
         this.$vs.notify({
           title: 'Success',
           text: 'Warehouse order created',
@@ -317,6 +361,7 @@ export default {
           icon: 'icon-package',
           color: 'success'
         })
+        this.$emit('onOrderCreated', order)
       } else {
         this.$vs.notify({
           title: 'Error',
@@ -333,6 +378,17 @@ export default {
   created() {
     this.customerClient = new Customer(this.$zarolead)
     this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)
+    this.warehouseShippingClient = new WarehouseShipping(this.$zarolead)
+
+    if (this.carriers.length > 0) {
+      this.carrier = this.carriers[0]
+    } else {
+      this.createShipping = false
+    }
+
+    if (this.customers.length <= 0) {
+      this.useExistingCustomer = false
+    }
   },
 }
 </script>

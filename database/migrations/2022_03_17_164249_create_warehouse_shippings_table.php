@@ -17,12 +17,16 @@ class CreateWarehouseShippingsTable extends Migration
             $table->id();
             $table->bigInteger('warehouse_order_id')->unsigned();
             $table->bigInteger('warehouse_shipping_carrier_id')->unsigned();
-            $table->enum('status', \App\WarehouseShipping::STATUSES);
+            $table->enum('status', \App\WarehouseShipping::STATUSES)->default('unprocessed');
             $table->string('tracking_number')->nullable();
             $table->text('tracking_url')->nullable();
             $table->datetime('created_at');
             $table->datetime('updated_at');
-            $table->datetime('delivered_at');
+            $table->datetime('delivered_at')->nullable();
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
             $table->string('address_line1');
             $table->string('address_line2')->nullable();
             $table->string('city');
@@ -31,6 +35,7 @@ class CreateWarehouseShippingsTable extends Migration
             $table->string('country');
             $table->text('notes')->nullable();
             $table->json('info')->nullable();
+            $table->boolean('archived')->default(0);
 
 			$table->foreign('warehouse_order_id')->references('id')->on('warehouse_orders');
 			$table->foreign('warehouse_shipping_carrier_id')->references('id')->on('warehouse_shipping_carriers');

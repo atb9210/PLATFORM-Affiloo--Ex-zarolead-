@@ -18,6 +18,6 @@ class WarehouseShippingCarrier extends Model
 
     public function shippings()
     {
-        return $this->hasMany('App\WarehouseShippings');
+        return $this->hasMany('App\WarehouseShipping');
     }
 }

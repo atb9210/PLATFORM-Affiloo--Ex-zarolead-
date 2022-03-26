@@ -62,7 +62,7 @@
                 </li>
             </vue-context>
 
-            <vs-table stripe multiple v-model="selected" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
+            <vs-table stripe multiple v-model="selectedOrders" :max-items="maxItems" pagination search :data="objects" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
                     <vs-th sort-key="id">Id</vs-th>
@@ -100,7 +100,7 @@
 
         <!-- Create or edit order -->
         <div v-if="view == 'create'" class="w-full">
-          <OrderBuilderComponent :customers="customers" :products="variations" @onOrderCreated="onOrderCreated" @onOrderUpdated="onOrderUpdated" />
+          <OrderBuilderComponent :customers="customers" :products="variations" :carriers="carriers" @onOrderCreated="onOrderCreated" @onOrderUpdated="onOrderUpdated" />
         </div>
 
         <!-- Edit the order -->
@@ -113,49 +113,8 @@
 
 <script>
 import { VueContext } from 'vue-context'
-import { Customer, WarehouseProduct, WarehouseOrder } from 'zarolead'
+import { Customer, WarehouseProduct, WarehouseOrder, WarehouseShipping } from 'zarolead'
 import * as utils from 'utils'
-
-function forcePhoneFormat(val) {
-  let phonePrefix = '+(39)'
-  let pos = val.indexOf(phonePrefix)
-  if (pos < 0) {
-    val = phonePrefix + val;
-  }
-
-  let newVal = phonePrefix
-  for (let i = phonePrefix.length; i < val.length; i++) {
-    if ((val[i] >= '0' && val[i] <= '9') || val[i] === ' ') {
-      newVal += val[i]
-    }
-  }
-
-  return newVal
-}
-
-function checkPhone(phone) {
-  phone = phone.split(' ').join('')
-  if (phone.length < 8) {
-      return false
-  }
-
-  for (let i = 0; i < phone.length; i++) {
-    if (!(phone[i] >= '0' && phone[i] <= '9') &&
-      phone[i] !== '+' && phone[i] !== '(' && phone[i] !== ')') {
-      return false
-    }
-  }
-
-  return true
-}
-
-function cloneObject(obj) {
-  let res = {}
-  for (const [key, value] of Object.entries(obj)) {
-    res[key] = value
-  }
-  return res
-}
 
 export default {
   components: {
@@ -166,6 +125,7 @@ export default {
       customerClient: null,
       warehouseProductClient: null,
       warehouseOrderClient: null,
+      warehouseShippingClient: null,
 
       view: 'orders',
 
@@ -178,6 +138,7 @@ export default {
       customers: [],
       products: [],
       variations: [],
+      carriers: [],
     }
   },
   computed: {
@@ -280,173 +241,6 @@ export default {
       }
       this.view = view
     },
-    clearForm(type) {
-      this.newObject[type] = {
-        first_name: '',
-        last_name: '',
-        phone: '',
-        email: '',
-        address_line1: '',
-        city: '',
-        postcode: '',
-        zone: '',
-        country: 'IT',
-      }
-    },
-    isValidForm(type) {
-      if (type == 'create' || type == 'edit') {
-        let obj = this.newObject[type]
-        return (obj.first_name.length > 0 && obj.last_name.length > 0 &&
-                obj.phone.length > 0 && checkPhone(obj.phone))
-      }
-      return false
-    },
-    async createObject() {
-      this.$vs.loading()
-
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let obj = this.newObject['create']
-      let params = {
-        first_name: obj.first_name,
-        last_name: obj.last_name,
-        phone: obj.phone,
-        email: obj.email,
-        address_line1: obj.address_line1,
-        city: obj.city,
-        postcode: obj.postcode,
-        zone: obj.zone,
-        country: obj.country,
-      }
-
-      // Create warehouse order
-      let result = false
-      try {
-        const response = await this.$http.post('/api/v1/warehouse/orders', params, { headers: headers })
-        result = true
-      } catch (error) {
-        // Nothing
-      }
-
-      if (result) {
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Warehouse order created',
-          iconPack: 'feather',
-          icon: 'icon-user-plus',
-          color: 'success'
-        })
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot create the order',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
-
-      this.$vs.loading.close()
-          
-      this.clearForm('create')
-      this.view = 'orders'
-      await this.changeView('orders')
-    },
-    async updateObject() {
-      if (this.editingObject === null) return
-
-      this.$vs.loading()
-
-      let id = this.editingObject.id
-      let headers = {
-        Authorization: 'Bearer ' + localStorage.getItem('accessToken')
-      }
-
-      let obj = this.newObject['edit']
-      let params = {
-        first_name: obj.first_name,
-        last_name: obj.last_name,
-        phone: obj.phone,
-        email: obj.email,
-        address_line1: obj.address_line1,
-        city: obj.city,
-        postcode: obj.postcode,
-        zone: obj.zone,
-        country: obj.country,
-      }
-
-      let result = false
-      try {
-        const response = await this.$http.put('/api/v1/warehouse/orders/' + id, params, { headers })
-        result = true
-      } catch (error) {
-        // Nothing
-      }
-
-      this.$vs.loading.close()
-
-      if (result) {
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Warehouse order updated',
-          iconPack: 'feather',
-          icon: 'icon-user-check',
-          color: 'success'
-        })
-        this.clearForm('edit')
-        await this.changeView('orders')
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot update the order',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
-    },
-    findAddress(type) {
-      let address_line1 = ''
-      let city = ''
-      let postcode = ''
-      let zone = ''
-      let country = ''
-
-      let loc = this.locationFound
-      if (loc.hasOwnProperty('street') && loc.hasOwnProperty('street_number')) {
-        address_line1 = loc.street + ' ' + loc.street_number
-      }
-      if (loc.hasOwnProperty('city')) {
-        city = loc.city
-      }
-      if (loc.hasOwnProperty('postcode')) {
-        postcode = loc.postcode
-      }
-      if (loc.hasOwnProperty('province')) {
-        zone = loc.province
-      }
-      if (loc.hasOwnProperty('country')) {
-        country = loc.country
-      }
-
-      this.newObject[type].address_line1 = address_line1
-      this.newObject[type].city = city
-      this.newObject[type].postcode = postcode
-      this.newObject[type].zone = zone
-      this.newObject[type].country = country
-    },
-    async doAction(type) {
-      if (type == 'create') {
-        await this.createObject()
-      } else if (type == 'edit') {
-        await this.updateObject()
-      }
-    },
-    forcePhoneFormat(type) {
-      this.newObject[type].phone = forcePhoneFormat(this.newObject[type].phone)
-    },
     hasAddressInfo(order) {
       if (order.address_line1 !== null && order.address_line1 != '') {
         return true
@@ -480,54 +274,17 @@ export default {
       this.$vs.loading.close()
     },
     async onOrderCreated(order) {
-      let result = (order !== null)
-
-      if (result) {
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Warehouse order created',
-          iconPack: 'feather',
-          icon: 'icon-user-plus',
-          color: 'success'
-        })
-        this.changeView('orders')
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot create the order',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
+      await this.changeView('orders')
     },
     async onOrderUpdated(order) {
-      let result = (order !== null)
-
-      if (result) {
-        this.$vs.notify({
-          title: 'Success',
-          text: 'Warehouse order updated',
-          iconPack: 'feather',
-          icon: 'icon-user-plus',
-          color: 'success'
-        })
-        this.changeView('orders')
-      } else {
-        this.$vs.notify({
-          title: 'Error',
-          text: 'Cannot update the order',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle',
-          color: 'danger'
-        })
-      }
+      //await this.changeView('orders')
     },
   },
   async created() {
     this.customerClient = new Customer(this.$zarolead)
     this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
     this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)
+    this.warehouseShippingClient = new WarehouseShipping(this.$zarolead)
 
     this.$vs.loading()
 
@@ -553,6 +310,8 @@ export default {
         })
       }
     }
+
+    this.carriers = await this.warehouseShippingClient.fetchCarriers()
 
     this.$vs.loading.close()
 

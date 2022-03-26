@@ -405,6 +405,17 @@ export default {
     onPageChanged(val) {
       this.currentPage = val
     },
+    getObjectById(id, objects = null) {
+      if (objects === null) {
+        objects = this.objects
+      }
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].hasOwnProperty('id') && objects[i].id == id) {
+          return objects[i]
+        }
+      }
+      return null
+    },
     async changeView(view, value = null) {
       if (view == 'products') {
         this.$vs.loading()
@@ -428,17 +439,6 @@ export default {
       }
 
       this.view = view
-    },
-    getObjectById(id, objects = null) {
-      if (objects === null) {
-        objects = this.objects
-      }
-      for (let i = 0; i < objects.length; i++) {
-        if (objects[i].hasOwnProperty('id') && objects[i].id == id) {
-          return objects[i]
-        }
-      }
-      return null
     },
     async applyFilters() {
       await this.changeView(this.view)

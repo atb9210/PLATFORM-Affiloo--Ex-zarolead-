@@ -75,6 +75,7 @@ import User from './user'
 import Customer from './customer'
 import WarehouseProduct from './warehouse_product'
 import WarehouseOrder from './warehouse_order'
+import WarehouseShipping from './warehouse_shipping'
 
 export {
   ZaroLead,
@@ -82,4 +83,5 @@ export {
   Customer,
   WarehouseProduct,
   WarehouseOrder,
+  WarehouseShipping,
 }

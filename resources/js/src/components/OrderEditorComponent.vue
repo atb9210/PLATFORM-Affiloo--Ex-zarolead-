@@ -87,6 +87,7 @@ export default {
           icon: 'icon-package',
           color: 'success'
         })
+        this.$emit('onOrderUpdated', order)
       } else {
         this.$vs.notify({
           title: 'Error',

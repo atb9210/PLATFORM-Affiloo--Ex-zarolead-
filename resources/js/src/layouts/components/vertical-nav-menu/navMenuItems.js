@@ -268,6 +268,13 @@ export default [
             i18n: 'Orders',
             roles: ['developer', 'admin', 'callcenter'],
           },
+          {
+            url: '/dashboard/warehouse/shippings',
+            name: 'Shippings',
+            slug: '',
+            i18n: 'Shippings',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
         ]
       }
     ],
