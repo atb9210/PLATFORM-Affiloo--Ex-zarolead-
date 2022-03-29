@@ -1893,6 +1893,21 @@ const router = new Router({
             rule: 'editor'
           }
         },
+        {
+          path: '/dashboard/warehouse/shipping-carriers',
+          props: true,
+          name: 'warehouse-shipping-carriers',
+          component: () => import('./views/WarehouseShippingCarriers.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Warehouse Shipping Carriers', active: true }
+            ],
+            pageTitle: 'Warehouse Shippings Carriers',
+            rule: 'editor'
+          }
+        },
 
 
         {

@@ -275,6 +275,13 @@ export default [
             i18n: 'Shippings',
             roles: ['developer', 'admin', 'callcenter'],
           },
+          {
+            url: '/dashboard/warehouse/shipping-carriers',
+            name: 'Shipping Carriers',
+            slug: '',
+            i18n: 'Shipping Carriers',
+            roles: ['developer', 'admin', 'callcenter'],
+          },
         ]
       }
     ],

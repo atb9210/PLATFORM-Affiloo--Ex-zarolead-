@@ -113,7 +113,7 @@
 
 <script>
 import { VueContext } from 'vue-context'
-import { Customer, WarehouseProduct, WarehouseOrder, WarehouseShipping } from 'zarolead'
+import { Customer, WarehouseProduct, WarehouseOrder, WarehouseShipping, WarehouseShippingCarrier } from 'zarolead'
 import * as utils from 'utils'
 
 export default {
@@ -126,6 +126,7 @@ export default {
       warehouseProductClient: null,
       warehouseOrderClient: null,
       warehouseShippingClient: null,
+      warehouseShippingCarrierClient: null,
 
       view: 'orders',
 
@@ -285,6 +286,7 @@ export default {
     this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
     this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)
     this.warehouseShippingClient = new WarehouseShipping(this.$zarolead)
+    this.warehouseShippingCarrierClient = new WarehouseShippingCarrier(this.$zarolead)
 
     this.$vs.loading()
 
@@ -311,7 +313,7 @@ export default {
       }
     }
 
-    this.carriers = await this.warehouseShippingClient.fetchCarriers()
+    this.carriers = await this.warehouseShippingCarrierClient.fetch()
 
     this.$vs.loading.close()
 

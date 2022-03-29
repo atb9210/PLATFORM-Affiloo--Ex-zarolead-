@@ -139,7 +139,7 @@ class WarehouseShippingController extends Controller
         $object = WarehouseShipping::findOrFail($id);
         if ($object->archived) {
             return response([
-                "message" => "That shipping is archived"
+                "message" => "That warehouse shipping is archived"
             ], 403);
         }
 
