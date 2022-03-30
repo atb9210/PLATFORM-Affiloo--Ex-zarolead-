@@ -1309,7 +1309,7 @@ export default {
       /*
       if (this.ad.preview !== null && this.ad.preview.hasOwnProperty('to_resize') && this.ad.preview.to_resize) {
       */
-      if (this.ad.preview !== null && !this.ad.preview.hasOwnProperty('fb_uploaded') || !this.ad.preview.fb_uploaded) {
+      if (this.ad.preview !== null && this.ad.preview.hasOwnProperty('fb_uploaded') && this.ad.preview.fb_uploaded)) {
         let previewBase64 = await this.resizeImageUrl(this.ad.preview.url)
 
         // TODO: Old code
