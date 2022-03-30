@@ -344,6 +344,29 @@ function createFileFromBase64DataURL(base64DataUrl, fileName = null) {
   return new File([u8arr], fileName, {type:mime})
 }
 
+function getDomainFromUrl(url) {
+  let domain = ''
+
+  try {
+    url = url.trim()
+    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+      url = 'https://' + url
+    }
+
+    let u = new URL(url)
+    domain = u.host
+
+    let prefix = 'www.'
+    if (domain.indexOf(prefix) === 0) {
+      domain = domain.substr(prefix.length)
+    }
+  } catch (error) {
+    // TODO: Log error?
+  }
+
+  return domain
+}
+
 // TODO: to delete??? We don't use this code
 // For custom error message
 import { Validator } from 'vee-validate'
@@ -1477,7 +1500,7 @@ export default {
       let params = {
         adset_id: adsetId,
         name: adName,
-        conversion_domain: conversionDomain,
+        conversion_domain: getDomainFromUrl(conversionDomain),
       }
       if (media.type === 'image') {
         params.creative = {
