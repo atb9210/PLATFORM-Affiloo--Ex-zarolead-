@@ -1488,7 +1488,8 @@ export default {
               link: adLink,
               name: adTitle,
               message: adText,
-              picture: media.url,
+              //picture: media.url, // TODO: Does not work anymore with this
+              image_hash: media.hash,
             },
             page_id: pageId,
             instagram_actor_id: pbiAccountId,
@@ -1508,7 +1509,8 @@ export default {
               title: adTitle,
               message: adText,
               video_id: media.id,
-              image_url: preview.url,
+              //image_url: preview.url, // TODO: Does not work anymore with this
+              image_hash: preview.hash,
             },
             page_id: pageId,
             instagram_actor_id: pbiAccountId,
