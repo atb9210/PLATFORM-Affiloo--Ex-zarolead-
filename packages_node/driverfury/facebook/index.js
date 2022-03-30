@@ -555,9 +555,12 @@ class Facebook {
       const response = await this.$http.post(this.apiUrl + '/' + adAccountId + '/adimages', params)
       if (response.hasOwnProperty('data') && response.data !== null &&
           response.data.hasOwnProperty('images') && response.data.images !== null) {
+        object = cloneObject(response.data.images)
+        /*
         for (const [key, value] of Object.entries(response.data.images)) {
           object = value
         }
+        */
       }
     } catch (error) {
       // Nothing

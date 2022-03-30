@@ -312,6 +312,16 @@ function createImageFromUrl(url) {
   })
 }
 
+function createImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = URL.createObjectURL(file);
+  })
+}
+
 function createFileFromBase64DataURL(base64DataUrl, fileName = null) {
   if (fileName === null) {
     let tmp = (base64DataUrl.split(';'))[0]
@@ -1295,27 +1305,41 @@ export default {
 
       // We need to resize preview choosen from Google/Bing/etc...
       let preview = null
+      // TODO: Old code
+      /*
       if (this.ad.preview !== null && this.ad.preview.hasOwnProperty('to_resize') && this.ad.preview.to_resize) {
+      */
+      if (this.ad.preview !== null && !this.ad.preview.hasOwnProperty('fb_uploaded') || !this.ad.preview.fb_uploaded) {
         let previewBase64 = await this.resizeImageUrl(this.ad.preview.url)
+
+        // TODO: Old code
+        /*
         let imageFile = await createFileFromBase64DataURL(previewBase64)
         preview = await this.createTemporaryImage(imageFile)
-      }
+        */
 
-      /*
-      let preview = null
-      let previewBase64 = ''
-      if (this.ad.preview !== null) {
-        let img = await createImageFromUrl(this.ad.preview.url)
-        previewBase64 = await this.convertImageToBase64(img)
-        let toSearch = 'base64,'
-        previewBase64 = previewBase64.substring(previewBase64.indexOf(toSearch) + toSearch.length, previewBase64.length)
-        let params = {
-          name: this.ad.preview.pathname.replace('/', '_'),
-          bytes: previewBase64,
+        let previewUrl = null
+        let previewHash = null
+        let uploadedOnFacebook = false
+        const adImage = await this.facebook.uploadAdImage(this.adAccount.id, {
+          bytes: this.base64RemovePrefix(previewBase64),
+        })
+        if (adImage !== null && adImage.hasOwnProperty('bytes') && adImage.bytes !== null) {
+          if (adImage.bytes.hasOwnProperty('url') && adImage.bytes.url !== null) {
+            previewUrl = adImage.bytes.url
+          }
+          if (adImage.bytes.hasOwnProperty('hash') && adImage.bytes.hash !== null) {
+            previewHash = adImage.bytes.hash
+          }
+          uploadedOnFacebook = true
         }
-        preview = await this.facebook.uploadAdImage(this.adAccount.id, params)
+        preview = {
+          url: previewUrl,
+          hash: previewHash,
+          fb_uploaded: uploadedOnFacebook,
+          type: 'image',
+        }
       }
-      */
 
       if (preview !== null) {
         this.ad.preview = preview
@@ -1338,29 +1362,41 @@ export default {
             media.pathname = this.ad.medias[i].pathname
           }
         } else if (mediaType === 'image') {
-          // TODO: We no longer need to upload the image since we directly pass the url
-          // to facebook
-          /*
-          let img = await createImageFromUrl(this.ad.medias[i].url)
-          let media64 = await this.convertImageToBase64(img)
-          let toSearch = 'base64,'
-          media64 = media64.substring(media64.indexOf(toSearch) + toSearch.length, media64.length)
-          let params = {
-            name: this.ad.medias[i].pathname.replace('/', '_'),
-            bytes: media64,
-          }
-          media = await this.facebook.uploadAdImage(this.adAccount.id, params)
-          if (media !== null) { media.type = 'image' }
-          for (const [key, value] of Object.entries(media.images)) {
-            media.hash = value.hash
-          }
-          */
-
           // We need to resize images choosen from Google/Bing/etc...
+          // TODO: Old code
+          /*
           if (this.ad.medias[i].hasOwnProperty('to_resize') && this.ad.medias[i].to_resize) {
-            let dataUrl64 = await this.resizeImageUrl(this.ad.medias[i].url)
-            let imageFile = await createFileFromBase64DataURL(dataUrl64)
+          */
+          if (!this.ad.medias[i].hasOwnProperty('fb_uploaded') || !this.ad.medias[i].fb_uploaded) {
+            let imageBase64 = await this.resizeImageUrl(this.ad.medias[i].url)
+
+            // TODO: Old code
+            /*
+            let imageFile = await createFileFromBase64DataURL(imageBase64)
             media = await this.createTemporaryImage(imageFile)
+            */
+
+            let mediaUrl = null
+            let mediaHash = null
+            let uploadedOnFacebook = false
+            const adImage = await this.facebook.uploadAdImage(this.adAccount.id, {
+              bytes: this.base64RemovePrefix(imageBase64),
+            })
+            if (adImage !== null && adImage.hasOwnProperty('bytes') && adImage.bytes !== null) {
+              if (adImage.bytes.hasOwnProperty('url') && adImage.bytes.url !== null) {
+                mediaUrl = adImage.bytes.url
+              }
+              if (adImage.bytes.hasOwnProperty('hash') && adImage.bytes.hash !== null) {
+                mediaHash = adImage.bytes.hash
+              }
+              uploadedOnFacebook = true
+            }
+            media = {
+              url: mediaUrl,
+              hash: mediaHash,
+              fb_uploaded: uploadedOnFacebook,
+              type: mediaType,
+            }
           }
         }
 
@@ -1615,6 +1651,7 @@ export default {
               thumbnailUrl: res.thumbnailUrl,
               url: res.contentUrl,
               to_resize: true,
+              fb_uploaded: false,
               width: width,
               height: height,
             })
@@ -1644,6 +1681,7 @@ export default {
               thumbnailUrl: res.thumbnail,
               url: res.original,
               to_resize: true,
+              fb_uploaded: false,
             })
           }
           se.currentOffset = offset
@@ -1676,6 +1714,7 @@ export default {
               thumbnailUrl: res.thumbnail,
               url: res.original,
               to_resize: true,
+              fb_uploaded: false,
             })
           }
           se.currentOffset = offset
@@ -1933,15 +1972,34 @@ export default {
               fileType = 'video'
             }
 
-            let mediaUrl = ''
+            let mediaUrl = null
+            let mediaHash = null
+            let uploadedOnFacebook = false
             if (fileType == 'image') {
               // NOTE: Facebook does not accept images from DropBox (go wonder).
               // So we need to upload the dropbox image(s) temporarily on our server
               // and give our links to facebook.
               let imageBase64 = await this.resizeImageUrl(file.link)
+
+              // TODO: Old code
+              /*
               let imageFile = await createFileFromBase64DataURL(imageBase64)
               let uploadedImage = await this.createTemporaryImage(imageFile)
               mediaUrl = uploadedImage.url
+              */
+
+              const adImage = await this.facebook.uploadAdImage(this.adAccount.id, {
+                bytes: this.base64RemovePrefix(imageBase64),
+              })
+              if (adImage !== null && adImage.hasOwnProperty('bytes') && adImage.bytes !== null) {
+                if (adImage.bytes.hasOwnProperty('url') && adImage.bytes.url !== null) {
+                  mediaUrl = adImage.bytes.url
+                }
+                if (adImage.bytes.hasOwnProperty('hash') && adImage.bytes.hash !== null) {
+                  mediaHash = adImage.bytes.hash
+                }
+                uploadedOnFacebook = true
+              }
             } else if (fileType == 'video') {
               mediaUrl = file.link
             }
@@ -1950,6 +2008,8 @@ export default {
               id: file.id,
               pathname: 'dropbox.com/' + file.name,
               url: mediaUrl,
+              hash: mediaHash,
+              fb_uploaded: uploadedOnFacebook,
               type: fileType,
             })
           }
@@ -1979,15 +2039,41 @@ export default {
       let files = event.target.files
 
       for (let i = 0; i < files.length; i++) {
+        let imageUrl = null
+        let imageHash = null
+        let uploadedOnFacebook = false
+        let fileType = 'image'
+
         let file = files[i]
         let fileName = file.name
-        let uploadedImage = await this.createTemporaryImage(imageFile)
-        let imageUrl = uploadedImage.url
-        let fileType = 'image'
+
+        // TODO: Old code
+        /*
+        let uploadedImage = await this.createTemporaryImage(file)
+        imageUrl = uploadedImage.url
+        */
+
+        let image = await createImageFromFile(file)
+        let imageBase64 = await this.resizeImage(image)
+        const adImage = await this.facebook.uploadAdImage(this.adAccount.id, {
+          bytes: this.base64RemovePrefix(imageBase64),
+        })
+        if (adImage !== null && adImage.hasOwnProperty('bytes') && adImage.bytes !== null) {
+          if (adImage.bytes.hasOwnProperty('url') && adImage.bytes.url !== null) {
+            imageUrl = adImage.bytes.url
+          }
+          if (adImage.bytes.hasOwnProperty('hash') && adImage.bytes.hash !== null) {
+            imageHash = adImage.bytes.hash
+          }
+          uploadedOnFacebook = true
+        }
+
         this.ad.medias.push({
           id: 'local' + i,
           pathname: 'local/' + fileName,
           url: imageUrl,
+          hash: imageHash,
+          fb_uploaded: uploadedOnFacebook,
           type: fileType,
         })
       }
@@ -2051,6 +2137,15 @@ export default {
       }
 
       return temporaryImage
+    },
+    base64RemovePrefix(base64Data) {
+      let prefix = 'base64,'
+      let prefixLength = prefix.length
+      let prefixIndex = base64Data.indexOf(prefix)
+      if (prefixIndex >= 0) {
+        return base64Data.substr(prefixIndex + prefixLength)
+      }
+      return base64Data
     },
   },
   async created() {

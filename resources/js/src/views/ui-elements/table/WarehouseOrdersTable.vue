@@ -79,7 +79,7 @@
 
                         <vs-td class="column-no-padding" :data="data[indextr].full_name">
                             <div @contextmenu.prevent="$refs.order_context_menu.open($event, item)">
-                                <vx-tooltip :title="item.full_name" :text="hasAddressInfo(item) ? getAddress(item) : 'Address undefined'" position="left">
+                                <vx-tooltip :title="item.full_name" :text="hasAddress(item.customer) ? getAddress(item.customer) : 'Address undefined'" position="left">
                                     <vs-chip>
                                         {{item.full_name}}
                                     </vs-chip>
@@ -242,19 +242,19 @@ export default {
       }
       this.view = view
     },
-    hasAddressInfo(order) {
-      if (order.address_line1 !== null && order.address_line1 != '') {
+    hasAddress(customer) {
+      if (customer.address_line1 !== null && customer.address_line1 != '') {
         return true
       }
       return false
     },
-    getAddress(order) {
-      let address = order.address_line1
-      if (order.city !== null && order.city != '') {
-        address += ' ' + order.city
+    getAddress(customer) {
+      let address = customer.address_line1
+      if (customer.city !== null && customer.city != '') {
+        address += ' ' + customer.city
       }
-      if (order.zone !== null && order.zone != '') {
-        address += ' (' + order.zone + ')'
+      if (customer.zone !== null && customer.zone != '') {
+        address += ' (' + customer.zone + ')'
       }
       return address
     },
