@@ -28,7 +28,7 @@
 
                 <div class="msg break-words relative shadow-md rounded py-3 px-4 mb-2 rounded-lg max-w-sm" :class="{'bg-primary-gradient text-white': msg.fromMe, 'border border-solid border-transparent bg-white': !msg.fromMe}">
                     <span class="text-lg">{{ msg.body }}</span>
-                    <span class="text-xs italic">{{ msg.date_obj.getHours() + ':' + msg.date_obj.getMinutes() }}</span>
+                    <span class="text-xs italic">{{ msg.date_obj.getHours() + ':' + msg.date_obj.getMinutes().toString().padStart(2, '0') }}</span>
                 </div>
             </div>
         </div>
