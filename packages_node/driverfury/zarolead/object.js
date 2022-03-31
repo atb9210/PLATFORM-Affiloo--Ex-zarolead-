@@ -10,6 +10,11 @@ class ZaroLeadObject {
     return res
   }
 
+  async show(id, params = {}) {
+    const res = await this.$zarolead.get(this.apiBasePath + '/' + id, params)
+    return res
+  }
+
   async create(params) {
     const res = await this.$zarolead.post(this.apiBasePath, params)
     return res

@@ -21,7 +21,7 @@
         </p>
 
         <div>
-            <Chat v-if="lead !== null" :user="lead" :chatMessages="chatMessages" />
+            <DropinChat v-if="lead !== null" :user="lead" :chatMessages="chatMessages" />
         </div>
     </vx-card>
 </template>

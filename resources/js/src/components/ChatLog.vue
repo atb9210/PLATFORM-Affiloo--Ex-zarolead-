@@ -27,7 +27,8 @@
                 </template>
 
                 <div class="msg break-words relative shadow-md rounded py-3 px-4 mb-2 rounded-lg max-w-sm" :class="{'bg-primary-gradient text-white': msg.fromMe, 'border border-solid border-transparent bg-white': !msg.fromMe}">
-                    <span>{{ msg.body }}</span>
+                    <span class="text-lg">{{ msg.body }}</span>
+                    <span class="text-xs italic">{{ msg.date_obj.getHours() + ':' + msg.date_obj.getMinutes() }}</span>
                 </div>
             </div>
         </div>
@@ -84,8 +85,13 @@ export default {
       })
     }
   },
+  created () {
+  },
   updated () {
     this.scrollToBottom()
+
+    // DEBUG TODO: to delete
+    console.log(this.chatMessages)
   },
   mounted () {
     this.scrollToBottom()

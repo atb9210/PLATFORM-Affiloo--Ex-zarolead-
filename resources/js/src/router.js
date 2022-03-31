@@ -1864,6 +1864,22 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/customers/:customer_id/chat',
+          props: true,
+          name: 'customer-chat',
+          component: () => import('./views/CustomerChat.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Customers', url: '/dashboard/customers' },
+              { title: 'Chat', active: true }
+            ],
+            pageTitle: 'Customer Chat',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/warehouse/orders',
           props: true,
           name: 'warehouse-orders',

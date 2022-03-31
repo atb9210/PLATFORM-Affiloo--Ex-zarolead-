@@ -6,7 +6,7 @@
                 <vs-avatar class="m-0 border-2 border-solid border-white" size="40px" src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png" @click.stop="$emit('showProfileSidebar', user)" />
                 <div class="h-3 w-3 border-white border border-solid rounded-full absolute right-0 bottom-0" :class="'bg-' + getStatusColor(false)"></div>
             </div>
-            <h6>{{ user.full_name }}</h6>
+            <h6>{{ user.first_name }} {{ user.last_name }}</h6>
             <vs-spacer></vs-spacer>
             <feather-icon icon="StarIcon" class="cursor-pointer" :svgClasses="[{'text-warning stroke-current': isPinnedLocal}, 'w-6', 'h-6']" @click.stop="isPinnedLocal = !isPinnedLocal"></feather-icon>
         </vs-navbar>

@@ -44,6 +44,8 @@ import ChatLog from './components/ChatLog.vue'
 Vue.component(ChatLog.name, ChatLog)
 import Chat from './components/Chat.vue'
 Vue.component(Chat.name, Chat)
+import DropinChat from './components/DropinChat.vue'
+Vue.component(DropinChat.name, DropinChat)
 import CustomerBuilderFormComponent from './components/CustomerBuilderFormComponent.vue'
 Vue.component(CustomerBuilderFormComponent.name, CustomerBuilderFormComponent)
 import CustomerBuilderComponent from './components/CustomerBuilderComponent.vue'

@@ -14,8 +14,8 @@
                     </div>
                 </component>
                 <div class="chat__input flex p-4 bg-white">
-                    <vs-input class="flex-1" placeholder="Type Your Message" v-model="typedMessage" @keyup.enter="sendMsg" />
-                    <vs-button class="bg-primary-gradient ml-4" type="filled" @click="sendMsg">Send</vs-button>
+                    <vs-input class="flex-1" placeholder="Type Your Message" v-model="typedMessage" @keyup.enter="sendMessage" />
+                    <vs-button class="bg-primary-gradient ml-4" type="filled" @click="sendMessage">Send</vs-button>
                 </div>
             </template>
             <!--
@@ -33,7 +33,7 @@
 <script>
 import VuePerfectScrollbar from 'vue-perfect-scrollbar'
 
-import Dropin from 'dropin'
+import { Customer } from 'zarolead'
 
 export default {
   name: 'Chat',
@@ -51,7 +51,7 @@ export default {
   },
   data () {
     return {
-      dropin: {},
+      customerClient: {},
 
       clickNotClose: true,
       settings             : {
@@ -63,11 +63,11 @@ export default {
     }
   },
   methods: {
-    async sendMsg() {
+    async sendMessage() {
       this.$vs.loading()
 
       let body = this.typedMessage
-      let obj = await this.dropin.sendLeadMessage(this.user.id, body)
+      let obj = await this.customerClient.sendMessage(this.user.id, body)
       if (obj) {
         this.chatMessages.push({
           id: obj.id,
@@ -103,7 +103,7 @@ export default {
       whatsapp.last_message_read = messageId
       info.whatsapp = whatsapp
       this.user.info = info
-      await this.dropin.updateLead(this.user.id, {
+      await this.customerClient.update(this.user.id, {
         info: JSON.stringify(info),
       })
     },
@@ -113,9 +113,20 @@ export default {
     toggleIsChatPinned() {
       // TODO: HERE
     },
+    formatDateTime(dateObj) {
+      let dd = String(dateObj.getDate()).padStart(2, '0')
+      let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      let yyyy = dateObj.getFullYear()
+      let hh = String(dateObj.getHours()).padStart(2, '0')
+      let ii = String(dateObj.getMinutes()).padStart(2, '0')
+      
+      let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+
+      return formattedDate
+    },
   },
   async created() {
-    this.dropin = new Dropin(localStorage.getItem('accessToken'))
+    this.customerClient = new Customer(this.$zarolead)
 
     if (this.chatMessages.length > 0) {
       this.$vs.loading()

@@ -15,7 +15,6 @@
             <vs-button v-if="view == 'customers'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('create')"></vs-button>
             <vs-button v-if="view == 'customers'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup" :disabled="selected.length <= 0"></vs-button>
             <vs-button v-if="(['create','edit']).includes(view)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'customers'"></vs-button>
-            <vs-button v-if="view == 'chat'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="view = 'customers'"></vs-button>
         </p>
 
         <!-- Customers table -->
@@ -49,7 +48,7 @@
                   </a>
                 </li>
                 <li>
-                  <a href="#" @click="$refs.customer_context_menu.close();showChat(data)" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.customer_context_menu.close();openCustomerChat(data)" class="flex items-center text-sm">
                     <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Whatsapp Chat</span>
                   </a>
@@ -205,11 +204,6 @@
             </div>
         </div>
         -->
-
-        <!-- Customer chat -->
-        <div v-if="view == 'chat'">
-          <Chat :user="customer" :chatMessages="chatMessages" />
-        </div>
 
     </vx-card>
 </template>
@@ -709,23 +703,11 @@ export default {
       }
       return address
     },
-    async showChat(customer) {
-      this.$vs.loading()
-
-      this.customer = customer
-      let customerClient = new Customer(localStorage.getItem('accessToken'))
-
-      this.chatMessages = await customerClient.getChatMessages(customer.id)
-      for (let i = 0; i < this.chatMessages.length; i++) {
-        let msg = this.chatMessages[i]
-
-        msg.datetime = new Date(msg.time*1000)
-
-        this.chatMessages[i] = msg
-      }
-
-      this.view = 'chat'
-      this.$vs.loading.close()
+    openNewTab(url) {
+      window.open(url, '_blank').focus()
+    },
+    async openCustomerChat(customer) {
+      this.openNewTab('/dashboard/customers/' + customer.id + '/chat')
     },
     async onCustomerCreated(customer) {
       let result = (customer !== null)

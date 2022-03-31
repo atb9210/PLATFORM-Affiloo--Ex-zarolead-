@@ -332,6 +332,7 @@ class Dropin {
 
         let d = new Date(obj.time*1000)
         obj.datetime = formatDateTime(d)
+        obj.date_obj = d
 
         objects[i] = obj
       }
