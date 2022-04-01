@@ -42,26 +42,60 @@
 
                 <template slot="thead">
                     <vs-th sort-key="id">Id</vs-th>
+                    <vs-th sort-key="created_at">Start Date</vs-th>
+                    <vs-th sort-key="delivered_at">Delivery Date</vs-th>
+                    <vs-th sort-key="full_name">Customer</vs-th>
+                    <vs-th sort-key="phone">Phone</vs-th>
+                    <vs-th sort-key="country">GEO</vs-th>
+                    <vs-th>Method</vs-th>
                     <vs-th sort-key="carrier_name">Carrier</vs-th>
                     <vs-th sort-key="tracking_number">Tracking</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="carrier_status">Carrier Status</vs-th>
-                    <vs-th sort-key="created_at">Start Date</vs-th>
-                    <vs-th sort-key="delivered_at">Delivery Date</vs-th>
+                    <vs-th>Last Sync</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
                     <vs-tr :data="item" :key="indextr" v-for="(item, indextr) in data">
 
-                        <vs-td :data="item.id">
+                        <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
                         </vs-td>
 
-                        <vs-td :data="item.carrier_name">
+                        <vs-td class="column-no-padding" :data="item.created_at">
+                            <span v-if="item.created_at !== null && item.created_at != ''">
+                                {{utils.formatDate(new Date(item.created_at))}}
+                            </span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.delivered_at">
+                            <span v-if="item.delivered_at !== null && item.delivered_at != ''">
+                                {{utils.formatDate(new Date(item.delivered_at))}}
+                            </span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.full_name">
+                            {{item.full_name}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.phone">
+                            {{item.phone}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.country">
+                            {{item.country}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding">
+                            <!-- TODO: -->
+                            Online/Cod
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.carrier_name">
                             {{item.carrier_name}}
                         </vs-td>
 
-                        <vs-td :data="item.status">
+                        <vs-td class="column-no-padding" :data="item.status">
                             <span v-if="item.tracking_url !== null && item.tracking_url != ''">
                                 <a :href="item.tracking_url">
                                     {{item.tracking_number}}
@@ -72,21 +106,18 @@
                             </span>
                         </vs-td>
 
-                        <vs-td :data="item.status">
+                        <vs-td class="column-no-padding" :data="item.status">
                             {{item.status}}
                         </vs-td>
 
-                        <vs-td :data="item.carrier_status">
+                        <vs-td class="column-no-padding" :data="item.carrier_status">
                             {{item.carrier_status}}
                         </vs-td>
 
-                        <vs-td :data="item.created_at">
-                            {{item.created_at}}
+                        <vs-td class="column-no-padding">
+                            <!-- TODO: -->
                         </vs-td>
 
-                        <vs-td :data="item.delivered_at">
-                            {{item.delivered_at}}
-                        </vs-td>
 
                     </vs-tr>
                 </template>
@@ -99,10 +130,12 @@
 
 <script>
 import { WarehouseShipping } from 'zarolead'
+import * as utils from 'utils'
 
 export default {
   data () {
     return {
+      utils: null,
       warehouseShippingClient: null,
 
       maxItems: 20,
@@ -169,6 +202,7 @@ export default {
         for (let i = 0; i < this.shippings.length; i++) {
           let obj = this.shippings[i]
 
+          obj.full_name = obj.first_name + ' ' + obj.last_name
           obj.carrier_name = obj.carrier.name
           obj.carrier_status = ''
 
@@ -212,6 +246,7 @@ export default {
     },
   },
   async created() {
+    this.utils = utils
     this.warehouseShippingClient = new WarehouseShipping(this.$zarolead)
 
     await this.changeView('shippings')
@@ -219,3 +254,12 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.column-no-padding {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+</style>

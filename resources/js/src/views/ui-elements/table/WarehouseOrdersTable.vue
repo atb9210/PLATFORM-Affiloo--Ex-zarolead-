@@ -67,7 +67,16 @@
                 <template slot="thead">
                     <vs-th sort-key="id">Id</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
-                    <vs-th>Actions</vs-th>
+                    <vs-th sort-key="customer.phone">Phone</vs-th>
+                    <vs-th sort-key="shipping.country">GEO</vs-th>
+                    <vs-th>Method</vs-th>
+                    <vs-th sort-key="amount">Amount</vs-th>
+                    <vs-th>Lines</vs-th>
+                    <vs-th sort-key="shipping.id">Shipping ID</vs-th>
+                    <vs-th sort-key="shipping.status">Shipping Status</vs-th>
+                    <vs-th sort-key="shipping.created_at">Shipping Date</vs-th>
+                    <vs-th sort-key="shipping.delivered_at">Delivery Date</vs-th>
+                    <vs-th sort-key="shipping.carrier.name">Carrier</vs-th>
                 </template>
 
                 <template slot-scope="{data}">
@@ -87,10 +96,53 @@
                             </div>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="data[indextr].customer.phone">
+                            {{data[indextr].customer.phone}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.country">
+                            {{data[indextr].shipping.country}}
+                        </vs-td>
+
                         <vs-td class="column-no-padding">
-                            <div class="flex items-center">
-                                <vs-button @click="changeView('edit', item)" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-edit"></vs-button>
-                            </div>
+                            <!-- TODO: -->
+                            Online/Cod
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].amount">
+                            € {{item.amount.toFixed(2)}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding">
+                            <vx-tooltip :title="item.lines.length + ' lines'" :text="getOrderLinesSummary(item.lines)" position="left">
+                                <vs-chip>
+                                    {{item.lines.length}} lines
+                                </vs-chip>
+                            </vx-tooltip>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.id">
+                            {{item.shipping.id}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.status">
+                            {{item.shipping.status}}
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.created_at">
+                            <span v-if="item.shipping.created_at !== null && item.shipping.created_at != ''">
+                                {{utils.formatDate(new Date(item.shipping.created_at))}}
+                            </span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.delivered_at">
+                            <span v-if="item.shipping.delivered_at !== null && item.shipping.delivered_at != ''">
+                                {{utils.formatDate(new Date(item.shipping.delivered_at))}}
+                            </span>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="data[indextr].shipping.carrier.name">
+                            {{item.shipping.carrier.name}}
                         </vs-td>
 
                     </vs-tr>
@@ -122,6 +174,7 @@ export default {
   },
   data () {
     return {
+      utils: null,
       customerClient: null,
       warehouseProductClient: null,
       warehouseOrderClient: null,
@@ -231,6 +284,7 @@ export default {
         for (let i = 0; i < this.orders.length; i++) {
           let obj = this.orders[i]
           obj.full_name = obj.customer.first_name + ' ' + obj.customer.last_name
+          obj.amount = parseFloat(obj.amount)
           this.orders[i] = obj
         }
 
@@ -280,8 +334,20 @@ export default {
     async onOrderUpdated(order) {
       //await this.changeView('orders')
     },
+    getOrderLinesSummary(lines) {
+      let s = ''
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i]
+        if (i > 0) {
+          s += ', '
+        }
+        s += line.product_variation.full_name + '(' + line.quantity + ')'
+      }
+      return s
+    },
   },
   async created() {
+    this.utils = utils
     this.customerClient = new Customer(this.$zarolead)
     this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
     this.warehouseOrderClient = new WarehouseOrder(this.$zarolead)

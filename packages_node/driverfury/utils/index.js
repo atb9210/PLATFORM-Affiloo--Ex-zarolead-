@@ -15,3 +15,25 @@ export function cloneObject(obj) {
 export function deepCloneObject(obj) {
   return _.cloneDeep(obj)
 }
+
+export function formatDate(dateObj) {
+  let dd = String(dateObj.getDate()).padStart(2, '0')
+  let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+  let yyyy = dateObj.getFullYear()
+  
+  let formattedDate = yyyy + '-' + mm + '-' + dd
+
+  return formattedDate
+}
+
+export function formatDateTime(dateObj) {
+  let dd = String(dateObj.getDate()).padStart(2, '0')
+  let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+  let yyyy = dateObj.getFullYear()
+  let hh = String(dateObj.getHours()).padStart(2, '0')
+  let ii = String(dateObj.getMinutes()).padStart(2, '0')
+  
+  let formattedDateTime = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
+
+  return formattedDateTime
+}

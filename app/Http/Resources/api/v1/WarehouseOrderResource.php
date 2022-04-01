@@ -14,6 +14,10 @@ class WarehouseOrderResource extends JsonResource {
     public function toArray($request) {
         $customer = $this->customer;
         $lines = $this->lines;
+        $shipping = \App\WarehouseShipping::where('warehouse_order_id', $this->id)->first();
+        if ($shipping !== null) {
+            $shipping = new WarehouseShippingResource($shipping);
+        }
         return [
             'id' => $this->id,
             'status' => $this->status,
@@ -32,6 +36,7 @@ class WarehouseOrderResource extends JsonResource {
                 'country' => $customer->country,
             ],
             'lines' => WarehouseOrderLineResource::collection($lines),
+            'shipping' => $shipping,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

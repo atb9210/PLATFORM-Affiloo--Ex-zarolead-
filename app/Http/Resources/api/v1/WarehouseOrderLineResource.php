@@ -16,12 +16,7 @@ class WarehouseOrderLineResource extends JsonResource {
         return [
             'id' => $this->id,
             'order_id' => $this->order_id,
-            'product_variation' => [
-                'id' => $variation->id,
-                'name' => $variation->id,
-                'sku' => $variation->sku,
-                'price' => $variation->price,
-            ],
+            'product_variation' => new WarehouseProductVariationResource($variation),
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,
