@@ -99,10 +99,10 @@ export default [
     items: [
       {
         url: '/dashboard/orders',
-        name: 'Orders',
+        name: 'Conversions',
         slug: 'orders',
         icon: 'PackageIcon',
-        i18n: 'Orders',
+        i18n: 'Conversions',
         roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
 
