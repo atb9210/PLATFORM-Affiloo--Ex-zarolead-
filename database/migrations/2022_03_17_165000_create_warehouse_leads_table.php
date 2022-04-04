@@ -15,7 +15,9 @@ class CreateWarehouseLeadsTable extends Migration
     {
         Schema::create('warehouse_leads', function (Blueprint $table) {
             $table->id();
+            $table->text('hash')->nullable();
             $table->bigInteger('customer_id')->unsigned()->nullable();
+            $table->bigInteger('product_id')->unsigned()->nullable();
             $table->enum('status', \App\WarehouseLead::STATUSES)->default('unprocessed');
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
@@ -32,6 +34,7 @@ class CreateWarehouseLeadsTable extends Migration
             $table->boolean('archived')->default(0);
 
 			$table->foreign('customer_id')->references('id')->on('customers');
+			$table->foreign('product_id')->references('id')->on('products');
         });
     }
 

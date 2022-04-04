@@ -252,28 +252,6 @@ class ZaroLead
         return lead;
     }
 
-    async updateLead(leadId: string, params: object)
-    {
-        try {
-            const response = await this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
-            if (response !== null && response !== '') {
-                //let respJson = utils.jsonDecode(response);
-                let respJson = null;
-                if (response.hasOwnProperty('data')) {
-                    respJson = response['data'];
-                }
-                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } catch (error) {
-            return false;
-        }
-        return false;
-    }
-
     async getLeadInfo(leadId: string)
     {
         var lead: object = null;
@@ -297,38 +275,10 @@ class ZaroLead
         return lead;
     }
 
-    async updateLeadAddress(leadId: string, params: object)
+    async updateLead(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
-            if (response !== null && response !== '') {
-                //let respJson = utils.jsonDecode(response);
-                let respJson = null;
-                if (response.hasOwnProperty('data')) {
-                    let respJson = response['data'];
-                }
-                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } catch (error) {
-            return false;
-        }
-        return false;
-    }
-
-    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
-    {
-        try {
-            let params = {
-                status: status,
-                total: total,
-                payment_method: paymentMethod,
-                push: push,
-            };
-            const response = await this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
+            const response = await this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -347,10 +297,29 @@ class ZaroLead
         return false;
     }
 
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
+    {
+        try {
+            let info = {
+                status: status,
+                total: total,
+                payment_method: paymentMethod,
+                push: push,
+            };
+            let params = {
+                info: utils.jsonEncode(info),
+            };
+            const res = await this.updateLead(leadId, params);
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
     async deleteLead(leadId: string)
     {
         try {
-            const response = await this.$http.delete(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders });
+            const response = await this.$http.delete(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/destroy', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -1150,14 +1119,15 @@ async function validateStep3()
     if (isValid) {
         if (lead !== null) {
             let params = {
-                street_address: streetAddress + ', ' + streetNumber,
-                city          : city,
-                province      : province,
-                state         : currentLocation.area1,
-                country       : 'IT',
-                postcode      : cap,
+                address_line1: streetAddress + ', ' + streetNumber,
+                address_line2: '',
+                city         : city,
+                postcode     : cap,
+                zone         : province,
+                //state        : currentLocation.area1,
+                country      : 'IT',
             };
-            let addressUpdated = await zarolead.updateLeadAddress(lead['hash'], params);
+            let addressUpdated = await zarolead.updateLead(lead['hash'], params);
         }
     }
 
@@ -1788,43 +1758,39 @@ async function onLoad()
             }
 
             // Prefill address
-            if (lead.hasOwnProperty('shipping') && lead['shipping'] !== null) {
-                let shipping = lead['shipping'];
-                if (shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
-                    shipping.hasOwnProperty('city') && shipping['city'] !== null &&
-                    shipping.hasOwnProperty('province') && shipping['province'] !== null &&
-                    shipping.hasOwnProperty('state') && shipping['state'] !== null) {
+            if (lead.hasOwnProperty('address_line1') && lead['address_line1'] !== null &&
+                lead.hasOwnProperty('city') && lead['city'] !== null &&
+                lead.hasOwnProperty('zone') && lead['zone'] !== null) {
 
-                    let address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
+                let address = lead['address_line1'] + ', ' + lead['city'] + ', ' + lead['zone'];
 
-                    utils.setInputValue('address', address);
-                    if (autocomplete !== null) {
-                        autocomplete.set(address);
-                        //google.maps.event.trigger(autocomplete, 'place_changed');
-                        //const res = await google.maps.places.AutocompletionRequest.getPlacePredictions({ input: address});
-                        //const res = await autocomplete.getPlacePredictions({ input: address});
+                utils.setInputValue('address', address);
+                if (autocomplete !== null) {
+                    autocomplete.set(address);
+                    //google.maps.event.trigger(autocomplete, 'place_changed');
+                    //const res = await google.maps.places.AutocompletionRequest.getPlacePredictions({ input: address});
+                    //const res = await autocomplete.getPlacePredictions({ input: address});
 
-                        let acService = new google.maps.places.AutocompleteService();
-                        const res = await acService.getPlacePredictions({ input: address});
+                    let acService = new google.maps.places.AutocompleteService();
+                    const res = await acService.getPlacePredictions({ input: address});
 
-                        let placeId = res['predictions'][0]['place_id'];
+                    let placeId = res['predictions'][0]['place_id'];
 
-                        const map = new google.maps.Map(document.getElementById('map'), {
-                            center: new google.maps.LatLng(-33.8665433,151.1956316),
-                            zoom: 15,
-                        });
-                        let pService = new google.maps.places.PlacesService(map);
-                        await pService.getDetails({
-                            placeId: placeId,
-                            componentRestrictions: { country: ['it'] },
-                            fields: ['address_components'],
-                            types: ['address'],
-                        }, function (place, status) {
-                            if (status == google.maps.places.PlacesServiceStatus.OK) {
-                                changeLocation(place);
-                            }
-                        });
-                    }
+                    const map = new google.maps.Map(document.getElementById('map'), {
+                        center: new google.maps.LatLng(-33.8665433,151.1956316),
+                        zoom: 15,
+                    });
+                    let pService = new google.maps.places.PlacesService(map);
+                    await pService.getDetails({
+                        placeId: placeId,
+                        componentRestrictions: { country: ['it'] },
+                        fields: ['address_components'],
+                        types: ['address'],
+                    }, function (place, status) {
+                        if (status == google.maps.places.PlacesServiceStatus.OK) {
+                            changeLocation(place);
+                        }
+                    });
                 }
             }
         }

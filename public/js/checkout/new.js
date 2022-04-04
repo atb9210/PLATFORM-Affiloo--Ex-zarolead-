@@ -267,40 +267,9 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.updateLead = function (leadId, params) {
-        return __awaiter(this, void 0, void 0, function () {
-            var response, respJson, error_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
-                    case 1:
-                        response = _a.sent();
-                        if (response !== null && response !== '') {
-                            respJson = null;
-                            if (response.hasOwnProperty('data')) {
-                                respJson = response['data'];
-                            }
-                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                                return [2 /*return*/, true];
-                            }
-                            else {
-                                return [2 /*return*/, false];
-                            }
-                        }
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_3 = _a.sent();
-                        return [2 /*return*/, false];
-                    case 3: return [2 /*return*/, false];
-                }
-            });
-        });
-    };
     ZaroLead.prototype.getLeadInfo = function (leadId) {
         return __awaiter(this, void 0, void 0, function () {
-            var lead, response, error_4;
+            var lead, response, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -325,7 +294,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_4 = _a.sent();
+                        error_3 = _a.sent();
                         lead = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, lead];
@@ -333,20 +302,20 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.updateLeadAddress = function (leadId, params) {
+    ZaroLead.prototype.updateLead = function (leadId, params) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, respJson, respJson_1, error_5;
+            var response, respJson, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders })];
+                        return [4 /*yield*/, this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
                             respJson = null;
                             if (response.hasOwnProperty('data')) {
-                                respJson_1 = response['data'];
+                                respJson = response['data'];
                             }
                             if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
                                 return [2 /*return*/, true];
@@ -357,7 +326,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_5 = _a.sent();
+                        error_4 = _a.sent();
                         return [2 /*return*/, false];
                     case 3: return [2 /*return*/, false];
                 }
@@ -366,18 +335,40 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.completeLead = function (leadId, status, total, paymentMethod, push) {
         return __awaiter(this, void 0, void 0, function () {
-            var params, response, respJson, error_6;
+            var info, params, res, error_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        params = {
+                        info = {
                             status: status,
                             total: total,
                             payment_method: paymentMethod,
                             push: push
                         };
-                        return [4 /*yield*/, this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders })];
+                        params = {
+                            info: utils.jsonEncode(info)
+                        };
+                        return [4 /*yield*/, this.updateLead(leadId, params)];
+                    case 1:
+                        res = _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_5 = _a.sent();
+                        return [2 /*return*/, false];
+                    case 3: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
+    ZaroLead.prototype.deleteLead = function (leadId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, respJson, error_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.$http["delete"](this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/destroy', { headers: this.httpHeaders })];
                     case 1:
                         response = _a.sent();
                         if (response !== null && response !== '') {
@@ -401,40 +392,9 @@ var ZaroLead = /** @class */ (function () {
             });
         });
     };
-    ZaroLead.prototype.deleteLead = function (leadId) {
-        return __awaiter(this, void 0, void 0, function () {
-            var response, respJson, error_7;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.$http["delete"](this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders })];
-                    case 1:
-                        response = _a.sent();
-                        if (response !== null && response !== '') {
-                            respJson = null;
-                            if (response.hasOwnProperty('data')) {
-                                respJson = response['data'];
-                            }
-                            if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                                return [2 /*return*/, true];
-                            }
-                            else {
-                                return [2 /*return*/, false];
-                            }
-                        }
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_7 = _a.sent();
-                        return [2 /*return*/, false];
-                    case 3: return [2 /*return*/, false];
-                }
-            });
-        });
-    };
     ZaroLead.prototype.getProduct = function (productId) {
         return __awaiter(this, void 0, void 0, function () {
-            var product, response, error_8;
+            var product, response, error_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -459,7 +419,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_8 = _a.sent();
+                        error_7 = _a.sent();
                         product = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, product];
@@ -469,7 +429,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.getPaymentIntentProduct = function (productId, leadId, quantity) {
         return __awaiter(this, void 0, void 0, function () {
-            var paymentIntent, params, httpHeaders, response, error_9;
+            var paymentIntent, params, httpHeaders, response, error_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -501,7 +461,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        error_9 = _a.sent();
+                        error_8 = _a.sent();
                         paymentIntent = null;
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, paymentIntent];
@@ -511,7 +471,7 @@ var ZaroLead = /** @class */ (function () {
     };
     ZaroLead.prototype.facebookEvent = function (params) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, error_10;
+            var response, error_9;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -528,7 +488,7 @@ var ZaroLead = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_10 = _a.sent();
+                        error_9 = _a.sent();
                         return [2 /*return*/, false];
                     case 3: return [2 /*return*/, false];
                 }
@@ -1180,14 +1140,15 @@ function validateStep3() {
                     if (!isValid) return [3 /*break*/, 2];
                     if (!(lead !== null)) return [3 /*break*/, 2];
                     params = {
-                        street_address: streetAddress + ', ' + streetNumber,
+                        address_line1: streetAddress + ', ' + streetNumber,
+                        address_line2: '',
                         city: city,
-                        province: province,
-                        state: currentLocation.area1,
-                        country: 'IT',
-                        postcode: cap
+                        postcode: cap,
+                        zone: province,
+                        //state        : currentLocation.area1,
+                        country: 'IT'
                     };
-                    return [4 /*yield*/, zarolead.updateLeadAddress(lead['hash'], params)];
+                    return [4 /*yield*/, zarolead.updateLead(lead['hash'], params)];
                 case 1:
                     addressUpdated = _a.sent();
                     _a.label = 2;
@@ -1628,7 +1589,7 @@ function initPlugins() {
 /******************************************************************************/
 function onLoad() {
     return __awaiter(this, void 0, void 0, function () {
-        var phoneInput, addressInput, pluginListStr, checkout, _loop_1, i, elements, leadId, leadInfo, fullName_1, phone_1, shipping, address, acService, res, placeId, map, pService;
+        var phoneInput, addressInput, pluginListStr, checkout, _loop_1, i, elements, leadId, leadInfo, fullName_1, phone_1, address, acService, res, placeId, map, pService;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1774,13 +1735,10 @@ function onLoad() {
                     if (lead.hasOwnProperty('quantity') && lead['quantity'] !== null) {
                         changeQuantity(lead['quantity']);
                     }
-                    if (!(lead.hasOwnProperty('shipping') && lead['shipping'] !== null)) return [3 /*break*/, 8];
-                    shipping = lead['shipping'];
-                    if (!(shipping.hasOwnProperty('street_address') && shipping['street_address'] !== null &&
-                        shipping.hasOwnProperty('city') && shipping['city'] !== null &&
-                        shipping.hasOwnProperty('province') && shipping['province'] !== null &&
-                        shipping.hasOwnProperty('state') && shipping['state'] !== null)) return [3 /*break*/, 8];
-                    address = shipping['street_address'] + ', ' + shipping['city'] + ', ' + shipping['province'] + ', ' + shipping['state'];
+                    if (!(lead.hasOwnProperty('address_line1') && lead['address_line1'] !== null &&
+                        lead.hasOwnProperty('city') && lead['city'] !== null &&
+                        lead.hasOwnProperty('zone') && lead['zone'] !== null)) return [3 /*break*/, 8];
+                    address = lead['address_line1'] + ', ' + lead['city'] + ', ' + lead['zone'];
                     utils.setInputValue('address', address);
                     if (!(autocomplete !== null)) return [3 /*break*/, 8];
                     autocomplete.set(address);

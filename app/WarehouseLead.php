@@ -18,7 +18,9 @@ class WarehouseLead extends Model
     ];
 
     protected $fillable = [
+        'hash',
         'customer_id',
+        'product_id',
         'status',
         'first_name', 'last_name', 'phone', 'email',
         'address_line1', 'address_line2', 'city', 'postcode', 'zone', 'country',
@@ -32,5 +34,53 @@ class WarehouseLead extends Model
     public function customer()
     {
         return $this->belongsTo('App\Customer', 'customer_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo('App\Product', 'product_id');
+    }
+
+    private function generateRandomString(int $length = 32): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    private function generateHash(): string
+    {
+        return $this->generateRandomString(64);
+    }
+
+    public static function refreshHash(): string
+    {
+        $newHash = null;
+
+        $endLoop = false;
+        do {
+            $newHash = $this->generateHash();
+            if (WarehouseLead::findByHash($newHash) === null) {
+                $endLoop = true;
+            }
+        } while (!$endLoop);
+
+        $this->hash = $newHash;
+        $this->save();
+
+        return $this->hash;
+    }
+
+    public static function findByHash(string $hash)
+    {
+        $results = WarehouseLead::where('hash', $hash)->get();
+        if ($results->count() > 0) {
+            return $results[0];
+        }
+        return null;
     }
 }

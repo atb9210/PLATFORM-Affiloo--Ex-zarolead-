@@ -234,28 +234,6 @@ class ZaroLead
         return lead;
     }
 
-    async updateLead(leadId: string, params: object)
-    {
-        try {
-            const response = await this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
-            if (response !== null && response !== '') {
-                //let respJson = utils.jsonDecode(response);
-                let respJson = null;
-                if (response.hasOwnProperty('data')) {
-                    respJson = response['data'];
-                }
-                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } catch (error) {
-            return false;
-        }
-        return false;
-    }
-
     async getLeadInfo(leadId: string)
     {
         var lead: object = null;
@@ -279,38 +257,10 @@ class ZaroLead
         return lead;
     }
 
-    async updateLeadAddress(leadId: string, params: object)
+    async updateLead(leadId: string, params: object)
     {
         try {
-            const response = await this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/address', params, { headers: this.httpHeaders });
-            if (response !== null && response !== '') {
-                //let respJson = utils.jsonDecode(response);
-                let respJson = null;
-                if (response.hasOwnProperty('data')) {
-                    let respJson = response['data'];
-                }
-                if (respJson !== null && respJson.hasOwnProperty('status') && respJson['status'] === 'success') {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } catch (error) {
-            return false;
-        }
-        return false;
-    }
-
-    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
-    {
-        try {
-            let params = {
-                status: status,
-                total: total,
-                payment_method: paymentMethod,
-                push: push,
-            };
-            const response = await this.$http.post(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/complete', params, { headers: this.httpHeaders });
+            const response = await this.$http.put(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/update', params, { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
@@ -329,10 +279,29 @@ class ZaroLead
         return false;
     }
 
+    async completeLead(leadId: string, status: string, total: number, paymentMethod: string, push: string)
+    {
+        try {
+            let info = {
+                status: status,
+                total: total,
+                payment_method: paymentMethod,
+                push: push,
+            };
+            let params = {
+                info: utils.jsonEncode(info),
+            };
+            const res = await this.updateLead(leadId, params);
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
     async deleteLead(leadId: string)
     {
         try {
-            const response = await this.$http.delete(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/delete', { headers: this.httpHeaders });
+            const response = await this.$http.delete(this.API_URL + this.warehouseNetwork + '/leads/' + leadId + '/destroy', { headers: this.httpHeaders });
             if (response !== null && response !== '') {
                 //let respJson = utils.jsonDecode(response);
                 let respJson = null;
