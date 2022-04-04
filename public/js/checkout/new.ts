@@ -1004,7 +1004,7 @@ async function validateStep1()
                 price: price.toFixed(2),
                 total: total.toFixed(2),
                 quantity: quantity,
-                status: 'abandoned',
+                status: 'unprocessed',
                 info: utils.jsonEncode(info),
             });
         } else {
