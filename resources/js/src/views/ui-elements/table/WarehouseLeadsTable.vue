@@ -8,12 +8,10 @@
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" @click="copyPhoneNumbers()"></vs-button>
             </vx-tooltip>
-            <vx-tooltip text="Send message (bulk)" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
-            </vx-tooltip>
             <vx-tooltip text="Delete selected leads" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="confirmDeletePopup"></vs-button>
             </vx-tooltip>
+
             <vx-tooltip text="Back" position="top">
                 <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
@@ -63,18 +61,6 @@
                         <vs-select-item :key="'statusOption' + sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
                     </vs-select>
                 </div>
-                <div class="vx-col w-1/2">
-                    <label>Product</label>
-                    <vs-select class="w-full" v-model="filters.product" autocomplete>
-                        <vs-select-item :key="'productOption' + pIndex" :value="product.sku" :text="product.name" v-for="(product, pIndex) in products" />
-                    </vs-select>
-                </div>
-                <div class="vx-col w-1/2">
-                    <label>Order Status</label>
-                    <vs-select class="w-full" v-model="filters.order_status">
-                        <vs-select-item :key="'orderStatusOption' + osIndex" :value="oStatus.id" :text="oStatus.name" v-for="(oStatus, osIndex) in orderStatuses" />
-                    </vs-select>
-                </div>
             </div>
 
             <div class="vx-row mt-6">
@@ -122,18 +108,6 @@
                   </a>
                 </li>
                 <li>
-                  <a href="#" v-if="data !== null && data.hasOwnProperty('info') && canCreateDelivery(data.info)" @click="$refs.lead_context_menu.close();fastCreateDelivery(data)"class="flex items-center text-sm">
-                    <feather-icon icon="PackageIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Create delivery</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" @click="$refs.lead_context_menu.close();openSendMessagePopup([data])"class="flex items-center text-sm">
-                    <feather-icon icon="MessageCircleIcon" svgClasses="w-5 h-5" />
-                    <span class="ml-2">Send message (Whatsapp)</span>
-                  </a>
-                </li>
-                <li>
                   <a href="#" @click="$refs.lead_context_menu.close();deleteLead(data)" class="flex items-center text-sm">
                     <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Delete</span>
@@ -147,40 +121,14 @@
                 </li>
             </vue-context>
 
-            <!--
-            <popover class="customer_popover" :name="'customer_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'leadPopover' + index">
-                <div><b>{{ lead.full_name }}</b></div>
-                <div v-if="lead.info !== null && lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null">
-                    <div v-if="lead.info.shipping.hasOwnProperty('street_address') && lead.info.shipping.hasOwnProperty('city') && lead.info.shipping.hasOwnProperty('province')">
-                        <div>{{ lead.info.shipping.street_address }}</div>
-                        <div>{{ lead.info.shipping.city }} ({{ lead.info.shipping.province }})</div>
-                    </div>
-                </div>
-                <div>{{ lead.phone }}</div>
-            </popover>
-            -->
-
-            <!--
-            <popover class="items_popover" :name="'items_popover_' + lead.id" event="hover" v-for="(lead, index) in leads" :key="'itemsPopover' + index">
-                <ul v-if="lead.info !== null && lead.info.hasOwnProperty('products') && lead.info.products !== null && lead.info.products.length > 0">
-                    <li v-for="(item, pIndex) in lead.info.products" :key="'itemsPopoverElement' + pIndex">
-                        {{item.name}} (x{{item.quantity}})
-                    </li>
-                </ul>
-            </popover>
-            -->
-
             <!-- Leads table -->
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <!--<vs-th sort-key="id">ID</vs-th>-->
-                    <vs-th sort-key="order_number">Order Num</vs-th>
+                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
-                    <!--<vs-th sort-key="delivery.completed_at">Completed</vs-th>-->
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
-                    <!--<vs-th sort-key="sku">SKU</vs-th>-->
                     <vs-th sort-key="product_name">Product</vs-th>
                     <vs-th sort-key="gateway">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
@@ -190,9 +138,6 @@
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
-                    <!--<vs-th sort-key="delivery_status">Dlvry</vs-th>-->
-                    <vs-th sort-key="order_status">Order Status</vs-th>
-                    <!--<vs-th sort-key="carrier">Carrier</vs-th>-->
                     <vs-th sort-key="notes">Notes</vs-th>
                     <vs-th>Actions</vs-th>
                 </template>
@@ -200,34 +145,17 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="item" :key="'tableRow' + indextr" v-for="(item, indextr) in data">
 
-                        <!--
                         <vs-td class="column-no-padding" :data="item.id">
                             {{item.id}}
-                        </vs-td>
-                        -->
-
-                        <vs-td class="column-no-padding" :data="item.order_number">
-                            <span v-if="item.order_number != ''" @click="showLeadInfo(item)">
-                                <u>{{item.order_number}}</u>
-                            </span>
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.created_at">
                             {{formatDateTime(new Date(item.created_at))}}
                         </vs-td>
 
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.delivery.completed_at">
-                            <span v-if="item.delivery.completed_at !== ''">
-                                {{formatDateTime(new Date(item.delivery.completed_at))}}
-                            </span>
-                        </vs-td>
-                        -->
-
                         <vs-td class="column-no-padding" :data="item.full_name">
                             <div @contextmenu.prevent="$refs.lead_context_menu.open($event, item)">
                                 <vx-tooltip :title="item.full_name" :text="hasAddressInfo(item) ? getAddress(item) : 'Address undefined'" position="left">
-                                    <!--<vs-chip v-popover="{name:'customer_popover_' + item.id}">-->
                                     <vs-chip>
                                         {{item.full_name}}
                                     </vs-chip>
@@ -243,12 +171,6 @@
                             </vs-chip>
                         </vs-td>
 
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.sku">
-                            {{item.sku}}
-                        </vs-td>
-                        -->
-
                         <vs-td class="column-no-padding" :data="item.product_name">
                             <vs-chip>
                                 {{item.product_name}}
@@ -260,34 +182,18 @@
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
-                            <fast-editable-value
-                                v-model="newValue"
-                                @onEdit="newValue = data[indextr].price.toFixed(2)"
-                                @onUpdate="updatePrice(data[indextr])">
-                                  € {{ item.price.toFixed(2) }}
-                            </fast-editable-value>
+                            € {{ item.price.toFixed(2) }}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.quantity">
-                            <fast-editable-value
-                                v-model="newValue"
-                                @onEdit="newValue = data[indextr].quantity"
-                                @onUpdate="updateQuantity(data[indextr])">
-                                  {{ item.quantity }}
-                            </fast-editable-value>
+                            {{ item.quantity }}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.total">
-                            <fast-editable-value
-                                v-model="newValue"
-                                @onEdit="newValue = data[indextr].total.toFixed(2)"
-                                @onUpdate="updateTotal(data[indextr])">
-                                  € {{ item.total.toFixed(2) }}
-                            </fast-editable-value>
+                            € {{ item.total.toFixed(2) }}
                         </vs-td>
 
                         <vs-td class="column-no-padding">
-                            <!--<vs-chip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" v-popover="{name:'items_popover_' + item.id}">-->
                             <vx-tooltip v-if="item.info !== null && item.info.hasOwnProperty('products') && item.info.products !== null && item.info.products.length > 0" title="Items" :text="getProductsList(item)">
                                 <vs-chip>
                                     {{item.info.products.length}} items
@@ -319,27 +225,6 @@
                             <span v-if="item.paid">Yes</span>
                             <span v-else>No</span>
                         </vs-td>
-
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.delivery_status">
-                            <vs-avatar :color="deliveryStatusColor[item.delivery_status]" size="24px" icon-pack="feather" icon="icon-package" />
-                        </vs-td>
-                        -->
-
-                        <vs-td class="column-no-padding" :data="item.order_status">
-                            <span>{{item.order_status}}</span>
-                        </vs-td>
-
-                        <!--
-                        <vs-td class="column-no-padding" :data="item.carrier">
-                            <div v-if="item.carrier != ''" class="w-full">
-                                <img class="carrier-icon" v-if="carrierIcon.hasOwnProperty(item.carrier)" :src="carrierIcon[item.carrier]" />
-                                <span v-else>
-                                    {{item.carrier}}
-                                </span>
-                            </div>
-                        </vs-td>
-                        -->
 
                         <vs-td class="column-no-padding" :data="item.notes">
                             <vx-tooltip :text="item.notes" position="top">
@@ -386,26 +271,6 @@
                                     </vs-dropdown-menu>
                                 </vs-dropdown>
 
-                                <!--
-                                <vx-tooltip :text="item.notes" position="top">
-                                    <vs-button class="mr-2" :color="(item.notes === null ||item.notes === '') ? 'primary' : 'warning'" @click="showNotes(item)" icon-pack="feather" icon="icon-flag" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Edit" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-edit" @click="changeView('order_builder', item)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Create delivery" position="top">
-                                    <vs-button class="mr-2" :color="deliveryStatusColor[item.delivery_status]" icon-pack="feather" icon="icon-package" @click="fastCreateDelivery(item)" :disabled="!canCreateDelivery(item.info)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Info" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-info" @click="showLeadInfo(item)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Payment link" position="top">
-                                    <vs-button class="mr-2" color="primary" icon-pack="feather" icon="icon-dollar-sign" @click="showPaymentLink(item)" />
-                                </vx-tooltip>
-                                <vx-tooltip text="Send Whatsapp message" position="top">
-                                    <vs-button class="mr-2" color="primary" @click="whatsappMessage(item)" icon-pack="feather" icon="icon-message-circle" />
-                                </vx-tooltip>
-                                -->
                             </div>
                         </vs-td>
                         
@@ -413,13 +278,10 @@
 
                     <!-- TOTAL STATS -->
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding">{{data.length}}</vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.price.toFixed(2)}}</vs-td>
@@ -429,9 +291,6 @@
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
-                    <vs-td class="column-no-padding"></vs-td>
-                    <!--<vs-td class="column-no-padding"></vs-td>-->
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
 
@@ -442,223 +301,7 @@
 
         <!-- Order builder -->
         <div v-if="view == 'order_builder'">
-            <div class="w-full pr-2 pl-2">
-                <div class="vx-row w-full">
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <h2>Contact data</h2>
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/4 w-full">
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/4 w-full">
-                        <fast-editable-value-select
-                            class="font-bold"
-                            :options="leadStatuses"
-                            v-model="newStatus"
-                            @onEdit="newStatus = order.status"
-                            @onUpdate="updateStatusOrderBuilder()">
-                              <vs-chip :color="leadStatusColor[order.status]">
-                                  {{order.status}}
-                              </vs-chip>
-                        </fast-editable-value-select>
-                    </div>
-                </div>
-                <div class="vx-row w-full">
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.first_name" placeholder="First Name" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.last_name" placeholder="Last Name" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.phone" placeholder="Phone" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.email" placeholder="Email" />
-                    </div>
-                </div>
-
-                <hr class="mt-3 mb-3">
-
-                <h2>Shipping</h2>
-                <div class="vx-row w-full">
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.first_name" placeholder="First Name" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.last_name" placeholder="Last Name" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.phone" placeholder="Phone" />
-                    </div>
-                    <div class="vx-col mb-6 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.email" placeholder="Email" />
-                    </div>
-                    <div class="vx-col mb-3 w-full">
-                        <LocationInput v-model="order.location" @onEdit="findAddress" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.street_address" placeholder="Street address" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.city" placeholder="City" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.postcode" placeholder="Post code" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.province" placeholder="Province" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.state" placeholder="State" />
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-input class="w-full" type="text" v-model="order.shipping.country" placeholder="Country" />
-                    </div>
-                    <div class="vx-col mt-3 mb-3 w-full">
-                        <vs-input icon-before="true" icon-pack="feather" icon="icon-message-square" class="w-full" type="text" v-model="order.shipping.notes" placeholder="Notes" />
-                    </div>
-                </div>
-
-                <hr class="mt-3 mb-3">
-
-                <h2>Payment method</h2>
-                <div class="vx-row w-full mb-3 font-bold">
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-select class="w-full" v-model="order.gateway">
-                            <vs-select-item :key="'paymentMethodOption' + gIndex" :value="gItem" :text="gItem" v-for="(gItem, gIndex) in gateways" />
-                        </vs-select>
-                    </div>
-                    <div class="vx-col mb-3 md:w-1/2 w-full">
-                        <vs-button v-if="order.gateway === 'online' && order.phone != ''" class="w-full" color="primary" type="filled" icon-pack="feather" icon="icon-message-square" @click="confirmSendPaymentLinkViaMessage">Send payment link via Whatsapp</vs-button>
-                    </div>
-                </div>
-
-                <hr class="mt-3 mb-3">
-
-                <h2>Products</h2>
-                <div class="vx-row w-full mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/12">
-                        <vs-button color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showAddProductPopup"></vs-button>
-                    </div>
-                    <div class="vx-col w-full md:w-1/3">
-                        Name
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        Quantity
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        Unit Price
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        Total Price
-                    </div>
-                    <div class="vx-col w-full md:w-1/12">
-                        Upsell
-                    </div>
-                </div>
-
-                <div class="vx-row w-full mb-3" v-for="(product, pIndex) in order.products" :key="'reviewProductOption' + pIndex">
-                    <div class="vx-col w-full md:w-1/12">
-                        <vs-button color="danger" type="filled" icon-pack="feather" icon="icon-trash" @click="removeProduct(pIndex)"></vs-button>
-                    </div>
-                    <div class="vx-col w-full md:w-1/3">
-                        {{product.name}}
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="product.quantity" @onUpdate="refreshOrderReviewTotal()">
-                            x{{product.quantity}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="product.price" @onUpdate="refreshOrderReviewTotal()">
-                            € {{product.price}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        € {{(product.total).toFixed(2)}}
-                    </div>
-                    <div class="vx-col w-full md:w-1/12">
-                        <vs-checkbox v-model="order.products[pIndex].upsell" />
-                    </div>
-                </div>
-
-                <div class="vx-row w-full mb-3" v-for="(acc, aIndex) in order.accessories" :key="'accessoyOption' + aIndex">
-                    <div class="vx-col w-full md:w-1/12">
-                        <vs-checkbox v-model="order.accessories[aIndex].enabled" @change="refreshOrderReviewTotal()" />
-                    </div>
-                    <div class="vx-col w-full md:w-1/3">
-                        {{acc.name}}
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="order.accessories[aIndex].quantity" @onUpdate="refreshOrderReviewTotal()">
-                            x{{order.accessories[aIndex].quantity}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="order.accessories[aIndex].price" @onUpdate="refreshOrderReviewTotal()">
-                            € {{order.accessories[aIndex].price.toFixed(2)}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        € {{order.accessories[aIndex].total.toFixed(2)}}
-                    </div>
-                    <div class="vx-col w-full md:w-1/12">
-                    </div>
-                </div>
-
-                <!--
-                <div class="vx-row w-full mb-3">
-                    <div class="vx-col w-full md:w-1/6">
-                        Insurance
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        x1
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
-                            € {{order.insurance}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        <fast-editable-value v-model="order.insurance" @onUpdate="refreshOrderReviewTotal()">
-                            € {{order.insurance}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                    </div>
-                </div>
-                -->
-
-                <div class="vx-row w-full mt-3 mb-3 font-bold">
-                    <div class="vx-col w-full md:w-1/12">
-                    </div>
-                    <div class="vx-col w-full md:w-1/3">
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                    </div>
-                    <div class="vx-col w-full md:w-1/6">
-                        ----------------------<br>
-                        <fast-editable-value
-                            v-model="order.newTotal"
-                            @onEdit="order.newTotal = order.total"
-                            @onUpdate="updateOrderTotal()">
-                              € {{order.total}}
-                        </fast-editable-value>
-                    </div>
-                    <div class="vx-col w-full md:w-1/12">
-                    </div>
-                </div>
-
-                <div class="vx-row w-full mt-3 mb-3 font-bold items-center flex">
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-save" @click="updateLeadInfo(order)" :disabled="!canUpdateLeadInfo(order)">Save</vs-button>
-                    <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="showCreateDeliveryPopup()" :disabled="!canCreateDelivery(order)">Create Delivery</vs-button>
-                </div>
-
-            </div>
+            <!-- TODO: HERE -->
         </div>
 
         <!-- Notes popup -->
@@ -676,39 +319,6 @@
             </div>
         </vs-popup>
 
-        <!-- Add product popup -->
-        <vs-popup title="Add products" :active.sync="showPopup['add_product']">
-            <div class="w-full pr-2 pl-2">
-                <div class="vx-row mb-3 w-full font-bold">
-                    <div class="vx-col md:w-1/6 w-full">
-                    </div>
-                    <div class="vx-col md:w-1/3 w-full">
-                        Name
-                    </div>
-                    <div class="vx-col md:w-1/6 w-full">
-                        Q.ty
-                    </div>
-                    <div class="vx-col md:w-1/3 w-full">
-                        SKU
-                    </div>
-                </div>
-                <div class="vx-row mb-3 w-full text-sm" v-for="(product, pIndex) in products" :key="'addProductOption' + pIndex">
-                    <div class="vx-col md:w-1/6 w-full">
-                        <vs-checkbox :value="hasProduct(product)" @change="toggleProduct(product)" />
-                    </div>
-                    <div class="vx-col md:w-1/3 w-full">
-                        {{product.name}}
-                    </div>
-                    <div class="vx-col md:w-1/6 w-full">
-                        {{product.quantity_stock}}
-                    </div>
-                    <div class="vx-col md:w-1/3 w-full">
-                        {{product.sku}}
-                    </div>
-                </div>
-            </div>
-        </vs-popup>
-
         <!-- Lead info popup -->
         <vs-popup title="Lead info" :active.sync="showPopup['lead_info']">
             <div class="w-full pr-2 pl-2">
@@ -720,22 +330,6 @@
                         {{value}}
                     </div>
                 </div>
-            </div>
-        </vs-popup>
-
-        <!-- Create delivery popup -->
-        <vs-popup title="Lead info" :active.sync="showPopup['create_delivery']">
-            <div class="vx-row mb-3">
-                <div class="vx-col md:w-1/2 w-full">
-                    Completed date
-                </div>
-                <div class="vx-col md:w-1/2 w-full">
-                    <vs-input type="datetime-local" class="w-full" icon-pack="feather" icon="icon-calendar" icon-no-border v-model="order.completed_at" />
-                </div>
-            </div>
-
-            <div class="vx-row mb-6">
-                <vs-button class="mt-12 mr-auto ml-auto" @click="updateLeadInfoAndCreateDelivery()" color="primary" type="filled">Create Delivery</vs-button>
             </div>
         </vs-popup>
 
@@ -786,9 +380,8 @@
 
 <script>
 import { VueContext } from 'vue-context'
-import StatisticsCardLine from '@/components/statistics-cards/StatisticsCardLine.vue'
 
-import Warehouse from 'warehouse'
+import { WarehouseLead } from 'zarolead'
 
 function getCurrencyValue(s) {
   if (typeof(s) === 'number') {
@@ -813,11 +406,10 @@ function stringContainsNumber(_input) {
 export default {
   components: {
     VueContext,
-    StatisticsCardLine,
   },
   data () {
     return {
-      warehouse: null,
+      warehouseLeadClient: null,
 
       maxItems: 150,
       view: 'leads',
@@ -827,8 +419,6 @@ export default {
         date_from: '',
         date_to: '',
         statuses: ['confirmed'],
-        product: '',
-        order_status: '',
       },
 
       showPopup: {
@@ -843,6 +433,7 @@ export default {
 
       leads: [],
       selectedLeads: [],
+
       lead: {},
       order: {
         id: '',
@@ -1020,7 +611,7 @@ export default {
     async changeView(view, item = null) {
       if (view == 'leads') {
         this.$vs.loading()
-        this.leads = await this.warehouse.fetchLeads(this.filters)
+        this.leads = await this.warehouseLeadClient.fetch(this.filters)
         this.calculateStats()
         this.view = view
         this.$vs.loading.close()
@@ -1046,8 +637,6 @@ export default {
         date_from: '',
         date_to: '',
         statuses: ['confirmed'],
-        product: '',
-        order_status: '',
       }
       await this.filterDatesShortcut('this_month')
     },
@@ -1162,7 +751,7 @@ export default {
       let params = {
         status: this.newStatus,
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1189,7 +778,7 @@ export default {
       let params = {
         status: this.newStatus,
       }
-      await this.warehouse.updateLead(this.order.id, params)
+      await this.warehouseLeadClient.update(this.order.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1211,7 +800,7 @@ export default {
       let params = {
         notes: lead.notes,
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1242,7 +831,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1304,7 +893,11 @@ export default {
       }
     },
     async fetchProducts() {
-      let products = await this.warehouse.fetchProducts()
+      // DEBUG TODO: to delete
+      return
+
+      // TODO: HERE
+      let products = await this.warehouseLeadClient.fetchProducts()
 
       this.products = []
       for (let i = 0; i < products.length; i++) {
@@ -1431,7 +1024,7 @@ export default {
         email: o.email,
         info: JSON.stringify(info),
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
     },
     // TODO: Old code
     /*
@@ -1517,7 +1110,8 @@ export default {
         products: products,
       }
 
-      await this.warehouse.updateDelivery(o.lead_id, params)
+      // TODO: HERE
+      await this.warehouseLeadClient.updateDelivery(o.lead_id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1542,7 +1136,8 @@ export default {
         completed_at: this.formatDateTimeISO8601(new Date(this.order.completed_at)),
         transform_to_order: 1,
       }
-      await this.warehouse.updateDelivery(o.lead_id, params)
+      // TODO: HERE
+      await this.warehouseLeadClient.updateDelivery(o.lead_id, params)
 
       this.$vs.notify({
         title: 'Success',
@@ -1701,7 +1296,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1715,7 +1310,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1729,7 +1324,7 @@ export default {
       let params = {
         info: JSON.stringify(info),
       }
-      await this.warehouse.updateLead(lead.id, params)
+      await this.warehouseLeadClient.update(lead.id, params)
 
       this.$vs.loading.close()
 
@@ -1737,13 +1332,13 @@ export default {
     },
     async deleteLead(lead) {
       this.$vs.loading()
-      await this.warehouse.deleteLead(lead.id)
+      await this.warehouseLeadClient.delete(lead.id)
       this.$vs.loading.close()
       this.changeView('leads')
     },
     async deleteLeads(leads) {
       for (let i = 0; i < leads.length; i++) {
-        await this.warehouse.deleteLead(leads[i].id)
+        await this.warehouseLeadClient.delete(leads[i].id)
       }
     },
     async deleteSelected() {
@@ -1801,7 +1396,8 @@ export default {
     async showLeadInfo(lead) {
       this.$vs.loading()
 
-      let delivery = await this.warehouse.getDelivery(lead.id)
+      // TODO: HERE
+      let delivery = await this.warehouseLeadClient.getDelivery(lead.id)
       if (delivery !== null) {
         this.lead = lead
         this.lead.delivery = delivery
@@ -1895,7 +1491,8 @@ export default {
       await this.copyToClipboard(toCopy)
     },
     async sendMessage(phone, message) {
-      const result = await this.warehouse.sendMessage(phone, message)
+      // TODO: HERE
+      const result = await this.warehouseLeadClient.sendMessage(phone, message)
       return result
     },
     confirmSendPaymentLinkViaMessage() {
@@ -2021,7 +1618,7 @@ export default {
     },
   },
   async created() {
-    this.warehouse = new Warehouse(localStorage.getItem('accessToken'))
+    this.warehouseLeadClient = new WarehouseLead(this.$zarolead)
 
     this.$vs.loading()
 
@@ -2042,18 +1639,6 @@ export default {
   font-size: 0.8em;
   white-space: nowrap;
 }
-
-/*
-.customer_popover {
-  z-index: 999999 !important;
-  position: fixed !important;
-}
-
-.items_popover {
-  z-index: 999999 !important;
-  position: fixed !important;
-}
-*/
 
 .carrier-icon {
   width: 24px !important;

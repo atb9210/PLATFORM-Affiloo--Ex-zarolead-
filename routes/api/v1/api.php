@@ -257,6 +257,11 @@ Route::apiResource('warehouse/shipping-carriers', 'api\v1\WarehouseShippingCarri
     'create', 'edit',
 ])->middleware('auth:api');
 
+/* Warehouse leads routes */
+Route::apiResource('warehouse/leads', 'api\v1\WarehouseLeadController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
 
 /* Storage routes */
 Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');

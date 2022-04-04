@@ -77,6 +77,7 @@ import WarehouseProduct from './warehouse_product'
 import WarehouseOrder from './warehouse_order'
 import WarehouseShipping from './warehouse_shipping'
 import WarehouseShippingCarrier from './warehouse_shipping_carrier'
+import WarehouseLead from './warehouse_lead'
 
 export {
   ZaroLead,
@@ -86,4 +87,5 @@ export {
   WarehouseOrder,
   WarehouseShipping,
   WarehouseShippingCarrier,
+  WarehouseLead,
 }

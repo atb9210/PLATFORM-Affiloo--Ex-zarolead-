@@ -222,6 +222,9 @@ Route::get('/forms-styles/{id}', 'FormController@getStyle')->name('forms-styles.
 Route::get('/products/{id}/checkout', 'ProductController@getCheckoutForm')->name('products.checkout.get');
 Route::get('/products/checkout/{hash}/cancel', 'ProductController@getCheckoutCancel')->name('products.checkout.cancel');
 
+Route::get('/products/{id}/checkout/new', 'ProductController@getNewCheckoutForm')->name('products.checkout.new.get');
+Route::get('/products/checkout/new/{hash}/cancel', 'ProductController@getNewCheckoutCancel')->name('products.checkout.new.cancel');
+
 /* Facebook routes */
 Route::get('/facebook/login', 'api\third\FacebookController@login')
     ->name('facebook.login');

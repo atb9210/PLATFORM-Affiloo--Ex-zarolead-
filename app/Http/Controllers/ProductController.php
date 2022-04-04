@@ -219,4 +219,28 @@ class ProductController extends Controller {
             'lead_id' => $hash,
         ]);
     }
+
+    public function getNewCheckoutForm($id) {
+        $product = \App\Product::findOrFail($id);
+
+        $plugins = [];
+
+        $stripeKey = '';
+        $settings = \App\Settings::get();
+        if (isset($settings['stripe']['api_public_key'])) {
+            $stripeKey = $settings['stripe']['api_public_key'];
+        }
+
+        return view('checkout_new')->with([
+            'product_id' => $product->id,
+            'plugins' => $plugins,
+            'stripe_key' => $stripeKey,
+        ]);
+    }
+
+    public function getNewCheckoutCancel($hash) {
+        return view('checkout_new_cancel')->with([
+            'lead_id' => $hash,
+        ]);
+    }
 }
