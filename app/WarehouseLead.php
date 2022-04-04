@@ -57,7 +57,7 @@ class WarehouseLead extends Model
         return $this->generateRandomString(64);
     }
 
-    public static function refreshHash(): string
+    public function refreshHash(): string
     {
         $newHash = null;
 
