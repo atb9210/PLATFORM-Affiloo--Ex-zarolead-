@@ -258,11 +258,11 @@ Route::apiResource('warehouse/shipping-carriers', 'api\v1\WarehouseShippingCarri
 ])->middleware('auth:api');
 Route::post('warehouse/leads', 'api\v1\WarehouseLeadController@store')
     ->name('warehouse.leads.store');
-Route::get('/warehouse/leads/{id}/info', 'api\third\WarehouseLeadController@publicInfo')
+Route::get('/warehouse/leads/{id}/info', 'api\v1\WarehouseLeadController@publicInfo')
     ->name('warehouse.leads.info.public');
-Route::put('/warehouse/leads/{hash}/update', 'api\third\WarehouseLeadController@publicUpdate')
+Route::put('/warehouse/leads/{hash}/update', 'api\v1\WarehouseLeadController@publicUpdate')
     ->name('warehouse.leads.update.public');
-route::delete('/warehouse/leads/{hash}/destroy', 'api\third\WarehouseLeadController@publicDestroy')
+route::delete('/warehouse/leads/{hash}/destroy', 'api\v1\WarehouseLeadController@publicDestroy')
     ->name('warehouse.leads.destroy.public');
 
 /* Warehouse leads routes */
