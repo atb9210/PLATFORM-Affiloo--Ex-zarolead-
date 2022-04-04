@@ -254,6 +254,11 @@ Route::apiResource('warehouse/shippings', 'api\v1\WarehouseShippingController')-
 
 /* Warehouse shipping carriers routes */
 Route::apiResource('warehouse/shipping-carriers', 'api\v1\WarehouseShippingCarrierController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+
+/* Warehouse leads routes */
+Route::apiResource('warehouse/leads', 'api\v1\WarehouseLeadController')->except([
     'create', 'store', 'edit',
 ])->middleware('auth:api');
 Route::post('warehouse/leads', 'api\v1\WarehouseLeadController@store')
@@ -264,12 +269,6 @@ Route::put('/warehouse/leads/{hash}/update', 'api\v1\WarehouseLeadController@pub
     ->name('warehouse.leads.update.public');
 route::delete('/warehouse/leads/{hash}/destroy', 'api\v1\WarehouseLeadController@publicDestroy')
     ->name('warehouse.leads.destroy.public');
-
-/* Warehouse leads routes */
-Route::apiResource('warehouse/leads', 'api\v1\WarehouseLeadController')->except([
-    'create', 'edit',
-])->middleware('auth:api');
-
 
 /* Storage routes */
 Route::get('storage', 'api\v1\StorageController@index')->middleware('auth:api')->name('storage');
