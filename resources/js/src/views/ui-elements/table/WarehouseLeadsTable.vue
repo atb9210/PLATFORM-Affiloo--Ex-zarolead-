@@ -13,20 +13,20 @@
             </vx-tooltip>
 
             <vx-tooltip text="Back" position="top">
-                <vs-button v-if="view == 'order_builder'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
+                <vs-button v-if="view == 'order_builder' || view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-arrow-left" @click="changeView('leads')"></vs-button>
             </vx-tooltip>
 
             <vx-tooltip text="Only confirmed" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-check-circle" @click="setFiltersStatuses(['confirmed'])"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Only carts" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-shopping-cart" @click="setFiltersStatuses(['to do','abandoned'])"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-shopping-cart" @click="setFiltersStatuses(['unprocessed'])"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Only waiting payment" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-clock" @click="setFiltersStatuses(['waiting payment'])"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-clock" @click="setFiltersStatuses(['waiting_payment'])"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="No answer and to recall" position="top">
-                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to recall','no answer'])"></vs-button>
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-phone" @click="setFiltersStatuses(['to_recall','no_answer'])"></vs-button>
             </vx-tooltip>
         </p>
 
@@ -96,7 +96,7 @@
 
             <vue-context ref="lead_context_menu" v-slot="{ data }">
                 <li>
-                  <a href="#" @click="$refs.lead_context_menu.close();showLeadInfo(data)" class="flex items-center text-sm">
+                  <a href="#" @click="$refs.lead_context_menu.close();showInfo(data)" class="flex items-center text-sm">
                     <feather-icon icon="InfoIcon" svgClasses="w-5 h-5" />
                     <span class="ml-2">Show info</span>
                   </a>
@@ -256,7 +256,7 @@
                                             <vs-icon icon-pack="feather" icon="icon-package"></vs-icon>
                                             Create Delivery
                                         </vs-dropdown-item>
-                                        <vs-dropdown-item @click="showLeadInfo(item)">
+                                        <vs-dropdown-item @click="showInfo(item)">
                                             <vs-icon icon-pack="feather" icon="icon-info"></vs-icon>
                                             Show Info
                                         </vs-dropdown-item>
@@ -301,7 +301,12 @@
 
         <!-- Order builder -->
         <div v-if="view == 'order_builder'">
-            <!-- TODO: HERE -->
+            <OrderBuilderComponent :customers="[]" :products="variations" :carriers="carriers" :prefilled="lead" @onOrderCreated="onOrderCreated" />
+        </div>
+
+        <!-- Order editor -->
+        <div v-if="view == 'order_editor'">
+            <OrderEditorComponent :order="order" :products="variations" />
         </div>
 
         <!-- Notes popup -->
@@ -322,7 +327,7 @@
         <!-- Lead info popup -->
         <vs-popup title="Lead info" :active.sync="showPopup['info']">
             <div class="w-full pr-2 pl-2">
-                <div class="vx-row mb-3" v-for="(value, key, index) in lead.delivery" :key="'leadInfo' + index">
+                <div class="vx-row mb-3" v-for="(value, key, index) in lead.info" :key="'leadInfo' + index">
                     <div class="vx-col md:w-1/2 w-full">
                         <b>{{key}}</b>
                     </div>
@@ -381,7 +386,7 @@
 <script>
 import { VueContext } from 'vue-context'
 
-import { WarehouseLead, WarehouseProduct } from 'zarolead'
+import { WarehouseLead, WarehouseProduct, WarehouseShippingCarrier, Customer } from 'zarolead'
 
 function getCurrencyValue(s) {
   if (typeof(s) === 'number') {
@@ -411,6 +416,8 @@ export default {
     return {
       warehouseLeadClient: null,
       warehouseProductClient: null,
+      warehouseShippingCarrierClient: null,
+      customerClient: null,
 
       maxItems: 150,
       view: 'leads',
@@ -432,10 +439,11 @@ export default {
 
       leads: [],
       selectedLeads: [],
+      products: [],
+      variations: [],
+      carriers: [],
 
       lead: {},
-
-      products: [],
 
       statuses: [
         'unprocessed',
@@ -476,6 +484,8 @@ export default {
 
       receivers: [],
       message: '',
+
+      order: {},
     }
   },
   computed: {
@@ -520,10 +530,22 @@ export default {
             obj.product_name = obj.product.name
           }
 
+          let productSku = null
+          if (obj.product.sku !== null && obj.product.sku != '') {
+            productSku = obj.product.sku
+          } else if (obj.product.variations !== null && obj.product.variations.length > 0) {
+            productSku = obj.product.variations[0].sku
+          }
+          if (productSku === null) {
+            // TODO: Log error
+          }
+          obj.product = this.getVariationBySku(productSku)
+
           obj.price = 0.0
           obj.total = 0.0
           obj.quantity = 0
           obj.payment_method = ''
+          obj.contact = false
 
           let info = obj.info
           if (info === null) {
@@ -542,6 +564,9 @@ export default {
           if (info.hasOwnProperty('payment_method')) {
             obj.payment_method = info.payment_method
           }
+          if (info.hasOwnProperty('contact')) {
+            obj.contact = info.contact
+          }
 
           this.leads[i] = obj
         }
@@ -550,8 +575,23 @@ export default {
         this.view = view
         this.$vs.loading.close()
       } else if (view == 'order_builder') {
-        let lead = item
-        this.loadOrderInfo(lead)
+        if (item.customer !== null) {
+          await this.changeView('order_editor', item)
+        } else {
+          this.lead = item
+          this.view = view
+        }
+      } else if (view == 'order_editor') {
+        this.$vs.loading()
+
+        this.lead = item
+
+        const customer = await this.customerClient.show(this.lead.customer.id)
+        this.order = customer.orders[0]
+        // TODO: Check if customer.orders.length > 0
+
+        this.$vs.loading.close()
+
         this.view = view
       }
     },
@@ -562,6 +602,14 @@ export default {
       for (let i = 0; i < objects.length; i++) {
         if (objects[i].id === id) {
           return objects[i]
+        }
+      }
+      return null
+    },
+    getVariationBySku(sku) {
+      for (let i = 0; i < this.variations.length; i++) {
+        if (this.variations[i].sku === sku) {
+          return this.variations[i]
         }
       }
       return null
@@ -833,6 +881,24 @@ export default {
         let p = products[i]
         this.products.push(this.mapProduct(p))
       }
+
+      this.variations = []
+      for (let i = 0; i < products.length; i++) {
+        let product = products[i]
+        for (let j = 0; j < product.variations.length; j++) {
+          let variation = product.variations[j]
+          this.variations.push({
+            id: variation.id,
+            name: product.name + ' ' + variation.name,
+            sku: variation.sku,
+            price: parseFloat(variation.price),
+            quantity: parseInt(variation.quantity),
+          })
+        }
+      }
+    },
+    async fetchCarriers() {
+      this.carriers = await this.warehouseShippingCarrierClient.fetch()
     },
     async updatePrice(lead) {
       this.$vs.loading()
@@ -904,18 +970,9 @@ export default {
         accept: this.deleteSelected
       })
     },
-    async showLeadInfo(lead) {
-      this.$vs.loading()
-
-      // TODO: HERE
-      let delivery = await this.warehouseLeadClient.getDelivery(lead.id)
-      if (delivery !== null) {
-        this.lead = lead
-        this.lead.delivery = delivery
-        this.showPopup['info'] = true
-      }
-
-      this.$vs.loading.close()
+    async showInfo(lead) {
+      this.lead = lead
+      this.showPopup['info'] = true
     },
     getPaymentLink(leadHash) {
       let url = 'https://' + window.location.hostname + '/leads/' + leadHash + '/checkout/new'
@@ -1077,14 +1134,47 @@ export default {
       this.showPopup['send_message'] = false
       this.$vs.loading.close()
     },
+    async onOrderCreated(order) {
+      this.$vs.loading()
+
+      await this.warehouseLeadClient.update(this.lead.id, {
+        status: 'confirmed',
+        customer_id: order.customer.id,
+        first_name: order.customer.first_name,
+        last_name: order.customer.last_name,
+        phone: order.customer.phone,
+        email: order.customer.email,
+        address_line1: order.customer.address_line1,
+        address_line2: order.customer.address_line2,
+        city: order.customer.city,
+        postcode: order.customer.postcode,
+        zone: order.customer.zone,
+        country: order.customer.country,
+      })
+
+      this.$vs.loading.close()
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Lead confirmed',
+        iconPack: 'feather',
+        icon: 'icon-alert-circle',
+        color: 'success'
+      })
+
+      await this.changeView('leads')
+    },
   },
   async created() {
     this.warehouseLeadClient = new WarehouseLead(this.$zarolead)
     this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
+    this.warehouseShippingCarrierClient = new WarehouseShippingCarrier(this.$zarolead)
+    this.customerClient = new Customer(this.$zarolead)
 
     this.$vs.loading()
 
     await this.fetchProducts()
+    await this.fetchCarriers()
     await this.resetFilters()
 
     this.$vs.loading.close()

@@ -8,7 +8,7 @@
             <vs-input class="w-full" icon-pack="feather" icon="icon-user" icon-no-border v-model="customer.last_name" placeholder="Last Name" />
         </div>
         <div class="vx-col mb-3 sm:w-1/2 w-full">
-            <PhoneInput class="w-full" v-model="customer.phone" placeholder="Phone Number" />
+            <PhoneInput ref="phoneInput" class="w-full" v-model="customer.phone" placeholder="Phone Number" />
         </div>
         <div class="vx-col mb-3 sm:w-1/2 w-full">
             <vs-input class="w-full" icon-pack="feather" icon="icon-at-sign" icon-no-border v-model="customer.email" placeholder="Email" />
@@ -220,6 +220,9 @@ export default {
     }
 
     this.customer = this.value
+  },
+  updated() {
+    this.$refs.phoneInput.setValue(this.customer.phone)
   },
 }
 </script>

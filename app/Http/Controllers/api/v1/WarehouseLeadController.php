@@ -53,6 +53,7 @@ class WarehouseLeadController extends Controller
     /**
      * Create a warehouse lead.
      *
+     * @bodyParam customer_id int Warehouse lead's customer
      * @bodyParam product_id int Warehouse lead's product
      * @bodyParam first_name string required Warehouse lead's first name
      * @bodyParam last_name string required Warehouse lead's last name
@@ -64,6 +65,7 @@ class WarehouseLeadController extends Controller
      * @bodyParam postcode string Warehouse lead's postcode
      * @bodyParam zone string Warehouse lead's zone
      * @bodyParam country string Warehouse lead's country
+     * @bodyParam notes string Warehouse lead's notes
      * @bodyParam info json Warehouse lead's info
      *
      * @response {
@@ -77,6 +79,7 @@ class WarehouseLeadController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'customer_id'   => 'integer|exists:customers,id',
             'product_id'    => 'integer|exists:products,id',
             'status'        => 'in:' . join(',', WarehouseLead::STATUSES),
             'first_name'    => 'required|string|min:1',
@@ -89,6 +92,7 @@ class WarehouseLeadController extends Controller
             'postcode'      => 'nullable|string',
             'zone'          => 'nullable|string',
             'country'       => 'nullable|string',
+            'notes'         => 'nullable|string',
             'info'          => 'nullable|json',
         ]);
 
@@ -112,6 +116,7 @@ class WarehouseLeadController extends Controller
      *
      * @urlParam id int required Warehouse lead's id
      *
+     * @bodyParam customer_id int Warehouse lead's customer
      * @bodyParam product_id int Warehouse lead's product
      * @bodyParam first_name string Warehouse lead's first name
      * @bodyParam last_name string Warehouse lead's last name
@@ -123,6 +128,7 @@ class WarehouseLeadController extends Controller
      * @bodyParam postcode string Warehouse lead's postcode
      * @bodyParam zone string Warehouse lead's zone
      * @bodyParam country string Warehouse lead's country
+     * @bodyParam notes string Warehouse lead's notes
      * @bodyParam info json Warehouse lead's info
      *
      * @response {
@@ -142,6 +148,7 @@ class WarehouseLeadController extends Controller
 
         // Param validation
         $params = $request->validate([
+            'customer_id'   => 'integer|exists:customers,id',
             'product_id'    => 'integer|exists:products,id',
             'status'        => 'in:' . join(',', WarehouseLead::STATUSES),
             'first_name'    => 'string|min:1',
@@ -154,6 +161,7 @@ class WarehouseLeadController extends Controller
             'postcode'      => 'nullable|string',
             'zone'          => 'nullable|string',
             'country'       => 'nullable|string',
+            'notes'         => 'nullable|string',
             'info'          => 'nullable|json',
         ]);
 
@@ -278,6 +286,8 @@ class WarehouseLeadController extends Controller
      * @bodyParam postcode string Warehouse lead's postcode
      * @bodyParam zone string Warehouse lead's zone
      * @bodyParam country string Warehouse lead's country
+     * @bodyParam notes string Warehouse lead's notes
+     * @bodyParam info json Warehouse lead's info
      *
      * @response {
      *  "status": "success",
@@ -313,6 +323,7 @@ class WarehouseLeadController extends Controller
             'postcode'      => 'nullable|string',
             'zone'          => 'nullable|string',
             'country'       => 'nullable|string',
+            'notes'         => 'nullable|string',
             'info'          => 'nullable|json',
         ]);
 

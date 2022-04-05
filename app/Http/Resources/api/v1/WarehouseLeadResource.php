@@ -17,22 +17,9 @@ class WarehouseLeadResource extends JsonResource {
             $customer = new CustomerResource($customer);
         }
 
-        $product = null;
-        if ($this->product_id !== null) {
-            $p = $this->product;
-            $sku = null;
-            $info = $p->info;
-            if ($info === null) {
-                $info = [];
-            }
-            if (isset($info['sku']) && $info['sku'] !== null && $info['sku'] != '') {
-                $sku = $info['sku'];
-            }
-            $product = [
-                'id' => $p->id,
-                'name' => $p->name,
-                'sku' => $info['sku'],
-            ];
+        $product = $this->warehouseProduct();
+        if ($product !== null) {
+            $product = new WarehouseProductResource($product);
         }
 
         return [

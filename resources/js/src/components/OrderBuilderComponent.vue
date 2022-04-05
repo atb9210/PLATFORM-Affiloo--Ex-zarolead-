@@ -23,7 +23,7 @@
 
     <div class="w-full">
         <h2 class="mb-3">Order Lines</h2>
-        <OrderLinesEditorComponent :order="order" :products="products" />
+        <OrderLinesEditorComponent ref="lineEditor" :order="order" :products="products" />
     </div>
 
     <hr class="mt-3 mb-6">
@@ -50,6 +50,7 @@
 
 <script>
 import { Customer, WarehouseOrder, WarehouseShipping } from 'zarolead'
+import * as utils from 'utils'
 
 export default {
   name: 'OrderBuilderComponent',
@@ -59,6 +60,7 @@ export default {
     customers: { type: Array, required: true },
     products: { type: Array, required: true },
     carriers: { type: Array, required: true },
+    prefilled: { type: Object, required: false },
   },
   computed: {
     customer() {
@@ -388,6 +390,27 @@ export default {
 
     if (this.customers.length <= 0) {
       this.useExistingCustomer = false
+    }
+  },
+  mounted() {
+    if (this.prefilled !== null) {
+      let tmp = utils.deepCloneObject(this.prefilled)
+
+      for (const [key, value] of Object.entries(tmp)) {
+        if (this.newCustomer.hasOwnProperty(key)) {
+          if (value !== null) {
+            this.newCustomer[key] = value
+          }
+        }
+      }
+      this.$refs.lineEditor.toggleProduct(tmp.product)
+
+      let info = tmp.info
+      if (info === null) {
+        info = {}
+      }
+      // TODO: HERE
+      // TODO: Set quantity
     }
   },
 }

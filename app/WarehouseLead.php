@@ -42,6 +42,35 @@ class WarehouseLead extends Model
         return $this->belongsTo('App\Product', 'product_id');
     }
 
+    public function warehouseProduct()
+    {
+        if ($this->product_id === null) {
+            return null;
+        }
+
+        $product = $this->product;
+        $sku = null;
+        $info = $product->info;
+        if ($info !== null && isset($info['sku']) && $info['sku'] !== null && $info['sku'] != '') {
+            $sku = $info['sku'];
+        }
+        if ($sku === null) {
+            return null;
+        }
+
+        $warehouseProduct = WarehouseProduct::findBySku($sku);
+        if ($warehouseProduct !== null) {
+            return $warehouseProduct;
+        }
+
+        $variation = WarehouseProductVariation::findBySku($sku);
+        if ($variation === null) {
+            return null;
+        }
+
+        return $variation->product;
+    }
+
     private function generateRandomString(int $length = 32): string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

@@ -25,6 +25,7 @@ class CustomerResource extends JsonResource {
             'zone' => $this->zone,
             'country' => $this->country,
             'info' => $this->info,
+            'orders' => WarehouseOrderResource::collection($this->orders),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -31,6 +31,10 @@ export default {
 
       this.localValue = newVal
     },
+    setValue(newValue) {
+      this.localValue = newValue
+      this.forcePhoneFormat()
+    },
   },
   created() {
     this.localValue = this.value
