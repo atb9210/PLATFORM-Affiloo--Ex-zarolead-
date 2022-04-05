@@ -29,6 +29,7 @@ class CreateWarehouseLeadsTable extends Migration
             $table->string('postcode')->nullable();
             $table->string('zone')->nullable();
             $table->string('country')->nullable();
+            $table->text('notes')->nullable();
             $table->json('info')->nullable();
             $table->timestamps();
             $table->boolean('archived')->default(0);

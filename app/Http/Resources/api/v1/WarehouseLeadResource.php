@@ -51,6 +51,7 @@ class WarehouseLeadResource extends JsonResource {
             'postcode' => $this->postcode,
             'zone' => $this->zone,
             'country' => $this->country,
+            'notes' => $this->notes,
             'info' => $this->info,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

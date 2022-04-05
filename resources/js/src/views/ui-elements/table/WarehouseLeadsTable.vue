@@ -58,7 +58,7 @@
                 <div class="vx-col w-1/2">
                     <label>Status</label>
                     <vs-select autocomplete multiple class="w-full" v-model="filters.statuses">
-                        <vs-select-item :key="'statusOption' + sIndex" :value="status" :text="status" v-for="(status, sIndex) in leadStatuses" />
+                        <vs-select-item :key="'statusOption' + sIndex" :value="status" :text="status" v-for="(status, sIndex) in statuses" />
                     </vs-select>
                 </div>
             </div>
@@ -130,7 +130,7 @@
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
                     <vs-th sort-key="product_name">Product</vs-th>
-                    <vs-th sort-key="gateway">Method</vs-th>
+                    <vs-th sort-key="payment_method">Method</vs-th>
                     <vs-th sort-key="price">Price</vs-th>
                     <vs-th sort-key="quantity">Qty</vs-th>
                     <vs-th sort-key="total">Total</vs-th>
@@ -177,8 +177,8 @@
                             </vs-chip>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.gateway">
-                            {{item.gateway}}
+                        <vs-td class="column-no-padding" :data="item.payment_method">
+                            {{item.payment_method}}
                         </vs-td>
 
                         <vs-td class="column-no-padding" :data="item.price">
@@ -211,11 +211,11 @@
                         <vs-td class="column-no-padding" :data="item.status">
                             <fast-editable-value-select
                                 class="font-bold"
-                                :options="leadStatuses"
+                                :options="statuses"
                                 v-model="newStatus"
                                 @onEdit="newStatus = data[indextr].status"
                                 @onUpdate="updateStatus(data[indextr])">
-                                  <vs-chip :color="leadStatusColor[data[indextr].status]">
+                                  <vs-chip :color="statusColor[data[indextr].status]">
                                       {{item.status}}
                                   </vs-chip>
                             </fast-editable-value-select>
@@ -320,7 +320,7 @@
         </vs-popup>
 
         <!-- Lead info popup -->
-        <vs-popup title="Lead info" :active.sync="showPopup['lead_info']">
+        <vs-popup title="Lead info" :active.sync="showPopup['info']">
             <div class="w-full pr-2 pl-2">
                 <div class="vx-row mb-3" v-for="(value, key, index) in lead.delivery" :key="'leadInfo' + index">
                     <div class="vx-col md:w-1/2 w-full">
@@ -381,7 +381,7 @@
 <script>
 import { VueContext } from 'vue-context'
 
-import { WarehouseLead } from 'zarolead'
+import { WarehouseLead, WarehouseProduct } from 'zarolead'
 
 function getCurrencyValue(s) {
   if (typeof(s) === 'number') {
@@ -410,6 +410,7 @@ export default {
   data () {
     return {
       warehouseLeadClient: null,
+      warehouseProductClient: null,
 
       maxItems: 150,
       view: 'leads',
@@ -423,9 +424,7 @@ export default {
 
       showPopup: {
         'notes': false,
-        'add_product': false,
-        'lead_info': false,
-        'create_delivery': false,
+        'info': false,
         'payment_link': false,
         'recall': false,
         'send_message': false,
@@ -435,115 +434,29 @@ export default {
       selectedLeads: [],
 
       lead: {},
-      order: {
-        id: '',
-        status: '',
-        lead_id: '',
-        first_name: '',
-        last_name: '',
-        phone: '',
-        email: '',
-        shipping: {
-          first_name: '',
-          last_name: '',
-          phone: '',
-          email: '',
-          notes: '',
-          street_address: '',
-          city: '',
-          province: '',
-          state: '',
-          country: '',
-          postcode: '',
-          address: '',
-          notes: '',
-        },
-        location: {},
-        gateway: '',
-        products: [],
-        accessories: [],
-        review: {
-          products: [],
-        },
-        total: '0.0',
-        newTotal: '0.0',
-
-        completed_at: '',
-      },
 
       products: [],
 
-      leadStatuses: [
-        'confirmed',
-        'no answer',
-        'cancelled',
+      statuses: [
+        'unprocessed',
+        'to_recall',
+        'no_asnwer',
         'fake',
+        'cancelled',
         'duplicate',
-        'to recall',
-        'to do',
-        'waiting payment',
-        'abandoned',
+        'waiting_payment',
+        'confirmed',
       ],
-      leadStatusColor: {
-        'confirmed'      : 'success',
-        'no answer'      : '#555555',
-        'cancelled'      : 'danger',
+      statusColor: {
+        'unprocessed'    : '',
+        'to_recall'      : 'primary',
+        'no_answer'      : '#555555',
         'fake'           : '#cc8877',
+        'cancelled'      : 'danger',
         'duplicate'      : 'warning',
-        'to recall'      : 'primary',
-        'to do'          : '',
-        'waiting payment': 'primary',
-        'abandoned'      : '',
+        'waiting_payment': 'primary',
+        'confirmed'      : 'success',
       },
-
-      deliveryStatuses: [
-        'not sent',
-        'error',
-        'sent',
-      ],
-      deliveryStatusColor: {
-        'not sent': 'primary',
-        'error'   : 'danger',
-        'sent'    : 'success',
-      },
-
-      orderStatuses: [
-        { name: 'Unprocessed',         id: 'imported' },
-        { name: 'To prepare',          id: 'to_prepare' },
-        { name: 'Waiting for carrier', id: 'prepared_to_ship' },
-        { name: 'Assigned to carrier', id: 'waiting_carrier' },
-        { name: 'Shipped',             id: 'shipped' },
-        { name: 'Delivered',           id: 'delivered' },
-        { name: 'Return',              id: 'return' },
-        { name: 'Invalid',             id: 'invalid' },
-        { name: 'Out of stock',        id: 'out_of_stock' },
-        { name: 'Duplicate',           id: 'duplicate' },
-        { name: 'Lead',                id: 'lead' },
-      ],
-
-      carriers: [
-        'brt',
-        'liccardi',
-        'gls',
-        'crono',
-      ],
-      carrierIcon: {
-        'brt'     : 'https://app.elogy.io/assets/img/carriers/brt.png',
-        'liccardi': 'https://app.elogy.io/assets/img/carriers/liccardi.png',
-        'gls'     : 'https://app.elogy.io/assets/img/carriers/gls.png',
-        'crono'   : 'https://app.elogy.io/assets/img/carriers/crono.png',
-      },
-
-      gateways: [
-        'cashondelivery',
-        'online',
-      ],
-
-      accessories: [
-        { name: 'Insurance',     quantity: 1, price: 1.90, total: 1.90, enabled: false },
-        { name: 'Fast delivery', quantity: 1, price: 2.50, total: 2.50, enabled: false },
-        { name: 'Gift',          quantity: 1, price: 4.99, total: 4.99, enabled: false },
-      ],
 
       totalStats: {
         price: 0.0,
@@ -555,8 +468,6 @@ export default {
       newStatus: '',
       newValue: '',
 
-      paymentSuccessUrl: '',
-      paymentCancelUrl: '',
       paymentLink: '',
 
       recall: {
@@ -588,20 +499,6 @@ export default {
     objects() {
       return this.leads
     },
-    // TODO: old code
-    /*
-    paymentLink() {
-      if (this.lead === null) {
-        return ''
-      }
-
-      let url = 'https://' + window.location.hostname + '/leads/' + this.lead.id + '/checkout'
-      url += '?success_url=' + this.paymentSuccessUrl
-      url += '&cancel_url=' + this.paymentCancelUrl
-
-      return url
-    },
-    */
   },
   methods: {
     // Frontend functions
@@ -612,6 +509,43 @@ export default {
       if (view == 'leads') {
         this.$vs.loading()
         this.leads = await this.warehouseLeadClient.fetch(this.filters)
+
+        for (let i = 0; i < this.leads.length; i++) {
+          let obj = this.leads[i]
+
+          obj.full_name = obj.first_name + ' ' + obj.last_name
+
+          obj.product_name = ''
+          if (obj.product !== null) {
+            obj.product_name = obj.product.name
+          }
+
+          obj.price = 0.0
+          obj.total = 0.0
+          obj.quantity = 0
+          obj.payment_method = ''
+
+          let info = obj.info
+          if (info === null) {
+            info = {}
+          }
+
+          if (info.hasOwnProperty('price')) {
+            obj.price = parseFloat(info.price)
+          }
+          if (info.hasOwnProperty('total')) {
+            obj.total = parseFloat(info.total)
+          }
+          if (info.hasOwnProperty('quantity')) {
+            obj.quantity = parseInt(info.quantity)
+          }
+          if (info.hasOwnProperty('payment_method')) {
+            obj.payment_method = info.payment_method
+          }
+
+          this.leads[i] = obj
+        }
+
         this.calculateStats()
         this.view = view
         this.$vs.loading.close()
@@ -621,10 +555,13 @@ export default {
         this.view = view
       }
     },
-    getObjectById(id) {
-      for (let i = 0; i < this.leads.length; i++) {
-        if (this.objects[i].id === id) {
-          return this.objects[i]
+    getObjectById(id, objects = null) {
+      if (objects === null) {
+        objects = this.objects
+      }
+      for (let i = 0; i < objects.length; i++) {
+        if (objects[i].id === id) {
+          return objects[i]
         }
       }
       return null
@@ -697,7 +634,9 @@ export default {
       let dd = String(dateObj.getDate()).padStart(2, '0')
       let mm = String(dateObj.getMonth() + 1).padStart(2, '0')
       let yyyy = dateObj.getFullYear()
-      let hh = String(dateObj.getHours() - 1).padStart(2, '0') // TODO: Why -1?
+      // TODO: NOTE: -1 because of the timezone?
+      // TODO: Now it should be right without the -1
+      let hh = String(dateObj.getHours() - 1).padStart(2, '0')
       let ii = String(dateObj.getMinutes()).padStart(2, '0')
       
       let formattedDate = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + ii
@@ -771,25 +710,8 @@ export default {
 
       this.applyFilters()
     },
-    async updateStatusOrderBuilder() {
-      this.$vs.loading()
-
-      this.order.status = this.newStatus
-      let params = {
-        status: this.newStatus,
-      }
-      await this.warehouseLeadClient.update(this.order.id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Lead\'s status updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-    },
+    // TODO: HERE
+    // TODO: Is this necessary?
     showNotes(lead) {
       this.lead = lead
       this.showPopup['notes'] = true
@@ -883,21 +805,28 @@ export default {
       this.order.shipping.country = country
       this.order.shipping.address = address
     },
+
     mapProduct(p) {
-      return {
+      let obj = {
         id: p.id,
         name: p.name,  
         sku: p.sku,
-        quantity_stock: parseInt(p.quantity_stock),
-        price: parseFloat(p.min_price),
+        quantity: 0,
+        price: 0.0,
       }
+
+      if (obj.sku === null || obj.sku == '') {
+        if (p.hasOwnProperty('variations') && p.variations !== null && p.variations.length > 0) {
+          obj.sku = p.variations[0].sku
+          obj.quantity = parseInt(p.variations[0].quantity)
+          obj.price = parseFloat(p.variations[0].price)
+        }
+      }
+
+      return obj
     },
     async fetchProducts() {
-      // DEBUG TODO: to delete
-      return
-
-      // TODO: HERE
-      let products = await this.warehouseLeadClient.fetchProducts()
+      let products = await this.warehouseProductClient.fetch()
 
       this.products = []
       for (let i = 0; i < products.length; i++) {
@@ -905,389 +834,6 @@ export default {
         this.products.push(this.mapProduct(p))
       }
     },
-    removeProduct(index) {
-      this.order.products.splice(index, 1)
-      this.refreshOrderReviewTotal()
-    },
-    getProductById(id) {
-      let p = null
-      for (let i = 0; i < this.products.length; i++) {
-        if (this.products[i].id == id) {
-          p = this.products[i]
-          break
-        }
-      }
-      return p
-    },
-    updateOrderTotal() {
-      this.order.total = this.order.newTotal
-    },
-    refreshOrderReviewTotal() {
-      // TODO: old code
-      /*
-      let revProducts = []
-
-      for (let i = 0; i < this.order.products.length; i++) {
-        let pId = this.order.products[i]
-
-        if (pId === '') {
-          continue
-        }
-
-        if (!revProducts.hasOwnProperty(pId)) {
-          let p = this.getProductById(pId)
-          revProducts[pId] = {
-            name: p.name,
-            quantity: 1,
-            unit_price: p.price,
-          }
-        } else {
-          revProducts[pId].quantity += 1
-        }
-      }
-
-      let toReturn = []
-      for (const [key, value] of Object.entries(revProducts)) {
-        toReturn.push(value)
-      }
-
-      revProducts = toReturn
-      let total = 0.0
-
-      for (let i = 0; i < revProducts.length; i++) {
-        let p = revProducts[i]
-        total += parseFloat(p.unit_price)*parseInt(p.quantity)
-      }
-      */
-
-      let totalProducts = 0.0
-      for (let i = 0; i < this.order.products.length; i++) {
-        let p = this.order.products[i]
-        let subtotal = 0.0
-        let price = getCurrencyValue(p.price)
-        let quantity = parseInt(p.quantity)
-        subtotal = price*quantity
-        this.order.products[i].total = subtotal
-        totalProducts += subtotal
-      }
-
-      let totalAccessories = 0.0
-      for (let i = 0; i < this.order.accessories.length; i++) {
-        let a = this.order.accessories[i]
-        let subtotal = 0.0
-        let price = getCurrencyValue(a.price)
-        let quantity = parseInt(a.quantity)
-        subtotal = price*quantity
-        this.order.accessories[i].total = subtotal
-        if (a.enabled) {
-          totalAccessories += subtotal
-        }
-      }
-
-      // TODO: old code
-      //let insurance = getCurrencyValue(this.order.insurance)
-
-      let total = totalProducts + totalAccessories
-
-      this.order.total = total.toFixed(2)
-    },
-    async updateLeadInfoNoLoading(leadInfo) {
-      let lead = this.getObjectById(leadInfo.lead_id)
-      let info = lead.info
-      let o = leadInfo
-
-      info.shipping = {
-        first_name: o.shipping.first_name,
-        last_name: o.shipping.last_name,
-        phone: o.shipping.phone,
-        email: o.shipping.email,
-        street_address: o.shipping.street_address,
-        city: o.shipping.city,
-        state: o.shipping.state,
-        province: o.shipping.province,
-        postcode: o.shipping.postcode,
-        country: o.shipping.country,
-        notes: o.shipping.notes,
-      }
-
-      info.products = o.products
-      info.accessories = o.accessories
-      // TODO: old code
-      //info.insurance = o.insurance
-      info.total = o.total
-      info.gateway = o.gateway
-
-      let params = {
-        first_name: o.first_name,
-        last_name: o.last_name,
-        phone: o.phone,
-        email: o.email,
-        info: JSON.stringify(info),
-      }
-      await this.warehouseLeadClient.update(lead.id, params)
-    },
-    // TODO: Old code
-    /*
-    async updateLeadInfo(leadInfo) {
-      this.$vs.loading()
-
-      await this.updateLeadInfoNoLoading(leadInfo)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Lead saved',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-    },
-    */
-    async updateLeadInfo(leadInfo) {
-      this.$vs.loading()
-
-      await this.updateLeadInfoNoLoading(this.order)
-
-      let o = this.order
-
-      let productsTotal = 0.0
-      let products = []
-      for (let i = 0; i < o.products.length; i++) {
-        let p = o.products[i]
-        let subtotal = getCurrencyValue(p.total)
-        productsTotal += subtotal
-        products.push({
-          sku: p.sku,
-          quantity: p.quantity,
-          subtotal: subtotal.toFixed(2),
-        })
-      }
-
-      let taxTotal = 0.0
-      let shippingPrice = 0.0
-      let totalPrice = productsTotal + shippingPrice + taxTotal
-      if (o.total !== null && o.total !== '' && getCurrencyValue(o.total) > 0) {
-        totalPrice = getCurrencyValue(o.total)
-      }
-      let subtotalPrice = totalPrice // TODO: What about this?
-
-      let shippingPhone = o.phone
-      let shippingEmail = o.email
-      if (o.shipping.hasOwnProperty('phone') && o.shipping.phone !== null && o.shipping.phone !== '') {
-        shippingPhone = o.shipping.phone
-      }
-      if (o.shipping.hasOwnProperty('email') && o.shipping.email !== null && o.shipping.email !== '') {
-        shippingEmail = o.shipping.email
-      }
-
-      let params = {
-        country: 'IT',
-        total_price: totalPrice.toFixed(2),
-        subtotal_price: subtotalPrice.toFixed(2),
-        shipping_price: shippingPrice.toFixed(2),
-        total_tax: taxTotal.toFixed(2),
-        tax_included: 1,
-        gateway: o.gateway,
-        currency: 'EUR',
-        customer: {
-          first_name: o.first_name,
-          last_name:  o.last_name,
-          phone:      o.phone,
-          email:      o.email,
-        },
-        shipping_first_name:    o.shipping.first_name,
-        shipping_last_name:     o.shipping.last_name,
-        shipping_address1:      o.shipping.street_address,
-        shipping_address2:      '',
-        shipping_city:          o.shipping.city,
-        shipping_zip:           o.shipping.postcode,
-        shipping_province_code: o.shipping.province,
-        shipping_country_code:  o.shipping.country,
-        shipping_phone:         shippingPhone,
-        shipping_email:         shippingEmail,
-        shipping_notes:         o.shipping.notes,
-        products: products,
-      }
-
-      // TODO: HERE
-      await this.warehouseLeadClient.updateDelivery(o.lead_id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Lead updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-    },
-    showCreateDeliveryPopup() {
-      this.order.completed_at = this.formatDateTimeISO8601(new Date())
-      this.showPopup['create_delivery'] = true
-    },
-    async createDelivery() {
-      this.$vs.loading()
-
-      let o = this.order
-
-      let params = {
-        completed_at: this.formatDateTimeISO8601(new Date(this.order.completed_at)),
-        transform_to_order: 1,
-      }
-      // TODO: HERE
-      await this.warehouseLeadClient.updateDelivery(o.lead_id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Delivery created',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
-
-      this.changeView('leads')
-    },
-    async updateLeadInfoAndCreateDelivery() {
-      let updateLeadInfoFlag = false
-      if (this.view === 'order_builder') {
-        updateLeadInfoFlag = true
-      }
-      if (updateLeadInfoFlag) {
-        await this.updateLeadInfo(this.order)
-      }
-      await this.createDelivery()
-
-      this.showPopup['create_delivery'] = false
-    },
-    async fastCreateDelivery(lead) {
-      //if (lead.delivery_status === 'sent') return
-      if (!this.canCreateDelivery(lead.info)) return
-      this.loadOrderInfo(lead)
-      this.showCreateDeliveryPopup()
-    },
-    loadOrderInfo(lead) {
-      let first_name = lead.first_name
-      let last_name = lead.last_name
-      let phone = lead.phone
-      let email = lead.email
-      let products = []
-      let accessories = [...this.accessories]
-
-      let street_address = ''
-      let city = ''
-      let province = ''
-      let state = ''
-      let country = ''
-      let postcode = ''
-      let address = ''
-      let notes = ''
-      let gateway = 'cashondelivery'
-
-      if (lead.info !== null) {
-        if (lead.info.hasOwnProperty('products')) {
-          products = lead.info.products
-        }
-        if (lead.info.hasOwnProperty('accessories')) {
-          accessories = lead.info.accessories
-        }
-
-        if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
-          if (lead.info.shipping.hasOwnProperty('first_name')) {
-            first_name = lead.info.shipping.first_name
-          }
-          if (lead.info.shipping.hasOwnProperty('last_name')) {
-            last_name = lead.info.shipping.last_name
-          }
-          if (lead.info.shipping.hasOwnProperty('phone')) {
-            phone = lead.info.shipping.phone
-          }
-          if (lead.info.shipping.hasOwnProperty('email')) {
-            email = lead.info.shipping.email
-          }
-          if (lead.info.shipping.hasOwnProperty('street_address')) {
-            street_address = lead.info.shipping.street_address
-          }
-          if (lead.info.shipping.hasOwnProperty('city')) {
-            city = lead.info.shipping.city
-          }
-          if (lead.info.shipping.hasOwnProperty('province')) {
-            province = lead.info.shipping.province
-          }
-          if (lead.info.shipping.hasOwnProperty('state')) {
-            state = lead.info.shipping.state
-          }
-          if (lead.info.shipping.hasOwnProperty('country')) {
-            country = lead.info.shipping.country
-          }
-          if (lead.info.shipping.hasOwnProperty('postcode')) {
-            postcode = lead.info.shipping.postcode
-          }
-          if (lead.info.shipping.hasOwnProperty('address')) {
-            address = lead.info.shipping.address
-          }
-          if (lead.info.shipping.hasOwnProperty('notes')) {
-            notes = lead.info.shipping.notes
-          }
-        }
-
-        if (lead.info.hasOwnProperty('gateway') && lead.info.gateway != '') {
-          gateway = lead.info.gateway
-        } else if (lead.info.hasOwnProperty('delivery') && lead.info.delivery !== null) {
-          if (lead.info.delivery.hasOwnProperty('gateway') && lead.info.delivery.gateway != '') {
-            gateway = lead.info.delivery.gateway
-          }
-        }
-      }
-
-      this.order = {
-        id: lead.id,
-        status: lead.status,
-        lead_id: lead.id,
-        lead_hash: lead.hash,
-        first_name: lead.first_name,
-        last_name: lead.last_name,
-        phone: lead.phone,
-        email: lead.email,
-        shipping: {
-          first_name: first_name,
-          last_name: last_name,
-          phone: phone,
-          email: email,
-          notes: lead.notes,
-          street_address: street_address,
-          city: city,
-          province: province,
-          state: state,
-          country: country,
-          postcode: postcode,
-          address: address,
-          notes: notes,
-        },
-        location: {},
-        gateway: gateway,
-        products: products,
-        accessories: accessories,
-        review: {
-          products: [],
-        },
-        total: '0.0',
-        newTotal: '0.0',
-
-        completed_at: '',
-      }
-
-      if (lead.info !== null && lead.info.hasOwnProperty('total') &&
-          parseFloat(lead.info.total) > 0) {
-        this.order.total = lead.info.total
-      } else {
-        this.refreshOrderReviewTotal()
-      }
-    },
-
     async updatePrice(lead) {
       this.$vs.loading()
 
@@ -1358,41 +904,6 @@ export default {
         accept: this.deleteSelected
       })
     },
-    showAddProductPopup() {
-      this.showPopup['add_product'] = true
-    },
-    toggleProduct(product) {
-      for (let i = 0; i < this.order.products.length; i++) {
-        let p = this.order.products[i]
-        if (product.id === p.id) {
-          this.removeProduct(i)
-          return
-        }
-      }
-
-      let quantity = 1
-      let price = parseFloat(product.price)
-      let total = price*quantity
-      this.order.products.push({
-        id: product.id,
-        name: product.name,
-        sku: product.sku,
-        price: price,
-        quantity: 1,
-        total: total,
-        upsell: false,
-      })
-      this.refreshOrderReviewTotal()
-    },
-    hasProduct(product) {
-      for (let i = 0; i < this.order.products.length; i++) {
-        let p = this.order.products[i]
-        if (product.id === p.id) {
-          return true
-        }
-      }
-      return false
-    },
     async showLeadInfo(lead) {
       this.$vs.loading()
 
@@ -1401,61 +912,18 @@ export default {
       if (delivery !== null) {
         this.lead = lead
         this.lead.delivery = delivery
-        this.showPopup['lead_info'] = true
+        this.showPopup['info'] = true
       }
 
       this.$vs.loading.close()
     },
-    canCreateDelivery(leadInfo) {
-      let canCreate = true
-
-      // Check if street address has number
-      if (leadInfo !== null &&
-          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
-          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
-          leadInfo.shipping.street_address !== '') {
-        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
-      } else {
-        canCreate = false
-      }
-
-      return canCreate
-    },
-    canUpdateLeadInfo(leadInfo) {
-      let canCreate = true
-
-      // Check shipping contact
-      if (leadInfo !== null &&
-          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
-          leadInfo.shipping.first_name != '' && leadInfo.shipping.last_name != '' &&
-          leadInfo.shipping.phone != '') {
-        canCreate = canCreate && true
-      } else {
-        canCreate = false
-      }
-
-      // Check if street address has number
-      if (leadInfo !== null &&
-          leadInfo.hasOwnProperty('shipping') && leadInfo.shipping !== null &&
-          leadInfo.shipping.hasOwnProperty('street_address') && leadInfo.shipping.street_address !== null &&
-          leadInfo.shipping.street_address != '' && leadInfo.shipping.city != '' &&
-          leadInfo.shipping.province != '' && leadInfo.shipping.postcode != '' &&
-          leadInfo.shipping.state != '' && leadInfo.shipping.country != ''
-      ) {
-        canCreate = canCreate && stringContainsNumber(leadInfo.shipping.street_address)
-      } else {
-        canCreate = false
-      }
-
-      return canCreate
-    },
-    getPaymentLink(leadHash, paymentSuccessUrl = '', paymentCancelUrl = '') {
-      let url = 'https://' + window.location.hostname + '/leads/' + leadHash + '/checkout'
+    getPaymentLink(leadHash) {
+      let url = 'https://' + window.location.hostname + '/leads/' + leadHash + '/checkout/new'
       return url
     },
     showPaymentLink(lead) {
       this.lead = lead
-      let url = this.getPaymentLink(this.lead.hash, this.paymentSuccessUrl, this.paymentCancelUrl)
+      let url = this.getPaymentLink(this.lead.hash)
       this.paymentLink = url
       this.showPopup['payment_link'] = true
     },
@@ -1535,21 +1003,14 @@ export default {
       this.$vs.loading.close()
     },
     hasAddressInfo(lead) {
-      if (lead.hasOwnProperty('info') && lead.info !== null) {
-        if (lead.info.hasOwnProperty('shipping') && lead.info.shipping !== null) {
-          let shipping = lead.info.shipping
-          if (shipping.hasOwnProperty('street_address') && shipping.street_address !== null &&
-              shipping.hasOwnProperty('city') && shipping.city !== null &&
-              shipping.hasOwnProperty('province') && shipping.province !== null) {
-            return true
-          }
-        }
+      if (lead.address_line1 !== null && lead.address_line1 != '' &&
+          lead.city !== null && lead.city != '') {
+        return true
       }
       return false
     },
     getAddress(lead) {
-      let shipping = lead.info.shipping
-      return (shipping.street_address + ', ' + shipping.city + '(' + shipping.province + ')')
+      return (lead.address_line1 + ', ' + lead.city + '(' + lead.zone + ')')
     },
     getProductsList(lead) {
       let productName = lead.product_name
@@ -1619,6 +1080,7 @@ export default {
   },
   async created() {
     this.warehouseLeadClient = new WarehouseLead(this.$zarolead)
+    this.warehouseProductClient = new WarehouseProduct(this.$zarolead)
 
     this.$vs.loading()
 
