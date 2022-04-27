@@ -1522,7 +1522,13 @@ export default {
     },
     whatsappMessage(lead) {
       if (lead.hasOwnProperty('phone')) {
-        let phone = lead.phone
+        let phone = ''
+        for (let i = 0; i < lead.phone.length; i++) {
+          let c = lead.phone[i]
+          if (c == '+' || (c >= '0' && c <= '9')) {
+            phone += c
+          }
+        }
         if (phone[0] != '+') {
           phone = '+39' + phone
         }

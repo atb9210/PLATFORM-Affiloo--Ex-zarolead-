@@ -1119,6 +1119,7 @@ class DropinController extends Controller
                 $info['whatsapp'] = [];
             }
             $info['whatsapp']['last_message'] = $message['id'];
+            $info['whatsapp']['last_message_body'] = $message['body'];
             if (isset($message['fromMe']) && $message['fromMe']) {
                 $info['whatsapp']['last_message_read'] = $message['id'];
             }
