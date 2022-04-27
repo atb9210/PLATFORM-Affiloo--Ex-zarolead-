@@ -242,11 +242,11 @@
 
                         <vs-td class="column-no-padding">
                             <div v-if="item.hasOwnProperty('phone') && item.phone != ''" @contextmenu.prevent="$refs.phone_context_menu.open($event, item)" @dblclick="whatsappMessage(item)">
-                                <vx-tooltip :title="Last message" :text="(item.info.whatsapp.last_message_body) ? item.info.whatsapp.last_message_body : ''" position="left">
-                                  <vs-chip :color="(item.has_new_message) ? 'warning' : ''">
-                                      <vs-avatar icon-pack="feather" icon="icon-message-circle" />
-                                      {{ item.phone }}
-                                  </vs-chip>
+                                <vx-tooltip title="Last message" :text="(item.info.whatsapp.last_message_body) ? item.info.whatsapp.last_message_body : ''" position="left">
+                                    <vs-chip :color="(item.has_new_message) ? 'warning' : ''">
+                                        <vs-avatar icon-pack="feather" icon="icon-message-circle" />
+                                        {{ item.phone }}
+                                    </vs-chip>
                                 </vx-tooltip>
                             </div>
                             <!-- TODO: Old code -->
@@ -1523,7 +1523,7 @@ export default {
       window.open(url, '_blank').focus()
     },
     whatsappMessage(lead) {
-      if (lead.hasOwnProperty('phone')) {
+      if (lead.hasOwnProperty('phone') && lead.phone !== null) {
         let phone = ''
         for (let i = 0; i < lead.phone.length; i++) {
           let c = lead.phone[i]
