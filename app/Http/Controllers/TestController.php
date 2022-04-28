@@ -19,40 +19,6 @@ use App\User;
 
 class TestController extends Controller
 {
-    public function facebookMonitor(Request $request)
-    {
-        $monitorId = $request->input('monitor');
-        $day = $request->input('day');
-        $monitor = \App\third\FacebookMonitor::findOrFail($monitorId);
-        $result = $monitor->createReport($day);
-        if ($result) {
-            return 'true';
-        }
-        return 'false';
-    }
-
-    public function facebookMonitorRunStrategy($id, Request $request)
-    {
-        $result = true;
-        $monitorId = $id;
-        $monitor = \App\third\FacebookMonitor::findOrFail($monitorId);
-        if ($monitor !== null) {
-            foreach ($monitor->strategy as $key => $value) {
-                $params = $value;
-                $params['action_type'] = $key;
-                if (isset($value['enabled']) && $value['enabled']) {
-                    $result = $result && $monitor->runStrategy($params);
-                }
-            }
-        } else {
-            $result = false;
-        }
-        if ($result) {
-            return 'true';
-        }
-        return 'false';
-    }
-
     private function generateRandomString(int $length = 32): string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -182,8 +148,32 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        dd('test');
+        $orders = [
+            [
+                'id' => 20679,
+                'date' => '2022-04-26',
+                'gateway' => 'cashondelivery',
+                'total' => '69.69',
+                'products' => [
+                    [
+                        'sku' => '2246-911-17842',
+                        'quantity' => 1,
+                    ],
+                ],
+                'phone' => '+(39)1234567890',
+                'full_name' => 'Test test',
+                'street_address' => 'Via Fornetto 43',
+                'city' => 'Ronco all\'Adige',
+                'province' => 'VR',
+                'postcode' => 37055,
+                'country' => 'IT',
+                'notes' => 'test order',
+            ],
+        ];
         $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
-        dd($dropin->getProducts());
+        dd($dropin->uploadOrders($orders));
+
         $orders = $dropin->getOrders();
         $shippings = [];
         foreach ($orders as $order) {

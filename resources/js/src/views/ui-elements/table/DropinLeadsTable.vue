@@ -17,6 +17,9 @@
             <vx-tooltip text="Copy selected leads CSV" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-file-text" @click="exportLeadsAsCSV(selectedLeads)" :disabled="selectedLeads.length <= 0"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Create Shippings (Upload CSV automatically)" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-package" @click="createShippings(selectedLeads)" :disabled="selectedLeads.length <= 0"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Send message (bulk)" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openSendMessagePopup(selectedLeads)" :disabled="!(selectedLeads.length > 0 && selectedLeads.length <= 10)"></vs-button>
             </vx-tooltip>
@@ -242,7 +245,7 @@
 
                         <vs-td class="column-no-padding">
                             <div v-if="item.hasOwnProperty('phone') && item.phone != ''" @contextmenu.prevent="$refs.phone_context_menu.open($event, item)" @dblclick="whatsappMessage(item)">
-                                <vx-tooltip title="Last message" :text="(item.info.whatsapp.last_message_body) ? item.info.whatsapp.last_message_body : ''" position="left">
+                                <vx-tooltip title="Last message" :text="(item.hasOwnProperty('last_message_body') && last_message_body !== null) ? item.last_message_body : ''" position="left">
                                     <vs-chip :color="(item.has_new_message) ? 'warning' : ''">
                                         <vs-avatar icon-pack="feather" icon="icon-message-circle" />
                                         {{ item.phone }}
@@ -2812,6 +2815,30 @@ export default {
       this.$vs.loading.close()
 
       await this.applyFilters()
+    },
+    async createShippings(leads) {
+      this.$vs.loading()
+
+      const result = await this.dropin.createShippings(leads)
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Shippings created',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot create the shippings',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
     },
   },
   async created() {

@@ -1390,5 +1390,185 @@ class DropinController extends Controller
             'success' => true,
         ]);
     }
+    
+    /**
+     * Create dropin shippings for these leads.
+     *
+     * @bodyParam ids json required Array of dropin leads' ids.
+     *
+     * @response {
+     *  "success": true,
+     * }
+     */
+    public function createShippings(Request $requests)
+    {
+        // TODO: Authorization
+
+        $params = $requests->validate([
+            'ids' => 'required|json',
+        ]);
+
+        $params['ids'] = json_decode($params['ids'], true);
+
+        $ids = [];
+        foreach ($params['ids'] as $leadId) {
+            if (!is_numeric($leadId)) {
+                continue;
+            }
+            $ids[] = intval($leadId);
+        }
+
+        $dropinProducts = DropinProduct::all();
+        $orders = [];
+        foreach ($ids as $leadId) {
+            $lead = DropinLead::find($leadId);
+            if ($lead === null) {
+                continue;
+            }
+
+            $info = $lead->info;
+            if ($info === null) {
+                $info = [];
+            }
+
+            $sku = '';
+            if (isset($info['sku']) && $info['sku'] !== null && $info['sku'] != '') {
+                $sku = $info['sku'];
+            }
+
+            $quantity = 0;
+            if (isset($info['quantity']) && $info['quantity'] !== null && $info['quantity'] != '') {
+                $quantity = intval($info['quantity']);
+            }
+
+            $email = '';
+            if (isset($info['shipping']['email']) && $info['shipping']['email'] !== null && $info['shipping']['email'] != '') {
+                $email = $info['shipping']['email'];
+            } else if ($lead->email !== null && $lead->email != '') {
+                $email = $lead->email;
+            }
+            $phone = '';
+            if (isset($info['shipping']['phone']) && $info['shipping']['phone'] !== null && $info['shipping']['phone'] != '') {
+                $phone = $info['shipping']['phone'];
+            } else if ($lead->phone !== null && $lead->phone != '') {
+                $phone = $lead->phone;
+            }
+
+            $products = [];
+            if (isset($info['products'])) {
+                $products = $info['products'];
+            } else {
+                // DEBUG TODO: Something wrong with this code
+                // the products array results empty
+                $price = 0.0;
+                if ($sku !== null && $sku != '') {
+                    $p = null;
+                    foreach ($dropinProducts as $dropinProduct) {
+                        if ($sku == $dropinProduct->sku) {
+                            $p = $dropinProduct;
+                            break;
+                        }
+                    }
+
+                    if ($p) {
+                        $price = floatval($p->sale_price);
+                    }
+                }
+                $products = [
+                    [
+                        'sku' => $sku,
+                        'quantity' => $quantity,
+                        'price' => $price,
+                    ],
+                ];
+            }
+
+            $total = 0.0;
+            if (isset($info['total'])) {
+                $total = $info['total'];
+            } else {
+                foreach ($products as $p) {
+                    if (isset($p['price'])) {
+                        $total += floatval($p['price']);
+                    }
+                }
+            }
+            $total = strval($total);
+
+            $gateway = 'cashondelivery';
+            if (isset($info['gateway'])) {
+                $street_address = $info['gateway'];
+            }
+
+            $street_address = '';
+            if (isset($info['shipping']['street_address'])) {
+                $street_address = $info['shipping']['street_address'];
+            }
+            $city = '';
+            if (isset($info['shipping']['city'])) {
+                $city = $info['shipping']['city'];
+            }
+            $province = '';
+            if (isset($info['shipping']['province'])) {
+                $province = $info['shipping']['province'];
+            }
+            $postcode = '';
+            if (isset($info['shipping']['postcode'])) {
+                $postcode = $info['shipping']['postcode'];
+            }
+            $country = '';
+            if (isset($info['shipping']['country'])) {
+                $country = $info['shipping']['country'];
+            }
+            $notes = '';
+            if (isset($info['shipping']['notes'])) {
+                $notes = $info['shipping']['notes'];
+            }
+
+            $order = [
+                'id' => $lead->id,
+                'date' => $lead->created_at,
+                'gateway' => $gateway,
+                'total' => $total,
+                'products' => $products,
+                'phone' => $phone,
+                'email' => $email,
+                'full_name' => $lead->first_name . ' ' . $lead->last_name,
+                'street_address' => $street_address,
+                'city' => $city,
+                'province' => $province,
+                'postcode' => $postcode,
+                'country' => $country,
+                'notes' => $notes,
+            ];
+
+            // DEBUG TODO: to delete
+            /*
+            $order['full_name'] = 'Test Test';
+            $order['phone'] = '+(39)1234567890';
+            $order['email'] = 'test@test.com';
+            $order['street_address'] = 'Via Montenapoleone 1';
+            $order['city'] = 'Milano';
+            $order['province'] = 'MI';
+            $order['country'] = 'IT';
+             */
+
+            $orders[] = $order;
+        }
+
+        $result = false;
+        if (count($orders) > 0) {
+            $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+            $result = $dropin->uploadOrders($orders);
+        }
+
+        $responseCode = 200;
+        if (!$result) {
+            $responseCode = 500;
+        }
+        return response([
+            'success' => $result,
+        ], $responseCode);
+    }
 
 }

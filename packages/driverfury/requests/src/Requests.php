@@ -242,4 +242,66 @@ class Requests
         }
         $this->cookies[$key] = $value;
     }
+
+    public function postFileText(string $url, string $fileName, string $fileContents, array|null $headers = []): array
+    {
+        $headers = $this->headerKeysLowercase($headers);
+
+        $cType = '';
+        if (isset($headers['content-type'])) {
+            $cType = $headers['content-type'];
+        }
+
+        // TODO: Support other MIME types
+        $extToMIME = [
+            'txt' => 'text/plain',
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'csv' => 'text/csv',
+        ];
+        $fileExt = pathinfo($fileName, PATHINFO_EXTENSION);
+        if ($fileExt === null) {
+            $fileExt = '';
+        }
+        $mime = 'text/plain';
+        if (array_key_exists($fileExt, $extToMIME)) {
+            $mime = $extToMIME[$fileExt];
+        }
+
+        $fileContents = 'data://application/octet-stream;base64,' . base64_encode($fileContents);
+        $curlFile = new \CURLFile($fileContents, $mime, $fileName);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, ['file' => $curlFile]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->getFullHeaders($headers));
+        $response = curl_exec($ch);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $headersContent = substr($response, 0, $header_size);
+        $data = substr($response, $header_size);
+
+        $headers = $this->parseHeaders($headersContent);
+        $cookies = $this->getCookiesFromResponseHeader($headersContent);
+        $this->addCookies($cookies);
+
+        if (isset($headers['content-type'])) {
+            $cType = $headers['content-type'];
+            if (strpos($cType, 'application/json') !== false) {
+                $data = json_decode($data, true);
+            }
+        }
+
+        return [
+            'code' => $code,
+            'headers' => $headers,
+            'data' => $data,
+            'cookies' => $this->cookies,
+        ];
+    }
 }

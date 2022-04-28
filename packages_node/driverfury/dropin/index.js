@@ -98,6 +98,7 @@ class Dropin {
     obj.delivery_status = 'not sent'
     obj.last_message = null
     obj.last_message_read = null
+    obj.last_message_body = null
     obj.has_new_message = false
     if (obj.hasOwnProperty('info') && obj.info !== null) {
       if (obj.info.hasOwnProperty('product_name')) {
@@ -182,12 +183,16 @@ class Dropin {
 
       obj.last_message = null
       obj.last_message_read = null
+      obj.last_message_body = null
       if (obj.info.hasOwnProperty('whatsapp') && obj.info.whatsapp !== null) {
         if (obj.info.whatsapp.hasOwnProperty('last_message') && obj.info.whatsapp.last_message !== null) {
           obj.last_message = obj.info.whatsapp.last_message
         }
         if (obj.info.whatsapp.hasOwnProperty('last_message_read') && obj.info.whatsapp.last_message_read !== null) {
           obj.last_message_read = obj.info.whatsapp.last_message_read
+        }
+        if (obj.info.whatsapp.hasOwnProperty('last_message_body') && obj.info.whatsapp.last_message_body !== null) {
+          obj.last_message_body = obj.info.whatsapp.last_message_body
         }
       }
       obj.has_new_message = (obj.last_message_read !== obj.last_message)
@@ -661,6 +666,29 @@ class Dropin {
     }
 
     return objects
+  }
+
+  async createShippings(leads) {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      let ids = []
+      for (let i = 0; i < leads.length; i++) {
+        ids.push(leads[i].id)
+      }
+      let params = {
+        ids: JSON.stringify(ids),
+      }
+      const response = await this.$http.post('/api/3rd/dropin/shippings', params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('success')) {
+        result = response.data.success
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
   }
 
   async updateShipping(id, params) {

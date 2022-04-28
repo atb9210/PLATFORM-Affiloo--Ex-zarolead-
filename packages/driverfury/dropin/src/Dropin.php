@@ -17,6 +17,8 @@ class Dropin
     protected string $password = '';
     protected bool $loggedIn = false;
 
+    protected static string $defaultEmail = 'mdjordje82@gmail.com';
+
     public function __construct(string $email = '', string $password = '')
     {
         $this->http = new Requests();
@@ -169,5 +171,186 @@ class Dropin
         $objects = $objects['product'];
 
         return $objects;
+    }
+
+    /*
+     * NOTE: Example orders array
+     *
+     * $orders = [
+     *     [
+     *         'id' => 20679,
+     *         'date' => '2022-04-26',
+     *         'gateway' => 'cashondelivery',
+     *         'total' => '69.69',
+     *         'products' => [
+     *             [
+     *                 'sku' => '1234-567-89012',
+     *                 'quantity' => 1,
+     *             ],
+     *         ],
+     *         'phone' => '+(39)1234567890',
+     *         'full_name' => 'Test test',
+     *         'street_address' => 'Via Verdi 1',
+     *         'city' => 'Milano',
+     *         'province' => 'MI',
+     *         'postcode' => 37055,
+     *         'country' => 'IT',
+     *         'notes' => 'test order',
+     *     ],
+     * ];
+     */
+    public function uploadOrders(array $orders): bool
+    {
+        $csv = '';
+
+        foreach ($orders as $order) {
+            $email = self::$defaultEmail;
+            if (isset($order['email']) && $order['email'] != '') {
+                $email = $order['email'];
+            }
+
+            $phone = '';
+            if (isset($order['phone'])) {
+                $phone = $order['phone'];
+            }
+
+            $productsString = '[';
+            if (isset($order['products'])) {
+                $counter = 0;
+                foreach ($order['products'] as $product) {
+                    if ($counter > 0) {
+                        $productsString .= ',';
+                    }
+                    $sku = '';
+                    $quantity = '';
+                    if (isset($product['sku'])) {
+                        $sku = $product['sku'];
+                    }
+                    if (isset($product['quantity'])) {
+                        $quantity = strval($product['quantity']);
+                    }
+                    $productsString .= '[';
+                    $productsString .= '""' . $sku . '"",""' . $quantity . '""';
+                    $productsString .= ']';
+                    $counter += 1;
+                }
+            }
+            $productsString .= ']';
+
+            $formattedDate = date('Y-m-d');
+            if (isset($order['date']) && $order['date'] != '') {
+                $formattedDate = date('Y-m-d', strtotime($order['date']));
+            } else if (isset($order['created_at']) && $order['created_at'] != '') {
+                $formattedDate = date('Y-m-d', strtotime($order['created_at']));
+            }
+
+            $dropinGateways = [
+                'cashondelivery' => 'Cod',
+                'online'         => 'Prepaid',
+            ];
+            $gateway = 'Cod';
+            if (isset($order['gateway'])) {
+                $gateway = $order['gateway'];
+            } else if (isset($order['payment_method'])) {
+                $gateway = $order['payment_method'];
+            } else if (isset($order['method'])) {
+                $gateway = $order['method'];
+            }
+
+            if (array_key_exists($gateway, $dropinGateways)) {
+                $gateway = $dropinGateways[$gateway];
+            }
+
+            $orderId = '0';
+            if (isset($order['id'])) {
+                $orderId = strval($order['id']);
+            } else if (isset($order['order_id'])) {
+                $orderId = strval($order['order_id']);
+            }
+
+
+            $total = 0.0;
+            if (isset($order['total'])) {
+                $total = $order['total'];
+            }
+            $total = strval($total);
+
+            $fullName = '';
+            if (isset($order['full_name'])) {
+                $fullName = $order['full_name'];
+            } else if (isset($order['first_name']) && isset($order['last_name'])) {
+                $fullName = $order['first_name'] . ' ' . $order['last_name'];
+            }
+
+            $streetAddress = '';
+            if (isset($order['street_address'])) {
+                $streetAddress = $order['street_address'];
+            } else if (isset($order['address'])) {
+                $streetAddress = $order['address'];
+            }
+
+            $cityAndProvince = '';
+            if (isset($order['city'])) {
+                $cityAndProvince = $order['city'];
+            }
+            if (isset($order['province'])) {
+                $cityAndProvince .= ' (' . $order['province'] . ')';
+            } else if (isset($order['state'])) {
+                $cityAndProvince .= ' (' . $order['state'] . ')';
+            }
+
+            $postcode = '';
+            if (isset($order['postcode'])) {
+                $postcode = strval($order['postcode']);
+            }
+
+            $country = 'IT';
+            if (isset($order['country'])) {
+                $country = $order['country'];
+            }
+
+            $shippingNotes = '';
+            if (isset($order['notes'])) {
+                $shippingNotes = $order['notes'];
+            } else if (isset($order['shipping_notes'])) {
+                $shippingNotes = $order['shipping_notes'];
+            }
+
+            $csv .= '"' . $formattedDate . '",';
+            $csv .= '"' . $gateway . '",';
+            $csv .= $orderId . ',';
+            $csv .= '"' . $total . '",';
+            $csv .= '"' . $productsString . '",';
+            $csv .= '"' . $fullName . '",';
+            $csv .= '"' . $streetAddress . '",';
+            $csv .= '"' . $cityAndProvince . '",';
+            $csv .= $postcode . ',';
+            $csv .= '"' . $country . '",';
+            $csv .= '"' . $email . '",';
+            $csv .= '"' . $phone . '",';
+            $csv .= '"' . $shippingNotes . '",';
+            $csv .= "\n";
+        }
+
+        $headers = $this->getHeaders();
+        unset($headers['content-type']);
+        $headers['origin'] = 'https://dropship.eurowholesale.eu';
+        $headers['accept'] = 'application/json, text/plain, */*';
+        $headers['accept-encoding'] = 'gzip, deflate, br';
+        $headers['accept-language'] = 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7';
+        $headers['sec-ch-ua'] = '" Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"';
+        $headers['sec-ch-ua-mobile'] = '?0';
+        $headers['sec-ch-ua-platform'] = '"Windows"';
+        $headers['sec-fetch-dest'] = 'empty';
+        $response = $this->http->postFileText(self::$apiUrl . '/api/upload_orders', 'orders.csv', $csv, $headers);
+
+        if ($response['code'] == 200) {
+            return true;
+        } else {
+            // DEBUG
+            Log::channel('dropin')->info('Error while creating the shippings - REQUEST: ' . json_encode(['csv' => $csv]) . ' - RESPONSE: ' . json_encode($response));
+        }
+
+        return false;
     }
 }

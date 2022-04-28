@@ -327,6 +327,8 @@ Route::put('/dropin/leads/{hash}/first-update', 'api\third\DropinController@firs
 
 Route::get('/dropin/shippings', 'api\third\DropinController@shippings')->middleware('auth:api')
     ->name('dropin.shippings.index');
+Route::post('/dropin/shippings', 'api\third\DropinController@createShippings')->middleware('auth:api')
+    ->name('dropin.shippings.store');
 Route::put('/dropin/shippings/{id}', 'api\third\DropinController@updateShipping')->middleware('auth:api')
     ->name('dropin.shippings.update');
 Route::get('/dropin/shippings/refresh', 'api\third\DropinController@refreshShippingsTable')->middleware('auth:api')

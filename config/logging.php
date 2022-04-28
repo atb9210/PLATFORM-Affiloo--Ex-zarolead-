@@ -119,6 +119,13 @@ return [
         ],
 
         // DEBUG
+        'dropin' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/dropin.log'),
+            'level' => 'debug',
+        ],
+
+        // DEBUG
         'chatapi' => [
             'driver' => 'single',
             'path' => storage_path('logs/chatapi.log'),
