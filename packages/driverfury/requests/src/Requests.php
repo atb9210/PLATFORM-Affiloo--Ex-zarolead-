@@ -243,7 +243,7 @@ class Requests
         $this->cookies[$key] = $value;
     }
 
-    public function postFileText(string $url, string $fileName, string $fileContents, array|null $headers = []): array
+    public function postFileText(string $url, string $filePathname, array|null $headers = []): array
     {
         $headers = $this->headerKeysLowercase($headers);
 
@@ -259,7 +259,11 @@ class Requests
             'htm' => 'text/html',
             'csv' => 'text/csv',
         ];
-        $fileExt = pathinfo($fileName, PATHINFO_EXTENSION);
+        $fileName = '';
+        $fileExt = '';
+        $pathInfo = pathinfo($filePathname,);
+        $fileName = $pathInfo['basename'];
+        $fileExt = $pathInfo['extension'];
         if ($fileExt === null) {
             $fileExt = '';
         }
@@ -268,8 +272,12 @@ class Requests
             $mime = $extToMIME[$fileExt];
         }
 
+        // TODO: Old code, it only works in localhost
+        /*
         $fileContents = 'data://application/octet-stream;base64,' . base64_encode($fileContents);
         $curlFile = new \CURLFile($fileContents, $mime, $fileName);
+        */
+        $curlFile = new \CurlFile($filePathname, $mime, $fileName);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);

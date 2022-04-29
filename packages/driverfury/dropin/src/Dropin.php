@@ -4,6 +4,8 @@ namespace Driverfury\Dropin;
 
 use Driverfury\Requests\Requests;
 
+use Illuminate\Support\Facades\Storage;
+
 // DEBUG
 use Illuminate\Support\Facades\Log;
 
@@ -332,6 +334,10 @@ class Dropin
             $csv .= "\n";
         }
 
+        $csvPathname = 'public/tmp/orders.csv';
+        Storage::put($csvPathname, $csv);
+        $csvPathname = Storage::path($csvPathname);
+
         $headers = $this->getHeaders();
         unset($headers['content-type']);
         $headers['origin'] = 'https://dropship.eurowholesale.eu';
@@ -342,7 +348,7 @@ class Dropin
         $headers['sec-ch-ua-mobile'] = '?0';
         $headers['sec-ch-ua-platform'] = '"Windows"';
         $headers['sec-fetch-dest'] = 'empty';
-        $response = $this->http->postFileText(self::$apiUrl . '/api/upload_orders', 'orders.csv', $csv, $headers);
+        $response = $this->http->postFileText(self::$apiUrl . '/api/upload_orders', $csvPathname, $headers);
 
         if ($response['code'] == 200) {
             return true;
