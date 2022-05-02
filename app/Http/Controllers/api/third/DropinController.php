@@ -1442,10 +1442,29 @@ class DropinController extends Controller
             $orders[] = $order;
         }
 
+        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+
         $result = false;
         if (count($orders) > 0) {
-            $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
             $result = $dropin->uploadOrders($orders);
+        }
+
+        $newOrders = $dropin->getOrders();
+        foreach ($params['ids'] as $leadId) {
+            $found = false;
+            foreach ($newOrders as $o) {
+                if ($o['external_id'] == $leadId) {
+                    $found = true;
+                    break;
+                }
+            }
+            if ($found) {
+                $lead = DropinLead::find($leadId);
+                if ($lead !== null) {
+                    $lead->status = 'unprocessed';
+                    $lead->save();
+                }
+            }
         }
 
         $responseCode = 200;
