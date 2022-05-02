@@ -148,6 +148,11 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $lead = \App\third\DropinLead::findOrFail(480);
+        $orders = [$lead->getOrderInfoForCSV()];
+        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+        $result = $dropin->uploadOrders($orders);
+        dd($result);
         dd('test');
         $orders = [
             [

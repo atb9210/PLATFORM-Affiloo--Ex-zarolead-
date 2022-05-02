@@ -341,7 +341,7 @@ class Dropin
         $headers = $this->getHeaders();
         unset($headers['content-type']);
         $headers['origin'] = 'https://dropship.eurowholesale.eu';
-        $headers['accept'] = 'application/json, text/plain, */*';
+        $headers['accept'] = 'text/html, text/plain, */*';
         $headers['accept-encoding'] = 'gzip, deflate, br';
         $headers['accept-language'] = 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7';
         $headers['sec-ch-ua'] = '" Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"';

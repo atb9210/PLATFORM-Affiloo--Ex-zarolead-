@@ -111,4 +111,133 @@ class DropinLead extends Model
         }
         return $objects;
     }
+
+    public function getOrderInfoForCSV($dropinProducts = null): array
+    {
+        $order = [];
+
+        if ($dropinProducts === null) {
+            $dropinProducts = DropinProduct::all();
+        }
+
+        $lead = $this;
+
+        $info = $lead->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        $sku = '';
+        if (isset($info['sku']) && $info['sku'] !== null && $info['sku'] != '') {
+            $sku = $info['sku'];
+        }
+
+        $quantity = 0;
+        if (isset($info['quantity']) && $info['quantity'] !== null && $info['quantity'] != '') {
+            $quantity = intval($info['quantity']);
+        }
+
+        $email = '';
+        if (isset($info['shipping']['email']) && $info['shipping']['email'] !== null && $info['shipping']['email'] != '') {
+            $email = $info['shipping']['email'];
+        } else if ($lead->email !== null && $lead->email != '') {
+            $email = $lead->email;
+        }
+        $phone = '';
+        if (isset($info['shipping']['phone']) && $info['shipping']['phone'] !== null && $info['shipping']['phone'] != '') {
+            $phone = $info['shipping']['phone'];
+        } else if ($lead->phone !== null && $lead->phone != '') {
+            $phone = $lead->phone;
+        }
+
+        $products = [];
+        if (isset($info['products'])) {
+            $products = $info['products'];
+        } else {
+            // DEBUG TODO: Something wrong with this code
+            // the products array results empty
+            $price = 0.0;
+            if ($sku !== null && $sku != '') {
+                $p = null;
+                foreach ($dropinProducts as $dropinProduct) {
+                    if ($sku == $dropinProduct->sku) {
+                        $p = $dropinProduct;
+                        break;
+                    }
+                }
+
+                if ($p) {
+                    $price = floatval($p->sale_price);
+                }
+            }
+            $products = [
+                [
+                    'sku' => $sku,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                ],
+            ];
+        }
+
+        $total = 0.0;
+        if (isset($info['total'])) {
+            $total = $info['total'];
+        } else {
+            foreach ($products as $p) {
+                if (isset($p['price'])) {
+                    $total += floatval($p['price']);
+                }
+            }
+        }
+        $total = strval($total);
+
+        $gateway = 'cashondelivery';
+        if (isset($info['gateway'])) {
+            $street_address = $info['gateway'];
+        }
+
+        $street_address = '';
+        if (isset($info['shipping']['street_address'])) {
+            $street_address = $info['shipping']['street_address'];
+        }
+        $city = '';
+        if (isset($info['shipping']['city'])) {
+            $city = $info['shipping']['city'];
+        }
+        $province = '';
+        if (isset($info['shipping']['province'])) {
+            $province = $info['shipping']['province'];
+        }
+        $postcode = '';
+        if (isset($info['shipping']['postcode'])) {
+            $postcode = $info['shipping']['postcode'];
+        }
+        $country = '';
+        if (isset($info['shipping']['country'])) {
+            $country = $info['shipping']['country'];
+        }
+        $notes = '';
+        if (isset($info['shipping']['notes'])) {
+            $notes = $info['shipping']['notes'];
+        }
+
+        $order = [
+            'id' => $lead->id,
+            'date' => $lead->created_at,
+            'gateway' => $gateway,
+            'total' => $total,
+            'products' => $products,
+            'phone' => $phone,
+            'email' => $email,
+            'full_name' => $lead->first_name . ' ' . $lead->last_name,
+            'street_address' => $street_address,
+            'city' => $city,
+            'province' => $province,
+            'postcode' => $postcode,
+            'country' => $country,
+            'notes' => $notes,
+        ];
+
+        return $order;
+    }
 }
