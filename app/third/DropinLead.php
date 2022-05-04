@@ -151,7 +151,7 @@ class DropinLead extends Model
         }
 
         $products = [];
-        if (isset($info['products'])) {
+        if (isset($info['products']) && !empty($info['products'])) {
             $products = $info['products'];
         } else {
             // DEBUG TODO: Something wrong with this code
