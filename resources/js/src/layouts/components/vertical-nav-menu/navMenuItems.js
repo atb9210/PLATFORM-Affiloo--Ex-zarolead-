@@ -101,7 +101,7 @@ export default [
         url: '/dashboard/orders',
         name: 'Conversions',
         slug: 'orders',
-        icon: 'PackageIcon',
+        icon: 'TargetIcon',
         i18n: 'Conversions',
         roles: ['developer', 'admin', 'mediabuyer', 'advertiser'],
       },
