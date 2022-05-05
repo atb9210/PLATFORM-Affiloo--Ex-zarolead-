@@ -462,7 +462,9 @@ class DropinShipping extends Model
 
     public function sendTrackingUrl()
     {
+        $info = $this->info;
         if ($this->phone !== null && $this->phone != '' &&
+            $info !== null &&
             isset($info['bartolini']['tracking_url']) &&
             $info['bartolini']['tracking_url'] !== null && 
             $info['bartolini']['tracking_url'] != '') {
