@@ -766,7 +766,7 @@ export default {
       for (let i = 0; i < shippings.length; i++) {
         let shipping = shippings[i]
 
-        this.dropin.sendTrackingUrl(shipping.id)
+        await this.dropin.sendTrackingUrl(shipping.id)
       }
 
       this.$vs.notify({
