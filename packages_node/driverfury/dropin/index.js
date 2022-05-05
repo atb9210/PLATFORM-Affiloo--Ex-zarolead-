@@ -759,6 +759,22 @@ class Dropin {
     return object
   }
 
+  async sendTrackingUrl(id) {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.post('/api/3rd/dropin/shippings/' + id + '/send-tracking-url', {}, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('success')) {
+        result = response.data.success
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
+  }
+
 }
 
 export default Dropin

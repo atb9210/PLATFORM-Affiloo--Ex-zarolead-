@@ -26,6 +26,21 @@ class DropinShipping extends Model
         'tax' => 'float',
     ];
 
+    private function getChatAPIClient()
+    {
+        $settings = \App\Settings::get();
+        $apiInstance = env('CHATAPI_INSTANCE', '');
+        $apiToken = env('CHATAPI_TOKEN', '');
+        if (isset($settings['chatapi']['api_instance'])) {
+            $apiInstance = $settings['chatapi']['api_instance'];
+        }
+        if (isset($settings['chatapi']['api_token'])) {
+            $apiToken = $settings['chatapi']['api_token'];
+        }
+        $chatapi = new \Driverfury\ChatAPI\ChatAPI($apiInstance, $apiToken);
+        return $chatapi;
+    }
+
     private function substrFromTo(string $haystack, string $needleStart, string $needleEnd = ''): string
     {
         $result = '';
@@ -366,6 +381,15 @@ class DropinShipping extends Model
                 'status' => $packetaStatus,
                 'changes' => $statusChanges,
             ];
+            $oldBrtTrackingUrl = null;
+            if (isset($info['bartolini']['tracking_url']) &&
+                $info['bartolini']['tracking_url'] !== null && 
+                $info['bartolini']['tracking_url'] != '') {
+                $oldBrtTrackingUrl = $info['bartolini']['tracking_url'];
+            }
+            if ($oldBrtTrackingUrl === null && $brtTrackingUrl !== null && $brtTrackingUrl != '') {
+                $this->sendTrackingUrl();
+            }
             $info['bartolini'] = [
                 'tracking_number' => $brtTrackingNumber,
                 'tracking_url' => $brtTrackingUrl,
@@ -434,5 +458,14 @@ class DropinShipping extends Model
         }
 
         return $shippings;
+    }
+
+    public function sendTrackingUrl()
+    {
+        if ($this->phone !== null && $this->phone != '') {
+            $message = 'Il suo ordine è stato spedito. Può visualizzare lo stato del suo ordine accedendo a questo link: ' . $brtTrackingUrl;
+            $chatapi = $this->getChatAPIClient();
+            $object = $chatapi->sendMessage($this->phone, $message);
+        }
     }
 }

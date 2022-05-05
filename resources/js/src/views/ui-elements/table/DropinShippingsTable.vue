@@ -20,6 +20,9 @@
             <vx-tooltip text="Copy IDs" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedShippings.length <= 0" @click="copyIds(selectedShippings)"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Send Tracking URL via Whatsapp" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" :disabled="selectedShippings.length <= 0" @click="sendTrackingUrl(selectedShippings)"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
@@ -754,6 +757,27 @@ export default {
         c = 'row-error'
       }
       return c
+    },
+    async sendTrackingUrl(shippings) {
+      if (shippings.length == 0) return
+
+      this.$vs.loading()
+
+      for (let i = 0; i < shippings.length; i++) {
+        let shipping = shippings[i]
+
+        this.dropin.sendTrackingUrl(shipping.id)
+      }
+
+      this.$vs.notify({
+        title: 'Success',
+        text: 'Tracking URL(s) sent',
+        iconPack: 'feather',
+        icon: 'icon-message-circle',
+        color: 'success'
+      })
+
+      this.$vs.loading.close()
     },
   },
   async created() {

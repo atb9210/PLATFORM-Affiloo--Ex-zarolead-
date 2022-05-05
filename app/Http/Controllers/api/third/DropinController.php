@@ -1476,4 +1476,25 @@ class DropinController extends Controller
         ], $responseCode);
     }
 
+    /**
+     * Send dropin shipping tracking url.
+     *
+     * @urlParam id int required Shipping's id
+     *
+     * @response {
+     *  "success": true,
+     *  "message": "Tracking URL sent",
+     * }
+     */
+    public function sendTrackingUrl($id, Request $requests)
+    {
+        $shipping = DropinShipping::findOrFail($id);
+
+        $shipping->sendTrackingUrl();
+
+        return response([
+            'success' => true,
+            'message' => 'Tracking URL sent',
+        ]);
+    }
 }

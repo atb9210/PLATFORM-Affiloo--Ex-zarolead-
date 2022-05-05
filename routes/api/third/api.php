@@ -335,3 +335,5 @@ Route::get('/dropin/shippings/refresh', 'api\third\DropinController@refreshShipp
     ->name('dropin.shippings.refresh-all');
 Route::get('/dropin/shippings/{id}/refresh', 'api\third\DropinController@refreshShipping')->middleware('auth:api')
     ->name('dropin.shippings.refresh');
+Route::post('/dropin/shippings/{id}/send-tracking-url', 'api\third\DropinController@sendTrackingUrl')->middleware('auth:api')
+    ->name('dropin.shippings.tracking-url');
