@@ -462,7 +462,11 @@ class DropinShipping extends Model
 
     public function sendTrackingUrl()
     {
-        if ($this->phone !== null && $this->phone != '') {
+        if ($this->phone !== null && $this->phone != '' &&
+            isset($info['bartolini']['tracking_url']) &&
+            $info['bartolini']['tracking_url'] !== null && 
+            $info['bartolini']['tracking_url'] != '') {
+            $brtTrackingUrl = $info['bartolini']['tracking_url'];
             $message = 'Il suo ordine è stato spedito. Può visualizzare lo stato del suo ordine accedendo a questo link: ' . $brtTrackingUrl;
             $chatapi = $this->getChatAPIClient();
             $object = $chatapi->sendMessage($this->phone, $message);
