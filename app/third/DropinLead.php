@@ -127,6 +127,11 @@ class DropinLead extends Model
             $info = [];
         }
 
+        $orderId = 0;
+        if (isset($info['order_id']) && $info['order_id'] !== null && $info['order_id'] != '') {
+            $orderId = intval($info['order_id']);
+        }
+
         $sku = '';
         if (isset($info['sku']) && $info['sku'] !== null && $info['sku'] != '') {
             $sku = $info['sku'];
@@ -222,7 +227,7 @@ class DropinLead extends Model
         }
 
         $order = [
-            'id' => $lead->id,
+            'id' => $orderId,
             'date' => $lead->created_at,
             'gateway' => $gateway,
             'total' => $total,
