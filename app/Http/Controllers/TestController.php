@@ -148,6 +148,64 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        $ids = [
+            '417' => '350',
+            '415' => '353',
+            '414' => '356',
+            '413' => '357',
+            '412' => '364',
+            '411' => '447',
+            '410' => '469',
+            '408' => '469',
+            '407' => '441',
+            '406' => '471',
+            '405' => '400',
+            '404' => '479',
+            '403' => '478',
+            '402' => '474',
+            '401' => '473',
+            '400' => '468',
+            '399' => '468',
+            '398' => '467',
+        ];
+        $newIds = [];
+        foreach ($ids as $shippingId => $leadId) {
+            $lead = \App\third\DropinLead::find($leadId);
+            if ($lead === null) {
+                continue
+            }
+
+            if ($lead->info === null) {
+                continue;
+            }
+
+            $orderId = null;
+            $info = $lead->info;
+            if (isset($info['order_id']) && $info['order_id'] !== null && $info['order_id'] != '') {
+                $orderId = strval($info['order_id']);
+            }
+
+            if ($orderId === null) {
+                continue;
+            }
+
+            $shipping = \App\third\DopinShipping::find($shippingId);
+            if ($shipping === null) {
+                continue;
+            }
+
+            $info = $shipping->info;
+            if ($info === null) {
+                $info = [];
+            }
+            $info['order_id'] = $orderId;
+            $shipping->info = $info;
+            $shipping->save();
+
+            $newIds[$shippingId] = $orderId;
+        }
+        dd($newIds);
+
         dd('test');
         $orders = [
             [
