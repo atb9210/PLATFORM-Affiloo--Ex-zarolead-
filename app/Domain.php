@@ -288,27 +288,32 @@ class Domain extends Model
 
     public function uploadFile($path, $file, $file_pathname)
     {
-        Storage::disk('landings')->putFileAs('apps/' . $this->path . '/' . $path, $file, $file_pathname);
+        return Storage::disk('landings')->putFileAs('apps/' . $this->path . '/' . $path, $file, $file_pathname);
+    }
+
+    public function uploadFileContents($path, $contents)
+    {
+        return Storage::disk('landings')->put('apps/' . $this->path . '/' . $path, $contents);
     }
 
     public function createFile(string $pathname, $contents = '')
     {
-        Storage::disk('landings')->put('apps/' . $this->path . '/' . $pathname, $contents);
+        return Storage::disk('landings')->put('apps/' . $this->path . '/' . $pathname, $contents);
     }
 
     public function deleteFile(string $pathname)
     {
-        Storage::disk('landings')->delete('apps/' . $this->path . '/' . $pathname);
+        return Storage::disk('landings')->delete('apps/' . $this->path . '/' . $pathname);
     }
 
     public function createDirectory(string $pathname)
     {
-        Storage::disk('landings')->makeDirectory('apps/' . $this->path . '/' . $pathname);
+        return Storage::disk('landings')->makeDirectory('apps/' . $this->path . '/' . $pathname);
     }
 
     public function deleteDirectory(string $pathname)
     {
-        Storage::disk('landings')->deleteDirectory('apps/' . $this->path . '/' . $pathname);
+        return Storage::disk('landings')->deleteDirectory('apps/' . $this->path . '/' . $pathname);
     }
 
     private function serverpilotGetClient()

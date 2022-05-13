@@ -5,10 +5,10 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Tag as Tag;
-use App\Http\Resources\api\v1\TagResource;
+use App\Template as Template;
+use App\Http\Resources\api\v1\TemplateResource;
 
-class TagController extends Controller
+class TemplateController extends Controller
 {
     /**
      * Get all tags list.
@@ -19,49 +19,49 @@ class TagController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', 'App\Tag');
+        $this->authorize('viewAny', 'App\Template');
 
-        return TagResource::collection(Tag::where('archived', 0)->get());
+        return TemplateResource::collection(Template::where('archived', 0)->get());
     }
 
     /**
-     * Get tag's informations.
+     * Get template's informations.
      *
-     * @urlParam id int required Tag's id
+     * @urlParam id int required Template's id
      *
      * @response {
-     *  "data": tag,
+     *  "data": template,
      * }
      */
     public function show($id)
     {
-        $tag = Tag::findOrFail($id);
-        $this->authorize('view', $tag);
+        $template = Template::findOrFail($id);
+        $this->authorize('view', $template);
 
-        if ($tag->archived) {
+        if ($template->archived) {
             return response([
-                "message" => "That tag is archived"
+                "message" => "That template is archived"
             ], 403);
         }
 
-        return new TagResource($tag);
+        return new TemplateResource($template);
     }
 
     /**
-     * Create a new tag.
+     * Create a new template.
      *
-     * @bodyParam name string required Tag's name
+     * @bodyParam name string required Template's name
      * @bodyParam bg_color string Background color
      * @bodyParam fg_color string Foreground color
      *
      * @response 201 {
-     *  "message": "Tag created",
-     *  "data": tag,
+     *  "message": "Template created",
+     *  "data": template,
      * }
      */
     public function store(Request $request)
     {
-        $this->authorize('create', 'App\Tag');
+        $this->authorize('create', 'App\Template');
 
         // Params validation
         $params = $request->validate([
@@ -85,35 +85,35 @@ class TagController extends Controller
             $data['info']['fg_color'] = $params['fg_color'];
         }
 
-        $tag = Tag::create($data);
+        $template = Template::create($data);
 
         return response([
-            "message" => "Tag created",
-            "data" => new TagResource($tag),
+            "message" => "Template created",
+            "data" => new TemplateResource($template),
         ], 201);
     }
 
     /**
-     * Update the tag's fields.
+     * Update the template's fields.
      *
-     * @urlParam id int required Tag's id
+     * @urlParam id int required Template's id
      *
-     * @bodyParam name string Tag's name
+     * @bodyParam name string Template's name
      * @bodyParam bg_color string Background color
      * @bodyParam fg_color string Foreground color
      *
      * @response {
-     *  "data": tag,
+     *  "data": template,
      * }
      */
     public function update(Request $request, $id)
     {
-        $tag = Tag::findOrFail($id);
-        $this->authorize('update', $tag);
+        $template = Template::findOrFail($id);
+        $this->authorize('update', $template);
 
-        if ($tag->archived) {
+        if ($template->archived) {
             return response([
-                "message" => "That tag is archived"
+                "message" => "That template is archived"
             ], 403);
         }
 
@@ -125,7 +125,7 @@ class TagController extends Controller
         ]);
 
         $data = [
-            'info' => $tag->info
+            'info' => $template->info
         ];
 
         if (isset($params['name'])) {
@@ -139,32 +139,46 @@ class TagController extends Controller
             $data['info']['fg_color'] = $params['fg_color'];
         }
 
-        $tag->update($data);
+        $template->update($data);
 
-        return new TagResource($tag);
+        return new TemplateResource($template);
     }
 
     /**
-     * Delete the specified tag.
+     * Delete the specified template.
      *
-     * @urlParam id int required Tag's id
+     * @urlParam id int required Template's id
      *
      * @response {
-     *  "message": "Tag has been archived",
+     *  "message": "Template has been archived",
      * }
      */
     public function destroy($id)
     {
-        $tag = Tag::findOrFail($id);
+        $template = Template::findOrFail($id);
 
-        $this->authorize('delete', $tag);
+        $this->authorize('delete', $template);
 
-        // Archive the tag
-        $tag->archived = 1;
-        $tag->save();
+        // Archive the template
+        $template->archived = 1;
+        $template->save();
 
         return response([
-            'message' => 'Tag has been archived'
+            'message' => 'Template has been archived'
         ]);
+    }
+
+    public function getStrings($id)
+    {
+        $template = Template::findOrFail($id);
+
+        $strings = [];
+
+        $info = $template->info;
+        if ($info !== null && isset($info['strings'])) {
+            $strings = $info['string'];
+        }
+
+        return response($strings
     }
 }

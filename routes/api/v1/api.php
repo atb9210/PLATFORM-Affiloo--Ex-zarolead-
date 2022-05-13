@@ -70,6 +70,12 @@ Route::apiResource('tags', 'api\v1\TagController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 
+/* Templates routes */
+Route::apiResource('templates', 'api\v1\TemplateController')->except([
+    'create', 'edit',
+])->middleware('auth:api');
+Route::get('templates/{id}/get-strings', , 'api\v1\TemplateController')->name('templates.get-strings');
+
 /* Traffic sources routes */
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([
     'create', 'edit', 'update',
