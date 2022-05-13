@@ -179,6 +179,6 @@ class TemplateController extends Controller
             $strings = $info['string'];
         }
 
-        return response($strings
+        return response($strings);
     }
 }
