@@ -176,7 +176,7 @@ class TemplateController extends Controller
 
         $info = $template->info;
         if ($info !== null && isset($info['strings'])) {
-            $strings = $info['string'];
+            $strings = $info['strings'];
         }
 
         return response($strings);
