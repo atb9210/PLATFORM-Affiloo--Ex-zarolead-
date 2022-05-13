@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Template as Template;
 use App\Http\Resources\api\v1\TemplateResource;
 
-class TagController extends Controller
+class TemplateController extends Controller
 {
     /**
      * Get all tags list.
