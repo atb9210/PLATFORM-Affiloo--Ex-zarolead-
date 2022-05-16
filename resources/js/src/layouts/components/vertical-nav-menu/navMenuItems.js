@@ -505,7 +505,7 @@ export default [
         name: 'Templates',
         slug: 'templates',
         icon: 'Edit2Icon',
-        i18n: 'Styles',
+        i18n: 'Templates',
         roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
       },
 
