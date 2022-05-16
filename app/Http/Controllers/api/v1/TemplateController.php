@@ -19,7 +19,8 @@ class TemplateController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', 'App\Template');
+        // TODO: Authorization
+        //$this->authorize('viewAny', 'App\Template');
 
         return TemplateResource::collection(Template::where('archived', 0)->get());
     }
@@ -36,7 +37,9 @@ class TemplateController extends Controller
     public function show($id)
     {
         $template = Template::findOrFail($id);
-        $this->authorize('view', $template);
+
+        // TODO: Authorization
+        //$this->authorize('view', $template);
 
         if ($template->archived) {
             return response([
@@ -51,8 +54,7 @@ class TemplateController extends Controller
      * Create a new template.
      *
      * @bodyParam name string required Template's name
-     * @bodyParam bg_color string Background color
-     * @bodyParam fg_color string Foreground color
+     * @bodyParam info json Teamplate's info
      *
      * @response 201 {
      *  "message": "Template created",
@@ -61,31 +63,20 @@ class TemplateController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', 'App\Template');
+        // TODO: Authorization
+        //$this->authorize('create', 'App\Template');
 
         // Params validation
         $params = $request->validate([
             'name' => 'required|string|min:3',
-            'bg_color' => 'string',
-            'fg_color' => 'string',
+            'info' => 'nullable|json',
         ]);
 
-        $data = [
-            'name' => $params['name'],
-            'info' => [
-                'bg_color' => '#ffffff',
-                'fg_color' => '#000000',
-            ],
-        ];
-
-        if (isset($params['bg_color'])) {
-            $data['info']['bg_color'] = $params['bg_color'];
-        }
-        if (isset($params['fg_color'])) {
-            $data['info']['fg_color'] = $params['fg_color'];
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
         }
 
-        $template = Template::create($data);
+        $template = Template::create($params);
 
         return response([
             "message" => "Template created",
@@ -99,8 +90,7 @@ class TemplateController extends Controller
      * @urlParam id int required Template's id
      *
      * @bodyParam name string Template's name
-     * @bodyParam bg_color string Background color
-     * @bodyParam fg_color string Foreground color
+     * @bodyParam info json Teamplate's info
      *
      * @response {
      *  "data": template,
@@ -109,7 +99,9 @@ class TemplateController extends Controller
     public function update(Request $request, $id)
     {
         $template = Template::findOrFail($id);
-        $this->authorize('update', $template);
+
+        // TODO: Authorization
+        //$this->authorize('update', $template);
 
         if ($template->archived) {
             return response([
@@ -119,27 +111,15 @@ class TemplateController extends Controller
 
         // Params validation
         $params = $request->validate([
-            'name' => 'string|min:3',
-            'bg_color' => 'string',
-            'fg_color' => 'string',
+            'name' => 'required|string|min:3',
+            'info' => 'nullable|json',
         ]);
 
-        $data = [
-            'info' => $template->info
-        ];
-
-        if (isset($params['name'])) {
-            $data['name'] = $params['name'];
+        if (isset($params['info'])) {
+            $params['info'] = json_decode($params['info'], true);
         }
 
-        if (isset($params['bg_color'])) {
-            $data['info']['bg_color'] = $params['bg_color'];
-        }
-        if (isset($params['fg_color'])) {
-            $data['info']['fg_color'] = $params['fg_color'];
-        }
-
-        $template->update($data);
+        $template->update($params);
 
         return new TemplateResource($template);
     }
@@ -157,7 +137,8 @@ class TemplateController extends Controller
     {
         $template = Template::findOrFail($id);
 
-        $this->authorize('delete', $template);
+        // TODO: Authorization
+        //$this->authorize('delete', $template);
 
         // Archive the template
         $template->archived = 1;
@@ -171,6 +152,8 @@ class TemplateController extends Controller
     public function getStrings($id)
     {
         $template = Template::findOrFail($id);
+
+        // TODO: Authorization
 
         $strings = [];
 

@@ -35,6 +35,9 @@
             <vx-tooltip text="Open Chat (new tab)" position="top">
                 <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openLeadChat(order)"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Create Shipping (Upload CSV automatically)" position="top">
+                <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-package" @click="createShippings([editingLead])"></vs-button>
+            </vx-tooltip>
 
             <vx-tooltip text="All leads" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-globe" @click="setFiltersStatuses([])"></vs-button>
@@ -1144,6 +1147,7 @@ export default {
       leads: [],
       selectedLeads: [],
       lead: {},
+      editingLead: {},
       order: {
         id: '',
         status: '',
@@ -1402,6 +1406,7 @@ export default {
       } else if (view == 'order_editor') {
         let lead = item
         this.loadOrderInfo(lead)
+        this.editingLead = item
         this.view = view
       } else if (view == 'order_builder') {
         this.emptyOrderInfo()

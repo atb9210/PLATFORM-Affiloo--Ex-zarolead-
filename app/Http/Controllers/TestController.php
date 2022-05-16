@@ -248,40 +248,6 @@ class TestController extends Controller
         dd($template->install(2, 'public/template_installed'));
         dd($template);
         dd('test');
-        $orders = [
-            [
-                'id' => 20679,
-                'date' => '2022-04-26',
-                'gateway' => 'cashondelivery',
-                'total' => '69.69',
-                'products' => [
-                    [
-                        'sku' => '2246-911-17842',
-                        'quantity' => 1,
-                    ],
-                ],
-                'phone' => '+(39)1234567890',
-                'full_name' => 'Test test',
-                'street_address' => 'Via Fornetto 43',
-                'city' => 'Ronco all\'Adige',
-                'province' => 'VR',
-                'postcode' => 37055,
-                'country' => 'IT',
-                'notes' => 'test order',
-            ],
-        ];
-        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
-        dd($dropin->uploadOrders($orders));
-
-        $orders = $dropin->getOrders();
-        $shippings = [];
-        foreach ($orders as $order) {
-            if ($order['id'] < 114) {
-                $shipping = \App\third\DropinShipping::importShipping($order['id'], $dropin);
-                $shippings[] = $shipping;
-            }
-        }
-        dd($shippings);
     }
 
     public function test2(Request $request)

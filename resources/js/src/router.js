@@ -1447,6 +1447,34 @@ const router = new Router({
           }
         },
         {
+          path: '/dashboard/templates',
+          name: 'templates',
+          component: () => import('./views/Templates.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Templates', active: true }
+            ],
+            pageTitle: 'Templates',
+            rule: 'editor'
+          }
+        },
+        {
+          path: '/dashboard/templates/builder',
+          name: 'template-builder',
+          component: () => import('./views/TemplateBuilder.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Template Builder', active: true }
+            ],
+            pageTitle: 'Template Builder',
+            rule: 'editor'
+          }
+        },
+        {
           path: '/dashboard/landings/:landing_id/stats/',
           props: true,
           name: 'landings-stats',
