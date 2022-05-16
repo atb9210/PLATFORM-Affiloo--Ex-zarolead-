@@ -501,6 +501,15 @@ export default [
       },
 
       {
+        url: '/dashboard/templates',
+        name: 'Templates',
+        slug: 'templates',
+        icon: 'Edit2Icon',
+        i18n: 'Styles',
+        roles: ['developer', 'admin', 'mediabuyer', 'buyer'],
+      },
+
+      {
         url: null,
         name: 'Cloud',
         icon: 'CloudIcon',

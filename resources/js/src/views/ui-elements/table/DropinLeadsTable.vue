@@ -36,7 +36,7 @@
                 <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" @click="openLeadChat(order)"></vs-button>
             </vx-tooltip>
             <vx-tooltip text="Create Shipping (Upload CSV automatically)" position="top">
-                <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-package" @click="createShippings([editingLead])"></vs-button>
+                <vs-button v-if="view == 'order_editor'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-package" @click="saveAndCreateShipping(order, editingLead)" :disabled="!canUpdateLeadInfo(order)"></vs-button>
             </vx-tooltip>
 
             <vx-tooltip text="All leads" position="top">
@@ -2844,6 +2844,10 @@ export default {
       }
 
       this.$vs.loading.close()
+    },
+    async saveAndCreateShipping(order, lead) {
+      await this.updateLeadInfo(order)
+      await this.createShippings([lead])
     },
   },
   async created() {
