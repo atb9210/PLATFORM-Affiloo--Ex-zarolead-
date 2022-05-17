@@ -75,6 +75,8 @@ Route::apiResource('templates', 'api\v1\TemplateController')->except([
     'create', 'edit',
 ])->middleware('auth:api');
 Route::get('templates/{id}/get-strings', 'api\v1\TemplateController@getStrings')->name('templates.get-strings');
+Route::post('templates/{id}/install', 'api\v1\TemplateController@install')->middleware('auth:api')
+    ->name('templates.install');
 
 /* Traffic sources routes */
 Route::apiResource('traffic-sources', 'api\v1\TrafficSourceController')->except([

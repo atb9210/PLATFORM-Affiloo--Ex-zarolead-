@@ -76,6 +76,9 @@ class TemplateController extends Controller
             $params['info'] = json_decode($params['info'], true);
         }
 
+        // TODO: Import files from root template
+        // TODO: Import images (from dropbox URL)
+
         $template = Template::create($params);
 
         return response([
@@ -108,6 +111,8 @@ class TemplateController extends Controller
                 "message" => "That template is archived"
             ], 403);
         }
+
+        // TODO: Import images (from dropbox URL)
 
         // Params validation
         $params = $request->validate([
@@ -149,6 +154,47 @@ class TemplateController extends Controller
         ]);
     }
 
+    /**
+     * Install a template on a domain.
+     *
+     * @urlParam id int required Template's id
+     *
+     * @bodyParam domain int required Domain's id
+     * @bodyParam path string required Path
+     *
+     * @response {
+     *  "message": "Template has been installed",
+     * }
+     */
+    public function install($id, Request $request)
+    {
+        $template = Template::findOrFail($id);
+
+        // TODO: Authorization
+        //$this->authorize('delete', $template);
+
+        // Params validation
+        $params = $request->validate([
+            'domain' => 'required|int|min:0|exists:domains,id',
+            'path' => 'required|string|min:0',
+        ]);
+
+        $result = $template->install(intval($params['domain']), $params['path']);
+
+        return response([
+            'message' => 'Template has been installed'
+        ]);
+    }
+
+    /**
+     * Get strings of the specified template.
+     *
+     * @urlParam id int required Template's id
+     *
+     * @response {
+     *  "data": [strings],
+     * }
+     */
     public function getStrings($id)
     {
         $template = Template::findOrFail($id);
