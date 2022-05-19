@@ -81,7 +81,7 @@ class TemplateController extends Controller
         // Import files from root template
         $template->cloneRoot();
 
-        // TODO: Import images (from dropbox URL)
+        // Import images (from external URLs)
         $images = [];
         $info = $params['info'];
         $strings = [];

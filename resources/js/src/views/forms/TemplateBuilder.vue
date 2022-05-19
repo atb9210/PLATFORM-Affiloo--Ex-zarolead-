@@ -743,9 +743,6 @@ export default {
             destination.push(imageUrl)
           }
 
-          // DEBUG TODO: to delete
-          console.log(destination)
-
           this.$vs.loading.close()
         }.bind(this),
         cancel: function() {

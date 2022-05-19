@@ -283,10 +283,7 @@ export default {
 
       try {
         const response = await this.$http.post('/api/v1/templates/' + template.id + '/install', params, { headers })
-        if (response !== null && response.hasOwnProperty('data') && response.data !== null &&
-            response.data.hasOwnProperty('data') && response.data.data !== null) {
-          result = true
-        }
+        result = true
       } catch (error) {
         // TODO: Log error
         result = false
