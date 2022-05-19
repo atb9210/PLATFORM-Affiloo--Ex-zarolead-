@@ -21,6 +21,46 @@ class Template extends Model
         'info' => 'array',
     ];
 
+    public function getPath(): string
+    {
+        return 'templates/' .  strval($this->id);
+    }
+
+    public function cloneRoot(): bool
+    {
+        $result = false;
+
+        $srcPath = 'templates/root';
+        $dstPath = $this->getPath();
+
+        $allFiles = Storage::disk('public')->allFiles($srcPath);
+        foreach ($allFiles as $file) {
+            $dstFile = str_replace($srcPath, $dstPath, $file);
+            Storage::disk('public')->copy($file, $dstFile);
+            // TODO: HERE
+            // TODO: Substitute {id} with strval($this->id) in index.php
+        }
+        $result = true;
+
+        return $result;
+    }
+
+    public function installImages($images): array
+    {
+        $newImages = [];
+
+        $dstPath = $this->getPath() . '/files';
+        foreach ($images as $image) {
+            $name = basename($image);
+            $contents = file_get_contents($image);
+            $dstName = $dstPath . '/' . $name;
+            Storage::disk('public')->put($dstName, $contents);
+            $newImages[$image] = './files/' . $name;
+        }
+
+        return $newImages;
+    }
+
     public function install(int $domainId, string $path): bool
     {
         $result = false;
@@ -30,7 +70,7 @@ class Template extends Model
             return false;
         }
 
-        $templatePath = 'templates/' . strval($this->id);
+        $templatePath = $this->getPath();
 
         $domain->uploadFileContents(
             $path . '/template.php',

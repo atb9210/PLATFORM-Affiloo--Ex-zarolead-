@@ -76,10 +76,72 @@ class TemplateController extends Controller
             $params['info'] = json_decode($params['info'], true);
         }
 
-        // TODO: Import files from root template
-        // TODO: Import images (from dropbox URL)
-
         $template = Template::create($params);
+
+        // Import files from root template
+        $template->cloneRoot();
+
+        // TODO: Import images (from dropbox URL)
+        $images = [];
+        $info = $params['info'];
+        $strings = [];
+        if (isset($info['strings'])) {
+            $strings = $info['strings'];
+        }
+        if (isset($strings['section-1']['image'])) {
+            foreach ($strings['section-1']['image'] as $image) {
+                $images[] = $image;
+            }
+        }
+        if (isset($strings['section-3']['image']) && $strings['section-3']['image'] != '') {
+            $images[] = $strings['section-3']['image'];
+        }
+        if (isset($strings['section-4']['items'])) {
+            foreach ($strings['section-4']['items'] as $item) {
+                if (isset($item['image_url']) && $item['image_url'] != '') {
+                    $images[] = $item['image_url'];
+                }
+            }
+        }
+        if (isset($strings['section-5']['image'])) {
+            foreach ($strings['section-5']['image'] as $image) {
+                $images[] = $image;
+            }
+        }
+        $newImages = $template->installImages($images);
+        if (isset($strings['section-1']['image'])) {
+            for ($i = 0; $i < count($strings['section-1']['image']); $i += 1) {
+                if (isset($newImages[$strings['section-1']['image'][$i]])) {
+                    $strings['section-1']['image'][$i] = $newImages[$strings['section-1']['image'][$i]];
+                }
+            }
+        }
+        if (isset($strings['section-3']['image']) && $strings['section-3']['image'] != '') {
+            if (isset($newImages[$strings['section-3']['image']])) {
+                $strings['section-3']['image'] = $newImages[$strings['section-3']['image']];
+            }
+        }
+        if (isset($strings['section-4']['items'])) {
+            for ($i = 0; $i < count($strings['section-4']['items']); $i += 1) {
+                $item = $strings['section-4']['items'][$i];
+                if (isset($item['image_url']) && $item['image_url'] != '') {
+                    if (isset($newImages[$item['image_url']])) {
+                        $strings['section-4']['items'][$i]['image_url'] = $newImages[$item['image_url']];
+                    }
+                }
+            }
+        }
+        if (isset($strings['section-5']['image'])) {
+            for ($i = 0; $i < count($strings['section-5']['image']); $i += 1) {
+                if (isset($newImages[$strings['section-5']['image'][$i]])) {
+                    $strings['section-5']['image'][$i] = $newImages[$strings['section-5']['image'][$i]];
+                }
+            }
+        }
+
+        $info['strings'] = $strings;
+        $template->info = $info;
+        $template->save();
 
         return response([
             "message" => "Template created",

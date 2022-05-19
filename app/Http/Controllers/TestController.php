@@ -244,7 +244,21 @@ class TestController extends Controller
         ]);
         dd($template);
         */
-        $template = \App\Template::findOrFail(1);
+        $template = \App\Template::findOrFail(2);
+        dd($template->installImages([
+            "http://zarolead.localhost/storage/tmp//RqfuoTNPCDtEKHco.png",
+            "http://zarolead.localhost/storage/tmp//mDBraXSXWgKwrzAh.png",
+            "http://zarolead.localhost/storage/tmp//XTAPAaqIsdXHOnjH.png",
+            "http://zarolead.localhost/storage/tmp//vWpjiqLuCYHUuGNR.png",
+            "http://zarolead.localhost/storage/tmp//SbFNYQRcMctZkSiD.png",
+            "http://zarolead.localhost/storage/tmp//cvkuhUWFhPDIMjhK.png",
+            "http://zarolead.localhost/storage/tmp//MTNwUviHMVYZYoyG.png",
+            "http://zarolead.localhost/storage/tmp//srPtMGSibQStKMIc.png",
+            "http://zarolead.localhost/storage/tmp//XRDXwGqrHuXPdfvG.png",
+            "http://zarolead.localhost/storage/tmp//bTScwbOkwggGAAyI.png",
+            "http://zarolead.localhost/storage/tmp//wPqQUuTqykqusemH.png",
+        ]));
+        dd($template->cloneRoot());
         dd($template->install(2, 'public/template_installed'));
         dd($template);
         dd('test');

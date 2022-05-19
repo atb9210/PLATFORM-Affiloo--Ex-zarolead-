@@ -74,7 +74,7 @@
             </div>
 
             <div class="vx-col md:w-full w-full mt-5">
-              <label>Images: {{ strings['section-1'].image.length }} selected</label>
+              <label>Images: {{ strings['section-1'].image.length }}/3 selected</label>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseImagesFromDropbox(strings['section-1'].image, true)">Choose From Dropbox</vs-button>
             </div>
 
@@ -137,7 +137,7 @@
             </div>
 
             <div class="vx-col md:w-full w-full mt-5">
-              <label>Image: {{ (strings['section-3'].image != '') ? 'selected' : 'not selected' }}</label>
+              <label>Image: {{ (strings['section-3'].image.length > 0) ? 'selected' : 'not selected' }}</label>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseImagesFromDropbox(strings['section-3'].image, false)">Choose From Dropbox</vs-button>
             </div>
 
@@ -176,8 +176,8 @@
             </div>
 
             <div class="vx-col md:w-full w-full mt-5">
-              <label>Image: {{ (strings['section-4'].items[index].image != '') ? 'selected' : 'not selected' }}</label>
-              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseImagesFromDropbox(strings['section-4'].items[index].image, false)">Choose From Dropbox</vs-button>
+              <label>Image: {{ (strings['section-4'].items[index].image_url.length > 0) ? 'selected' : 'not selected' }}</label>
+              <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseImagesFromDropbox(strings['section-4'].items[index].image_url, false)">Choose From Dropbox</vs-button>
             </div>
 
             <hr class="mt-5" />
@@ -205,7 +205,7 @@
             </div>
 
             <div class="vx-col md:w-full w-full mt-5">
-              <label>Images: {{ strings['section-5'].image.length }} selected</label>
+              <label>Images: {{ strings['section-5'].image.length }}/3 selected</label>
               <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-cloud" @click="chooseImagesFromDropbox(strings['section-5'].image, true)">Choose From Dropbox</vs-button>
             </div>
 
@@ -222,6 +222,7 @@
 <script>
 import { FormWizard, TabContent } from 'vue-form-wizard'
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
+import * as utils from 'utils'
 
 function getFilename(pathname) {
   return pathname.replace(/^.*[\\\/]/, '')
@@ -392,32 +393,32 @@ export default {
         'section-3': {
           'title': "L'elettrodomestico da cucina universale macina, taglia, sminuzza e impasta il cibo per preparare piatti deliziosi più velocemente!",
           'sub_title': 'Prepara pasti completi con un solo utensile da cucina ! Ordinando oggi a SOLI 59€',
-          'image': '',
+          'image': [], // Only one
         },
         'section-4': {
           'description': "<b><i>KitchPro  </i></b> è una cucina polivalente, che macina, taglia, sminuzza e impasta i cibi per preparare piatti sfiziosi più velocemente! Con una forte lama in acciaio inossidabile taglierà facilmente la carne più dura e le verdure più dure. Scegli come e quanto vuoi tagliare o macinare gli ingredienti nei tuoi piatti.<br>Sfrutta al massimo il tuo tempo! Questo apparecchio è il modo più efficiente di cucinare perché elabora tutti gli ingredienti necessari per il cibo della tua famiglia.",
-          'items': {
-            1: {
-              'image_url': '',
+          'items': [
+            {
+              'image_url': [], // Only one
               'title': 'TUTTO È COTTO IN MODO UNIFORME',
               'description': 'Il robot taglia gli ingredienti in pezzi di uguali dimensioni. Carne e verdure saranno cotte contemporaneamente, senza bruciature e pezzi crudi.',
             },
-            2: {
-              'image_url': '',
+            {
+              'image_url': [], // Only one
               'title': 'ELABORAZIONE VELOCE DEGLI INGREDIENTI',
               'description': 'Bastano solo 30 secondi per tagliare o macinare gli ingredienti desiderati! Ciò è garantito da un potente motore in rame da 300 W, un albero di alloggiamento in acciaio e 4 robuste lame.',
             },
-            3: {
-              'image_url': '',
+            {
+              'image_url': [], // Only one
               'title': 'DISORDINE IN CUCINA',
               'description': 'Oltre a fornire più spazio sulla scrivania, la parte inferiore del dispositivo è protetta da un anello antiscivolo. Il dispositivo non ruota e gli ingredienti non si rovesciano o si rovesciano sul piano di lavoro.',
             },
-            4: {
-              'image_url': '',
+            {
+              'image_url': [], // Only one
               'title': 'SOSTITUISCE ALTRI ELETTRODOMESTICI DA CUCINA',
               'description': 'Dì addio a un bancone della cucina disordinato pieno di elettrodomestici diversi! In esso ottieni tutte le funzioni di un dispositivo per spremere, frantumare, mescolare e impastare il succo.',
             },
-          },
+          ],
         },
         'section-5': {
           'title': 'CARATTERISTICHE:',
@@ -650,13 +651,28 @@ export default {
             reject('correct all values')
           }
 
+          let strings = utils.deepCloneObject(this.strings)
+          if (strings['section-3']['image'].length > 0) {
+            strings['section-3']['image'] = strings['section-3']['image'][0]
+          } else {
+            strings['section-3']['image'] = ''
+          }
+          for (let i = 0; i < strings['section-4']['items'].length; i++) {
+            let item = strings['section-4']['items'][i]
+            if (item.image_url.length > 0) {
+              strings['section-4']['items'][i].image_url = item.image_url[0]
+            } else {
+              strings['section-4']['items'][i].image_url = ''
+            }
+          }
+
           let headers = {
             Authorization: 'Bearer ' + localStorage.getItem('accessToken')
           }
           let params = {
             name: this.templateName,
             info: JSON.stringify({
-              strings: this.strings,
+              strings: strings,
             }),
           }
           this.$http.post('/api/v1/templates', params, { headers }).then((response) => {
@@ -724,7 +740,7 @@ export default {
               // TODO: Log error
             }
 
-            destintion.push(imageUrl)
+            destination.push(imageUrl)
           }
 
           // DEBUG TODO: to delete
