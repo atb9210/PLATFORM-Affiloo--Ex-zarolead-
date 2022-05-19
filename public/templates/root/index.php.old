@@ -1,0 +1,95 @@
+<?php
+$strings = array(
+    'general' => array (
+        'currency' => '€'
+    ),
+    'head' => array(
+        'title' => "KitchPro - Pianeta Bellezza",
+        'short_description' => "Esplora il tuo vero stile.",
+        'description' => " Carne, verdura e frutta si tritano facilmente e velocemente Precedente Successivo RISPARMIA TEMPO UN DESIGN FACILE DA USARE 2 modalità di macinazione Facile da tagliare e durerà per anni. 
+        Acciaio inossidabile, taglio efficace. Adatto per uso domestico e aziendale SODDISFARE IL BISOGNO DI CASA - GRANDE CAPACITÀ Interruttore conveniente, lavora facilmente. Sicuro da usare,...",
+        'url' => "https://pianetabellezza.com/kitchpro/",
+        'language' => "it_IT",
+    ),
+    'section-1' => array(
+        'title' => "Carne, verdura e frutta si tritano facilmente e velocemente",
+        'advantages' => array(
+            1 => 'RISPARMIA TEMPO',
+            2 => 'UN DESIGN FACILE DA USARE',
+            3 => '2 modalità di macinazione',
+            4 => 'Facile da tagliare e durerà per anni.',
+            5 => 'Acciaio inossidabile, taglio efficace.',
+            6 => 'Adatto per uso domestico e aziendale',
+            7 => 'SODDISFARE IL BISOGNO DI CASA - GRANDE CAPACITÀ',
+            8 => 'Interruttore conveniente, lavora facilmente.',
+            9 => 'Sicuro da usare, il motore termico si fermerà automaticamente',
+        ),
+        'image' => array(
+            1 => './KitchPro - Pianeta Bellezza_files/B-2.jpeg',
+            2 => './KitchPro - Pianeta Bellezza_files/AAGIIF.gif',
+            3 => './KitchPro - Pianeta Bellezza_files/C.png',
+        ),
+        'truck-symbol-text' => 'Consegna gratuita entro 48 ore',
+        'money-symbol-text' => 'Pagamento sicuro alla consegna',
+
+    ),
+    'section-2' => array (
+        'title' => 'OFFERTA SPECIALE -40%',
+        'old_price' => '99,83',
+        'new_price' => '59,90',
+        'button_text' => 'ORDINA ORA -40%',
+    ),
+    'section-3' => array (
+        'title' => "L'elettrodomestico da cucina universale macina, taglia, sminuzza e impasta il cibo per preparare piatti deliziosi più velocemente!",
+        'sub_title' => 'Prepara pasti completi con un solo utensile da cucina ! Ordinando oggi a SOLI 59€',
+        'image' => './KitchPro - Pianeta Bellezza_files/BAANANNA-1024x576.png',
+    ),
+    'section-4' => array (
+        'description' => "<b><i>KitchPro  </i></b> è una cucina polivalente, che macina, taglia, sminuzza e impasta i cibi per preparare piatti sfiziosi più velocemente!
+        Con una forte lama in acciaio inossidabile taglierà facilmente la carne più dura e le verdure più dure. Scegli come e quanto vuoi tagliare o macinare gli ingredienti nei tuoi piatti.<br>Sfrutta al massimo il tuo tempo! Questo apparecchio è il modo più efficiente di cucinare perché elabora tutti gli ingredienti necessari per il cibo della tua famiglia.",
+        'items' => array (
+            1 => array (
+                'image_url' => './KitchPro - Pianeta Bellezza_files/CARA1.png',
+                'title' => 'TUTTO È COTTO IN MODO UNIFORME',
+                'description' => 'Il robot taglia gli ingredienti in pezzi di uguali dimensioni. Carne e verdure saranno cotte contemporaneamente, senza bruciature e pezzi crudi.',
+            ),
+            2 => array (
+                'image_url' => './KitchPro - Pianeta Bellezza_files/CARA2-2.jpeg',
+                'title' => 'ELABORAZIONE VELOCE DEGLI INGREDIENTI',
+                'description' => 'Bastano solo 30 secondi per tagliare o macinare gli ingredienti desiderati! Ciò è garantito da un potente motore in rame da 300 W, un albero di alloggiamento in acciaio e 4 robuste lame.',
+            ),
+            3 => array (
+                'image_url' => './KitchPro - Pianeta Bellezza_files/CARA3-1.jpeg',
+                'title' => 'DISORDINE IN CUCINA',
+                'description' => 'Oltre a fornire più spazio sulla scrivania, la parte inferiore del dispositivo è protetta da un anello antiscivolo. Il dispositivo non ruota e gli ingredienti non si rovesciano o si rovesciano sul piano di lavoro.',
+            ),
+            4 => array (
+                'image_url' => './KitchPro - Pianeta Bellezza_files/CARA4-1.jpeg',
+                'title' => 'SOSTITUISCE ALTRI ELETTRODOMESTICI DA CUCINA',
+                'description' => 'Dì addio a un bancone della cucina disordinato pieno di elettrodomestici diversi! In esso ottieni tutte le funzioni di un dispositivo per spremere, frantumare, mescolare e impastare il succo.',
+            ),
+        ),
+    ),
+    'section-5' => array (
+        'title' => 'CARATTERISTICHE:',
+        'caratteristiche' => array(
+            1 => 'Capacità: 2L',
+            2 => 'Peso del prodotto: 2 KG',
+            3 => 'Tensione nominale: 220V.',
+            4 => 'Frequenza nominale: 50 Hz.',
+            5 => 'Materiale: acciaio inossidabile.',
+            6 => 'Potenza nominale: 200 W-300W.',
+            7 => 'Dimensioni del pacchetto: 22,5 * 25 cm.',
+            8 => 'Velocità di rotazione: 18000-22000 giri/min.',
+        ),
+        'image' => array(
+            1 => './KitchPro - Pianeta Bellezza_files/2-3.jpeg',
+            2 => './KitchPro - Pianeta Bellezza_files/3-1.jpeg',
+            3 => './KitchPro - Pianeta Bellezza_files/1.png',
+        ),
+    ),
+
+);
+include('template.php');
+
+?>

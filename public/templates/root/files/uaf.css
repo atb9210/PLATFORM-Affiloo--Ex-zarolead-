@@ -1,0 +1,10 @@
+				@font-face {
+					font-family: 'cream-peach';
+					src: url('/wp-content/uploads/useanyfont/7140Cream-Peach.woff2') format('woff2'),
+						url('/wp-content/uploads/useanyfont/7140Cream-Peach.woff') format('woff');
+					font-display: auto;
+				}
+
+				.cream-peach{font-family: 'cream-peach' !important;}
+
+		

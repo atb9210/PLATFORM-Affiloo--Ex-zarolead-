@@ -1,0 +1,62 @@
+function CssStylePlugin(data) {
+    Plugin.call(this, data);
+
+    this.stylesheet_url = this.data.stylesheet_url;
+    this.button_text = '';
+    this.countdown_time = 10
+    if (this.data.hasOwnProperty('button_text') &&
+        this.data.button_text != '') {
+        this.button_text = this.data.button_text;
+        window.global_button_text = this.button_text;
+    }
+    if (this.data.hasOwnProperty('countdown_time')) {
+        this.countdown_time = this.data.countdown_time.toString();
+        window.global_countdown_time = this.countdown_time;
+    }
+
+    this.loadCssStyle();
+}
+
+CssStylePlugin.prototype.onVisit = function() {
+    console.log("CssStylePlugin onVisit");
+
+    if (this.button_text != '') {
+        var button = document.getElementById('submit-button');
+        button.textContent = this.button_text;
+    }
+}
+
+CssStylePlugin.prototype.onSubmit = function() {
+    console.log("CssStylePlugin onSubmit");
+}
+
+CssStylePlugin.prototype.afterSubmit = function(response) {
+    console.log("CssStylePlugin afterSubmit");
+}
+
+CssStylePlugin.prototype.onRedirect = function() {
+    console.log("CssStylePlugin onRedirect");
+}
+
+CssStylePlugin.prototype.loadCssStyle = function() {
+    var head = document.getElementsByTagName('HEAD')[0];
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = this.stylesheet_url;
+    head.appendChild(link);
+    /*
+    // NOTE: This code loads custom css code instead of a file
+    cssCode = "#formContainer { background-color: blue; }";
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    if (style.styleSheet) {
+        // IE
+        style.styleSheet.cssText = cssCode;
+    } else {
+        // Other browsers
+        style.innerHTML = cssCode;
+    }
+    document.getElementsByTagName("head")[0].appendChild(style);
+    */
+}

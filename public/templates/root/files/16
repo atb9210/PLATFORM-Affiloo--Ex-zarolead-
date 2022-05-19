@@ -1,0 +1,53 @@
+#formContainer {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.form-input {
+    background-color: #f2f2f2 !important;
+    color: #000000 !important;
+    border-color: #b3b3b3 !important;
+}
+
+.form-button {
+    background-color: #07c12a !important;
+    color: #ffffff !important;
+}
+
+.countdown {
+    display: none !important;
+}
+
+.countdown-text {
+    background-color: #ff2233 !important;
+    color: #ffffff !important;
+}
+
+.countdown-time {
+    color: #000000 !important;
+}
+
+.people-viewing {
+    display: none !important;
+    color: #000000 !important;
+}
+
+.people-viewing-count {
+    background-color: #dd0303 !important;
+    color: #ffffff !important;
+}
+
+.available-quantity {
+    display: none !important;
+}
+
+.available-quantity-bar {
+    --barColor: #fb4646 !important;
+    background-color: #dedede !important;
+    color: #1a1a1a !important;
+}
+
+.trust-badge {
+    display: none !important;
+    color: #000000 !important;
+}
