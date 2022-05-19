@@ -241,7 +241,7 @@ class TemplateController extends Controller
             'path' => 'required|string|min:0',
         ]);
 
-        $result = $template->install(intval($params['domain']), $params['path']);
+        $result = $template->install(intval($params['domain']), 'public/' . $params['path']);
 
         return response([
             'message' => 'Template has been installed'
