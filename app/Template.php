@@ -37,8 +37,14 @@ class Template extends Model
         foreach ($allFiles as $file) {
             $dstFile = str_replace($srcPath, $dstPath, $file);
             Storage::disk('public')->copy($file, $dstFile);
-            // TODO: HERE
-            // TODO: Substitute {id} with strval($this->id) in index.php
+
+            // Replace {id} with strval($this->id) in index.php
+            $bname = basename($dstFile);
+            if ($bname == 'index.php') {
+                $contents = Storage::disk('public')->get($dstFile);
+                $contents = str_replace('{id}', strval($this->id), $contents);
+                Storage::disk('public')->put($dstFile, $contents);
+            }
         }
         $result = true;
 
