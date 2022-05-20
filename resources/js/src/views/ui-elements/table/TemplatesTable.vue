@@ -106,11 +106,20 @@
                 <div class="vx-row mb-3">
 
                     <div class="vx-col md:w-1/4 w-full mb-3">
+                        Product
+                    </div>
+                    <div class="vx-col md:w-3/4 w-full mb-3">
+                        <vs-select v-model="product" class="w-full select-large" autocomplete="true">
+                            <vs-select-item :key="'prod' + index" :value="item" :text="item.name" v-for="(item, index) in products" class="w-full" />
+                        </vs-select>
+                    </div>
+
+                    <div class="vx-col md:w-1/4 w-full mb-3">
                         Domain
                     </div>
                     <div class="vx-col md:w-3/4 w-full mb-3">
                         <vs-select v-model="domain" class="w-full select-large" autocomplete="true">
-                            <vs-select-item :key="index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
+                            <vs-select-item :key="'dom' + index" :value="item" :text="item.domain" v-for="(item, index) in domains" class="w-full" />
                         </vs-select>
                     </div>
 
@@ -123,7 +132,7 @@
                     </div>
 
                     <div class="vx-col w-full mb-3">
-                        <vs-button color="success" type="filled" icon-pack="feather" icon="icon-upload" @click="installTemplate(template, domain, path)" :disabled="!isValidForm('install')">Install</vs-button>
+                        <vs-button color="success" type="filled" icon-pack="feather" icon="icon-upload" @click="installTemplate(template, domain, path, product)" :disabled="!isValidForm('install')">Install</vs-button>
                     </div>
                 </div>
             </div>
@@ -155,6 +164,9 @@ export default {
       domains: [],
       domain: '',
       path: '',
+
+      products: [],
+      product: '',
     }
   },
   computed: {
@@ -260,14 +272,14 @@ export default {
       let result = false
 
       if (type == 'install') {
-        result = (this.domain != '' && this.path != '')
+        result = (this.product != '' && this.domain != '' && this.path != '')
       } else {
         result = false
       }
 
       return result
     },
-    async installTemplate(template, domain, path) {
+    async installTemplate(template, domain, path, product) {
       this.$vs.loading()
 
       let result = false
@@ -289,7 +301,23 @@ export default {
         result = false
       }
 
+
       if (result) {
+        let info = product.info
+        if (info === null || (Array.isArray(info) && info.length == 0)) {
+          info = {}
+        }
+        if (!info.hasOwnProperty('links')) {
+          info.links = []
+        }
+        info.links.push(this.installationUrl)
+
+        let params = {
+          info: JSON.stringify(info),
+        }
+        await this.$http.post('/api/v1/products/' + product.id, params, { headers })
+        product.info = info
+
         this.$vs.notify({
           title: 'Success',
           text: 'Template installed',
@@ -397,6 +425,14 @@ export default {
     try {
       const response = await this.$http.get('/api/v1/domains', { headers })
       this.domains = response.data.data
+    } catch (error) {
+      // TODO: Log error
+    }
+
+    this.products = []
+    try {
+      const response = await this.$http.get('/api/v1/products', { headers })
+      this.products = response.data.data
     } catch (error) {
       // TODO: Log error
     }

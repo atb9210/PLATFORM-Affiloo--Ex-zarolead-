@@ -61,6 +61,12 @@
               </a>
             </li>
             <li>
+              <a href="#" @click="$refs.context_menu.close();showLinks(data);" class="flex items-center text-sm">
+                <feather-icon icon="LayoutIcon" svgClasses="w-5 h-5" />
+                <span class="ml-2">Show Links</span>
+              </a>
+            </li>
+            <li>
               <a href="#" @click="$refs.context_menu.close();confirmDeletePopup(data.id);" class="flex items-center text-sm">
                 <feather-icon icon="TrashIcon" svgClasses="w-5 h-5" />
                 <span class="ml-2">Delete</span>
@@ -766,6 +772,17 @@
             </div>
         </vs-popup>
 
+        <!-- Links popup -->
+        <vs-popup title="Product Links" :active.sync="showPopup['links']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row">
+                    <div class="vx-col w-full mb-3" :key="'link' + index" v-for="(link, index) in links">
+                        <a :href="link" target="_blank">{{link}}</a>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -795,6 +812,7 @@ export default {
         'checkout_settings': false,
         'confirmation_message': false,
         'include_checkout': false,
+        'links': false,
       },
       newObject: {
         'create': {
@@ -965,6 +983,8 @@ export default {
       ],
 
       network: null,
+
+      links: [],
     }
   },
   computed: {
@@ -1785,6 +1805,18 @@ export default {
       this.includeCheckout.code['php'] = phpCode
 
       this.showPopup['include_checkout'] = true
+    },
+    showLinks(product) {
+      this.links = []
+
+      let info = product.info
+      if (info !== null && !Array.isArray(info) && info.hasOwnProperty('links')) {
+        for (let i = 0; i < info.links.length; i++) {
+          this.links.push(info.links[i])
+        }
+      }
+
+      this.showPopup['links'] = true
     },
   },
   async created() {
