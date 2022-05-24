@@ -63,7 +63,7 @@ class FacebookMonitor extends Model
         // DEBUG TODO: to delete
         //dd('ERR: ' . $err);
 
-        Log::channel('facebook.monitor')->info('[!MON:' . strval($this->id) . '] ' . $err);
+        Log::channel('facebook_monitor')->info('[!MON:' . strval($this->id) . '] ' . $err);
     }
 
     private function logMessage($msg)
@@ -71,7 +71,7 @@ class FacebookMonitor extends Model
         // DEBUG TODO: to delete
         //dd('i: ' . $msg);
 
-        Log::channel('facebook.monitor')->info('[iMON:' . strval($this->id) . '] ' . $msg);
+        Log::channel('facebook_monitor')->info('[iMON:' . strval($this->id) . '] ' . $msg);
     }
 
     public function getReports($from_date = '', $to_date = '')
@@ -442,6 +442,9 @@ class FacebookMonitor extends Model
     {
         $result = false;
 
+        $yesterday = $this->yesterday();
+        $today = $this->today();
+
         $actions = $this->getActions($yesterday, $yesterday);
         if (count($actions) == 0) {
             return true;
@@ -456,9 +459,6 @@ class FacebookMonitor extends Model
 
         // Create a facebook client instance
         $fb = $this->advertiser->getClient();
-
-        $yesterday = $this->yesterday();
-        $today = $this->today();
 
         $reports = $this->getReports($yesterday, $yesterday);
 

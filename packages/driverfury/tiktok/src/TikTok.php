@@ -82,6 +82,10 @@ class TikTok
             $output = json_decode($response, true);
         }
 
+        if ($output === null) {
+            $output = [];
+        }
+
         return $output;
     }
 

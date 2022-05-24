@@ -98,9 +98,9 @@ return [
         ],
 
         // DEBUG
-        'facebook.monitor' => [
+        'facebook_monitor' => [
             'driver' => 'single',
-            'path' => storage_path('logs/facebook.monitor.log'),
+            'path' => storage_path('logs/facebook_monitor.log'),
             'level' => 'debug',
         ],
 

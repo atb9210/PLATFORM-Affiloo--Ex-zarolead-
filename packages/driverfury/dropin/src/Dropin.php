@@ -13,7 +13,7 @@ class Dropin
 {
     protected static string $apiUrl = 'https://dropship.eurowholesale.eu';
     protected static string $apiUrlProducts = 'https://eurowholesale.eu';
-    protected Requests|null $http = null;
+    protected Requests $http;
 
     protected string $email = '';
     protected string $password = '';
