@@ -5,6 +5,9 @@
             <vx-tooltip text="Show filters" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Show stats" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showStats = !showStats"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Refresh selected shippings" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" :disabled="selectedShippings.length <= 0" @click="refreshShippings(selectedShippings)"></vs-button>
             </vx-tooltip>
@@ -24,6 +27,46 @@
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-message-circle" :disabled="selectedShippings.length <= 0" @click="sendTrackingUrl(selectedShippings)"></vs-button>
             </vx-tooltip>
         </p>
+
+        <div v-if="showStats" class="vx-row">
+          <!-- TODO: HERE -->
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>ALL</h2>
+                <div>{{totalStats.orders['ALL'].count}}</div>
+                <div>€ {{totalStats.orders['ALL'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['ALL'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>TO_SHIP</h2>
+                <div>{{totalStats.orders['TO_SHIP'].count}}</div>
+                <div>€ {{totalStats.orders['TO_SHIP'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['TO_SHIP'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>SHIPPED</h2>
+                <div>{{totalStats.orders['SHIPPED'].count}}</div>
+                <div>€ {{totalStats.orders['SHIPPED'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['SHIPPED'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>DELIVERED</h2>
+                <div>{{totalStats.orders['DELIVERED'].count}}</div>
+                <div>€ {{totalStats.orders['DELIVERED'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['DELIVERED'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
+        </div>
 
         <div v-if="showFilters" class="mb-12">
             <div class="vx-row mb-2">
@@ -68,7 +111,7 @@
                 </div>
                 <div class="vx-col w-1/2">
                     <label>Method</label>
-                    <my-select v-model="filters.payment_method" :options="paymntMethods" :autocomplete="true" multiple class="w-full select-large" />
+                    <my-select v-model="filters.payment_method" :options="paymntMethods" :autocomplete="true" class="w-full select-large" />
                 </div>
             </div>
             
@@ -308,6 +351,9 @@ export default {
       maxItems: 20,
       view: 'shippings',
 
+      shippings: [],
+      selectedShippings: [],
+
       showFilters: false,
       filters: {
         date_from: '',
@@ -321,8 +367,7 @@ export default {
         payment_method: '',
       },
 
-      shippings: [],
-      selectedShippings: [],
+      showStats: false,
 
       showPopup: {
       },
@@ -333,6 +378,29 @@ export default {
         tax: 0.0,
         vat: 0.0,
         cod_amount: 0.0,
+
+        orders: {
+          'ALL': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+          'TO_SHIP': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+          'SHIPPED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+          'DELIVERED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+        },
       },
 
       dropinStatuses: [
@@ -590,6 +658,36 @@ export default {
       await this.dropin.refreshShippingsTable()
       this.$vs.loading.close()
     },
+    getEffectiveStatus(shipping) {
+      let effectiveStatus = 'TO_SHIP'
+
+      if (shipping.hasOwnProperty('carrier_status_changes') && shipping.carrier_status_changes !== null) {
+
+        // We need to first check if there's a CONSEGNATA status also for the return.
+        // We don't want to confused that with the real CONSEGNATA status.
+        for (let i = 0; i < shipping.carrier_status_changes.length; i++) {
+          let status = shipping.carrier_status_changes[i].status
+          if (status == 'RESO MITTENTE') {
+            effectiveStatus = 'RETURNED'
+          }
+        }
+
+        if (effectiveStatus != 'RETURNED') {
+          for (let i = 0; i < shipping.carrier_status_changes.length; i++) {
+            let status = shipping.carrier_status_changes[i].status
+            if (status == 'CONSEGNATA') {
+              effectiveStatus = 'DELIVERED'
+              break
+            } else if (status == 'RITIRATA') {
+              effectiveStatus = 'SHIPPED'
+              break
+            }
+          }
+        }
+      }
+
+      return effectiveStatus
+    },
     calculateTotalStats() {
       this.totalStats = {
         amount: 0.0,
@@ -597,6 +695,51 @@ export default {
         tax: 0.0,
         vat: 0.0,
         cod_amount: 0.0,
+        orders: {
+          'ALL': {
+            count: this.objects.length,
+            total: 0.0,
+            percent: 100.0,
+          },
+          'TO_SHIP': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+          'SHIPPED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+          'DELIVERED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
+        },
+      }
+
+      let orders = {
+        'ALL': {
+          count: this.objects.length,
+          total: 0.0,
+          percent: 100.0,
+        },
+        'TO_SHIP': {
+          count: 0,
+          total: 0.0,
+          percent: 0.0,
+        },
+        'SHIPPED': {
+          count: 0,
+          total: 0.0,
+          percent: 0.0,
+        },
+        'DELIVERED': {
+          count: 0,
+          total: 0.0,
+          percent: 0.0,
+        },
       }
 
       for (let i = 0; i < this.objects.length; i++) {
@@ -617,7 +760,20 @@ export default {
         if (obj.hasOwnProperty('cod_amount')) {
           this.totalStats.cod_amount += parseFloat(obj.cod_amount)
         }
+
+        let effectiveStatus = this.getEffectiveStatus(obj)
+        console.log(effectiveStatus)
+        orders[effectiveStatus].count += 1
+        console.log(effectiveStatus + ' done')
+        orders[effectiveStatus].total += parseFloat(obj.amount)
       }
+      orders['ALL'].total = this.totalStats.amount
+
+      orders['TO_SHIP'].percent = (orders['TO_SHIP'].count / orders['ALL'].count)*100
+      orders['SHIPPED'].percent = (orders['SHIPPED'].count / orders['ALL'].count)*100
+      orders['DELIVERED'].percent = (orders['DELIVERED'].count / orders['ALL'].count)*100
+
+      this.totalStats.orders = orders
     },
     async markShippings(shippings) {
       let numShippings = shippings.length
