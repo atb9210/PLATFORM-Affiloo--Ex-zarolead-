@@ -66,6 +66,10 @@
                     <label>Product</label>
                     <my-select v-model="filters.products" :options="products" :autocomplete="true" multiple class="w-full select-large" />
                 </div>
+                <div class="vx-col w-1/2">
+                    <label>Method</label>
+                    <my-select v-model="filters.payment_method" :options="paymntMethods" :autocomplete="true" multiple class="w-full select-large" />
+                </div>
             </div>
             
             <!-- TODO: HERE -->
@@ -314,6 +318,7 @@ export default {
         amount_min: 0,
         amount_max: 100,
         products: [],
+        payment_method: '',
       },
 
       shippings: [],
@@ -351,6 +356,10 @@ export default {
 
       orders: [],
       products: [],
+      paymntMethods: [
+        'cod',
+        'online',
+      ],
 
       newValue: '',
     }
@@ -436,6 +445,14 @@ export default {
           })
         }
 
+        // Method filter
+        let filterMethod = this.filters.payment_method
+        if (filterMethod !== null && filterMethod != '') {
+          this.shippings = this.shippings.filter((obj) => {
+            return (obj.payment_method == filterMethod)
+          })
+        }
+
         this.refreshSelectedShippings()
 
         this.calculateTotalStats()
@@ -478,6 +495,7 @@ export default {
         amount_min: 0,
         amount_max: 100,
         products: [],
+        payment_method: '',
       }
       await this.filterDatesShortcut('this_month')
     },

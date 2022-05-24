@@ -95,6 +95,7 @@ class Dropin {
     obj.carrier = ''
     obj.order_status = ''
     obj.gateway = ''
+    obj.payment_method = ''
     obj.delivery_status = 'not sent'
     obj.last_message = null
     obj.last_message_read = null
@@ -131,8 +132,8 @@ class Dropin {
 
       if (obj.info.hasOwnProperty('gateway')) {
         obj.gateway = obj.info.gateway
+        obj.payment_method = obj.gateway
       }
-
 
       if (!obj.info.hasOwnProperty('products') || obj.info.products === null || obj.info.products.length === 0) {
         obj.info.products = []
