@@ -30,7 +30,7 @@
 
         <div v-if="showStats" class="vx-row">
           <!-- TODO: HERE -->
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>ALL</h2>
                 <div>{{totalStats.orders['ALL'].count}}</div>
@@ -39,7 +39,7 @@
             </vx-card>
           </div>
 
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>TO_SHIP</h2>
                 <div>{{totalStats.orders['TO_SHIP'].count}}</div>
@@ -48,7 +48,7 @@
             </vx-card>
           </div>
 
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>SHIPPED</h2>
                 <div>{{totalStats.orders['SHIPPED'].count}}</div>
@@ -57,7 +57,7 @@
             </vx-card>
           </div>
 
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>DELIVERED</h2>
                 <div>{{totalStats.orders['DELIVERED'].count}}</div>
@@ -66,7 +66,7 @@
             </vx-card>
           </div>
 
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>RETURNED</h2>
                 <div>{{totalStats.orders['RETURNED'].count}}</div>
@@ -75,7 +75,7 @@
             </vx-card>
           </div>
 
-          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+          <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>ERROR</h2>
                 <div>{{totalStats.orders['ERROR'].count}}</div>
