@@ -689,7 +689,7 @@ export default {
       this.$vs.loading.close()
     },
     getEffectiveStatus(shipping) {
-      let effectiveStatus = 'TO_PICK'
+      let effectiveStatus = ''
 
       if (shipping.status == 'Error') {
         effectiveStatus = 'ERROR'
@@ -705,7 +705,7 @@ export default {
           }
         }
 
-        if (effectiveStatus != 'RETURNED') {
+        if (effectiveStatus == '') {
           for (let i = 0; i < shipping.carrier_status_changes.length; i++) {
             let status = shipping.carrier_status_changes[i].status
             if (status == 'CONSEGNATA') {
@@ -713,6 +713,12 @@ export default {
               break
             }
           }
+        }
+      }
+
+      if (effectiveStatus == '') {
+        if (shipping.started_at === null || shipping.started_at == '') {
+          effectiveStatus = 'TO_PICK'
         }
       }
 
@@ -812,8 +818,10 @@ export default {
         }
 
         let effectiveStatus = this.getEffectiveStatus(obj)
-        orders[effectiveStatus].count += 1
-        orders[effectiveStatus].total += parseFloat(obj.cod_amount)
+        if (effectiveStatus != '') {
+          orders[effectiveStatus].count += 1
+          orders[effectiveStatus].total += parseFloat(obj.cod_amount)
+        }
 
         if (obj.started_at !== null && obj.started_at != '') {
           orders['SHIPPED'].count += 1
