@@ -43,10 +43,10 @@
 
           <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
-                <h2>TO_SHIP</h2>
-                <div>{{totalStats.orders['TO_SHIP'].count}}</div>
-                <div>€ {{totalStats.orders['TO_SHIP'].total.toFixed(2)}}</div>
-                <div>% {{totalStats.orders['TO_SHIP'].percent.toFixed(2)}}</div>
+                <h2>TO_PICK</h2>
+                <div>{{totalStats.orders['TO_PICK'].count}}</div>
+                <div>€ {{totalStats.orders['TO_PICK'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['TO_PICK'].percent.toFixed(2)}}</div>
             </vx-card>
           </div>
 
@@ -405,7 +405,7 @@ export default {
             total: 0.0,
             percent: 0.0,
           },
-          'TO_SHIP': {
+          'TO_PICK': {
             count: 0,
             total: 0.0,
             percent: 0.0,
@@ -689,7 +689,7 @@ export default {
       this.$vs.loading.close()
     },
     getEffectiveStatus(shipping) {
-      let effectiveStatus = 'TO_SHIP'
+      let effectiveStatus = 'TO_PICK'
 
       if (shipping.status == 'Error') {
         effectiveStatus = 'ERROR'
@@ -709,9 +709,6 @@ export default {
             let status = shipping.carrier_status_changes[i].status
             if (status == 'CONSEGNATA') {
               effectiveStatus = 'DELIVERED'
-              break
-            } else if (status == 'RITIRATA') {
-              effectiveStatus = 'SHIPPED'
               break
             }
           }
@@ -733,7 +730,7 @@ export default {
             total: 0.0,
             percent: 100.0,
           },
-          'TO_SHIP': {
+          'TO_PICK': {
             count: 0,
             total: 0.0,
             percent: 0.0,
@@ -767,7 +764,7 @@ export default {
           total: 0.0,
           percent: 100.0,
         },
-        'TO_SHIP': {
+        'TO_PICK': {
           count: 0,
           total: 0.0,
           percent: 0.0,
@@ -814,14 +811,17 @@ export default {
         }
 
         let effectiveStatus = this.getEffectiveStatus(obj)
-        console.log(effectiveStatus)
         orders[effectiveStatus].count += 1
-        console.log(effectiveStatus + ' done')
         orders[effectiveStatus].total += parseFloat(obj.cod_amount)
+
+        if (obj.started_at !== null && obj.started_at != '') {
+          orders['SHIPPED'].count += 1
+          orders['SHIPPED'].total += parseFloat(obj.cod_amount)
+        }
       }
       orders['ALL'].total = this.totalStats.amount
 
-      orders['TO_SHIP'].percent = (orders['TO_SHIP'].count / orders['ALL'].count)*100
+      orders['TO_PICK'].percent = (orders['TO_PICK'].count / orders['ALL'].count)*100
       orders['SHIPPED'].percent = (orders['SHIPPED'].count / orders['ALL'].count)*100
       orders['DELIVERED'].percent = (orders['DELIVERED'].count / orders['ALL'].count)*100
       orders['RETURNED'].percent = (orders['RETURNED'].count / orders['ALL'].count)*100
