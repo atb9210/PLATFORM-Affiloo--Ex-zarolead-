@@ -821,6 +821,9 @@ export default {
         if (effectiveStatus != '') {
           orders[effectiveStatus].count += 1
           orders[effectiveStatus].total += parseFloat(obj.cod_amount)
+        } else if (effectiveStatus == 'ERROR') {
+          orders['ALL'].count -= 1
+          orders['ALL'].total -= parseFloat(obj.cod_amount)
         }
 
         if (obj.started_at !== null && obj.started_at != '') {
