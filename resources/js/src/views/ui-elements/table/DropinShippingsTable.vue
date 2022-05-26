@@ -699,8 +699,9 @@ export default {
         // We don't want to confused that with the real CONSEGNATA status.
         for (let i = 0; i < shipping.carrier_status_changes.length; i++) {
           let status = shipping.carrier_status_changes[i].status
-          if (status == 'RESO MITTENTE') {
+          if (status == 'RESO MITTENTE' || status == 'RIT. CONSEGNATA') {
             effectiveStatus = 'RETURNED'
+            break
           }
         }
 
