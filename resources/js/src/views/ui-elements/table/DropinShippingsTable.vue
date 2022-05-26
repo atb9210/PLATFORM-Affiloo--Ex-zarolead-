@@ -8,6 +8,9 @@
             <vx-tooltip text="Show stats" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showStats = !showStats"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Download daily reports (CSV)" position="top">
+                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showStats = !showStats"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Refresh selected shippings" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" :disabled="selectedShippings.length <= 0" @click="refreshShippings(selectedShippings)"></vs-button>
             </vx-tooltip>
@@ -29,7 +32,6 @@
         </p>
 
         <div v-if="showStats" class="vx-row">
-          <!-- TODO: HERE -->
           <div class="vx-col w-full sm:w-1/2 md:w-1/6 mb-base">
             <vx-card>
                 <h2>ALL</h2>
@@ -815,7 +817,7 @@ export default {
         console.log(effectiveStatus)
         orders[effectiveStatus].count += 1
         console.log(effectiveStatus + ' done')
-        orders[effectiveStatus].total += parseFloat(obj.amount)
+        orders[effectiveStatus].total += parseFloat(obj.cod_amount)
       }
       orders['ALL'].total = this.totalStats.amount
 
