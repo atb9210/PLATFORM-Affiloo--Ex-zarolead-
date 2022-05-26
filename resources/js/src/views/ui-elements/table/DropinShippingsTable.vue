@@ -66,6 +66,15 @@
             </vx-card>
           </div>
 
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>RETURNED</h2>
+                <div>{{totalStats.orders['RETURNED'].count}}</div>
+                <div>€ {{totalStats.orders['RETURNED'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['RETURNED'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
         </div>
 
         <div v-if="showFilters" class="mb-12">
@@ -400,6 +409,11 @@ export default {
             total: 0.0,
             percent: 0.0,
           },
+          'RETURNED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
         },
       },
 
@@ -716,6 +730,11 @@ export default {
             total: 0.0,
             percent: 0.0,
           },
+          'RETURNED': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
         },
       }
 
@@ -736,6 +755,11 @@ export default {
           percent: 0.0,
         },
         'DELIVERED': {
+          count: 0,
+          total: 0.0,
+          percent: 0.0,
+        },
+        'RETURNED': {
           count: 0,
           total: 0.0,
           percent: 0.0,
@@ -772,6 +796,7 @@ export default {
       orders['TO_SHIP'].percent = (orders['TO_SHIP'].count / orders['ALL'].count)*100
       orders['SHIPPED'].percent = (orders['SHIPPED'].count / orders['ALL'].count)*100
       orders['DELIVERED'].percent = (orders['DELIVERED'].count / orders['ALL'].count)*100
+      orders['RETURNED'].percent = (orders['RETURNED'].count / orders['ALL'].count)*100
 
       this.totalStats.orders = orders
     },
