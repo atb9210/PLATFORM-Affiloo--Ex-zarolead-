@@ -75,6 +75,15 @@
             </vx-card>
           </div>
 
+          <div class="vx-col w-full sm:w-1/2 md:w-1/5 mb-base">
+            <vx-card>
+                <h2>ERROR</h2>
+                <div>{{totalStats.orders['ERROR'].count}}</div>
+                <div>€ {{totalStats.orders['ERROR'].total.toFixed(2)}}</div>
+                <div>% {{totalStats.orders['ERROR'].percent.toFixed(2)}}</div>
+            </vx-card>
+          </div>
+
         </div>
 
         <div v-if="showFilters" class="mb-12">
@@ -414,6 +423,11 @@ export default {
             total: 0.0,
             percent: 0.0,
           },
+          'ERROR': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
         },
       },
 
@@ -675,7 +689,9 @@ export default {
     getEffectiveStatus(shipping) {
       let effectiveStatus = 'TO_SHIP'
 
-      if (shipping.hasOwnProperty('carrier_status_changes') && shipping.carrier_status_changes !== null) {
+      if (shipping.status == 'Error') {
+        effectiveStatus = 'ERROR'
+      } else if (shipping.hasOwnProperty('carrier_status_changes') && shipping.carrier_status_changes !== null) {
 
         // We need to first check if there's a CONSEGNATA status also for the return.
         // We don't want to confused that with the real CONSEGNATA status.
@@ -735,6 +751,11 @@ export default {
             total: 0.0,
             percent: 0.0,
           },
+          'ERROR': {
+            count: 0,
+            total: 0.0,
+            percent: 0.0,
+          },
         },
       }
 
@@ -760,6 +781,11 @@ export default {
           percent: 0.0,
         },
         'RETURNED': {
+          count: 0,
+          total: 0.0,
+          percent: 0.0,
+        },
+        'ERROR': {
           count: 0,
           total: 0.0,
           percent: 0.0,
@@ -797,6 +823,7 @@ export default {
       orders['SHIPPED'].percent = (orders['SHIPPED'].count / orders['ALL'].count)*100
       orders['DELIVERED'].percent = (orders['DELIVERED'].count / orders['ALL'].count)*100
       orders['RETURNED'].percent = (orders['RETURNED'].count / orders['ALL'].count)*100
+      orders['ERROR'].percent = (orders['ERROR'].count / orders['ALL'].count)*100
 
       this.totalStats.orders = orders
     },
