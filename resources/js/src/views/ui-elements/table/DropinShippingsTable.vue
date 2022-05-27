@@ -8,9 +8,6 @@
             <vx-tooltip text="Show stats" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showStats = !showStats"></vs-button>
             </vx-tooltip>
-            <vx-tooltip text="Download daily reports (CSV)" position="top">
-                <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-pie-chart" @click="showStats = !showStats"></vs-button>
-            </vx-tooltip>
             <vx-tooltip text="Refresh selected shippings" position="top">
                 <vs-button v-if="view == 'shippings'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" :disabled="selectedShippings.length <= 0" @click="refreshShippings(selectedShippings)"></vs-button>
             </vx-tooltip>

@@ -217,6 +217,13 @@ export default [
         roles: ['developer', 'admin', 'callcenter'],
         submenu: [
           {
+            url: '/dashboard/dropin/reports',
+            name: 'Reports',
+            slug: 'dropin-reports',
+            i18n: 'Reports',
+            roles: ['developer', 'admin'],
+          },
+          {
             url: '/dashboard/dropin/leads',
             name: 'Leads',
             slug: 'dropin-leads',

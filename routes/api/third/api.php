@@ -337,3 +337,10 @@ Route::get('/dropin/shippings/{id}/refresh', 'api\third\DropinController@refresh
     ->name('dropin.shippings.refresh');
 Route::post('/dropin/shippings/{id}/send-tracking-url', 'api\third\DropinController@sendTrackingUrl')->middleware('auth:api')
     ->name('dropin.shippings.tracking-url');
+
+Route::get('/dropin/reports', 'api\third\DropinController@reports')->middleware('auth:api')
+    ->name('dropin.reports.index');
+Route::put('/dropin/reports/{id}', 'api\third\DropinController@updateReport')->middleware('auth:api')
+    ->name('dropin.reports.update');
+Route::post('/dropin/reports/generate', 'api\third\DropinController@generateReports')->middleware('auth:api')
+    ->name('dropin.reports.generate');

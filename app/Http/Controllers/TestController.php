@@ -148,6 +148,8 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+        //dd(\App\third\DropinReport::findByDay('2022-05-05'));
+        dd(\App\third\DropinReport::refreshReport('2022-05-23'));
         dd('test');
     }
 

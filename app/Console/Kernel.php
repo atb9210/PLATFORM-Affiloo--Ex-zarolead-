@@ -36,7 +36,13 @@ class Kernel extends ConsoleKernel
         // Refresh shipping statuses
         $schedule->call(function () {
             \App\third\DropinShipping::refreshTable();
-        })->dailyAt('00:00');
+        })->dailyAt('00:05');
+
+        // Refresh dropin reports
+        $schedule->call(function () {
+            $day = date('Y-m-d', strtotime('-1 day'));
+            \App\third\DropinReport::refresh($day);
+        })->dailyAt('01:00');
 
         /*
          * TODO: We have chat api webhook now, we don't need this anymore.

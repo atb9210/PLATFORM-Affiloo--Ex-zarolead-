@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\third\DropinLead;
 use App\third\DropinProduct;
 use App\third\DropinShipping;
+use App\third\DropinReport;
 
 use App\Settings;
 
@@ -1400,11 +1401,11 @@ class DropinController extends Controller
      *  "success": true,
      * }
      */
-    public function createShippings(Request $requests)
+    public function createShippings(Request $request)
     {
         // TODO: Authorization
 
-        $params = $requests->validate([
+        $params = $request->validate([
             'ids' => 'required|json',
         ]);
 
@@ -1486,7 +1487,7 @@ class DropinController extends Controller
      *  "message": "Tracking URL sent",
      * }
      */
-    public function sendTrackingUrl($id, Request $requests)
+    public function sendTrackingUrl($id, Request $request)
     {
         $shipping = DropinShipping::findOrFail($id);
 
@@ -1495,6 +1496,116 @@ class DropinController extends Controller
         return response([
             'success' => true,
             'message' => 'Tracking URL sent',
+        ]);
+    }
+
+    /**
+     * Get dropin reports.
+     *
+     * @bodyParam filter_date_from string required From date
+     * @bodyParam filter_date_to string required To date
+     *
+     * @response {
+     *  "data": [reports],
+     * }
+     */
+    public function reports(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'filter_date_from' => 'required|date|date_format:Y-m-d',
+            'filter_date_to'   => 'required|date|date_format:Y-m-d',
+        ]);
+
+        $reports = DropinReport::where('day', '>=', $params['filter_date_from'])
+            ->where('day', '<=', $params['filter_date_to'])
+            ->get();
+
+        return response([
+            'data' => $reports,
+        ]);
+    }
+
+    /**
+     * Update dropin report.
+     *
+     * @urlParam id int required Report's id
+     *
+     * @bodyParam open_orders int Open orders
+     * @bodyParam closed_orders int Closed orders
+     * @bodyParam marketing float Marketing's cost
+     * @bodyParam shipping float Shipping's cost
+     * @bodyParam cogs float COGS
+     * @bodyParam order_value float Orders' value
+     * @bodyParam revenue float Revenue
+     * @bodyParam net_revenue float Net revenue
+     * @bodyParam vat float VAT
+     * @bodyParam profit float Profit
+     * @bodyParam cdv float COD Delivery value
+     *
+     * @response {
+     *  "data": report,
+     * }
+     */
+    public function updateReport($id, Request $request)
+    {
+        // TODO: Authorization
+
+        $report = DropinReport::findOrFail($id);
+
+        // Param validation
+        $params = $request->validate([
+            'open_orders' => 'numeric|min:0',
+            'closed_orders' => 'numeric|min:0',
+            'marketing' => 'numeric',
+            'shipping' => 'numeric',
+            'cogs' => 'numeric',
+            'order_value' => 'numeric',
+            'revenue' => 'numeric',
+            'net_revenue' => 'numeric',
+            'vat' => 'numeric',
+            'profit' => 'numeric',
+            'cdv' => 'numeric',
+        ]);
+
+        $report->update($params);
+
+        return response([
+            'data' => $report,
+        ]);
+    }
+
+    /**
+     * Generate reports.
+     *
+     * @bodyParam days array required Array of days in YYYY-mm-dd format
+     *
+     * @response {
+     *  "data": [reports],
+     * }
+     */
+    public function generateReports(Request $request)
+    {
+        // TODO: Authorization
+
+        // Param validation
+        $params = $request->validate([
+            'days' => 'array|required',
+        ]);
+
+        $reports = [];
+        foreach ($params['days'] as $day) {
+            $r = DropinReport::where('day', $day)->first();
+            if ($r !== null) {
+                continue;
+            }
+            $reports[] = DropinReport::refreshReport($day);
+        }
+
+        return response([
+            'data' => $reports,
         ]);
     }
 }

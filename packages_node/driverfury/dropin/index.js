@@ -776,6 +776,61 @@ class Dropin {
     return result
   }
 
+  async fetchReports(fromDate, toDate) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      let params = {
+        filter_date_from: fromDate,
+        filter_date_to: toDate,
+      }
+      const response = await this.$http.get('/api/3rd/dropin/reports', { headers, params })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
+  async updateReport(id, params) {
+    let result = false
+
+    try {
+      let headers = this.getHeaders()
+      const response = await this.$http.put('/api/3rd/dropin/reports/' + id, params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        result = true
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return result
+  }
+
+  async generateReports(days) {
+    let objects = []
+
+    try {
+      let headers = this.getHeaders()
+      let params = {
+        days: days,
+      }
+      const response = await this.$http.post('/api/3rd/dropin/reports/generate', params, { headers })
+      if (response.hasOwnProperty('data') && response.data.hasOwnProperty('data')) {
+        objects = response.data.data
+      }
+    } catch (error) {
+      // Nothing
+    }
+
+    return objects
+  }
+
 }
 
 export default Dropin

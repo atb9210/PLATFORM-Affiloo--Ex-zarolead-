@@ -474,4 +474,27 @@ class DropinShipping extends Model
             $object = $chatapi->sendMessage($this->phone, $message);
         }
     }
+
+    public function getDeliveryDate(): string|null
+    {
+        $deliveredAt = null;
+
+        $info = $this->info;
+        if ($info === null) {
+            $info = [];
+        }
+
+        if (isset($info['bartolini']) && $info['bartolini'] !== null &&
+            isset($info['bartolini']['changes']) && $info['bartolini']['changes'] !== null) {
+            for ($i = 0; $i < count($info['bartolini']['changes']); $i += 1) {
+                $statusChange = $info['bartolini']['changes'][$i];
+                if ($statusChange['status'] == 'CONSEGNATA') {
+                    $deliveredAt = $statusChange['date'];
+                    break;
+                }
+            }
+        }
+
+        return $deliveredAt;
+    }
 }

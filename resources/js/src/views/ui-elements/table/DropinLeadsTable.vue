@@ -8,6 +8,9 @@
             <vx-tooltip text="Create a new lead" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-plus" @click="changeView('order_builder')"></vs-button>
             </vx-tooltip>
+            <vx-tooltip text="Download daily reports (CSV)" position="top">
+                <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-bar-chart-2" @click="downloadDailyReportsCSV()"></vs-button>
+            </vx-tooltip>
             <vx-tooltip text="Copy phone numbers" position="top">
                 <vs-button v-if="view == 'leads'" class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-copy" :disabled="selectedLeads.length <= 0" @click="copyPhoneNumbers(selectedLeads)"></vs-button>
             </vx-tooltip>
@@ -2723,7 +2726,6 @@ export default {
     async exportLeadsAsCSV(leads) {
       let content = this.getLeadsAsCSV(leads)
       let filename = 'dropin_leads.csv'
-
       let element = document.createElement('a')
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
       element.setAttribute('download', filename)
@@ -2848,6 +2850,73 @@ export default {
     async saveAndCreateShipping(order, lead) {
       await this.updateLeadInfo(order)
       await this.createShippings([lead])
+    },
+    getDailyReports(fromDate, toDate) {
+      let reports = {}
+
+      let dStart = new Date(fromDate)
+      let d = new Date(fromDate)
+      let dEnd = new Date(toDate)
+      let continueLoop = true
+      while (continueLoop) {
+        let fd = this.formatDate(d)
+
+        reports[fd] = {
+          'open_orders': 0,
+          'closed_orders': 0,
+          'marketing': 0.0,
+          'cogs': 0.0,
+          'order_value': 0.0,
+          'revenue': 0.0,
+          'net_revenue': 0.0,
+          'vat': 0.0,
+          'profit': 0.0,
+        }
+
+        d.setDate(d.getDate() + 1)
+        if (d > dEnd) {
+          continueLoop = false
+        }
+      }
+
+      // TODO: HERE
+      for (let i = 0; i < this.leads.length; i++) {
+        let lead = this.leads[i]
+
+        let dLead = new Date(this.formatDate(new Date(lead.created_at)))
+
+        if (dLead < dStart || dLead > dEnd) {
+          continue
+        }
+
+        let carrierStatus = getLeadCarrierStatus(lead)
+        if (carrierStatus == 'DELIVERED' || carrierStatus == 'RETURNED') {
+        }
+      }
+
+      return reports
+    },
+    downloadDailyReportsCSV() {
+      let reports = this.getDailyReports(this.filters.date_from, this.filters.date_to)
+
+      // DEBUG TODO: to delete
+      console.log(reports)
+
+      let content = ''
+      content += "Data,Open Orders,Closed Orders,Marketing,COGS,Order Value,Revenue,Net Revenue,VAT,Profit,Note,\n"
+
+      // TODO: HERE
+
+      /*
+      let filename = 'dropin_reports.csv'
+      let element = document.createElement('a')
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      element.setAttribute('download', filename)
+      element.style.display = 'none'
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+      */
     },
   },
   async created() {

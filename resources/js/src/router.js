@@ -2127,6 +2127,22 @@ const router = new Router({
         },
 
         {
+          path: '/dashboard/dropin/reports',
+          props: true,
+          name: 'dropin-reports',
+          component: () => import('./views/DropinReports.vue'),
+          meta: {
+            authRequired: true,
+            breadcrumb: [
+              { title: 'Home', url: '/' },
+              { title: 'Dropin Reports', active: true }
+            ],
+            pageTitle: 'Dropin Reports',
+            rule: 'editor'
+          }
+        },
+
+        {
           path: '/dashboard/3rd-party',
           name: '3rd-party',
           component: () => import('./views/3rdParty.vue'),
