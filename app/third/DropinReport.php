@@ -15,6 +15,7 @@ class DropinReport extends Model
         'open_orders', 'closed_orders',
         'marketing', 'shipping', 'cogs',
         'order_value', 'revenue', 'net_revenue', 'vat', 'profit', 'cdv',
+        'notes',
     ];
 
     protected $casts = [

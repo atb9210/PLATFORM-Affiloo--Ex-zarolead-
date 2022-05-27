@@ -203,7 +203,10 @@
                     </vs-td>
 
                     <vs-td class="column-no-padding">
-                        <vs-button style="width: 30px !important; height: 30px !important;" :color="(data[indextr].notes == '') ? 'primary' : 'warning'" :type="(data[indextr].notes == '') ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square"></vs-button>
+                        <vx-tooltip v-if="item.notes != '' && item.notes != null" :text="item.notes" position="top">
+                            <vs-button style="width: 30px !important; height: 30px !important;" :color="(item.notes == '' || item.notes == null) ? 'primary' : 'warning'" :type="(item.notes == '' || item.notes == null) ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNotes(item)"></vs-button>
+                        </vx-tooltip>
+                        <vs-button v-else style="width: 30px !important; height: 30px !important;" :color="(item.notes == '' || item.notes == null) ? 'primary' : 'warning'" :type="(item.notes == '' || item.notes == null) ? 'border' : 'filled'" icon-pack="feather" icon="icon-message-square" @click="startEditingNotes(item)"></vs-button>
                     </vs-td>
 
                 </vs-tr>
@@ -227,6 +230,23 @@
                 <!-- END TOTAL STATS-->
             </template>
         </vs-table>
+
+        <!-- Notes popup -->
+        <vs-popup title="Notes" :active.sync="showPopup['notes']">
+            <div class="w-full pr-2 pl-2">
+                <div class="vx-row mb-3 note">
+                    <div class="vx-col w-full">
+                        <div>
+                            <vs-textarea v-model="newNotes"></vs-textarea>
+                            <div class="flex" style="float: right;">
+                                <vs-button color="success" type="filled" icon-pack="feather" icon="icon-check" @click="editNotes(editingObj, newNotes)"></vs-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </vs-popup>
+
     </vx-card>
 </template>
 
@@ -266,6 +286,13 @@ export default {
       },
 
       newValue: '',
+
+      showPopup: {
+        'notes': false,
+      },
+      newNotes: '',
+
+      editingObj: {},
     }
   },
   computed: {
@@ -457,6 +484,44 @@ export default {
       this.$vs.loading.close()
 
       await this.applyFilters()
+    },
+    startEditingNotes(report) {
+      this.editingObj = report
+      this.newNotes = ''
+      if (this.editingObj.notes !== null) {
+        this.newNotes = this.editingObj.notes
+      }
+      this.showPopup['notes'] = true
+    },
+    async editNotes(report, newNotes) {
+      this.$vs.loading()
+
+      let params = {
+        notes: newNotes,
+      }
+      const result = await this.dropin.updateReport(report.id, params)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Notes updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+        report.notes = newNotes
+        this.showPopup['notes'] = false
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the notes',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
     },
   },
   created() {

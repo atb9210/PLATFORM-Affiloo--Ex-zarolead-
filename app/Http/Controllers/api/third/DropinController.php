@@ -1544,6 +1544,7 @@ class DropinController extends Controller
      * @bodyParam vat float VAT
      * @bodyParam profit float Profit
      * @bodyParam cdv float COD Delivery value
+     * @bodyParam notes string Notes
      *
      * @response {
      *  "data": report,
@@ -1568,6 +1569,7 @@ class DropinController extends Controller
             'vat' => 'numeric',
             'profit' => 'numeric',
             'cdv' => 'numeric',
+            'notes' => 'string',
         ]);
 
         $report->update($params);
