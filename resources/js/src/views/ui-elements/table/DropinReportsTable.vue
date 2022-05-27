@@ -126,7 +126,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].marketing"
                             @onUpdate="updateReport(item, 'marketing')">
-                                {{data[indextr].marketing}}
+                                € {{data[indextr].marketing.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -135,7 +135,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].shipping"
                             @onUpdate="updateReport(item, 'shipping')">
-                                {{data[indextr].shipping}}
+                                € {{data[indextr].shipping.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -144,7 +144,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].cogs"
                             @onUpdate="updateReport(item, 'cogs')">
-                                {{data[indextr].cogs}}
+                                € {{data[indextr].cogs.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -153,7 +153,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].order_value"
                             @onUpdate="updateReport(item, 'order_value')">
-                                {{data[indextr].order_value}}
+                                € {{data[indextr].order_value.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -162,7 +162,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].revenue"
                             @onUpdate="updateReport(item, 'revenue')">
-                                {{data[indextr].revenue}}
+                                € {{data[indextr].revenue.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -171,7 +171,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].net_revenue"
                             @onUpdate="updateReport(item, 'net_revenue')">
-                                {{data[indextr].net_revenue}}
+                                € {{data[indextr].net_revenue.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -180,7 +180,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].vat"
                             @onUpdate="updateReport(item, 'vat')">
-                                {{data[indextr].vat}}
+                                € {{data[indextr].vat.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -189,7 +189,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].profit"
                             @onUpdate="updateReport(item, 'profit')">
-                                {{data[indextr].profit}}
+                                € {{data[indextr].profit.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
@@ -198,7 +198,7 @@
                             v-model="newValue"
                             @onEdit="newValue = data[indextr].cdv"
                             @onUpdate="updateReport(item, 'cdv')">
-                                {{data[indextr].cdv}}
+                                € {{data[indextr].cdv.toFixed(2)}}
                         </fast-editable-value>
                     </vs-td>
 
