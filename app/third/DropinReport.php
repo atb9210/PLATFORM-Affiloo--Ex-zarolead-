@@ -65,6 +65,7 @@ class DropinReport extends Model
             'cdv' => 0.0,
         ];
 
+        /*
         $shippings = DropinShipping::where('created_at', $day)->get();
         foreach ($shippings as $shipping) {
             $info = $shipping->info;
@@ -81,11 +82,14 @@ class DropinReport extends Model
             $params['order_value'] += $codAmount;
             $params['vat'] += $vatAmount;
         }
+        */
 
         $fromDate = date('Y-m-d', strtotime('-45 days', strtotime($day)));
         $toDate   = date('Y-m-d', strtotime('+45 days', strtotime($day)));
         $shippings = DropinShipping::where('created_at', '>=', $fromDate)
             ->where('created_at', '<=', $toDate)->get();
+        $leads = DropinLead::where('created_at', '>=', $fromDate . ' 00:00:00')
+            ->where('created_at', '<=', $toDate . ' 23:59:59')->get();
         foreach ($shippings as $shipping) {
             $info = $shipping->info;
             if ($info === null) {
@@ -97,12 +101,41 @@ class DropinReport extends Model
                 continue;
             }
 
-            $codAmount = 0.0;
+            /*
+            if (!isset($info['order_id'])) {
+                continue;
+            }
+            $orderId = strval($info['order_id']);
+            $lead = null;
+            foreach ($leads as $l) {
+                $leadInfo = $l->info;
+                if ($leadInfo === null) {
+                    continue;
+                }
+                if (!isset($leadInfo['order_id'])) {
+                    continue;
+                }
+                $oId = strval($leadInfo['order_id']);
+                if ($oId == $orderId) {
+                    $lead = $l;
+                    break;
+                }
+            }
+            if ($lead == null) {
+                continue;
+            }
+            $amount = 0.0;
+            if (isset($leadInfo['total'])) {
+                $amount = $leadInfo['total'];
+            }
+            */
+
+            $amount = 0.0;
             if (isset($info['cod_amount']) && $info['cod_amount'] != '') {
-                $codAmount = floatval($info['cod_amount']);
+                $amount = floatval($info['cod_amount']);
             }
 
-            $params['cdv'] += $codAmount;
+            $params['revenue'] += $amount;
         }
 
         $report->update($params);

@@ -387,6 +387,20 @@ class DropinController extends Controller
             $params['info'] = $info;
         }
 
+        // Update dropin reports
+        if (isset($params['status']) && $params['status'] == 'confirmed') {
+            $tmp = $params['info'];
+            if ($tmp !== null && isset($tmp['gateway']) && $tmp['gateway'] == 'online') {
+                $total = 0.0;
+                if (isset($tmp['total']) && $tmp['total'] !== null) {
+                    $total = floatval($tmp['total']);
+                }
+                $report = DropinReport::get(date('Y-m-d'))->update([
+                    'revenue' => $total,
+                ]);
+            }
+        }
+
         $lead->update($params);
 
         return response([

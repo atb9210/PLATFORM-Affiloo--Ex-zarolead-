@@ -42,7 +42,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $day = date('Y-m-d', strtotime('-1 day'));
             \App\third\DropinReport::refresh($day);
-        })->dailyAt('01:00');
+        })->dailyAt('01:10');
 
         /*
          * TODO: We have chat api webhook now, we don't need this anymore.
