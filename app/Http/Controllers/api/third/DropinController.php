@@ -453,6 +453,20 @@ class DropinController extends Controller
         $params['hash'] = $this->generateRandomString(64);
         $lead->update($params);
 
+        // Update dropin reports
+        if (isset($params['status']) && $params['status'] == 'confirmed') {
+            $tmp = $params['info'];
+            if ($tmp !== null && isset($tmp['gateway']) && $tmp['gateway'] == 'online') {
+                $total = 0.0;
+                if (isset($tmp['total']) && $tmp['total'] !== null) {
+                    $total = floatval($tmp['total']);
+                }
+                $report = DropinReport::get(date('Y-m-d'))->update([
+                    'revenue' => $total,
+                ]);
+            }
+        }
+
         return response([
             'message' => 'Lead updated successfully',
         ]);
@@ -1336,7 +1350,7 @@ class DropinController extends Controller
     }
 
     /**
-     * Get shippings list.
+     * Update shipping.
      *
      * @urlParam id int required Shipping's id
      *

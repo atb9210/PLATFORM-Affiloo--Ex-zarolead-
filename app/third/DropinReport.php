@@ -91,6 +91,9 @@ class DropinReport extends Model
         $leads = DropinLead::where('created_at', '>=', $fromDate . ' 00:00:00')
             ->where('created_at', '<=', $toDate . ' 23:59:59')->get();
         foreach ($shippings as $shipping) {
+            if ($shipping->payment_method != 'cod') {
+                continue;
+            }
             $info = $shipping->info;
             if ($info === null) {
                 $info = [];
