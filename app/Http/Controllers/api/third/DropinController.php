@@ -389,7 +389,12 @@ class DropinController extends Controller
 
         // Update dropin reports
         if (isset($params['status']) && $params['status'] == 'confirmed') {
-            $tmp = $params['info'];
+            $tmp = [];
+            if (isset($params['info'])) {
+                $tmp = $params['info'];
+            } else {
+                $lead->info;
+            }
             if ($tmp !== null && isset($tmp['gateway']) && $tmp['gateway'] == 'online') {
                 $total = 0.0;
                 if (isset($tmp['total']) && $tmp['total'] !== null) {
@@ -455,7 +460,12 @@ class DropinController extends Controller
 
         // Update dropin reports
         if (isset($params['status']) && $params['status'] == 'confirmed') {
-            $tmp = $params['info'];
+            $tmp = [];
+            if (isset($params['info'])) {
+                $tmp = $params['info'];
+            } else {
+                $lead->info;
+            }
             if ($tmp !== null && isset($tmp['gateway']) && $tmp['gateway'] == 'online') {
                 $total = 0.0;
                 if (isset($tmp['total']) && $tmp['total'] !== null) {
