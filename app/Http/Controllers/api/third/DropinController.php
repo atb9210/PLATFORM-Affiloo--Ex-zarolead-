@@ -461,6 +461,8 @@ class DropinController extends Controller
                 if (isset($tmp['total']) && $tmp['total'] !== null) {
                     $total = floatval($tmp['total']);
                 }
+                $report = DropinReport::get(date('Y-m-d'));
+                $total += $report->revenue;
                 $report = DropinReport::get(date('Y-m-d'))->update([
                     'revenue' => $total,
                 ]);

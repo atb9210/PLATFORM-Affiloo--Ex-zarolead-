@@ -12,8 +12,12 @@
     <vx-card title="My reports" code-toggler>
 
         <p class="flex items-center mb-4">
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
-            <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="generateReports"></vs-button>
+            <vx-tooltip text="Filters" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-filter" @click="showFilters = !showFilters"></vs-button>
+            </vx-tooltip>
+            <vx-tooltip text="Generate Reports" position="top">
+                <vs-button class="mr-2" color="primary" type="filled" icon-pack="feather" icon="icon-refresh-cw" @click="generateReports"></vs-button>
+            </vx-tooltip>
         </p>
 
         <div v-if="showFilters" class="mb-12">
