@@ -1567,6 +1567,14 @@ export default {
       let params = {
         status: this.newStatus,
       }
+      if (this.newStatus == 'waiting payment') {
+        let info = lead.info
+        if (info === null) {
+          info = {}
+        }
+        info.gateway = 'cashondelivery'
+        params.info = JSON.stringify(info)
+      }
       await this.dropin.updateLead(lead.id, params)
 
       this.$vs.notify({
