@@ -1461,11 +1461,13 @@ class DropinController extends Controller
 
         $dropinProducts = DropinProduct::all();
         $orders = [];
+        $leads = [];
         foreach ($ids as $leadId) {
             $lead = DropinLead::find($leadId);
             if ($lead === null) {
                 continue;
             }
+            $leads[] = $lead;
 
             $order = $lead->getOrderInfoForCSV($dropinProducts);
 
@@ -1491,19 +1493,21 @@ class DropinController extends Controller
         }
 
         $newOrders = $dropin->getOrders();
-        foreach ($params['ids'] as $leadId) {
-            $found = false;
-            foreach ($newOrders as $o) {
-                if ($o['external_id'] == $leadId) {
-                    $found = true;
-                    break;
-                }
+        foreach ($leads as $lead) {
+            $orderId = null;
+            $info = $lead->info;
+            if ($info === null || !isset($info['order_id'])) {
+                continue;
             }
-            if ($found) {
-                $lead = DropinLead::find($leadId);
-                if ($lead !== null) {
+            $orderId = $info['order_id'];
+            if ($orderId === null) {
+                continue;
+            }
+            foreach ($newOrders as $o) {
+                if ($o['external_id'] == $orderId) {
                     $lead->status = 'unprocessed';
                     $lead->save();
+                    break;
                 }
             }
         }
