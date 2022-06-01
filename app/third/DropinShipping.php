@@ -212,6 +212,8 @@ class DropinShipping extends Model
 
     public function refreshShippingStatus()
     {
+        $dropin = new \Driverfury\Dropin\Dropin('zarosrls@gmail.com', 'medi9810');
+
         $trackingUrl = $this->tracking_url;
         if ($trackingUrl !== null && $trackingUrl != '') {
             $requests = new \Driverfury\Requests\Requests();
@@ -246,6 +248,9 @@ class DropinShipping extends Model
                 }
             }
 
+            // TODO: We don't fetch cod amount here anymore. We fetch it when the
+            // shipping is created
+            /*
             // Get COD amount
             $codAmount = 0.0;
             $tableHtml = $this->getInnerHtml($html, 'table');
@@ -255,6 +260,14 @@ class DropinShipping extends Model
                     $codAmount = floatval($value);
                     break;
                 }
+            }
+            */
+
+            // Get COD amount
+            $codAmount = 0.0;
+            $dropinOrder = $dropin->getOrderDetails($this->id);
+            if (isset($dropinOrder['order']['customer_charge'])) {
+                $codAmount = floatval($dropinOrder['order']['customer_charge']);
             }
 
             // Get external carrier tracking number and url
@@ -395,7 +408,9 @@ class DropinShipping extends Model
                 'tracking_url' => $brtTrackingUrl,
                 'changes' => $statusChanges,
             ];
-            $info['cod_amount'] = $codAmount;
+
+            $info['cod_amount'] = number_format(floatval($codAmount), 2, '.', '');
+
             $info['status_check_date'] = date('Y-m-d');
             $this->info = $info;
             $this->save();

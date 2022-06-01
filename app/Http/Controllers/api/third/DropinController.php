@@ -296,9 +296,21 @@ class DropinController extends Controller
                     $productInfo = [];
                 }
                 if (isset($productInfo['confirmation_message'])) {
+                    $baseUrl = env('APP_URL');
+                    $settings = Settings::get();
+                    if (isset($settings['warehouse']['checkout_domain'])) {
+                        $tmp = $settings['warehouse']['checkout_domain'];
+                        if ($tmp !== null && $tmp != '')
+                        {
+                            $tmp = str_replace('http://', '', $tmp);
+                            $tmp = str_replace('https://', '', $tmp);
+                            $baseUrl = 'https://' . $tmp;
+                        }
+                    }
+
                     // TODO: More general algorithm to compute confirm/cancel links
-                    $confirmLink = env('APP_URL') . '/products/' . $product->id . '/checkout?lid=' . $lead->hash;
-                    $cancelLink = env('APP_URL') . '/products/checkout/' . $lead->hash . '/cancel';
+                    $confirmLink = $baseUrl . '/products/' . $product->id . '/checkout?lid=' . $lead->hash;
+                    $cancelLink = $baseUrl . '/products/checkout/' . $lead->hash . '/cancel';
 
                     $msgContext = [
                         'product_name' => $product->name,

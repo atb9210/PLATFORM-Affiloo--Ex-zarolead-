@@ -40,6 +40,22 @@
 
     </vs-row>
 
+    <!-- Warehouse popup -->
+    <vs-popup title="Warehouse" :active.sync="showPopup['warehouse']">
+      <div class="vx-row mb-6">
+        <div class="vx-col sm:w-1/3 w-full">
+          <span>Checkout Domain</span>
+        </div>
+        <div class="vx-col sm:w-2/3 w-full">
+          <vs-input class="w-full" icon-pack="feather" icon="icon-hash" icon-no-border v-model="warehouse.checkout_domain" />
+        </div>
+      </div>
+
+      <div class="vx-row mb-6">
+        <vs-button class="mt-12 mr-auto ml-auto" @click="updateWarehouseSettings" color="primary" type="filled">Update</vs-button>
+      </div>
+    </vs-popup>
+
     <!-- Bing popup -->
     <vs-popup title="Bing" :active.sync="showPopup['bing']">
       <div class="vx-row mb-6">
@@ -372,6 +388,7 @@ export default {
       settings: {},
 
       showPopup: {
+        'warehouse': false,
         'bing': false,
         'serpapi': false,
         'chatapi': false,
@@ -388,6 +405,12 @@ export default {
       },
 
       apps: [
+        {
+          name: 'Warehouse',
+          image: '/images/3rd_party/warehouse.png',
+          description: 'Warehouse',
+          callback: this.showWarehouseSettings,
+        },
         {
           name: 'Bing',
           image: '/images/3rd_party/bing.png',
@@ -503,6 +526,10 @@ export default {
           callback: this.showFraudFilterSettings,
         },
       ],
+
+      warehouse: {
+        checkout_domain: '',
+      },
 
       bing: {
         api_key: '',
@@ -644,6 +671,25 @@ export default {
       for (const [key, value] of Object.entries(src)) {
         dest[key] = value
       }
+    },
+
+    /* Warehouse */
+    async showWarehouseSettings() {
+      let warehouseSettingsDefault = {
+        api_key: '',
+      }
+      if (!this.settings.hasOwnProperty('warehouse')) {
+        this.settings['warehouse'] = warehouseSettingsDefault
+      }
+      this.adjustSettings(this.settings['warehouse'], warehouseSettingsDefault)
+      this.copySettings(this.settings['warehouse'], this.warehouse)
+
+      this.showPopup['warehouse'] = true
+    },
+    async updateWarehouseSettings() {
+      this.settings['warehouse'] = this.warehouse
+      await this.updateSettingsWithLoading()
+      this.showPopup['warehouse'] = false
     },
 
     /* Bing */
