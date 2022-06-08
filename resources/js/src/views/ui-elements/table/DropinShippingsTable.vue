@@ -728,6 +728,7 @@ export default {
         tax: 0.0,
         vat: 0.0,
         cod_amount: 0.0,
+
         orders: {
           'ALL': {
             count: this.objects.length,

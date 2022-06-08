@@ -251,6 +251,7 @@ class OrderController extends Controller
             'source_url' => $sourceUrl,
         ];
 
+        $network_data['address'] = $params['address'];
         $network_data['price'] = $price;
         $network_data['commission'] = $commission;
         $network_data['sub_commission'] = $sub_commission;
