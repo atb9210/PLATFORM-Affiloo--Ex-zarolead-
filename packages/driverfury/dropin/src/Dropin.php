@@ -275,7 +275,7 @@ class Dropin
             if (isset($order['total'])) {
                 $total = $order['total'];
             }
-            $total = strval($total);
+            $total = str_replace(',', '.', strval($total));
 
             $fullName = '';
             if (isset($order['full_name'])) {
