@@ -570,7 +570,7 @@ class Dropin {
     }
     obj.cod_amount = 0.0
     if (info.hasOwnProperty('cod_amount') && info.cod_amount !== null) {
-      obj.cod_amount = info.cod_amount
+      obj.cod_amount = parseFloat(info.cod_amount)
     }
     obj.vat = obj.cod_amount - ((obj.cod_amount / 122) * 100)
 
