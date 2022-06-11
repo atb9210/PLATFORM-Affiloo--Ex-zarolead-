@@ -1701,27 +1701,37 @@ export default {
       this.applyFilters()
     },
     async updateStatusOrderEditor() {
-      this.$vs.loading()
+      if (this.newStatus == 'confirmed' && !this.canUpdateLeadInfo(this.order)) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot change status to confirmed',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      } else {
+        this.$vs.loading()
 
-      this.order.status = this.newStatus
-      let params = {
-        status: this.newStatus,
+        this.order.status = this.newStatus
+        let params = {
+          status: this.newStatus,
+        }
+        await this.dropin.updateLead(this.order.id, params)
+
+        if (this.canUpdateLeadInfo(this.order)) {
+          await this.updateLeadInfo(order)
+        }
+
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Lead\'s status updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+
+        this.$vs.loading.close()
       }
-      await this.dropin.updateLead(this.order.id, params)
-
-      if (this.canUpdateLeadInfo(this.order)) {
-        await this.updateLeadInfo(order)
-      }
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Lead\'s status updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      this.$vs.loading.close()
     },
     updateStatusOrderBuilder() {
       this.order.status = this.newStatus
