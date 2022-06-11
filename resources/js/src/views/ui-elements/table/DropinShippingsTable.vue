@@ -765,7 +765,7 @@ export default {
 
       let orders = {
         'ALL': {
-          count: this.objects.length,
+          count: 0,
           total: 0.0,
           percent: 100.0,
         },
@@ -821,6 +821,8 @@ export default {
           orders[effectiveStatus].total += parseFloat(obj.cod_amount)
         }
 
+        orders['ALL'].count += 1
+        orders['ALL'].total += parseFloat(obj.cod_amount)
         if (effectiveStatus == 'ERROR') {
           orders['ALL'].count -= 1
           orders['ALL'].total -= parseFloat(obj.cod_amount)
@@ -831,7 +833,6 @@ export default {
           orders['SHIPPED'].total += parseFloat(obj.cod_amount)
         }
       }
-      orders['ALL'].total = this.totalStats.amount
 
       orders['TO_PICK'].percent = (orders['TO_PICK'].count / orders['ALL'].count)*100
       orders['SHIPPED'].percent = (orders['SHIPPED'].count / orders['ALL'].count)*100
