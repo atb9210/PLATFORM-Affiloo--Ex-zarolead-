@@ -1709,6 +1709,10 @@ export default {
       }
       await this.dropin.updateLead(this.order.id, params)
 
+      if (this.canUpdateLeadInfo(this.order)) {
+        await this.updateLeadInfo(order)
+      }
+
       this.$vs.notify({
         title: 'Success',
         text: 'Lead\'s status updated',
