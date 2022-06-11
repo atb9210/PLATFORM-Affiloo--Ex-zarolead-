@@ -198,7 +198,7 @@ class DropinLead extends Model
 
         $gateway = 'cashondelivery';
         if (isset($info['gateway'])) {
-            $street_address = $info['gateway'];
+            $gateway = $info['gateway'];
         }
 
         $street_address = '';
