@@ -228,7 +228,7 @@
                             <fast-editable-value
                                 v-model="newValue"
                                 @onEdit="newValue = (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : ''"
-                                @onUpdate="updateOrderId(data[indextr])">
+                                @onUpdate="updateDropinId(data[indextr])">
                                 {{ (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : 'none' }}
                             </fast-editable-value>
                         </vs-td>
@@ -2822,6 +2822,46 @@ export default {
         value = parseInt(this.newValue)
       }
       info.order_id = value
+      let params = {
+        info: JSON.stringify(info),
+      }
+      let object = await this.dropin.updateLead(lead.id, params)
+      let result = (object !== null)
+
+      if (result) {
+        this.$vs.notify({
+          title: 'Success',
+          text: 'Lead successfully updated',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'success'
+        })
+      } else {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Cannot update the lead',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle',
+          color: 'danger'
+        })
+      }
+
+      this.$vs.loading.close()
+
+      await this.applyFilters()
+    },
+    async updateDropinId(lead) {
+      this.$vs.loading()
+
+      let info = lead.info
+      if (info === null) {
+        info = {}
+      }
+      let value = null
+      if (this.newValue != '') {
+        value = parseInt(this.newValue)
+      }
+      info.dropin_id = value
       let params = {
         info: JSON.stringify(info),
       }
