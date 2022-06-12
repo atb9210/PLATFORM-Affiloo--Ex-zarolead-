@@ -193,7 +193,7 @@
 
                 <template slot="thead">
                     <vs-th sort-key="order_id">Order ID</vs-th>
-                    <vs-th sort-key="dropin_id">DP ID</vs-th>
+                    <vs-th sort-key="shipping_id">DP ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
@@ -224,12 +224,12 @@
                             </fast-editable-value>
                         </vs-td>
 
-                        <vs-td class="column-no-padding" :data="item.dropin_id">
+                        <vs-td class="column-no-padding" :data="item.shipping_id">
                             <fast-editable-value
                                 v-model="newValue"
-                                @onEdit="newValue = (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : ''"
-                                @onUpdate="updateDropinId(data[indextr])">
-                                {{ (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : 'none' }}
+                                @onEdit="newValue = (item.shipping_id != '' && item.shipping_id != null) ? item.shipping_id : ''"
+                                @onUpdate="updateShippingId(data[indextr])">
+                                {{ (item.shipping_id != '' && item.shipping_id != null) ? item.shipping_id : 'none' }}
                             </fast-editable-value>
                         </vs-td>
 
@@ -256,7 +256,7 @@
 
                         <vs-td class="column-no-padding">
                             <div v-if="item.hasOwnProperty('phone') && item.phone != ''" @contextmenu.prevent="$refs.phone_context_menu.open($event, item)" @dblclick="whatsappMessage(item)">
-                                <vx-tooltip title="Last message" :text="(item.hasOwnProperty('last_message_body') && last_message_body !== null) ? item.last_message_body : ''" position="left">
+                                <vx-tooltip title="Last message" :text="(item.hasOwnProperty('last_message_body') && item.last_message_body !== null) ? item.last_message_body : ''" position="left">
                                     <vs-chip :color="(item.has_new_message) ? 'warning' : ''">
                                         <vs-avatar icon-pack="feather" icon="icon-message-circle" />
                                         {{ item.phone }}
@@ -1194,6 +1194,7 @@ export default {
 
       products: [],
       dropinProducts: [],
+      shippings: [],
 
       leadStatuses: [
         'complaint',
@@ -1390,10 +1391,18 @@ export default {
       if (view == 'leads') {
         this.$vs.loading()
         this.selectedLeads = []
+
+        await this.refreshShippingsNoLoading()
         this.leads = await this.dropin.fetchLeads(this.filters, this.dropinProducts)
 
         for (let i = 0; i < this.leads.length; i++) {
           let lead = this.leads[i]
+
+          let info = lead.info
+          if (info === null) {
+            info = {}
+          }
+
           let product = null
           if (lead.hasOwnProperty('product_id') && lead.product_id !== null && lead.product_id != '') {
             for (let j = 0; j < this.products.length; j++) {
@@ -1405,6 +1414,27 @@ export default {
             }
           }
           lead.product = product
+
+          let shipping = null
+          if (info.hasOwnProperty('shipping_id') && info.shipping_id !== null && info.product_id != '') {
+            lead.shipping_id = info.shipping_id
+            for (let j = 0; j < this.shippings.length; j++) {
+              let s = this.shippings[j]
+              if (s.id == info.shipping_id) {
+                shipping = s
+                break
+              }
+            }
+          }
+          lead.shipping = shipping
+
+          if (lead.shipping !== null) {
+            lead.shipping_status = ''
+            if (lead.shipping.hasOwnProperty('packeta_status') && lead.shipping.packeta_status !== null) {
+              lead.shipping_status = lead.shipping.packeta_status
+            }
+          }
+
           this.leads[i] = lead
         }
 
@@ -1420,6 +1450,22 @@ export default {
         this.emptyOrderInfo()
         this.view = view
       }
+    },
+    async refreshShippingsNoLoading() {
+      let dFrom = new Date(this.filters.date_from)
+      let dTo   = new Date(this.filters.date_to)
+      dFrom.setDate(dFrom.getDate() - 30)
+      dTo.setDate(dTo.getDate() + 30)
+      let shippingsFilters = {
+        date_from: this.formatDate(dFrom),
+        date_to: this.formatDate(dTo),
+      }
+      this.shippings = await this.dropin.fetchShippings(shippingsFilters)
+    },
+    async refreshShippingsLoading() {
+      this.$vs.loading()
+      await this.refreshShippingsNoLoading()
+      this.$vs.loading.close()
     },
     getObjectById(id) {
       for (let i = 0; i < this.leads.length; i++) {
@@ -2850,7 +2896,7 @@ export default {
 
       await this.applyFilters()
     },
-    async updateDropinId(lead) {
+    async updateShippingId(lead) {
       this.$vs.loading()
 
       let info = lead.info
@@ -2861,7 +2907,7 @@ export default {
       if (this.newValue != '') {
         value = parseInt(this.newValue)
       }
-      info.dropin_id = value
+      info.shipping_id = value
       let params = {
         info: JSON.stringify(info),
       }
@@ -2918,7 +2964,7 @@ export default {
             if (info === null) {
               info = {}
             }
-            info.dropin_id = shipping.id
+            info.shipping_id = shipping.id
             let params = {
               info: JSON.stringify(info),
             }
