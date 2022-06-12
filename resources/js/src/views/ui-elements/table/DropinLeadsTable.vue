@@ -192,8 +192,8 @@
             <vs-table stripe multiple v-model="selectedLeads" :max-items="maxItems" pagination search :data="leads" :currentPage="currentPage" @change-page="onPageChanged">
 
                 <template slot="thead">
-                    <vs-th sort-key="id">ID</vs-th>
                     <vs-th sort-key="order_id">Order ID</vs-th>
+                    <vs-th sort-key="dropin_id">DP ID</vs-th>
                     <vs-th sort-key="created_at">Date</vs-th>
                     <vs-th sort-key="full_name">Name</vs-th>
                     <vs-th sort-key="phone">Phone</vs-th>
@@ -215,16 +215,21 @@
                 <template slot-scope="{data}">
                     <vs-tr :data="item" :key="'tableRow' + indextr" v-for="(item, indextr) in data">
 
-                        <vs-td class="column-no-padding" :data="item.id">
-                            {{item.id}}
-                        </vs-td>
-
                         <vs-td class="column-no-padding" :data="item.order_id">
                             <fast-editable-value
                                 v-model="newValue"
                                 @onEdit="newValue = (item.order_id != '' && item.order_id != null) ? item.order_id : ''"
                                 @onUpdate="updateOrderId(data[indextr])">
                                 {{ (item.order_id != '' && item.order_id != null) ? item.order_id : 'none' }}
+                            </fast-editable-value>
+                        </vs-td>
+
+                        <vs-td class="column-no-padding" :data="item.dropin_id">
+                            <fast-editable-value
+                                v-model="newValue"
+                                @onEdit="newValue = (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : ''"
+                                @onUpdate="updateOrderId(data[indextr])">
+                                {{ (item.dropin_id != '' && item.dropin_id != null) ? item.dropin_id : 'none' }}
                             </fast-editable-value>
                         </vs-td>
 
@@ -2850,6 +2855,37 @@ export default {
 
       const result = await this.dropin.createShippings(leads)
       if (result) {
+
+        let dToday = this.formatDate(new Date())
+        const shippings = await this.dropin.fetchShippings({
+          date_from: dToday,
+          date_to: dToday,
+        })
+        for (let i = 0; i < shippings.length; i++) {
+          let shipping = shippings[i]
+          if (!shipping.hasOwnProperty('order_id') || shipping.order_id === null || shipping.order_id == '') {
+            continue
+          }
+          for (let j = 0; j < leads.length; j++) {
+            let lead = leads[i]
+            if (!lead.hasOwnProperty('order_id') || lead.order_id === null || lead.order_id == '') {
+              continue
+            }
+            if (lead.order_id != shipping.order_id) {
+              continue
+            }
+            let info = lead.info
+            if (info === null) {
+              info = {}
+            }
+            info.dropin_id = shipping.id
+            let params = {
+              info: JSON.stringify(info),
+            }
+            await this.dropin.updateLead(lead.id, params)
+          }
+        }
+
         this.$vs.notify({
           title: 'Success',
           text: 'Shippings created',

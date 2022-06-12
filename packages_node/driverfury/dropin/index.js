@@ -568,6 +568,12 @@ class Dropin {
     if (info.hasOwnProperty('order_id') && info.order_id !== null) {
       obj.order_id = info.order_id
     }
+
+    obj.dropin_id = ''
+    if (info.hasOwnProperty('dropin_id') && info.dropin_id !== null) {
+      obj.dropin_id = info.dropin_id
+    }
+
     obj.cod_amount = 0.0
     if (info.hasOwnProperty('cod_amount') && info.cod_amount !== null) {
       obj.cod_amount = parseFloat(info.cod_amount)
