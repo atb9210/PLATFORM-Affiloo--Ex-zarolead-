@@ -210,6 +210,7 @@
                     <vs-th sort-key="paid">Paid</vs-th>
                     <vs-th sort-key="notes">Notes</vs-th>
                     <vs-th sort-key="completed_at">Completed Date</vs-th>
+                    <vs-th sort-key="last_status_change_date">Status change</vs-th>
                     <!--<vs-th>Actions</vs-th>-->
                 </template>
 
@@ -375,6 +376,10 @@
                             </vs-chip>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="item.last_status_change_date">
+                            {{item.last_status_change_date}}
+                        </vs-td>
+
                         <!--
                         <vs-td class="column-no-padding">
                             <div class="flex items-center">
@@ -423,6 +428,7 @@
                     <vs-td class="column-no-padding">{{totalStats.quantity}}</vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.total.toFixed(2)}}</vs-td>
                     <vs-td class="column-no-padding">{{totalStats.items}} items</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
@@ -1621,8 +1627,15 @@ export default {
     async updateStatus(lead) {
       this.$vs.loading()
 
+      let info = lead.info
+      if (info === null) {
+        info = {}
+      }
+      info.last_status_change_date = this.formatDateTime(new Date())
+
       let params = {
         status: this.newStatus,
+        info: JSON.stringify(info),
       }
       if (this.newStatus == 'waiting payment') {
         let info = lead.info
@@ -1669,10 +1682,18 @@ export default {
 
       this.$vs.loading()
 
-      let params = {
-        status: this.newStatus,
-      }
       for (let i = 0; i < numLeads; i++) {
+        let info = leads[i].info
+        if (info === null) {
+          info = {}
+        }
+        info.last_status_change_date = this.formatDateTime(new Date())
+
+        let params = {
+          status: this.newStatus,
+          info: JSON.stringify(info)
+        }
+
         await this.dropin.updateLead(leads[i].id, params)
       }
 
@@ -1731,32 +1752,6 @@ export default {
 
       await this.applyFilters()
     },
-    async updateStatus(lead) {
-      this.$vs.loading()
-
-      let params = {
-        status: this.newStatus,
-      }
-      await this.dropin.updateLead(lead.id, params)
-
-      this.$vs.notify({
-        title: 'Success',
-        text: 'Lead\'s status updated',
-        iconPack: 'feather',
-        icon: 'icon-alert-circle',
-        color: 'success'
-      })
-
-      if (this.newStatus === 'to recall') {
-        this.dateTimeInfo.date = ''
-        Object.assign(this.lead, lead)
-        this.showPopup['date_time_info'] = true
-      }
-
-      this.$vs.loading.close()
-
-      this.applyFilters()
-    },
     async updateStatusOrderEditor() {
       if (this.newStatus == 'confirmed' && !this.canUpdateLeadInfo(this.order)) {
         this.$vs.notify({
@@ -1769,9 +1764,16 @@ export default {
       } else {
         this.$vs.loading()
 
+        let info = this.order.info
+        if (info === null) {
+          info = {}
+        }
+        info.last_status_change_date = this.formatDateTime(new Date())
+
         this.order.status = this.newStatus
         let params = {
           status: this.newStatus,
+          info: JSON.stringify(info),
         }
         await this.dropin.updateLead(this.order.id, params)
 
@@ -2309,6 +2311,7 @@ export default {
       info.total = o.total
       info.gateway = o.gateway
       info.payment_method = o.payment_method
+      info.last_status_change_date = this.formatDateTime(new Date())
 
       let quantity = 0
       for (let i = 0; i < o.products.length; i++) {

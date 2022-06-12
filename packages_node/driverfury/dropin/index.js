@@ -177,6 +177,11 @@ class Dropin {
         obj.completed_at = obj.info.completed_at
       }
 
+      obj.last_status_change_date = ''
+      if (obj.info.hasOwnProperty('last_status_change_date') && obj.info.last_status_change_date !== null) {
+        obj.last_status_change_date = obj.info.last_status_change_date
+      }
+
       obj.recall_at = ''
       if (obj.info.hasOwnProperty('recall_at') && obj.info.recall_at !== null) {
         obj.recall_at = obj.info.recall_at
