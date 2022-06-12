@@ -206,6 +206,7 @@
                     <vs-th>Items</vs-th>
                     <vs-th sort-key="contact">Contact</vs-th>
                     <vs-th sort-key="status">Status</vs-th>
+                    <vs-th sort-key="shipping_status">DP Status</vs-th>
                     <vs-th sort-key="paid">Paid</vs-th>
                     <vs-th sort-key="notes">Notes</vs-th>
                     <vs-th sort-key="completed_at">Completed Date</vs-th>
@@ -344,6 +345,10 @@
                             </fast-editable-value-select>
                         </vs-td>
 
+                        <vs-td class="column-no-padding" :data="item.status">
+                            {{item.shipping_status}}
+                        </vs-td>
+
                         <vs-td class="column-no-padding" :data="item.paid">
                             <vs-avatar class="icon-paid" icon-pack="feather" icon="icon-dollar-sign" :color="(item.paid) ? 'success' : '#878787'"  @dblclick="confirmTogglePaid(item)" />
                         </vs-td>
@@ -418,6 +423,7 @@
                     <vs-td class="column-no-padding">{{totalStats.quantity}}</vs-td>
                     <vs-td class="column-no-padding">€ {{totalStats.total.toFixed(2)}}</vs-td>
                     <vs-td class="column-no-padding">{{totalStats.items}} items</vs-td>
+                    <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
                     <vs-td class="column-no-padding"></vs-td>
