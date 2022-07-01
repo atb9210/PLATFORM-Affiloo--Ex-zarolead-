@@ -92,6 +92,9 @@ class Dropin
         $response = $this->http->get(self::$apiUrl . '/api/orders-list', $this->getHeaders());
         if ($response['code'] == 200) {
             $objects = $response['data'];
+            if (isset($objects['orders'])) {
+                $objects = $objects['orders'];
+            }
         }
         return $objects;
     }
