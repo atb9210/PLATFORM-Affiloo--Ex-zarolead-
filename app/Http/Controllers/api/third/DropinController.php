@@ -1418,8 +1418,8 @@ class DropinController extends Controller
     {
         // TODO: Authorization
 
+        DropinShipping::importShipping($id);
         $object = DropinShipping::findOrFail($id);
-        $object->refreshShippingStatus();
 
         return response([
             'data' => $object,

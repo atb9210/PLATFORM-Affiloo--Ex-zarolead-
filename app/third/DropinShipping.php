@@ -263,11 +263,17 @@ class DropinShipping extends Model
             }
             */
 
-            // Get COD amount
+            // Get COD amount and dropin status
             $codAmount = 0.0;
             $dropinOrder = $dropin->getOrderDetails($this->id);
             if (isset($dropinOrder['order']['customer_charge'])) {
                 $codAmount = floatval($dropinOrder['order']['customer_charge']);
+            }
+            if (isset($dropinOrder['orderStatus']['status_title']) &&
+                $dropinOrder['orderStatus']['status_title'] !== null &&
+                $dropinOrder['orderStatus']['status_title'] != '')
+            {
+                $this->status = $dropinOrder['orderStatus']['status_title'];
             }
 
             // Get external carrier tracking number and url
