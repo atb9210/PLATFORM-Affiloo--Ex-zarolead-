@@ -1764,6 +1764,7 @@ export default {
       } else {
         this.$vs.loading()
 
+
         let info = this.order.info
         if (info === null) {
           info = {}
@@ -1778,7 +1779,7 @@ export default {
         await this.dropin.updateLead(this.order.id, params)
 
         if (this.canUpdateLeadInfo(this.order)) {
-          await this.updateLeadInfo(order)
+          await this.updateLeadInfo(this.order)
         }
 
         this.$vs.notify({
@@ -2213,6 +2214,7 @@ export default {
         last_name: lead.last_name,
         phone: lead.phone,
         email: lead.email,
+        info: lead.info,
         shipping: {
           first_name: first_name,
           last_name: last_name,
